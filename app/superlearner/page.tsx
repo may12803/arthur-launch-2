@@ -42,11 +42,11 @@ const DOMAIN_LABELS: Record<string, string> = {
 };
 
 function AccuracyBadge({ value }: { value: number | null }) {
-  if (value === null) return <span style={{ color: "var(--text-muted)", fontSize: 11 }}>no data</span>;
+  if (value === null) return <span style={{ color: "var(--text-faint)", fontSize: 11 }}>no data</span>;
   const pct = Math.round(value * 100);
   const color = pct >= 90 ? "#4ade80" : pct >= 75 ? "#facc15" : "#f87171";
   return (
-    <span style={{ color, fontFamily: "var(--font-jetbrains)", fontSize: 13, fontWeight: 600 }}>
+    <span style={{ color, fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", fontSize: 13, fontWeight: 600 }}>
       {pct}%
     </span>
   );
@@ -55,8 +55,8 @@ function AccuracyBadge({ value }: { value: number | null }) {
 function StatCell({ label, value }: { label: string; value: number | string | null }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <span style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span>
-      <span style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", fontFamily: "var(--font-jetbrains)" }}>
+      <span style={{ fontSize: 10, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span>
+      <span style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)" }}>
         {value ?? "—"}
       </span>
     </div>
@@ -85,17 +85,17 @@ function DomainCard({ ds }: { ds: DomainStats }) {
         </h3>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {ds.active_prompt_version && (
-            <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "var(--font-jetbrains)", background: "var(--panel-elev)", border: "1px solid var(--border)", borderRadius: 4, padding: "2px 6px" }}>
+            <span style={{ fontSize: 10, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", background: "var(--panel-elev)", border: "1px solid var(--border)", borderRadius: 4, padding: "2px 6px" }}>
               v{ds.active_prompt_version}
             </span>
           )}
           <div style={{ display: "flex", gap: 12 }}>
             <div>
-              <span style={{ fontSize: 9, color: "var(--text-muted)", display: "block" }}>7d</span>
+              <span style={{ fontSize: 9, color: "var(--text-faint)", display: "block" }}>7d</span>
               <AccuracyBadge value={ds.accuracy_7d} />
             </div>
             <div>
-              <span style={{ fontSize: 9, color: "var(--text-muted)", display: "block" }}>30d</span>
+              <span style={{ fontSize: 9, color: "var(--text-faint)", display: "block" }}>30d</span>
               <AccuracyBadge value={ds.accuracy_30d} />
             </div>
           </div>
@@ -140,7 +140,7 @@ function DomainCard({ ds }: { ds: DomainStats }) {
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                     <span style={{ color: "var(--text-dim)" }}>{c.from ?? "(unknown)"}</span>
-                    <span style={{ color: "var(--text-muted)", fontFamily: "var(--font-jetbrains)" }}>
+                    <span style={{ color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)" }}>
                       predicted: <span style={{ color: "#f87171" }}>{c.predicted ?? "?"}</span>
                       {" → "} correct: <span style={{ color: "#4ade80" }}>{c.correct}</span>
                     </span>
@@ -149,7 +149,7 @@ function DomainCard({ ds }: { ds: DomainStats }) {
                     <div style={{ color: "var(--text)", fontWeight: 500, marginBottom: 4 }}>{c.subject}</div>
                   )}
                   {c.input_excerpt && (
-                    <div style={{ color: "var(--text-muted)", fontStyle: "italic" }}>
+                    <div style={{ color: "var(--text-faint)", fontStyle: "italic" }}>
                       {c.input_excerpt}…
                     </div>
                   )}
@@ -242,7 +242,7 @@ export default function SuperlearnerPage() {
         )}
 
         {data && (
-          <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 24 }}>
+          <p style={{ fontSize: 10, color: "var(--text-faint)", marginTop: 24 }}>
             generated at {new Date(data.generated_at).toLocaleString("en-US", { timeZone: "America/Detroit" })} et
           </p>
         )}
