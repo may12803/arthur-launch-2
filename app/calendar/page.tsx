@@ -157,7 +157,7 @@ export default function CalendarPage() {
     return d;
   }, []);
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 900;
   const [view, setView]             = useState<ViewMode>(isMobile ? "day" : "week");
   const [anchor, setAnchor]         = useState<Date>(today);
   const [events, setEvents]         = useState<CalEvent[]>([]);
@@ -167,7 +167,7 @@ export default function CalendarPage() {
   const [filterAccounts, setFilterAccounts] = useState<Set<string>>(new Set(["all"]));
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showEventSheet, setShowEventSheet] = useState(false);
-  const [mobileSheet, setMobileSheet] = useState<"event" | "filter" | null>(null);
+  const [mobileSheet, setMobileSheet] = useState<"event" | "filter" | "fab" | null>(null);
 
   const timelineRef = useRef<HTMLDivElement>(null);
 
@@ -223,13 +223,26 @@ export default function CalendarPage() {
 
   useEffect(() => {
     if (view !== "day" && view !== "week") return;
-    if (!timelineRef.current) return;
-    const nowH = new Date().getHours();
-    const pct  = ((nowH - HOUR_START) / (HOUR_END - HOUR_START)) * 100;
-    const el   = timelineRef.current;
-    const scrollTo = (el.scrollHeight * pct / 100) - el.clientHeight / 2;
-    el.scrollTop = Math.max(0, scrollTo);
-  }, [view, loading]);
+    if (loading) return;
+    // Retry until the TimelineGrid mounts and scrollHeight is real (Skeleton → TimelineGrid swap takes a few frames).
+    let attempts = 0;
+    let cancelled = false;
+    const tryScroll = () => {
+      if (cancelled) return;
+      attempts++;
+      const el = timelineRef.current;
+      if (!el || el.scrollHeight <= el.clientHeight + 20) {
+        if (attempts < 20) requestAnimationFrame(tryScroll);
+        return;
+      }
+      const nowH = new Date().getHours() + new Date().getMinutes() / 60;
+      const targetH = Math.max(HOUR_START, Math.min(HOUR_END - 1, nowH));
+      const pct = ((targetH - HOUR_START) / (HOUR_END - HOUR_START)) * 100;
+      el.scrollTop = Math.max(0, (el.scrollHeight * pct / 100) - el.clientHeight / 2);
+    };
+    requestAnimationFrame(tryScroll);
+    return () => { cancelled = true; };
+  }, [view, loading, anchor]);
 
   // ── Filtered events ──────────────────────────────────────────────────────────
 
@@ -334,7 +347,7 @@ export default function CalendarPage() {
 
   function selectEvent(ev: CalEvent) {
     setSelected(ev);
-    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+    if (typeof window !== "undefined" && window.innerWidth < 900) {
       setMobileSheet("event");
     }
   }
@@ -689,15 +702,31 @@ export default function CalendarPage() {
                 selectedId={selected?.id}
               />
             ) : (
-              <TimelineGrid
-                days={days}
-                today={today}
-                timedEventsForDay={timedEventsForDay}
-                allDayEventsForDay={allDayEventsForDay}
-                onSelect={selectEvent}
-                selectedId={selected?.id}
-                ref={timelineRef}
-              />
+              <>
+                {/* Desktop timeline — hidden on mobile */}
+                <div className="cal-desktop-timeline" style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
+                  <TimelineGrid
+                    days={days}
+                    today={today}
+                    timedEventsForDay={timedEventsForDay}
+                    allDayEventsForDay={allDayEventsForDay}
+                    onSelect={selectEvent}
+                    selectedId={selected?.id}
+                    ref={timelineRef}
+                  />
+                </div>
+                {/* Mobile DayTicker + AgendaList — hidden on desktop */}
+                <div className="cal-mobile-view" style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
+                  <MobileDayTickerView
+                    anchor={anchor}
+                    today={today}
+                    filteredEvents={filteredEvents}
+                    onDaySelect={(d) => setAnchor(d)}
+                    onSelect={selectEvent}
+                    selectedId={selected?.id ?? null}
+                  />
+                </div>
+              </>
             )}
           </div>
         </main>
@@ -779,14 +808,18 @@ export default function CalendarPage() {
         </aside>
       </div>
 
+      {/* ── MOBILE FAB ── */}
+      <MobileFAB onTap={() => setMobileSheet("fab")} />
+
       {/* ── MOBILE BOTTOM SHEETS ── */}
       {mobileSheet && (
         <div
           style={{
             position: "fixed", inset: 0, zIndex: 200,
             background: "rgba(7,8,11,0.7)",
+            transition: "background 0.2s",
           }}
-          onClick={() => setMobileSheet(null)}
+          onClick={() => { setMobileSheet(null); if (mobileSheet === "event") setSelected(null); }}
         >
           <div
             style={{
@@ -794,9 +827,11 @@ export default function CalendarPage() {
               background: "var(--panel)",
               borderTop: "1px solid var(--border-strong)",
               borderRadius: "16px 16px 0 0",
-              maxHeight: "85vh",
+              maxHeight: mobileSheet === "event" ? "60vh" : "85vh",
               overflowY: "auto",
               padding: "20px 20px 40px",
+              transform: "translateY(0)",
+              transition: "transform 250ms cubic-bezier(0.32, 0.72, 0, 1)",
             }}
             onClick={e => e.stopPropagation()}
           >
@@ -878,10 +913,39 @@ export default function CalendarPage() {
             )}
 
             {mobileSheet === "event" && selected && (
-              <EventDetail event={selected} onClose={() => { setSelected(null); setMobileSheet(null); }} />
+              <MobileEventDetail event={selected} onClose={() => { setSelected(null); setMobileSheet(null); }} />
             )}
             {mobileSheet === "event" && !selected && (
               <div style={{ color: "var(--text-faint)", fontSize: 13 }}>No event selected</div>
+            )}
+            {mobileSheet === "fab" && (
+              <div style={{ textAlign: "center", padding: "20px 0 10px" }}>
+                <div style={{
+                  fontSize: 32, marginBottom: 12,
+                }}>📅</div>
+                <div style={{
+                  fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+                  fontWeight: 700, fontSize: 18, color: "var(--text)", marginBottom: 8,
+                }}>Event creation coming soon</div>
+                <div style={{ fontSize: 13, color: "var(--text-faint)", lineHeight: 1.6, marginBottom: 24 }}>
+                  Natural language event creation is on the roadmap.<br />
+                  Use Google Calendar to create events for now.
+                </div>
+                <a
+                  href="https://calendar.google.com/calendar/r/eventedit"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    background: "var(--accent)", color: "#fff",
+                    padding: "10px 20px", borderRadius: 8,
+                    fontSize: 13, fontWeight: 600, textDecoration: "none",
+                  }}
+                  onClick={() => setMobileSheet(null)}
+                >
+                  Open Google Calendar →
+                </a>
+              </div>
             )}
           </div>
         </div>
@@ -890,13 +954,18 @@ export default function CalendarPage() {
       {/* ── INLINE STYLES ── */}
       <style>{`
         /* Hide rails on mobile, show single-col layout */
-        @media (max-width: 1023px) {
+        @media (max-width: 899px) {
           .cal-left-rail  { display: none !important; }
           .cal-right-rail { display: none !important; }
           .cal-mobile-filter-btn { display: flex !important; }
         }
-        @media (min-width: 1024px) {
+        @media (min-width: 900px) {
           .cal-mobile-filter-btn { display: none !important; }
+          .cal-mobile-view { display: none !important; }
+          .cal-mobile-fab  { display: none !important; }
+        }
+        @media (max-width: 899px) {
+          .cal-desktop-timeline { display: none !important; }
         }
 
         /* Hover states for event cards */
@@ -908,6 +977,15 @@ export default function CalendarPage() {
         .cal-timeline::-webkit-scrollbar { width: 5px; }
         .cal-timeline::-webkit-scrollbar-track { background: transparent; }
         .cal-timeline::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+        /* Ticker strip scrollbar hide */
+        .cal-ticker-strip::-webkit-scrollbar { display: none; }
+        .cal-ticker-strip { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Agenda list scrollbar */
+        .cal-agenda-list::-webkit-scrollbar { width: 3px; }
+        .cal-agenda-list::-webkit-scrollbar-track { background: transparent; }
+        .cal-agenda-list::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
 
         /* Skeleton shimmer */
         @keyframes shimmer {
@@ -922,6 +1000,524 @@ export default function CalendarPage() {
         }
       `}</style>
     </>
+  );
+}
+
+// ── MobileFAB ─────────────────────────────────────────────────────────────────
+
+function MobileFAB({ onTap }: { onTap: () => void }) {
+  return (
+    <button
+      className="cal-mobile-fab"
+      onClick={onTap}
+      aria-label="Create event"
+      style={{
+        position: "fixed",
+        bottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
+        right: 20,
+        width: 56,
+        height: 56,
+        borderRadius: "50%",
+        background: "var(--accent)",
+        color: "#fff",
+        border: "none",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 28,
+        fontWeight: 300,
+        boxShadow: "0 4px 16px rgba(255,71,19,0.4), 0 2px 4px rgba(0,0,0,0.3)",
+        zIndex: 150,
+        transition: "transform 0.15s, box-shadow 0.15s",
+        lineHeight: 1,
+      }}
+      onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.94)"; }}
+      onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+      onTouchStart={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.94)"; }}
+      onTouchEnd={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+    >
+      +
+    </button>
+  );
+}
+
+// ── MobileDayTickerView ───────────────────────────────────────────────────────
+
+function MobileDayTickerView({
+  anchor,
+  today,
+  filteredEvents,
+  onDaySelect,
+  onSelect,
+  selectedId,
+}: {
+  anchor: Date;
+  today: Date;
+  filteredEvents: CalEvent[];
+  onDaySelect: (d: Date) => void;
+  onSelect: (ev: CalEvent) => void;
+  selectedId: string | null;
+}) {
+  // Build ~14 days around anchor (7 before today, 7 after)
+  const tickerDays = useMemo(() => {
+    const base = new Date(today);
+    return Array.from({ length: 21 }, (_, i) => addDays(base, i - 7));
+  }, [today]);
+
+  const tickerRef = useRef<HTMLDivElement>(null);
+  const agendaRef = useRef<HTMLDivElement>(null);
+  const [activeTicker, setActiveTicker] = useState<Date>(anchor);
+
+  // Scroll ticker to center today on mount
+  useEffect(() => {
+    if (!tickerRef.current) return;
+    const el = tickerRef.current;
+    // Each day chip is ~56px wide (48px + gap). Today is at index 7
+    const dayWidth = 56;
+    const todayOffset = 7 * dayWidth;
+    el.scrollLeft = Math.max(0, todayOffset - el.clientWidth / 2 + dayWidth / 2);
+  }, []);
+
+  // Group events by day for the agenda list
+  // Show 30 days from the earliest visible ticker day
+  const agendaDays = useMemo(() => {
+    const start = addDays(today, -7);
+    return Array.from({ length: 45 }, (_, i) => addDays(start, i));
+  }, [today]);
+
+  const eventsForAgendaDay = useCallback((day: Date) => {
+    return filteredEvents
+      .filter(ev => sameDay(isoToDate(ev.start), day))
+      .sort((a, b) => {
+        if (a.all_day && !b.all_day) return -1;
+        if (!a.all_day && b.all_day) return 1;
+        return isoToDate(a.start).getTime() - isoToDate(b.start).getTime();
+      });
+  }, [filteredEvents]);
+
+  // IntersectionObserver: detect which day header is in view → update ticker active day
+  useEffect(() => {
+    if (!agendaRef.current) return;
+    const container = agendaRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            const dateStr = (entry.target as HTMLElement).dataset.date;
+            if (dateStr) {
+              const d = new Date(dateStr);
+              setActiveTicker(d);
+            }
+          }
+        }
+      },
+      { root: container, threshold: 0.5, rootMargin: "0px 0px -70% 0px" }
+    );
+    const headers = container.querySelectorAll("[data-date]");
+    headers.forEach(h => observer.observe(h));
+    return () => observer.disconnect();
+  }, [filteredEvents, agendaDays]);
+
+  // When ticker day is tapped → scroll agenda to that day
+  function scrollAgendaToDay(day: Date) {
+    setActiveTicker(day);
+    onDaySelect(day);
+    if (!agendaRef.current) return;
+    const dateStr = day.toISOString().slice(0, 10);
+    const header = agendaRef.current.querySelector(`[data-date="${dateStr}"]`);
+    if (header) {
+      header.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden", minHeight: 0 }}>
+      {/* DayTicker strip */}
+      <div
+        ref={tickerRef}
+        style={{
+          display: "flex",
+          gap: 8,
+          padding: "12px 16px",
+          overflowX: "auto",
+          flexShrink: 0,
+          scrollSnapType: "x mandatory",
+          WebkitOverflowScrolling: "touch",
+          borderBottom: "1px solid var(--border)",
+          scrollbarWidth: "none",
+        }}
+        className="cal-ticker-strip"
+      >
+        {tickerDays.map(day => {
+          const isToday   = sameDay(day, today);
+          const isActive  = sameDay(day, activeTicker);
+          const hasEvents = filteredEvents.some(ev => sameDay(isoToDate(ev.start), day));
+          const dateStr   = day.toLocaleDateString("en-US", { weekday: "narrow" });
+          return (
+            <button
+              key={day.toISOString()}
+              onClick={() => scrollAgendaToDay(day)}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 3,
+                minWidth: 48,
+                padding: "8px 4px",
+                borderRadius: 10,
+                border: "none",
+                background: isActive ? "var(--accent)" : "transparent",
+                cursor: "pointer",
+                scrollSnapAlign: "center",
+                flexShrink: 0,
+                transition: "background 0.15s",
+              }}
+            >
+              <span style={{
+                fontSize: 9,
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: isActive ? "rgba(255,255,255,0.8)" : "var(--text-faint)",
+              }}>
+                {dateStr}
+              </span>
+              <span style={{
+                fontSize: 17,
+                fontWeight: isToday || isActive ? 700 : 400,
+                color: isActive ? "#fff" : isToday ? "var(--accent)" : "var(--text)",
+                lineHeight: 1,
+              }}>
+                {day.getDate()}
+              </span>
+              {/* Event dot */}
+              <div style={{
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+                background: hasEvents
+                  ? (isActive ? "rgba(255,255,255,0.8)" : "var(--accent)")
+                  : "transparent",
+                transition: "background 0.15s",
+              }} />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Agenda list */}
+      <div
+        ref={agendaRef}
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch" as React.CSSProperties["WebkitOverflowScrolling"],
+        }}
+        className="cal-agenda-list"
+      >
+        {agendaDays.map(day => {
+          const dayEvts = eventsForAgendaDay(day);
+          const isToday = sameDay(day, today);
+          const dateStr = day.toISOString().slice(0, 10);
+          return (
+            <div key={dateStr}>
+              {/* Sticky day header */}
+              <div
+                data-date={dateStr}
+                style={{
+                  position: "sticky",
+                  top: 0,
+                  background: "var(--bg)",
+                  borderBottom: "1px solid var(--border)",
+                  padding: "8px 16px 6px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  zIndex: 10,
+                }}
+              >
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  background: isToday ? "var(--accent)" : "transparent",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  <span style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: isToday ? "#fff" : "var(--text-dim)",
+                  }}>
+                    {day.getDate()}
+                  </span>
+                </div>
+                <span style={{
+                  fontSize: 12,
+                  fontWeight: isToday ? 600 : 400,
+                  color: isToday ? "var(--accent)" : "var(--text-dim)",
+                  fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+                }}>
+                  {day.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+                </span>
+              </div>
+
+              {/* Events for this day */}
+              {dayEvts.length === 0 ? (
+                <div style={{
+                  padding: "12px 16px",
+                  fontSize: 12,
+                  color: "var(--text-faint)",
+                  fontStyle: "italic",
+                  opacity: 0.5,
+                }}>
+                  No events
+                </div>
+              ) : (
+                <div style={{ padding: "6px 12px 8px" }}>
+                  {dayEvts.map(ev => {
+                    const cfg       = TYPE_CONFIG[ev.type] ?? TYPE_CONFIG.gcal;
+                    const rgb       = hexToRgb(cfg.color);
+                    const isAllDay  = ev.all_day || /^\d{4}-\d{2}-\d{2}$/.test(ev.start);
+                    const timeLabel = isAllDay
+                      ? "all day"
+                      : new Date(ev.start).toLocaleTimeString("en-US", {
+                          hour: "numeric", minute: "2-digit", timeZone: "America/Detroit",
+                        }) + " ET";
+                    const isSelected = selectedId === ev.id;
+                    return (
+                      <button
+                        key={ev.id}
+                        className="cal-event-chip"
+                        onClick={() => onSelect(ev)}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 0,
+                          width: "100%",
+                          background: isSelected ? `rgba(${rgb},0.15)` : `rgba(${rgb},0.08)`,
+                          border: "none",
+                          borderLeft: `3px solid ${cfg.color}`,
+                          borderRadius: "0 8px 8px 0",
+                          marginBottom: 6,
+                          padding: "10px 12px",
+                          cursor: "pointer",
+                          textAlign: "left",
+                          boxShadow: `inset 0 0 0 1px rgba(${rgb},0.20)`,
+                          transition: "background 0.1s",
+                          minHeight: 44,
+                        }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: "var(--text)",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            marginBottom: 2,
+                          }}>
+                            {ev.title}
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{
+                              fontSize: 11,
+                              color: cfg.color,
+                              fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+                              fontWeight: 500,
+                            }}>
+                              {timeLabel}
+                            </span>
+                            {ev.location && (
+                              <>
+                                <span style={{ fontSize: 10, color: "var(--text-faint)" }}>·</span>
+                                <span style={{ fontSize: 11, color: "var(--text-faint)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                  📍 {ev.location}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 16, flexShrink: 0, marginLeft: 8, alignSelf: "center", opacity: 0.5 }}>›</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── MobileEventDetail (bottom-sheet variant) ──────────────────────────────────
+
+function MobileEventDetail({ event, onClose }: { event: CalEvent; onClose: () => void }) {
+  const cfg      = TYPE_CONFIG[event.type] ?? TYPE_CONFIG.gcal;
+  const rgb      = hexToRgb(cfg.color);
+  const isAllDay = event.all_day || /^\d{4}-\d{2}-\d{2}$/.test(event.start);
+
+  const startDate = isoToDate(event.start);
+  const dateStr = startDate.toLocaleDateString("en-US", {
+    weekday: "short", month: "long", day: "numeric", year: "numeric",
+    timeZone: "America/Detroit",
+  });
+
+  const timeRange = isAllDay
+    ? "All day"
+    : [
+        new Date(event.start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/Detroit" }),
+        event.end ? `— ${new Date(event.end).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/Detroit" })}` : "",
+      ].filter(Boolean).join(" ") + " ET";
+
+  function getOpenUrl(): string | null {
+    if (event.html_link) return event.html_link;
+    if (event.url) return event.url;
+    if (event.source === "google") return "https://calendar.google.com/";
+    return null;
+  }
+  function getOpenLabel(): string {
+    if (event.source === "google") return "Open in Google Calendar";
+    if (event.url) return "Open URL";
+    return "Open";
+  }
+
+  const openUrl = getOpenUrl();
+
+  return (
+    <div>
+      {/* Color bar + type badge */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8, marginBottom: 12,
+      }}>
+        <div style={{ width: 4, height: 40, borderRadius: 2, background: cfg.color, flexShrink: 0 }} />
+        <div>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+            color: cfg.color, marginBottom: 2,
+          }}>
+            {cfg.icon} {cfg.label}
+          </div>
+          <div style={{
+            fontSize: 17, fontWeight: 700, letterSpacing: "-0.02em",
+            color: "var(--text)", lineHeight: 1.2,
+            fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+          }}>
+            {event.title}
+          </div>
+        </div>
+      </div>
+
+      {/* Date + time */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8, marginBottom: 10,
+        padding: "8px 12px", background: "var(--panel-elev)", borderRadius: 8,
+      }}>
+        <span style={{ fontSize: 18 }}>📅</span>
+        <div>
+          <div style={{ fontSize: 12, color: "var(--text)", fontWeight: 500 }}>{dateStr}</div>
+          <div style={{
+            fontSize: 11, color: cfg.color,
+            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+          }}>{timeRange}</div>
+        </div>
+      </div>
+
+      {/* Location */}
+      {event.location && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8, marginBottom: 10,
+          padding: "8px 12px", background: "var(--panel-elev)", borderRadius: 8,
+        }}>
+          <span style={{ fontSize: 18 }}>📍</span>
+          <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.4 }}>{event.location}</div>
+        </div>
+      )}
+
+      {/* Organizer */}
+      {event.organizer?.email && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ ...detailLabel, marginBottom: 4 }}>hosted by</div>
+          <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
+            {event.organizer.name ?? event.organizer.email}
+          </div>
+        </div>
+      )}
+
+      {/* Attendees */}
+      {event.attendees && event.attendees.length > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ ...detailLabel, marginBottom: 6 }}>attendees ({event.attendees.length})</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {event.attendees.slice(0, 5).map((a, i) => {
+              const rs    = a.response_status ?? "needsAction";
+              const icon  = RESPONSE_ICONS[rs] ?? "⏳";
+              const color = RESPONSE_COLORS[rs] ?? "#6b7280";
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{
+                    width: 24, height: 24, borderRadius: "50%",
+                    background: `rgba(${rgb},0.2)`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 10, fontWeight: 700, color: cfg.color, flexShrink: 0,
+                  }}>
+                    {(a.name ?? a.email)[0]?.toUpperCase() ?? "?"}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {a.name ?? a.email}
+                    </div>
+                    {a.name && <div style={{ fontSize: 10, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)" }}>{a.email}</div>}
+                  </div>
+                  <span style={{ fontSize: 12, color, flexShrink: 0 }}>{icon}</span>
+                </div>
+              );
+            })}
+            {event.attendees.length > 5 && (
+              <div style={{ fontSize: 11, color: "var(--text-faint)" }}>+{event.attendees.length - 5} more</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 }}>
+        {openUrl && (
+          <a
+            href={openUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              flex: 1,
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5,
+              background: cfg.color, color: "#fff",
+              padding: "10px 16px", borderRadius: 8,
+              fontSize: 13, fontWeight: 600, textDecoration: "none",
+              minHeight: 44,
+            }}
+          >
+            {getOpenLabel()} →
+          </a>
+        )}
+        <button
+          onClick={onClose}
+          style={{
+            background: "var(--panel-elev)", border: "1px solid var(--border-strong)",
+            borderRadius: 8, padding: "10px 16px",
+            color: "var(--text-faint)", fontSize: 13, cursor: "pointer",
+            minHeight: 44, minWidth: 80,
+          }}
+        >
+          dismiss
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -1067,11 +1663,51 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
           {/* Current time indicator */}
           <CurrentTimeLine days={days} today={today} />
 
-          {/* Timed events — positioned absolutely per day column */}
+          {/* Timed events — positioned absolutely per day column with overlap-aware columns */}
           {days.map((day, colIdx) => {
             const timed = timedEventsForDay(day);
             if (!timed.length) return null;
-            return timed.map(ev => {
+
+            // Canonical greedy column-packing:
+            // 1. Sort by start time.
+            // 2. Assign each event the leftmost column whose last event has already ended.
+            // 3. Compute each event's overlap-cluster max (subTotal) for correct width.
+            const sorted = [...timed].sort((a, b) => isoToDate(a.start).getTime() - isoToDate(b.start).getTime());
+            type Slot = { ev: CalEvent; subCol: number; subTotal: number; startMs: number; endMs: number };
+            const slotted: Slot[] = [];
+            // columnEnds[col] = latest endMs placed in that column
+            const columnEnds: number[] = [];
+            for (const ev of sorted) {
+              const startMs = isoToDate(ev.start).getTime();
+              const endMs   = ev.end ? isoToDate(ev.end).getTime() : startMs + 3600000;
+              // Find leftmost column whose last event has ended
+              let subCol = columnEnds.findIndex(e => e <= startMs);
+              if (subCol === -1) subCol = columnEnds.length;
+              columnEnds[subCol] = endMs;
+              slotted.push({ ev, subCol, subTotal: 0, startMs, endMs });
+            }
+            // Compute subTotal: for each event, find all events in its overlap cluster
+            // using union-find style flood fill so chains (A overlaps B, B overlaps C) merge correctly
+            const n = slotted.length;
+            const cluster = Array.from({ length: n }, (_, i) => i); // cluster root index
+            function findRoot(i: number): number { return cluster[i] === i ? i : (cluster[i] = findRoot(cluster[i])); }
+            for (let i = 0; i < n; i++) {
+              for (let j = i + 1; j < n; j++) {
+                if (slotted[i].startMs < slotted[j].endMs && slotted[j].startMs < slotted[i].endMs) {
+                  const ri = findRoot(i), rj = findRoot(j);
+                  if (ri !== rj) cluster[ri] = rj;
+                }
+              }
+            }
+            // Max subCol+1 within each cluster
+            const clusterMax = new Map<number, number>();
+            for (let i = 0; i < n; i++) {
+              const root = findRoot(i);
+              clusterMax.set(root, Math.max(clusterMax.get(root) ?? 0, slotted[i].subCol + 1));
+            }
+            for (let i = 0; i < n; i++) slotted[i].subTotal = clusterMax.get(findRoot(i)) ?? 1;
+
+            return slotted.map(({ ev, subCol, subTotal }) => {
               const start    = isoToDate(ev.start);
               const end      = ev.end ? isoToDate(ev.end) : null;
               const topPct   = eventTopPercent(start);
@@ -1083,6 +1719,9 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
               // Skip events outside the visible range
               if (topPct < 0 || topPct > 100) return null;
 
+              const total = Math.max(1, subTotal);
+              const subWidthPct = 100 / total;
+
               return (
                 <button
                   key={ev.id}
@@ -1090,13 +1729,13 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
                   onClick={() => onSelect(ev)}
                   style={{
                     position: "absolute",
-                    // 48px gutter + colIdx * (col width)
-                    left:   `calc(48px + ${colIdx} * (100% - 48px) / ${days.length} + 2px)`,
-                    width:  `calc((100% - 48px) / ${days.length} - 4px)`,
-                    top:    `calc(${topPct}% * ${HOURS.length})`,
-                    height: `calc(${heightPct}% * ${HOURS.length})`,
+                    // 48px gutter + colIdx * (col width) + subCol * (sub-col width within day)
+                    left:   `calc(48px + ${colIdx} * (100% - 48px) / ${days.length} + (${subCol} * ((100% - 48px) / ${days.length}) * ${subWidthPct / 100}) + 2px)`,
+                    width:  `calc((100% - 48px) / ${days.length} * ${subWidthPct / 100} - 4px)`,
+                    top:    `${topPct}%`,
+                    height: `${heightPct}%`,
                     minHeight: 18,
-                    background: `rgba(${rgb},0.08)`,
+                    background: `rgba(${rgb},0.15)`,
                     borderLeft: `3px solid ${cfg.color}`,
                     borderTop: "none",
                     borderRight: "none",
@@ -1106,7 +1745,9 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
                     cursor: "pointer",
                     textAlign: "left",
                     overflow: "hidden",
-                    boxShadow: isSelected ? `0 0 0 1px ${cfg.color}60, inset 0 0 0 1px ${cfg.color}20` : "none",
+                    boxShadow: isSelected
+                      ? `0 0 0 1px ${cfg.color}60, inset 0 0 0 1px ${cfg.color}30`
+                      : `inset 0 0 0 1px rgba(${rgb},0.25)`,
                     zIndex: isSelected ? 2 : 1,
                     transition: "box-shadow 0.1s",
                   }}
@@ -1165,14 +1806,14 @@ function CurrentTimeLine({ days, today }: { days: Date[]; today: Date }) {
       position: "absolute",
       left: `calc(48px + ${todayIdx} * (100% - 48px) / ${days.length})`,
       width: `calc((100% - 48px) / ${days.length})`,
-      top: `${pct * HOURS.length}%`,
+      top: `${pct}%`,
       zIndex: 10,
       pointerEvents: "none",
       display: "flex",
       alignItems: "center",
     }}>
-      <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", flexShrink: 0, marginLeft: -3 }} />
-      <div style={{ flex: 1, height: 1, background: "var(--accent)", opacity: 0.7 }} />
+      <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#ef4444", flexShrink: 0, marginLeft: -5 }} />
+      <div style={{ flex: 1, height: 2, background: "#ef4444" }} />
     </div>
   );
 }
@@ -1291,7 +1932,7 @@ function EventChipSmall({ event, cfg, onClick, selected }: {
         display: "block",
         width: "100%",
         textAlign: "left",
-        background: `rgba(${rgb},0.08)`,
+        background: `rgba(${rgb},0.15)`,
         border: selected ? `1px solid ${cfg.color}50` : "none",
         borderLeft: `3px solid ${cfg.color}`,
         borderRadius: "0 3px 3px 0",
@@ -1303,7 +1944,7 @@ function EventChipSmall({ event, cfg, onClick, selected }: {
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",
-        boxShadow: "none",
+        boxShadow: `inset 0 0 0 1px rgba(${rgb},0.25)`,
       }}
       title={event.title}
     >
