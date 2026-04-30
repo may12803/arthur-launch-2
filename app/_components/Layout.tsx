@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 // App routes that should NOT show footer or "open dashboard" CTA
 const APP_ROUTES = [
-  "/inbox", "/calendar", "/legal", "/dashboard", "/messenger",
+  "/inbox", "/calendar", "/goals", "/legal", "/dashboard", "/messenger",
   "/subscriptions", "/brain", "/graph", "/skills", "/benchmarks",
-  "/principles", "/settings",
+  "/principles", "/settings", "/superlearner", "/iphone",
 ];
 
 function isAppRoute(pathname: string): boolean {
@@ -116,6 +116,7 @@ function NavDropdown({
 const PRIMARY_LINKS = [
   { href: "/inbox",     label: "inbox" },
   { href: "/calendar",  label: "calendar" },
+  { href: "/goals",     label: "goals" },
   { href: "/legal",     label: "legal" },
   { href: "/messenger", label: "messenger" },
 ];
@@ -126,13 +127,115 @@ const SETTINGS_LINKS = [
 ];
 
 const SYSTEM_LINKS = [
-  { href: "/dashboard",   label: "dashboard" },
-  { href: "/brain",       label: "brain" },
-  { href: "/graph",       label: "graph" },
-  { href: "/skills",      label: "skills" },
-  { href: "/benchmarks",  label: "benchmarks" },
-  { href: "/principles",  label: "principles" },
+  { href: "/dashboard",    label: "dashboard" },
+  { href: "/brain",        label: "brain" },
+  { href: "/graph",        label: "graph" },
+  { href: "/skills",       label: "skills" },
+  { href: "/benchmarks",   label: "benchmarks" },
+  { href: "/principles",   label: "principles" },
+  { href: "/superlearner", label: "superlearner" },
+  { href: "/iphone",       label: "iphone" },
 ];
+
+// ── Mobile bottom nav icons (inline SVG to avoid icon library dependency) ────
+
+const NAV_ICONS: Record<string, React.ReactNode> = {
+  "/inbox": (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M2 13l3-7h10l3 7H2z"/><path d="M2 13v3a1 1 0 001 1h14a1 1 0 001-1v-3"/>
+      <path d="M7 13a3 3 0 006 0"/>
+    </svg>
+  ),
+  "/calendar": (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="2" y="4" width="16" height="14" rx="2"/><path d="M14 2v4M6 2v4M2 9h16"/>
+    </svg>
+  ),
+  "/goals": (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3"/><path d="M10 3V1M10 19v-2M3 10H1M19 10h-2"/>
+    </svg>
+  ),
+  "/legal": (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M6 2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/>
+      <path d="M8 7h4M8 10h4M8 13h2"/>
+    </svg>
+  ),
+  "/dashboard": (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="2" y="2" width="7" height="7" rx="1"/><rect x="11" y="2" width="7" height="7" rx="1"/>
+      <rect x="2" y="11" width="7" height="7" rx="1"/><rect x="11" y="11" width="7" height="7" rx="1"/>
+    </svg>
+  ),
+};
+
+// Mobile bottom nav items (5 most-used on phone)
+const BOTTOM_NAV_ITEMS = [
+  { href: "/inbox",     label: "inbox" },
+  { href: "/calendar",  label: "cal" },
+  { href: "/goals",     label: "goals" },
+  { href: "/legal",     label: "legal" },
+  { href: "/dashboard", label: "dash" },
+];
+
+function MobileBottomNav({ pathname }: { pathname: string }) {
+  return (
+    <nav className="mobile-bottom-nav" aria-label="primary mobile navigation">
+      <div className="mobile-bottom-nav-inner">
+        {BOTTOM_NAV_ITEMS.map(item => {
+          const active = pathname === item.href || pathname.startsWith(item.href + "/");
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`mobile-bottom-nav-item${active ? " active" : ""}`}
+              aria-current={active ? "page" : undefined}
+            >
+              <span className="mobile-bottom-nav-icon">
+                {NAV_ICONS[item.href]}
+              </span>
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+// ── Live heartbeat badge ──────────────────────────────────────────────────────
+
+function LiveBadge() {
+  const [status, setStatus] = useState<"ok" | "err" | "unknown">("unknown");
+
+  const check = useCallback(async () => {
+    try {
+      const r = await fetch("/api/state", { cache: "no-store" });
+      setStatus(r.ok ? "ok" : "err");
+    } catch {
+      setStatus("err");
+    }
+  }, []);
+
+  useEffect(() => {
+    check();
+    const t = setInterval(check, 30_000);
+    return () => clearInterval(t);
+  }, [check]);
+
+  return (
+    <span
+      className={`nav-live-badge ${status === "ok" ? "live-ok" : status === "err" ? "live-err" : ""}`}
+      title={status === "ok" ? "Arthur is live" : status === "err" ? "Arthur offline" : "Checking..."}
+    >
+      <span className="live-dot" />
+      v1
+    </span>
+  );
+}
+
+// ── Nav ───────────────────────────────────────────────────────────────────────
 
 export function Nav() {
   const pathname = usePathname();
@@ -168,10 +271,11 @@ export function Nav() {
             })}
             <NavDropdown label="settings" links={SETTINGS_LINKS} pathname={pathname} />
             <NavDropdown label="system"   links={SYSTEM_LINKS}   pathname={pathname} />
-            <span className="nav-build">v1 · live</span>
+            <LiveBadge />
           </div>
 
           <div className="nav-right">
+            {/* Dashboard CTA — hidden on mobile when bottom nav provides direct access */}
             {!isDashboard && (
               <Link
                 href="/dashboard"
@@ -181,16 +285,33 @@ export function Nav() {
                 open dashboard →
               </Link>
             )}
-            <button
-              className="nav-hamburger"
-              onClick={() => setMobileOpen(o => !o)}
-              aria-label={mobileOpen ? "close menu" : "open menu"}
-              aria-expanded={mobileOpen}
-            >
-              <span className={`ham-bar ${mobileOpen ? "ham-open" : ""}`} />
-              <span className={`ham-bar ${mobileOpen ? "ham-open" : ""}`} />
-              <span className={`ham-bar ${mobileOpen ? "ham-open" : ""}`} />
-            </button>
+            {/* Hamburger — only shown on mobile when NOT on app routes (app routes use bottom nav) */}
+            {!onApp && (
+              <button
+                className="nav-hamburger"
+                onClick={() => setMobileOpen(o => !o)}
+                aria-label={mobileOpen ? "close menu" : "open menu"}
+                aria-expanded={mobileOpen}
+              >
+                <span className={`ham-bar ${mobileOpen ? "ham-open" : ""}`} />
+                <span className={`ham-bar ${mobileOpen ? "ham-open" : ""}`} />
+                <span className={`ham-bar ${mobileOpen ? "ham-open" : ""}`} />
+              </button>
+            )}
+            {/* On app routes mobile still needs a way to reach system/settings */}
+            {onApp && (
+              <button
+                className="nav-hamburger"
+                onClick={() => setMobileOpen(o => !o)}
+                aria-label={mobileOpen ? "close menu" : "open menu"}
+                aria-expanded={mobileOpen}
+                style={{ display: undefined /* let CSS handle via media query */ }}
+              >
+                <span className={`ham-bar ${mobileOpen ? "ham-open" : ""}`} />
+                <span className={`ham-bar ${mobileOpen ? "ham-open" : ""}`} />
+                <span className={`ham-bar ${mobileOpen ? "ham-open" : ""}`} />
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -281,6 +402,9 @@ export function Nav() {
           </div>
         </div>
       )}
+
+      {/* Mobile bottom nav — shown on app routes only */}
+      {onApp && <MobileBottomNav pathname={pathname} />}
     </>
   );
 }

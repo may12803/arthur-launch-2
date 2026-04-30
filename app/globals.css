@@ -1,28 +1,74 @@
 @import "tailwindcss";
 
-:root {
-  --bg:            #07080b;
-  --panel:         #13161b;
-  --panel-elev:    #181b21;
-  --panel-bg:      #13161b;  /* alias for panel — used in dashboard */
-  --text:          #e8eaf0;
-  --text-dim:      #868a95;
-  --text-faint:    #4a4f5a;
-  --fg:            #e8eaf0;  /* alias for text — used in dashboard */
-  --muted:         #868a95;  /* alias for text-dim — used in subscriptions/dashboard */
-  --border:        #1d2028;
-  --border-strong: #2a2e38;
-  --accent:        #ff4713;
-  --accent-soft:   rgba(255, 71, 19, 0.12);
-  --accent-glow:   rgba(255, 71, 19, 0.35);
+/* ─── Design Tokens ──────────────────────────────────────────────────────────
+ *
+ * All color, typography, and spacing primitives live here.
+ * Page-level code must reference these vars — no magic hex literals.
+ *
+ * Contrast audit (WCAG AA = 4.5:1 body, 3:1 large):
+ *   --text      on --bg        → 16.65 ✓
+ *   --text-dim  on --bg        →  5.80 ✓
+ *   --text-dim  on --panel     →  5.25 ✓
+ *   --text-faint on --bg       →  5.07 ✓  (bumped from #4a4f5a → #7a8090)
+ *   --text-faint on --panel    →  4.59 ✓  (bumped from #4a4f5a → #7a8090)
+ *   --accent    on --bg        →  5.88 ✓
+ *   --accent    on --panel     →  5.32 ✓
+ *   #0d0500     on --accent    →  5.93 ✓  (btn text, replaces white which fails @ 3.41)
+ * ─────────────────────────────────────────────────────────────────────────── */
 
-  /* lobe palette */
+:root {
+  /* Backgrounds — dark scale from deepest to elevated */
+  --bg:            #07080b;   /* page canvas */
+  --panel:         #13161b;   /* card / sidebar surfaces */
+  --panel-elev:    #181b21;   /* raised elements inside panels */
+  --panel-bg:      #13161b;   /* alias: panel — kept for dashboard compat */
+
+  /* Text — three legibility tiers */
+  --text:          #e8eaf0;   /* primary body text (16.65:1 on --bg) */
+  --text-dim:      #868a95;   /* secondary / supporting text (5.8:1 on --bg) */
+  --text-faint:    #7a8090;   /* labels, eyebrows, meta (4.59:1 on --panel ✓) */
+  --fg:            #e8eaf0;   /* alias: text — kept for dashboard compat */
+  --muted:         #868a95;   /* alias: text-dim — kept for subscriptions compat */
+
+  /* Borders */
+  --border:        #1d2028;   /* default dividers */
+  --border-strong: #2a2e38;   /* hover states, active frames */
+
+  /* Brand accent — Arthur orange */
+  --accent:        #ff4713;   /* primary action color (5.88:1 on --bg ✓) */
+  --accent-dark:   #0d0500;   /* button text on accent bg (5.93:1 ✓) */
+  --accent-hover:  #e03a0d;   /* hover state for accent */
+  --accent-soft:   rgba(255, 71, 19, 0.12);  /* subtle tint backgrounds */
+  --accent-glow:   rgba(255, 71, 19, 0.35);  /* glow effects */
+
+  /* Type scale */
+  --type-hero:     100px;     /* homepage h1 */
+  --type-section:  56px;      /* section headings */
+  --type-h2:       42px;      /* sub-section headings */
+  --type-h3:       18px;      /* card / panel headings */
+  --type-body:     14px;      /* default body */
+  --type-small:    12.5px;    /* secondary body, nav links */
+  --type-micro:    10.5px;    /* pills, eyebrows */
+  --type-nano:     10px;      /* table headers, metadata */
+
+  /* Calendar event type colors */
+  --cal-gcal:        #3b82f6;
+  --cal-icloud:      #60a5fa;
+  --cal-tracking:    #f97316;
+  --cal-ticket:      #a855f7;
+  --cal-reservation: #22c55e;
+  --cal-approval:    #ef4444;
+
+  /* Brain lobe palette */
   --lobe-knowledge: #ff4713;
   --lobe-memory:    #f59e0b;
   --lobe-skills:    #a78bfa;
   --lobe-agentic:   #60a5fa;
   --lobe-upgrades:  #4ade80;
   --lobe-data:      #c084fc;
+
+  /* Mobile bottom nav height — used for page bottom padding */
+  --mobile-nav-h:  64px;
 }
 
 * { box-sizing: border-box; }
@@ -227,12 +273,12 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
 
 .cta-btn {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-dark);   /* dark text on orange — 5.93:1 ✓ WCAG AA */
   border: 1px solid var(--accent);
   padding: 10px 20px;
   min-height: 44px;
-  font-size: 12.5px;
-  font-weight: 600;
+  font-size: var(--type-small);
+  font-weight: 700;
   letter-spacing: 0.04em;
   font-family: inherit;
   cursor: pointer;
@@ -243,7 +289,7 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
   white-space: nowrap;
 }
 .cta-btn:hover {
-  background: #e03a0d;
+  background: var(--accent-hover);
   box-shadow: 0 0 20px var(--accent-glow);
 }
 .cta-btn:disabled {
@@ -257,7 +303,7 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
   border: 1px solid var(--border-strong);
   padding: 10px 20px;
   min-height: 44px;
-  font-size: 12.5px;
+  font-size: var(--type-small);
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -272,34 +318,48 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
   color: var(--text);
 }
 
-/* ─── Focus-visible ring ─── */
+/* ─── Accessibility ─── */
 
+/* Focus ring — orange, 2px, all interactive elements */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+  border-radius: 3px;
 }
 
-/* keep old .btn name for compat */
-.btn {
-  background: transparent;
-  color: var(--text-dim);
-  border: 1px solid var(--border-strong);
-  padding: 10px 20px;
-  min-height: 44px;
-  font-size: 12.5px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 8px;
-  transition: border-color 0.15s, color 0.15s;
-  white-space: nowrap;
+/* Skip-to-content link — visually hidden until focused */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 9999;
+  background: var(--accent);
+  color: var(--accent-dark);
+  padding: 10px 16px;
+  border-radius: 0 0 8px 8px;
+  font-size: var(--type-small);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: top 0.12s;
 }
-.btn:hover {
-  border-color: var(--accent);
-  color: var(--text);
+.skip-link:focus {
+  top: 0;
+  outline: none;
 }
+
+/* Disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* .btn — alias for .btn-ghost (backward compat) */
+.btn { background: transparent; color: var(--text-dim); border: 1px solid var(--border-strong); padding: 10px 20px; min-height: 44px; font-size: var(--type-small); font-weight: 500; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; border-radius: 8px; transition: border-color 0.15s, color 0.15s; white-space: nowrap; }
+.btn:hover { border-color: var(--accent); color: var(--text); }
 
 /* ─── Pills ─── */
 
@@ -1095,4 +1155,107 @@ footer.site .footer-bottom {
   .hero .actions .btn-ghost { justify-content: center; width: 100%; }
   .section-title { font-size: 32px; }
   footer.site .footer-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── Mobile Bottom Nav ──────────────────────────────────────────────────────
+ * Sticky bottom bar shown only on mobile (< 900px) for app routes.
+ * Replaces hamburger drawer as primary navigation on phone.
+ * Touch targets are 56×56px min per WCAG 2.5.5.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--mobile-nav-h);
+  background: rgba(19, 22, 27, 0.95);
+  border-top: 1px solid var(--border-strong);
+  backdrop-filter: blur(16px) saturate(1.3);
+  z-index: 60;
+  padding: 0 4px env(safe-area-inset-bottom, 0);
+}
+
+.mobile-bottom-nav-inner {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+}
+
+.mobile-bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 56px;
+  min-height: 56px;
+  color: var(--text-faint);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: var(--font-jetbrains, "JetBrains Mono", monospace);
+  transition: color 0.12s;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: none;
+}
+
+.mobile-bottom-nav-item:hover,
+.mobile-bottom-nav-item.active {
+  color: var(--accent);
+}
+
+.mobile-bottom-nav-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Show bottom nav on mobile, hide hamburger when it's visible */
+@media (max-width: 900px) {
+  .mobile-bottom-nav { display: block; }
+
+  /* Offset page content so it doesn't hide behind the bottom nav */
+  body:has(.mobile-bottom-nav) main,
+  body:has(.mobile-bottom-nav) [data-main] {
+    padding-bottom: calc(var(--mobile-nav-h) + env(safe-area-inset-bottom, 0));
+  }
+}
+
+/* Live status badge — shown in nav */
+.nav-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-jetbrains, "JetBrains Mono", monospace);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+
+.nav-live-badge .live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6b7280; /* grey = unknown */
+  transition: background 0.3s, box-shadow 0.3s;
+  flex-shrink: 0;
+}
+
+.nav-live-badge.live-ok .live-dot {
+  background: #4ade80;
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+}
+
+.nav-live-badge.live-err .live-dot {
+  background: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
 }
