@@ -755,7 +755,11 @@ export default function InboxPage() {
             {/* Email list */}
             <div style={{ flex: 1, overflowY: "auto" }}>
               {loading ? (
-                <div style={{ padding: 24, color: "var(--text-faint)", fontSize: 12.5 }}>loading…</div>
+                <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {[1,2,3,4,5].map(i => (
+                    <div key={i} className="inbox-skeleton" style={{ height: 62, borderRadius: 6, opacity: 0.2 + i * 0.06 }} />
+                  ))}
+                </div>
               ) : rows.length === 0 ? (
                 <div style={{ padding: "24px 16px" }}>
                   <div style={{ fontSize: 12.5, color: "var(--text-dim)", marginBottom: 6 }}>
@@ -846,7 +850,11 @@ export default function InboxPage() {
             )}
 
             {selectedId && loadingDetail && (
-              <div style={{ padding: 40, color: "var(--text-faint)", fontSize: 13 }}>loading…</div>
+              <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 12, maxWidth: 800 }}>
+                <div className="inbox-skeleton" style={{ height: 24, width: "60%", borderRadius: 4, opacity: 0.3 }} />
+                <div className="inbox-skeleton" style={{ height: 14, width: "40%", borderRadius: 4, opacity: 0.2 }} />
+                <div className="inbox-skeleton" style={{ height: 200, borderRadius: 8, opacity: 0.15, marginTop: 16 }} />
+              </div>
             )}
 
             {selected && !loadingDetail && (
@@ -1248,6 +1256,15 @@ export default function InboxPage() {
             flex-wrap: nowrap;
             gap: 6px;
           }
+        }
+        @keyframes inbox-shimmer {
+          0%   { background-position: -600px 0; }
+          100% { background-position: 600px 0; }
+        }
+        .inbox-skeleton {
+          background: linear-gradient(90deg, var(--panel) 25%, var(--panel-elev) 50%, var(--panel) 75%);
+          background-size: 1200px 100%;
+          animation: inbox-shimmer 1.6s infinite;
         }
       `}</style>
 

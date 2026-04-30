@@ -336,9 +336,11 @@ export default function Dashboard() {
               </div>
               <div className="body">
                 {todayLoading ? (
-                  <div style={{ fontSize: 12, color: "var(--text-faint)" }}>loading…</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {[1,2].map(i => <div key={i} className="dash-skel" style={{ height: 44, borderRadius: 6, opacity: 0.15 + i * 0.08 }} />)}
+                  </div>
                 ) : todayApprovals.length === 0 ? (
-                  <div style={{ fontSize: 12, color: "var(--text-faint)" }}>no pending approvals.</div>
+                  <div style={{ fontSize: 12, color: "var(--text-faint)", lineHeight: 1.7 }}>inbox is clear. arthur is monitoring.</div>
                 ) : (
                   todayApprovals.map(a => (
                     <div key={a.id} style={{
@@ -368,9 +370,11 @@ export default function Dashboard() {
               </div>
               <div className="body">
                 {todayLoading ? (
-                  <div style={{ fontSize: 12, color: "var(--text-faint)" }}>loading…</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {[1,2].map(i => <div key={i} className="dash-skel" style={{ height: 44, borderRadius: 6, opacity: 0.15 + i * 0.08 }} />)}
+                  </div>
                 ) : todayCal.length === 0 ? (
-                  <div style={{ fontSize: 12, color: "var(--text-faint)" }}>no events today.</div>
+                  <div style={{ fontSize: 12, color: "var(--text-faint)", lineHeight: 1.7 }}>no events today.</div>
                 ) : (
                   todayCal.map(e => (
                     <div key={e.id} style={{
@@ -396,8 +400,8 @@ export default function Dashboard() {
                 <a href="/legal" style={{ fontSize: 11, color: "var(--accent)", textDecoration: "none" }}>view all →</a>
               </div>
               <div className="body">
-                <div style={{ fontSize: 12, color: "var(--text-faint)" }}>
-                  upload a document in legal vault to see extractions here.
+                <div style={{ fontSize: 12, color: "var(--text-faint)", lineHeight: 1.7 }}>
+                  drop a document in the <a href="/legal" style={{ color: "var(--accent)", textDecoration: "none" }}>legal vault</a> to see extractions here.
                 </div>
               </div>
             </div>
@@ -405,6 +409,10 @@ export default function Dashboard() {
         </div>
       </div>
       <Footer />
+      <style>{`
+        @keyframes dash-shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
+        .dash-skel { background: linear-gradient(90deg, var(--panel-elev) 25%, var(--border) 50%, var(--panel-elev) 75%); background-size: 1200px 100%; animation: dash-shimmer 1.6s infinite; }
+      `}</style>
     </>
   );
 }

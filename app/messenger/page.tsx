@@ -229,7 +229,7 @@ export default function MessengerPage() {
             </div>
           )}
 
-          {/* Connect a page form — always visible */}
+          {/* Connect a page form */}
           <div style={{
             background: "var(--panel-elev)",
             border: "1px solid var(--border-strong)",
@@ -292,7 +292,14 @@ export default function MessengerPage() {
                   Conversations ({threads.length})
                 </div>
                 <div style={{ overflowY: "auto", flex: 1 }}>
-                  {loading && <div style={{ padding: 20, color: "var(--text-dim)", fontSize: 14 }}>Loading...</div>}
+                  {loading && (
+                    <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+                      {[1,2,3].map(i => (
+                        <div key={i} style={{ height: 64, borderRadius: 8, background: "linear-gradient(90deg,#1a1a1a 25%,#222 50%,#1a1a1a 75%)", backgroundSize: "600px 100%", animation: "messenger-shimmer 1.5s infinite", opacity: 0.2 + i * 0.08 }} />
+                      ))}
+                      <style>{`@keyframes messenger-shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}`}</style>
+                    </div>
+                  )}
                   {threads.map(t => (
                     <button
                       key={`${t.page_id}:${t.sender_id}`}
