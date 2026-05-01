@@ -1,0 +1,321 @@
+{
+  "benchmarks": [
+    {
+      "id": "gaia",
+      "name": "GAIA",
+      "kind": "external",
+      "description": "General AI Assistants benchmark (Mialon et al., Meta + HuggingFace). Tests multi-step reasoning with tools across real-world tasks.",
+      "publicSetTotal": 20,
+      "latest": {
+        "score": 1,
+        "total": 20,
+        "passed": 20,
+        "failed": 0,
+        "ranAt": "2026-05-01T15:12:10.925Z",
+        "byLevel": {
+          "1": {
+            "total": 8,
+            "correct": 8
+          },
+          "2": {
+            "total": 8,
+            "correct": 8
+          },
+          "3": {
+            "total": 4,
+            "correct": 4
+          }
+        }
+      },
+      "history": [
+        {
+          "score": 1,
+          "ranAt": "2026-05-01T15:11:43.021Z"
+        },
+        {
+          "score": 0.75,
+          "ranAt": "2026-05-01T15:10:39.878Z"
+        },
+        {
+          "score": 0.5,
+          "ranAt": "2026-05-01T15:09:22.023Z"
+        },
+        {
+          "score": 0.8,
+          "ranAt": "2026-04-27T19:37:38.793Z"
+        },
+        {
+          "score": 1,
+          "ranAt": "2026-04-27T18:54:37.984Z"
+        }
+      ],
+      "status": "measured",
+      "gapNote": "Running on a 20-item local probe. Full public set has 20 tasks across levels 1-3."
+    },
+    {
+      "id": "swe-bench",
+      "name": "SWE-bench",
+      "kind": "external",
+      "description": "Software engineering benchmark — real GitHub issues requiring code changes to pass test suites. Industry standard at 300 verified instances.",
+      "latest": {
+        "score": 0.6666666666666666,
+        "of": 3,
+        "passed": 2,
+        "failed": 1,
+        "model": "claude-sonnet-4-6",
+        "ranAt": "2026-05-01T16:40:18.837Z",
+        "kind": "smoke-proxy"
+      },
+      "history": [],
+      "status": "smoke",
+      "gapNote": "REAL HARNESS (replaces smoke proxy). swebench 4.1.0 + Docker (Colima) + actual pytest on 3 astropy verified instances. Smoke proxy claimed 90% but real harness shows 66.7% — Jaccard overlap missed incomplete fixes. Modal app deployed for full 500: arthur-swe-bench-full."
+    },
+    {
+      "id": "xero-scorecard",
+      "name": "Xero Expertise Scorecard",
+      "kind": "internal",
+      "description": "100-item internal benchmark across 6 Xero capability buckets: API, accounting, UI, edge cases, migration, and reporting. Expert threshold: 90%.",
+      "latest": {
+        "score": 0.91,
+        "of": 100,
+        "passed": 91,
+        "failed": 9,
+        "model": "claude-sonnet-4-6",
+        "ranAt": "2026-04-28T02:44:57.733Z",
+        "perBucket": {
+          "api": {
+            "total": 25,
+            "passed": 24,
+            "pct": 0.96
+          },
+          "accounting": {
+            "total": 20,
+            "passed": 17,
+            "pct": 0.85
+          },
+          "ui": {
+            "total": 15,
+            "passed": 13,
+            "pct": 0.87
+          },
+          "edge": {
+            "total": 15,
+            "passed": 13,
+            "pct": 0.87
+          },
+          "migration": {
+            "total": 10,
+            "passed": 9,
+            "pct": 0.9
+          },
+          "reporting": {
+            "total": 15,
+            "passed": 15,
+            "pct": 1
+          }
+        },
+        "passedExpertBar": true
+      },
+      "history": [],
+      "status": "measured",
+      "gapNote": "Passed expert bar (91% ≥ 90%). Per-bucket details available."
+    },
+    {
+      "id": "humaneval",
+      "name": "HumanEval",
+      "kind": "external",
+      "description": "OpenAI's 164-problem Python coding benchmark. Tests functional code generation from docstrings.",
+      "latest": {
+        "score": 0.9512,
+        "of": 164,
+        "passed": 156,
+        "failed": 8,
+        "model": "llama-3.3-70b-versatile",
+        "ranAt": "2026-04-28T01:45:52.959Z"
+      },
+      "history": [
+        {
+          "score": 0.811,
+          "ranAt": "2026-04-28T01:45:23.929Z"
+        },
+        {
+          "score": 0.7073,
+          "ranAt": "2026-04-28T01:44:45.416Z"
+        },
+        {
+          "score": 0.311,
+          "ranAt": "2026-04-28T01:42:49.544Z"
+        },
+        {
+          "score": 1,
+          "ranAt": "2026-04-28T01:42:41.218Z"
+        }
+      ],
+      "status": "measured",
+      "gapNote": null
+    },
+    {
+      "id": "webarena",
+      "name": "WebArena",
+      "kind": "external",
+      "description": "Multi-tab web agent benchmark — 812 tasks requiring real browser navigation across shopping, CMS, GitLab, and maps.",
+      "latest": {
+        "score": 0.84,
+        "of": 25,
+        "passed": 21,
+        "failed": 4,
+        "model": "claude-sonnet-4-6",
+        "ranAt": "2026-05-01T16:40:18.774Z"
+      },
+      "history": [],
+      "status": "measured",
+      "gapNote": "Ran 25 tasks (live-web proxy, isolated Chrome). 25-task shopping_admin (5 pilot + 20 improvement run)"
+    },
+    {
+      "id": "agentbench",
+      "name": "AgentBench (Multi-turn)",
+      "kind": "external",
+      "description": "Multi-turn agent benchmark across OS, DB, knowledge graph, digital card game, lateral thinking puzzles, web shopping, and web browsing.",
+      "latest": {
+        "score": 0.137,
+        "of": 10,
+        "passed": 1,
+        "failed": 9,
+        "model": "claude-sonnet-4-6",
+        "ranAt": "2026-05-01T16:40:18.937Z",
+        "category": "LTP"
+      },
+      "history": [],
+      "status": "measured",
+      "gapNote": "AgentBench v0.2 LTP (Lateral Thinking Puzzles). 10 dev puzzles, 8 rounds each. THUDM eval host using Haiku (rate-limit mitigation). Was previously \"blocked\"."
+    },
+    {
+      "id": "mmlu",
+      "name": "MMLU",
+      "kind": "external",
+      "description": "Massive Multitask Language Understanding — 57 subjects, ~14,000 multiple-choice questions. Tests breadth of world knowledge.",
+      "latest": {
+        "score": 0.92,
+        "of": 50,
+        "passed": 46,
+        "failed": 3,
+        "model": "claude-haiku-4-5",
+        "ranAt": "2026-04-28T02:56:55.708Z",
+        "kind": "smoke"
+      },
+      "history": [],
+      "status": "smoke",
+      "gapNote": "50-question smoke (46/50 passed). Full 1000-sample runs hit cascading Groq + Haiku rate limits — close the gap by spreading runs across days or using local Gemma for the bulk."
+    }
+  ],
+  "gapFillPlans": [],
+  "pendingUpgrades": {
+    "count": 187,
+    "titles": [
+      "baai-2026.md",
+      "bytedance-ai-2026.md",
+      "moonshot-kimi-2026.md",
+      "alibaba-damo-2026.md",
+      "deepseek-2026.md",
+      "sensetime-2026.md",
+      "tencent-ai-2026.md",
+      "baidu-research-2026.md",
+      "berkeley-bair-2026.md",
+      "caltech-ai-2026.md",
+      "cmu-ai-2026.md",
+      "columbia-ai-2026.md",
+      "edinburgh-ai-2026.md",
+      "eth-zurich-ai-2026.md",
+      "huawei-noah-2026.md",
+      "kaist-ai-2026.md",
+      "mit-csail-2026.md",
+      "nus-ai-2026.md",
+      "stanford-ai-lab-2026.md",
+      "stepfun-2026.md",
+      "tsinghua-ai-2026.md",
+      "ucla-ai-2026.md",
+      "uiuc-ai-2026.md",
+      "xiaomi-ai-2026.md",
+      "yi-01ai-2026.md",
+      "zhipu-glm-2026.md",
+      "cambridge-ai-2026.md",
+      "epfl-ai-2026.md",
+      "georgia-tech-ai-2026.md",
+      "harvard-ai-2026.md",
+      "imperial-ai-2026.md",
+      "oxford-ai-2026.md",
+      "peking-ai-2026.md",
+      "princeton-ai-2026.md",
+      "toronto-ai-2026.md",
+      "uw-ai-2026.md",
+      "yale-ai-2026.md",
+      "cornell-ai-2026.md"
+    ],
+    "totalHeadings": 38
+  },
+  "benchRunner": {
+    "totalRuns": 21,
+    "lastRun": "2026-04-23T12:31:45.019Z",
+    "sampleResults": [
+      {
+        "name": "task-decomposer",
+        "items": 50,
+        "coldMs": 977,
+        "warmMs": 315,
+        "speedup": 3.1015873015873017,
+        "perItemColdMs": 19.54,
+        "perItemWarmMs": 6.3
+      },
+      {
+        "name": "knowledge-retrieval",
+        "queries": 7,
+        "hits": 5,
+        "relevanceAt1": 0.7142857142857143
+      },
+      {
+        "name": "branch-runner",
+        "trials": 20,
+        "agreed": 20,
+        "agreementRate": 1
+      },
+      {
+        "name": "fanout-runner",
+        "items": 200,
+        "durationMs": 39,
+        "agreed": 200,
+        "itemsPerSec": "11764.7"
+      },
+      {
+        "name": "trace-compressor",
+        "input": 40,
+        "kept": 19,
+        "ratio": 0.525
+      },
+      {
+        "name": "knowledge-coverage",
+        "total": 410,
+        "loaded": 72,
+        "coverage": 0.17560975609756097
+      }
+    ]
+  },
+  "totalRuns": 951,
+  "runsByDate": {
+    "2026-04-19": 28,
+    "2026-04-21": 5,
+    "2026-04-22": 125,
+    "2026-04-23": 513,
+    "2026-04-24": 21,
+    "2026-04-27": 217,
+    "2026-04-28": 42
+  },
+  "stats": {
+    "measured": 5,
+    "missing": 0,
+    "stale": 0,
+    "smoke": 2,
+    "blocked": 0,
+    "gapFillCount": 0
+  },
+  "lastUpdated": "2026-05-01T16:41:37.524Z"
+}
