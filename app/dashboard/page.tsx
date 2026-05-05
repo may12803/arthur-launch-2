@@ -96,6 +96,7 @@ export default function Dashboard() {
   const [todayCal, setTodayCal] = useState<CalRow[]>([]);
   const [liveEmps, setLiveEmps] = useState<LiveEmp[]>([]);
   const [empTotals, setEmpTotals] = useState<{ total: number; active: number }>({ total: 64, active: 0 });
+  const [layoutMode, setLayoutMode] = useState<"wide" | "compact">("wide");
   // Streaming-state UI: live elapsed timer + ETA from rolling window of recent turn durations.
   const [turnStartedAt, setTurnStartedAt] = useState<number | null>(null);
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -430,17 +431,18 @@ export default function Dashboard() {
         }
         /* ── Composer card — fills its grid cell, internal scroll ── */
         .composer-card {
-          background: var(--glass-bg);
-          backdrop-filter: blur(var(--blur-amount));
-          -webkit-backdrop-filter: blur(var(--blur-amount));
-          border: 1px solid var(--glass-border);
+          background: linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.05) 100%);
+          backdrop-filter: blur(28px) saturate(200%);
+          -webkit-backdrop-filter: blur(28px) saturate(200%);
+          border: 1px solid rgba(255,255,255,0.18);
           border-radius: var(--radius-panel);
-          box-shadow: var(--glass-shadow);
+          box-shadow: 0 12px 40px 0 rgba(235, 64, 0, 0.08);
           padding: var(--space-lg);
           display: flex;
           flex-direction: column;
           min-height: 0;
           height: 100%;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
           position: relative;
           overflow: hidden;
         }
@@ -465,16 +467,21 @@ export default function Dashboard() {
           display: flex; align-items: center; gap: 10px; margin-bottom: var(--space-md);
         }
         .ghost-btn {
-          background: rgba(255,255,255,0.10);
-          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.12);
           border-radius: var(--radius-pill);
-          padding: 5px 12px;
+          padding: 6px 14px;
           color: var(--text-active);
           font-size: 12px;
           cursor: pointer;
-          transition: background 0.15s var(--ease-out-soft);
+          transition: all 0.2s var(--ease-out-soft);
+          backdrop-filter: blur(8px);
         }
-        .ghost-btn:hover { background: rgba(255,255,255,0.18); }
+        .ghost-btn:hover { 
+          background: rgba(255,255,255,0.16);
+          border-color: rgba(255,255,255,0.20);
+          transform: translateY(-1px);
+        }
         /* Conversation stream */
         .stream {
           flex: 1;
@@ -498,26 +505,30 @@ export default function Dashboard() {
         .empty .empty-pad { font-family: ui-monospace, "JetBrains Mono", monospace; font-size: 11px; color: rgba(245,246,248,0.4); margin-top: 8px; letter-spacing: 0.04em; }
         .bubble {
           max-width: 88%;
-          padding: 10px 14px;
+          padding: 11px 15px;
           border-radius: 14px;
           font-size: 14px;
           line-height: 1.5;
           white-space: pre-wrap;
           word-break: break-word;
+          transition: all 0.2s ease;
         }
         .bubble.user {
           align-self: flex-end;
-          background: var(--accent-orange);
+          background: linear-gradient(135deg, var(--accent-orange) 0%, rgba(235, 64, 0, 0.85) 100%);
           color: var(--accent-text-on, #1a2400);
           font-weight: 500;
           border-bottom-right-radius: 5px;
+          box-shadow: 0 4px 16px rgba(235, 64, 0, 0.25);
         }
         .bubble.assistant {
           align-self: flex-start;
-          background: rgba(255,255,255,0.10);
+          background: rgba(255,255,255,0.08);
           color: var(--text-active);
-          border: 1px solid rgba(255,255,255,0.18);
+          border: 1px solid rgba(255,255,255,0.20);
           border-bottom-left-radius: 5px;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
         }
         .tool-meta {
           align-self: flex-start;
@@ -662,14 +673,16 @@ export default function Dashboard() {
         /* Composer input */
         .composer-input-wrap {
           position: relative;
-          background: rgba(255,255,255,0.10);
-          border: 1px solid rgba(255,255,255,0.08);
+          background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%);
+          border: 1px solid rgba(255,255,255,0.12);
           border-radius: 18px;
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
           transition: border-color 0.18s var(--ease-out-soft), box-shadow 0.18s var(--ease-out-soft);
         }
         .composer-input-wrap:focus-within {
           border-color: var(--accent-orange);
-          box-shadow: 0 0 0 3px rgba(235, 64, 0, 0.12);
+          box-shadow: 0 0 0 3px rgba(235, 64, 0, 0.12), inset 0 0 20px rgba(235, 64, 0, 0.04);
         }
         .composer-input-wrap textarea {
           width: 100%;
@@ -690,19 +703,23 @@ export default function Dashboard() {
           position: absolute;
           right: 8px;
           bottom: 8px;
-          background: var(--accent-orange);
+          background: linear-gradient(135deg, var(--accent-orange) 0%, rgba(235, 64, 0, 0.85) 100%);
           color: var(--accent-text-on, #1a2400);
-          border: none;
+          border: 1px solid rgba(235, 64, 0, 0.6);
           border-radius: var(--radius-pill);
-          padding: 7px 16px;
+          padding: 8px 18px;
           font-size: 13px;
           font-weight: 700;
           letter-spacing: 0.01em;
           cursor: pointer;
-          transition: opacity 0.15s, transform 0.1s;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 12px rgba(235, 64, 0, 0.20);
         }
-        .send-pill:hover:not(:disabled) { opacity: 0.92; }
-        .send-pill:active:not(:disabled) { transform: scale(0.97); }
+        .send-pill:hover:not(:disabled) { 
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(235, 64, 0, 0.30);
+        }
+        .send-pill:active:not(:disabled) { transform: scale(0.97) translateY(0); }
         .send-pill:disabled { opacity: 0.4; cursor: default; }
         .composer-hint {
           margin-top: 6px;
@@ -723,15 +740,21 @@ export default function Dashboard() {
           height: 100%;
         }
         .panel-card {
-          background: var(--glass-bg);
-          backdrop-filter: blur(var(--blur-amount));
-          -webkit-backdrop-filter: blur(var(--blur-amount));
-          border: 1px solid var(--glass-border);
+          background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%);
+          backdrop-filter: blur(24px) saturate(180%);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          border: 1px solid rgba(255,255,255,0.15);
           border-radius: var(--radius-panel);
           padding: var(--space-md) var(--space-lg) var(--space-lg);
           min-height: 0;
           display: flex;
           flex-direction: column;
+          box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .panel-card:hover {
+          border-color: rgba(255,255,255,0.25);
+          box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
         }
         .panel-card.flex { flex: 1; overflow: hidden; }
         .panel-card.flex .scroll-area { flex: 1; overflow-y: auto; min-height: 0; }
@@ -742,15 +765,22 @@ export default function Dashboard() {
           font-size: 10px;
           letter-spacing: 0.14em;
           text-transform: uppercase;
-          color: rgba(245,246,248,0.5);
-          margin-bottom: 4px;
+          color: rgba(245,246,248,0.65);
+          margin-bottom: 6px;
+          background: linear-gradient(90deg, rgba(235,64,0,0.15), transparent);
+          padding: 4px 8px;
+          border-radius: 6px;
+          display: inline-block;
         }
         .panel-title {
           font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif;
           font-size: 20px;
-          font-weight: 400;
+          font-weight: 500;
           letter-spacing: -0.01em;
-          color: var(--text-active);
+          background: linear-gradient(135deg, var(--text-active) 0%, rgba(245,246,248,0.85) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           margin: 0 0 var(--space-md) 0;
           line-height: 1;
         }
