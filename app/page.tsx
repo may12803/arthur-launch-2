@@ -296,8 +296,8 @@ export default function Home() {
                 {[
                   { key: 'Built for', val: 'one operator' },
                   { key: 'Knowledge base', val: '406 files · 6,293 edges' },
-                  { key: 'Nightly engines', val: 'Scout · Hustle · EvolveR' },
-                  { key: 'Model routing', val: 'GLiNER → Gemma → Groq → Haiku → Sonnet' },
+                  { key: 'Nightly engines', val: 'Scout · Hustle · self-train LoRA' },
+                  { key: 'Model routing', val: '18 tiers · Script → GLiNER → MSA → Gemma → Arthur-OS → Groq → Cerebras → Pioneer → DeepSeek → Sonar → Haiku → Gemini → Kimi → Sonnet → o4 → Claude Code → Opus' },
                   { key: 'Deployed on', val: 'arthur-online.fly.dev' },
                   { key: 'Status', val: 'Always on' },
                 ].map(row => (
