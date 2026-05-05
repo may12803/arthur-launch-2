@@ -83,36 +83,35 @@ function hashToFolder(hash: string): Folder {
   return "inbox";
 }
 
-const INTENT_COLORS: Record<string, { bg: string; color: string }> = {
-  newsletter:     { bg: "rgba(30,58,95,0.6)",  color: "#7eb8f7" },
-  promotion:      { bg: "rgba(58,30,95,0.6)",  color: "#c07ef7" },
-  cold_sales:     { bg: "rgba(95,30,30,0.6)",  color: "#f78e7e" },
-  confirmation:   { bg: "rgba(30,79,58,0.6)",  color: "#7ef7b0" },
-  catering:       { bg: "rgba(79,58,30,0.6)",  color: "#f7c07e" },
-  vendor_invoice: { bg: "rgba(58,58,30,0.6)",  color: "#f7f07e" },
-  press:          { bg: "rgba(30,79,79,0.6)",  color: "#7ef7f7" },
-  personal:       { bg: "rgba(79,79,30,0.6)",  color: "#f7f7a0" },
-  legal:          { bg: "rgba(95,0,0,0.6)",    color: "#ff7070" },
-  auto_reply:     { bg: "rgba(40,40,40,0.6)",  color: "rgba(245,246,248,0.45)" },
-  other:          { bg: "rgba(30,30,30,0.6)",  color: "rgba(245,246,248,0.35)" },
-};
-
 function IntentBadge({ intent }: { intent: string }) {
-  const colors = INTENT_COLORS[intent] ?? INTENT_COLORS.other;
+  const TINT_MAP: Record<string, string> = {
+    newsletter: 'var(--tint-blue)',
+    promotion: 'var(--tint-violet)',
+    confirmation: 'var(--tint-emerald)',
+    vendor_invoice: 'var(--tint-amber)',
+    cold_sales: 'var(--tint-red)',
+    personal: 'var(--tint-emerald)',
+  };
+  const color = TINT_MAP[intent] ?? 'var(--text-faint)';
+
   return (
     <span style={{
-      display: "inline-block",
-      padding: "1px 6px",
-      borderRadius: 4,
-      fontSize: 9,
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "6px",
+      fontSize: "11px",
       fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
-      letterSpacing: "0.08em",
+      color: "var(--text-muted)",
       textTransform: "uppercase",
-      background: colors.bg,
-      color: colors.color,
-      flexShrink: 0,
-      border: "1px solid rgba(255,255,255,0.08)",
+      letterSpacing: "0.05em",
     }}>
+      <span style={{
+        width: "6px",
+        height: "6px",
+        borderRadius: "50%",
+        backgroundColor: color,
+        flexShrink: 0,
+      }} />
       {intent.replace(/_/g, " ")}
     </span>
   );
@@ -137,6 +136,7 @@ export default function InboxPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selected, setSelected] = useState<EmailFull | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set<string>());
 
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyTo, setReplyTo] = useState("");
@@ -201,6 +201,7 @@ export default function InboxPage() {
     window.location.hash = f === "inbox" ? "" : f;
     setFolder(f);
     setSelectedId(null);
+    setSelectedIds(new Set());
     setMobilePane("list");
     setQ("");
     setUnreadOnly(false);
@@ -275,6 +276,7 @@ export default function InboxPage() {
 
   function openEmail(id: string) {
     setSelectedId(id);
+    setSelectedIds(new Set());
     setMobilePane("detail");
   }
 
@@ -297,6 +299,57 @@ export default function InboxPage() {
       }
     });
   }
+
+  const handleBulkAction = async (action: "archive" | "delete" | "read" | "unread") => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+
+    const promises = ids.map(id => {
+      let body: Partial<EmailRow> = {};
+      if (action === 'archive') body.is_archived = true;
+      if (action === 'delete') body.is_deleted = true;
+      if (action === 'read') body.is_read = true;
+      if (action === 'unread') body.is_read = false;
+
+      return fetch(`/api/inbox/${id}/mark`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    });
+
+    await Promise.all(promises);
+
+    if (action === 'archive' || action === 'delete') {
+      setRows(prev => prev.filter(r => !selectedIds.has(r.id)));
+    } else {
+      setRows(prev => prev.map(r => selectedIds.has(r.id) ? { ...r, is_read: action === 'read' } : r));
+    }
+    setSelectedIds(new Set());
+    fetchList(true);
+  };
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+    setSelectedId(null);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === rows.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(rows.map(r => r.id)));
+    }
+    setSelectedId(null);
+  };
 
   function saveAnnotation() {
     if (!selectedId) return;
@@ -425,15 +478,15 @@ export default function InboxPage() {
       <Nav />
 
       <div className="inbox-root" style={{
-        minHeight: "calc(100vh - 108px)",
+        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        paddingTop: 108,
+        paddingTop: 60,
         background: "var(--bg-base)",
       }}>
         {/* ── Page header ── */}
         <div style={{
-          padding: "24px 28px 20px",
+          padding: "24px var(--page-gutter) 20px",
           display: "flex",
           alignItems: "flex-end",
           justifyContent: "space-between",
@@ -493,14 +546,13 @@ export default function InboxPage() {
 
         {/* ── Filter bar ── */}
         <div style={{
-          padding: "10px 20px",
+          padding: "10px var(--page-gutter)",
           display: "flex",
           alignItems: "center",
           gap: 10,
           flexWrap: "wrap",
           borderBottom: "1px solid var(--line-separator)",
-          background: "var(--glass-bg)",
-          backdropFilter: "blur(var(--blur-amount))",
+          background: "var(--bg-mid)",
           flexShrink: 0,
         }}>
           <input
@@ -516,9 +568,9 @@ export default function InboxPage() {
               fontSize: 12,
               height: 32,
               minHeight: "unset",
-              background: "var(--glass-bg-strong)",
-              border: "1px solid var(--glass-border)",
-              borderRadius: 8,
+              background: "var(--glass-t1-bg)",
+              border: "1px solid var(--glass-t1-border)",
+              borderRadius: "var(--radius-sm)",
               color: "var(--text-active)",
               fontFamily: "inherit",
               outline: "none",
@@ -528,9 +580,9 @@ export default function InboxPage() {
             value={domain}
             onChange={e => setDomain(e.target.value)}
             style={{
-              background: "var(--glass-bg-strong)",
-              border: "1px solid var(--glass-border)",
-              borderRadius: 8,
+              background: "var(--glass-t1-bg)",
+              border: "1px solid var(--glass-t1-border)",
+              borderRadius: "var(--radius-sm)",
               color: "var(--text-main)",
               fontSize: 12,
               padding: "6px 10px",
@@ -565,9 +617,9 @@ export default function InboxPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: 5,
-                background: automationOn ? "rgba(212,255,61,0.10)" : "var(--glass-bg-strong)",
-                border: `1px solid ${automationOn ? "rgba(212,255,61,0.30)" : "var(--glass-border)"}`,
-                borderRadius: 6,
+                background: automationOn ? "var(--accent-orange-soft)" : "var(--glass-t1-bg)",
+                border: `1px solid ${automationOn ? "var(--accent-orange)" : "var(--glass-t1-border)"}`,
+                borderRadius: "var(--radius-sm)",
                 padding: "4px 10px",
                 fontSize: 10,
                 fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
@@ -586,20 +638,21 @@ export default function InboxPage() {
         </div>
 
         {/* ── Three-pane body ── */}
-        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        <div className="inbox-layout" style={{ flex: 1, display: "flex", overflow: "hidden", padding: "16px var(--page-gutter)", gap: 16 }}>
 
           {/* ── Folder rail (220px glass card) ── */}
           <div className="inbox-folder-rail" style={{
             width: 220,
             flexShrink: 0,
-            borderRight: "1px solid var(--line-separator)",
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
-            padding: "12px 10px",
+            padding: 12,
             gap: 2,
-            background: "var(--glass-bg)",
-            backdropFilter: "blur(var(--blur-amount))",
+            background: "var(--glass-t1-bg)",
+            border: "1px solid var(--glass-t1-border)",
+            borderRadius: "var(--radius-panel)",
+            backdropFilter: "blur(var(--glass-t1-blur))",
           }}>
             <div style={{
               fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
@@ -620,9 +673,9 @@ export default function InboxPage() {
                   alignItems: "center",
                   justifyContent: "space-between",
                   width: "100%",
-                  background: "var(--glass-bg-strong)",
-                  border: "1px solid var(--glass-border)",
-                  borderRadius: 8,
+                  background: "var(--glass-t2-bg)",
+                  border: "1px solid var(--glass-t2-border)",
+                  borderRadius: "var(--radius-sm)",
                   padding: "8px 12px",
                   cursor: "pointer",
                   fontSize: 12,
@@ -637,14 +690,14 @@ export default function InboxPage() {
                 <div style={{
                   position: "absolute",
                   zIndex: 50,
-                  background: "var(--glass-bg-strong)",
-                  border: "1px solid var(--glass-border)",
-                  backdropFilter: "blur(var(--blur-amount))",
-                  borderRadius: 8,
+                  background: "var(--glass-t2-bg)",
+                  border: "1px solid var(--glass-t2-border)",
+                  backdropFilter: "blur(var(--glass-t2-blur))",
+                  borderRadius: "var(--radius-sm)",
                   padding: 6,
                   marginTop: 4,
                   width: "calc(100% - 20px)",
-                  boxShadow: "var(--glass-shadow)",
+                  boxShadow: "var(--glass-t2-shadow)",
                 }}>
                   {(["inbox", "sent", "archived", "deleted", "drafts", "flagged"] as Folder[]).map(f => (
                     <button
@@ -656,9 +709,9 @@ export default function InboxPage() {
                         gap: 8,
                         width: "100%",
                         textAlign: "left",
-                        background: folder === f ? "rgba(212,255,61,0.10)" : "transparent",
+                        background: folder === f ? "var(--accent-orange-soft)" : "transparent",
                         border: "none",
-                        borderRadius: 5,
+                        borderRadius: "var(--radius-sm)",
                         padding: "8px 10px",
                         cursor: "pointer",
                         color: folder === f ? "var(--accent-orange)" : "var(--text-main)",
@@ -669,7 +722,7 @@ export default function InboxPage() {
                       <span style={{ width: 14, textAlign: "center", opacity: 0.6 }}>{FOLDER_ICONS[f]}</span>
                       <span style={{ flex: 1 }}>{f}</span>
                       {counts[f] > 0 && (
-                        <span style={{ fontSize: 10, background: "var(--glass-bg)", borderRadius: 8, padding: "1px 6px", color: "var(--text-muted)" }}>
+                        <span style={{ fontSize: 10, background: "var(--glass-t1-bg)", borderRadius: 8, padding: "1px 6px", color: "var(--text-muted)" }}>
                           {counts[f]}
                         </span>
                       )}
@@ -688,50 +741,84 @@ export default function InboxPage() {
 
           {/* ── Thread list (flex 1) ── */}
           <div className="inbox-list-pane" style={{
-            flex: 1,
+            flex: "1 1 320px",
             minWidth: 0,
-            borderRight: "1px solid var(--line-separator)",
-            overflowY: "auto",
+            overflow: "hidden",
             display: "flex",
             flexDirection: "column",
-            background: "var(--glass-bg)",
+            background: "var(--glass-t1-bg)",
+            border: "1px solid var(--glass-t1-border)",
+            borderRadius: "var(--radius-panel)",
+            backdropFilter: "blur(var(--glass-t1-blur))",
           }}>
-            {loading ? (
-              <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 6 }}>
-                {[1,2,3,4,5].map(i => (
-                  <div key={i} className="inbox-skeleton" style={{ height: 70, borderRadius: 8, opacity: 0.15 + i * 0.05 }} />
-                ))}
-              </div>
-            ) : rows.length === 0 ? (
-              <div style={{ padding: "32px 20px" }}>
-                <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 8 }}>
-                  {q || domain ? "no messages match this filter." : folder === "inbox" ? "inbox is clear." : `${folder} is empty.`}
-                </div>
-                {!q && !domain && folder === "inbox" && (
-                  <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6, opacity: 0.7 }}>
-                    arthur monitors connected inboxes and routes messages here.
+            <div className="inbox-list-toolbar" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '8px 12px',
+              borderBottom: '1px solid var(--line-separator)',
+              flexShrink: 0,
+              height: 45,
+            }}>
+              <input type="checkbox"
+                checked={rows.length > 0 && selectedIds.size === rows.length}
+                onChange={toggleSelectAll}
+                aria-label="Select all"
+                style={{ marginRight: 8 }}
+              />
+              {selectedIds.size > 0 ? (
+                <>
+                  <span style={{ fontSize: 11, fontFamily: "ui-monospace, monospace", color: "var(--text-muted)" }}>{selectedIds.size} selected</span>
+                  <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                    <button onClick={() => handleBulkAction('archive')} style={ghostBtn}>Archive</button>
+                    <button onClick={() => handleBulkAction('delete')} style={ghostBtn}>Delete</button>
+                    <button onClick={() => handleBulkAction('read')} style={ghostBtn}>Mark Read</button>
                   </div>
-                )}
-              </div>
-            ) : (
-              rows.map(row => (
-                <EmailCell key={row.id} row={row} active={row.id === selectedId} onClick={() => openEmail(row.id)} />
-              ))
-            )}
-            {!loading && rows.length > 0 && (
-              <div style={{ padding: "12px 16px", color: "var(--text-muted)", fontSize: 10, textAlign: "center", fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>
-                {total} total
-              </div>
-            )}
+                </>
+              ) : (
+                <span style={{ fontSize: 11, fontFamily: "ui-monospace, monospace", color: "var(--text-faint)" }}>select items for bulk actions</span>
+              )}
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {loading ? (
+                <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {[1,2,3,4,5].map(i => (
+                    <div key={i} className="inbox-skeleton" style={{ height: 70, borderRadius: 8, opacity: 0.15 + i * 0.05 }} />
+                  ))}
+                </div>
+              ) : rows.length === 0 ? (
+                <div style={{ padding: "32px 20px" }}>
+                  <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 8 }}>
+                    {q || domain ? "no messages match this filter." : folder === "inbox" ? "inbox is clear." : `${folder} is empty.`}
+                  </div>
+                  {!q && !domain && folder === "inbox" && (
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6, opacity: 0.7 }}>
+                      arthur monitors connected inboxes and routes messages here.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                rows.map(row => (
+                  <EmailCell key={row.id} row={row} active={row.id === selectedId} isSelected={selectedIds.has(row.id)} onToggleSelect={toggleSelection} onClick={() => openEmail(row.id)} />
+                ))
+              )}
+              {!loading && rows.length > 0 && (
+                <div style={{ padding: "12px 16px", color: "var(--text-muted)", fontSize: 10, textAlign: "center", fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>
+                  {total} total
+                </div>
+              )}
+            </div>
           </div>
 
           {/* ── Reading pane (flex 2, glass-bg-strong) ── */}
           <div className="inbox-reading-pane" style={{
-            flex: 2,
+            flex: "2 1 500px",
             overflowY: "auto",
             minWidth: 0,
-            background: "var(--glass-bg-strong)",
-            backdropFilter: "blur(var(--blur-amount))",
+            background: "var(--glass-t2-bg)",
+            border: "1px solid var(--glass-t2-border)",
+            borderRadius: "var(--radius-panel)",
+            backdropFilter: "blur(var(--glass-t2-blur))",
           }}>
             <button
               className="inbox-back-btn"
@@ -740,14 +827,14 @@ export default function InboxPage() {
                 margin: "12px 16px",
                 fontSize: 11,
                 padding: "6px 12px",
-                background: "var(--glass-bg)",
-                border: "1px solid var(--glass-border)",
-                borderRadius: 6,
+                background: "var(--glass-t1-bg)",
+                border: "1px solid var(--glass-t1-border)",
+                borderRadius: "var(--radius-sm)",
                 color: "var(--text-main)",
                 cursor: "pointer",
               }}
             >
-              ← back
+              ← back to list
             </button>
 
             {!selectedId && (
@@ -784,9 +871,9 @@ export default function InboxPage() {
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 4,
-                      background: "var(--glass-bg)",
-                      border: "1px solid var(--glass-border)",
-                      borderRadius: 5,
+                      background: "var(--glass-t1-bg)",
+                      border: "1px solid var(--glass-t1-border)",
+                      borderRadius: "var(--radius-sm)",
                       padding: "2px 8px",
                       fontSize: 9,
                       fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
@@ -804,9 +891,9 @@ export default function InboxPage() {
                     display: "flex",
                     alignItems: "center",
                     gap: 10,
-                    background: "rgba(212,255,61,0.06)",
-                    border: "1px solid rgba(212,255,61,0.20)",
-                    borderRadius: 8,
+                    background: "var(--accent-orange-soft)",
+                    border: "1px solid var(--accent-orange)",
+                    borderRadius: "var(--radius-card)",
                     padding: "8px 14px",
                     marginBottom: 16,
                     fontSize: 11,
@@ -819,7 +906,7 @@ export default function InboxPage() {
                       {selected.classification?.reasoning ? ` — ${selected.classification.reasoning}` : ""}
                     </span>
                     <button
-                      style={{ fontSize: 10, padding: "4px 10px", background: "var(--glass-bg)", border: "1px solid var(--glass-border)", borderRadius: 5, color: "var(--text-main)", cursor: "pointer" }}
+                      style={{ fontSize: 10, padding: "4px 10px", background: "var(--glass-t1-bg)", border: "1px solid var(--glass-t1-border)", borderRadius: "var(--radius-sm)", color: "var(--text-main)", cursor: "pointer" }}
                       onClick={revertAutoAction}
                       disabled={reverting}
                     >
@@ -867,11 +954,11 @@ export default function InboxPage() {
 
                 {selected.auto_action === "draft" && selected.requires_review && (
                   <div style={{
-                    border: "1px solid rgba(212,255,61,0.25)",
-                    borderRadius: 10,
+                    border: "1px solid var(--accent-orange)",
+                    borderRadius: "var(--radius-card)",
                     padding: 16,
                     marginBottom: 20,
-                    background: "rgba(212,255,61,0.05)",
+                    background: "var(--accent-orange-soft)",
                   }}>
                     <div style={{ fontSize: 9, color: "var(--accent-orange)", fontFamily: "ui-monospace, 'JetBrains Mono', monospace", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>
                       ⚙ arthur&apos;s proposed reply — review before sending
@@ -885,7 +972,7 @@ export default function InboxPage() {
                           {draftSending ? "sending…" : "approve & send →"}
                         </button>
                         <button onClick={discardDraft} style={ghostBtn}>discard</button>
-                        {draftStatus && <span style={{ fontSize: 11, color: draftStatus.startsWith("error") ? "#ef4444" : "var(--accent-orange)", fontFamily: "ui-monospace, monospace" }}>{draftStatus}</span>}
+                        {draftStatus && <span style={{ fontSize: 11, color: draftStatus.startsWith("error") ? "var(--tint-red)" : "var(--accent-orange)", fontFamily: "ui-monospace, monospace" }}>{draftStatus}</span>}
                       </div>
                     </div>
                   </div>
@@ -917,7 +1004,7 @@ export default function InboxPage() {
                 </div>
 
                 {replyOpen && (
-                  <div style={{ border: "1px solid var(--glass-border)", borderRadius: 10, padding: 16, marginBottom: 20, background: "var(--glass-bg)" }}>
+                  <div style={{ border: "1px solid var(--glass-t1-border)", borderRadius: "var(--radius-card)", padding: 16, marginBottom: 20, background: "var(--glass-t1-bg)" }}>
                     <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 10, fontFamily: "ui-monospace, monospace" }}>
                       from: {selected.to_email}
                     </div>
@@ -927,7 +1014,7 @@ export default function InboxPage() {
                       <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="write your reply…" rows={5} style={{ ...inputSt, resize: "vertical" }} />
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                         <button onClick={sendReply} disabled={replying} style={accentBtn}>{replying ? "sending…" : "send →"}</button>
-                        {replyStatus && <span style={{ fontSize: 11, color: replyStatus.startsWith("error") ? "#ef4444" : "var(--accent-orange)", fontFamily: "ui-monospace, monospace" }}>{replyStatus}</span>}
+                        {replyStatus && <span style={{ fontSize: 11, color: replyStatus.startsWith("error") ? "var(--tint-red)" : "var(--accent-orange)", fontFamily: "ui-monospace, monospace" }}>{replyStatus}</span>}
                       </div>
                     </div>
                   </div>
@@ -938,7 +1025,7 @@ export default function InboxPage() {
                     <iframe
                       srcDoc={selected.body_html}
                       sandbox="allow-popups allow-popups-to-escape-sandbox"
-                      style={{ width: "100%", minHeight: 320, border: "none", borderRadius: 8, background: "#fff", colorScheme: "light" }}
+                      style={{ width: "100%", minHeight: 320, border: "none", borderRadius: "var(--radius-card)", background: "#fff", colorScheme: "light" }}
                       onLoad={(e) => {
                         const iframe = e.currentTarget;
                         try {
@@ -976,16 +1063,27 @@ export default function InboxPage() {
       </div>
 
       <style jsx>{`
-        @media (max-width: 700px) {
+        @media (max-width: 1024px) {
+          .inbox-reading-pane { flex-basis: 400px; }
+        }
+        @media (max-width: 768px) {
+          .inbox-layout { flex-direction: column; padding: 8px; gap: 8px; }
           .inbox-folder-rail { display: none !important; }
           .inbox-list-pane {
             width: 100% !important;
-            border-right: none !important;
+            flex: 1;
             display: ${mobilePane === "detail" ? "none" : "flex"} !important;
           }
           .inbox-reading-pane {
-            display: ${mobilePane === "list" ? "none" : "flex"} !important;
-            flex-direction: column !important;
+            display: ${mobilePane === "list" ? "none" : "block"} !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            z-index: 100;
+            background: var(--bg-surface);
           }
           .inbox-back-btn { display: inline-flex !important; }
           .folder-list-desktop { display: none !important; }
@@ -993,7 +1091,7 @@ export default function InboxPage() {
           .inbox-filter-chips { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
           .inbox-filter-chips::-webkit-scrollbar { display: none; }
         }
-        @media (min-width: 701px) {
+        @media (min-width: 769px) {
           .inbox-back-btn { display: none !important; }
           .folder-dropdown-mobile { display: none !important; }
           .folder-list-desktop { display: flex !important; }
@@ -1029,9 +1127,9 @@ const FOLDER_ICONS: Record<Folder, string> = {
 };
 
 const inputSt: React.CSSProperties = {
-  background: "var(--glass-bg)",
-  border: "1px solid var(--glass-border)",
-  borderRadius: 8,
+  background: "var(--glass-t1-bg)",
+  border: "1px solid var(--glass-t1-border)",
+  borderRadius: "var(--radius-sm)",
   padding: "8px 12px",
   color: "var(--text-active)",
   fontSize: 12,
@@ -1056,10 +1154,10 @@ const accentBtn: React.CSSProperties = {
 };
 
 const ghostBtn: React.CSSProperties = {
-  background: "transparent",
+  background: "var(--glass-t1-bg)",
   color: "var(--text-main)",
-  border: "1px solid var(--glass-border)",
-  borderRadius: 6,
+  border: "1px solid var(--glass-t1-border)",
+  borderRadius: "var(--radius-sm)",
   padding: "6px 12px",
   fontSize: 11,
   cursor: "pointer",
@@ -1075,9 +1173,9 @@ function FolderButton({ label, count, active, onClick }: { label: Folder; count:
         gap: 8,
         width: "100%",
         textAlign: "left",
-        background: active ? "rgba(212,255,61,0.10)" : "transparent",
-        border: active ? "1px solid rgba(212,255,61,0.20)" : "1px solid transparent",
-        borderRadius: 6,
+        background: active ? "var(--accent-orange-soft)" : "transparent",
+        border: "1px solid transparent",
+        borderRadius: "var(--radius-sm)",
         padding: "7px 10px",
         cursor: "pointer",
         transition: "background 0.12s",
@@ -1095,8 +1193,8 @@ function FolderButton({ label, count, active, onClick }: { label: Folder; count:
           fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
           fontSize: 9,
           color: active ? "var(--accent-orange)" : "var(--text-muted)",
-          background: active ? "rgba(212,255,61,0.12)" : "var(--glass-bg-strong)",
-          borderRadius: 8,
+          background: active ? "rgba(212,255,61,0.12)" : "var(--glass-t2-bg)",
+          borderRadius: "var(--radius-pill)",
           padding: "1px 6px",
           flexShrink: 0,
         }}>
@@ -1107,72 +1205,72 @@ function FolderButton({ label, count, active, onClick }: { label: Folder; count:
   );
 }
 
-function EmailCell({ row, active, onClick }: { row: EmailRow; active: boolean; onClick: () => void }) {
+function EmailCell({ row, active, isSelected, onToggleSelect, onClick }: { row: EmailRow; active: boolean; isSelected: boolean; onToggleSelect: (id: string) => void; onClick: () => void }) {
   const isSent = row.direction === "outbound";
   const displayName = isSent ? `→ ${row.to_email}` : row.from_name || row.from_email;
   return (
-    <button
-      onClick={onClick}
+    <div
       style={{
-        display: "block",
-        width: "100%",
-        textAlign: "left",
-        background: active ? "rgba(212,255,61,0.07)" : "transparent",
-        border: "none",
+        display: "flex",
+        alignItems: "flex-start",
+        background: active ? "var(--accent-orange-soft)" : isSelected ? "var(--glass-t2-bg)" : "transparent",
         borderBottom: "1px solid var(--line-separator)",
         borderLeft: active ? "2px solid var(--accent-orange)" : "2px solid transparent",
-        padding: "12px 14px",
+        padding: "12px 0 12px 14px",
         cursor: "pointer",
         transition: "background 0.12s",
         opacity: row.is_deleted ? 0.5 : 1,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
-        {!row.is_read && !isSent && (
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-orange)", flexShrink: 0 }} />
-        )}
-        {isSent && <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: "ui-monospace, monospace", flexShrink: 0 }}>↗</span>}
-        <span style={{
-          fontWeight: row.is_read || isSent ? 400 : 600,
-          fontSize: 12,
-          color: "var(--text-active)",
-          flex: 1,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}>
-          {displayName}
-        </span>
-        <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, color: "var(--text-muted)", flexShrink: 0 }}>
-          {relativeTime(row.received_at)}
-        </span>
-      </div>
-      <div style={{ fontSize: 11.5, color: row.is_read || isSent ? "var(--text-main)" : "var(--text-active)", fontWeight: row.is_read || isSent ? 400 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 2 }}>
-        {row.subject ?? "(no subject)"}
-      </div>
-      <div style={{ fontSize: 11, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {snippet(row.body_text, 80)}
-      </div>
-      <div style={{ display: "flex", gap: 4, marginTop: 5, flexWrap: "wrap" }}>
-        {row.label && (
-          <span style={{ display: "inline-block", padding: "1px 6px", borderRadius: 4, fontSize: 9, fontFamily: "ui-monospace, monospace", letterSpacing: "0.06em", background: "var(--glass-bg-strong)", border: "1px solid var(--glass-border)", color: "var(--text-muted)", textTransform: "uppercase" }}>
-            {row.label}
+      <input type="checkbox" checked={isSelected} onChange={() => onToggleSelect(row.id)} onClick={e => e.stopPropagation()} style={{ marginTop: 4, marginRight: 12, flexShrink: 0 }} />
+      <div onClick={onClick} style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
+          {!row.is_read && !isSent && (
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-orange)", flexShrink: 0 }} />
+          )}
+          {isSent && <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: "ui-monospace, monospace", flexShrink: 0 }}>↗</span>}
+          <span style={{
+            fontWeight: row.is_read || isSent ? 400 : 600,
+            fontSize: 12,
+            color: "var(--text-active)",
+            flex: 1,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}>
+            {displayName}
           </span>
-        )}
-        {row.classification?.intent && <IntentBadge intent={row.classification.intent} />}
-        {row.actor === "arthur" && row.auto_action && row.auto_action !== "none" && (
-          <span style={{ display: "inline-block", padding: "1px 6px", borderRadius: 4, fontSize: 9, fontFamily: "ui-monospace, monospace", background: "rgba(212,255,61,0.08)", color: "var(--accent-orange)", border: "1px solid rgba(212,255,61,0.18)" }}>
-            ⚙ {row.auto_action}
+          <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, color: "var(--text-muted)", flexShrink: 0, paddingRight: 14 }}>
+            {relativeTime(row.received_at)}
           </span>
-        )}
+        </div>
+        <div style={{ fontSize: 11.5, color: row.is_read || isSent ? "var(--text-main)" : "var(--text-active)", fontWeight: row.is_read || isSent ? 400 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 2 }}>
+          {row.subject ?? "(no subject)"}
+        </div>
+        <div style={{ fontSize: 11, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {snippet(row.body_text, 80)}
+        </div>
+        <div style={{ display: "flex", gap: 6, marginTop: 5, flexWrap: "wrap" }}>
+          {row.label && (
+            <span style={{ display: "inline-block", padding: "1px 6px", borderRadius: "var(--radius-sm)", fontSize: 9, fontFamily: "ui-monospace, monospace", letterSpacing: "0.06em", background: "var(--glass-t2-bg)", border: "1px solid var(--glass-t1-border)", color: "var(--text-muted)", textTransform: "uppercase" }}>
+              {row.label}
+            </span>
+          )}
+          {row.classification?.intent && <IntentBadge intent={row.classification.intent} />}
+          {row.actor === "arthur" && row.auto_action && row.auto_action !== "none" && (
+            <span style={{ display: "inline-block", padding: "1px 6px", borderRadius: "var(--radius-sm)", fontSize: 9, fontFamily: "ui-monospace, monospace", background: "var(--accent-orange-soft)", color: "var(--accent-orange)", border: "1px solid var(--accent-orange)" }}>
+              ⚙ {row.auto_action}
+            </span>
+          )}
+        </div>
       </div>
-    </button>
+    </div>
   );
 }
 
 function MetaRow({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div style={{ display: "flex", gap: 12, marginBottom: 6, alignItems: "baseline", borderBottom: "1px dashed rgba(255,255,255,0.10)", paddingBottom: 5 }}>
+    <div style={{ display: "flex", gap: 12, marginBottom: 6, alignItems: "baseline", borderBottom: "1px dashed var(--line-separator)", paddingBottom: 5 }}>
       <span style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em", minWidth: 48, flexShrink: 0 }}>
         {label}
       </span>
@@ -1188,9 +1286,9 @@ function FilterChip({ label, active, onToggle }: { label: string; active: boolea
     <button
       onClick={onToggle}
       style={{
-        background: active ? "rgba(212,255,61,0.12)" : "transparent",
-        border: `1px solid ${active ? "rgba(212,255,61,0.35)" : "var(--glass-border)"}`,
-        borderRadius: 6,
+        background: active ? "var(--accent-orange-soft)" : "transparent",
+        border: `1px solid ${active ? "var(--accent-orange)" : "var(--glass-t1-border)"}`,
+        borderRadius: "var(--radius-sm)",
         color: active ? "var(--accent-orange)" : "var(--text-muted)",
         fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
         fontSize: 9,
@@ -1222,17 +1320,17 @@ function LabelPicker({ current, onChange }: { current: string | null; onChange: 
           position: "absolute",
           top: "calc(100% + 4px)",
           left: 0,
-          background: "var(--glass-bg-strong)",
-          backdropFilter: "blur(var(--blur-amount))",
-          border: "1px solid var(--glass-border)",
-          borderRadius: 8,
+          background: "var(--glass-t3-bg)",
+          backdropFilter: "blur(var(--glass-t3-blur))",
+          border: "1px solid var(--glass-t3-border)",
+          borderRadius: "var(--radius-card)",
           padding: 6,
           zIndex: 100,
           display: "flex",
           flexDirection: "column",
           gap: 2,
           minWidth: 130,
-          boxShadow: "var(--glass-shadow)",
+          boxShadow: "var(--glass-t3-shadow)",
         }}>
           <LabelOption label="(none)" active={!current} onClick={() => { onChange(null); setOpen(false); }} />
           {LABELS.map(l => <LabelOption key={l} label={l} active={current === l} onClick={() => { onChange(l); setOpen(false); }} />)}
@@ -1247,9 +1345,9 @@ function LabelOption({ label, active, onClick }: { label: string; active: boolea
     <button
       onClick={onClick}
       style={{
-        background: active ? "rgba(212,255,61,0.10)" : "transparent",
+        background: active ? "var(--accent-orange-soft)" : "transparent",
         border: "none",
-        borderRadius: 5,
+        borderRadius: "var(--radius-sm)",
         color: active ? "var(--accent-orange)" : "var(--text-main)",
         fontSize: 11,
         padding: "6px 10px",
@@ -1272,9 +1370,9 @@ function SnapshotCard({ label, count, href }: { label: string; count: number; hr
         alignItems: "center",
         justifyContent: "space-between",
         padding: "12px 16px",
-        background: "var(--glass-bg)",
-        border: "1px solid var(--glass-border)",
-        borderRadius: 10,
+        background: "var(--glass-t1-bg)",
+        border: "1px solid var(--glass-t1-border)",
+        borderRadius: "var(--radius-card)",
         textDecoration: "none",
         transition: "transform 0.15s, box-shadow 0.15s",
       }}
