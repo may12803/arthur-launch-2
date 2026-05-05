@@ -4,115 +4,120 @@ import { useState } from "react";
 import Link from "next/link";
 import { Nav, Footer } from "../_components/Layout";
 
-const SECTIONS = [
-  {
-    id: "profile",
-    label: "Profile",
-    icon: "◎",
-    href: "/settings",
-    desc: "Your identity, timezone, and display preferences",
-  },
-  {
-    id: "email",
-    label: "Email",
-    icon: "✉",
-    href: "/settings/email",
-    desc: "Connected inboxes, OAuth tokens, sync settings",
-  },
-  {
-    id: "integrations",
-    label: "Integrations",
-    icon: "⊞",
-    href: "/settings",
-    desc: "Xero, Stripe, Nylas, Telnyx, and external APIs",
-  },
-  {
-    id: "ai",
-    label: "AI Behavior",
-    icon: "◈",
-    href: "/settings",
-    desc: "Proactive mode, tone, context depth, model routing",
-  },
-  {
-    id: "billing",
-    label: "Subscription",
-    icon: "$",
-    href: "/subscriptions",
-    desc: "Tracked recurring charges, Privacy.com, Plaid",
-  },
-  {
-    id: "danger",
-    label: "Danger Zone",
-    icon: "⚠",
-    href: null,
-    desc: "Destructive actions — clear memory, reset loops",
-    danger: true,
-  },
+const TABS = [
+  { id: "general", label: "General" },
+  { id: "email", label: "Email Accounts" },
+  { id: "notifications", label: "Notifications" },
+  { id: "integrations", label: "Integrations" },
+  { id: "api", label: "API" },
 ];
+
+function StatusBadge({ status }: { status: "ok" | "pending" | "error" }) {
+  const config = {
+    ok: {
+      icon: "✓",
+      color: "var(--tint-emerald)",
+      bgColor: "var(--tint-emerald-soft)",
+    },
+    pending: {
+      icon: "⚠",
+      color: "var(--tint-amber)",
+      bgColor: "var(--tint-amber-soft)",
+    },
+    error: {
+      icon: "✗",
+      color: "var(--tint-red)",
+      bgColor: "var(--tint-red-soft)",
+    },
+  };
+  const { icon, color, bgColor } = config[status];
+
+  return (
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: 20,
+      height: 20,
+      borderRadius: "50%",
+      backgroundColor: bgColor,
+      color: color,
+      fontSize: 12,
+      fontWeight: 700,
+    }}>
+      {icon}
+    </span>
+  );
+}
 
 function ProfileSection() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {/* Profile identity row */}
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-md)", marginBottom: "var(--space-sm)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
         <div style={{
           width: 80, height: 80, borderRadius: "50%",
-          background: "var(--glass-bg-strong)",
-          border: "2px solid var(--glass-border)",
+          background: "var(--glass-t2-bg)",
+          border: "1px solid var(--glass-t2-border)",
           display: "flex", alignItems: "center", justifyContent: "center",
           flexShrink: 0,
-          fontSize: 28, color: "var(--text-active)", fontWeight: 700,
+          fontSize: 32, color: "var(--text-active)", fontWeight: 700,
           letterSpacing: "-0.02em",
         }}>D</div>
         <div style={{ flex: 1 }}>
-          <h2 style={{ margin: 0, fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--text-active)", letterSpacing: "-0.02em" }}>Daniel May</h2>
-          <div style={{ fontSize: "var(--fs-small)", color: "var(--text-dim)", marginTop: 2 }}>Owner · Aspen &amp; May</div>
+          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, color: "var(--text-active)", letterSpacing: "-0.02em" }}>Daniel May</h2>
+          <p style={{ fontSize: "14px", color: "var(--text-muted)", marginTop: "4px", marginBlockEnd: "12px" }}>Owner · Aspen &amp; May</p>
           <button style={{
-            marginTop: "var(--space-xs)",
-            background: "transparent",
-            border: "1px solid var(--glass-border)",
-            borderRadius: 8,
-            color: "var(--text-dim)",
-            fontSize: "var(--fs-mono)",
-            padding: "4px 12px",
+            background: "var(--glass-t1-bg)",
+            border: "1px solid var(--glass-t1-border)",
+            borderRadius: "var(--radius-pill)",
+            color: "var(--text-main)",
+            fontSize: "13px",
+            padding: "6px 16px",
             cursor: "pointer",
-            letterSpacing: "0.04em",
-          }}>Edit Profile</button>
+            transition: "background 150ms ease, border-color 150ms ease",
+          }}
+            onMouseOver={e => { e.currentTarget.style.background = 'var(--glass-t2-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t2-border)'; }}
+            onMouseOut={e => { e.currentTarget.style.background = 'var(--glass-t1-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t1-border)'; }}
+          >Edit Profile</button>
         </div>
       </div>
 
       {/* Setting rows */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-sm)" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {[
           { label: "Primary Email", value: "blackmarble.m.g@gmail.com", id: "email" },
           { label: "Timezone", value: "America/Detroit (EDT)", id: "tz" },
         ].map(row => (
           <div key={row.id} style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "var(--space-sm) var(--space-md)",
-            background: "var(--glass-bg-faint)",
-            border: "1px solid var(--glass-border)",
-            borderRadius: 10,
+            padding: "12px 16px",
+            background: "var(--bg-mid)",
+            border: "1px solid var(--glass-t1-border)",
+            borderRadius: "var(--radius-card)",
           }}>
             <div>
-              <div style={{ fontSize: "var(--fs-mono)", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>{row.label}</div>
-              <div style={{ fontSize: "var(--fs-small)", color: "var(--text-active)" }}>{row.value}</div>
+              <div style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>{row.label}</div>
+              <div style={{ fontSize: "14px", color: "var(--text-active)" }}>{row.value}</div>
             </div>
             <button style={{
-              background: "transparent",
-              border: "1px solid var(--glass-border)",
-              borderRadius: 7,
-              color: "var(--text-dim)",
-              fontSize: "var(--fs-mono)",
-              padding: "5px 14px",
+              background: "var(--glass-t1-bg)",
+              border: "1px solid var(--glass-t1-border)",
+              borderRadius: "var(--radius-pill)",
+              color: "var(--text-main)",
+              fontSize: "13px",
+              padding: "6px 16px",
               cursor: "pointer",
-              letterSpacing: "0.04em",
-            }}>Change</button>
+              transition: "background 150ms ease, border-color 150ms ease",
+            }}
+              onMouseOver={e => { e.currentTarget.style.background = 'var(--glass-t2-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t2-border)'; }}
+              onMouseOut={e => { e.currentTarget.style.background = 'var(--glass-t1-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t1-border)'; }}
+            >Change</button>
           </div>
         ))}
       </div>
 
-      <div style={{ height: 1, background: "var(--glass-border)" }} />
+      <div style={{ height: 1, background: "var(--line-separator)" }} />
       <FormField
         label="Cell"
         id="cell"
@@ -125,118 +130,78 @@ function ProfileSection() {
         defaultValue="GRR"
         helpText="Arthur defaults here for travel research."
       />
+      <div style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6 }}>
+        Subscription management lives at{" "}
+        <Link href="/subscriptions" style={{ color: "var(--accent-orange)", textDecoration: "none", fontWeight: 500 }}>
+          /subscriptions
+        </Link>
+        .
+      </div>
       <SaveRow />
     </div>
   );
 }
 
-function ToggleSwitch({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+function PlaceholderSection({ title }: { title: string }) {
   return (
-    <button
-      onClick={onToggle}
-      aria-pressed={on}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        width: 44,
-        height: 24,
-        borderRadius: 12,
-        background: on ? "var(--accent-orange)" : "var(--glass-bg-strong)",
-        border: on ? "none" : "1px solid var(--glass-border)",
-        padding: "3px",
-        cursor: "pointer",
-        transition: "background var(--duration-quick) var(--ease-out-soft)",
-        flexShrink: 0,
-      }}
-    >
-      <span style={{
-        display: "block",
-        width: 18,
-        height: 18,
-        borderRadius: "50%",
-        background: "#fff",
-        transform: on ? "translateX(20px)" : "translateX(0)",
-        transition: "transform var(--duration-quick) var(--ease-out-soft)",
-        boxShadow: "0 1px 3px rgba(5,6,10,0.4)",
-      }} />
-    </button>
+    <div style={{
+      padding: "64px 0",
+      textAlign: "center",
+      border: "1px dashed var(--glass-t1-border)",
+      borderRadius: "var(--radius-card)",
+      background: "var(--bg-mid)",
+    }}>
+      <h3 style={{ color: "var(--text-main)", margin: "0 0 8px 0" }}>{title} Settings</h3>
+      <p style={{ color: "var(--text-muted)", margin: 0 }}>Configuration for this section is not yet available.</p>
+    </div>
   );
 }
 
 function IntegrationsSection() {
   const integrations = [
-    { name: "Google Mail", abbr: "GM", status: "connected", detail: "3 inboxes active — blackmarble, yahoo, drinkswithdabney", color: "#EA4335" },
-    { name: "Google Calendar", abbr: "GC", status: "connected", detail: "Multi-account sync via iCloud CalDAV push", color: "#4285F4" },
-    { name: "Xero", abbr: "XR", status: "connected", detail: "Dabney & Co — last sync 2h ago", color: "#13B5EA" },
-    { name: "DocuSign", abbr: "DS", status: "not configured", detail: "E-signature for legal vault", color: "#FFB800" },
-    { name: "Stripe", abbr: "ST", status: "not configured", detail: "Financial Connections — link bank accounts", color: "#635BFF" },
-    { name: "Plaid", abbr: "PL", status: "not configured", detail: "Detect recurring charges from transactions", color: "#00D64F" },
+    { name: "Google Mail", status: "ok", detail: "3 inboxes active — blackmarble, yahoo, drinkswithdabney" },
+    { name: "Google Calendar", status: "ok", detail: "Multi-account sync via iCloud CalDAV push" },
+    { name: "Xero", status: "ok", detail: "Dabney & Co — last sync 2h ago" },
+    { name: "DocuSign", status: "error", detail: "Token expired. Please re-authenticate." },
+    { name: "Stripe", status: "pending", detail: "Financial Connections — link bank accounts" },
+    { name: "Plaid", status: "pending", detail: "Detect recurring charges from transactions" },
   ];
 
-  const [enabled, setEnabled] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(integrations.map(i => [i.name, i.status === "connected"]))
-  );
-
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-3)" }}>
-      {integrations.map(i => {
-        const on = enabled[i.name];
-        return (
-          <div key={i.name} style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "var(--space-3)",
-            padding: "var(--space-3) var(--space-4)",
-            background: "var(--glass-bg-faint)",
-            border: "1px solid var(--glass-border)",
-            borderRadius: 10,
-          }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 8, flexShrink: 0,
-              background: "var(--glass-bg-strong)",
-              border: "1px solid var(--glass-border)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 12, fontWeight: 700, color: "var(--text-active)",
-              letterSpacing: "0.02em",
-              fontFamily: "var(--font-jetbrains, monospace)",
-            }}>{i.abbr}</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: "var(--fs-small)", fontWeight: 600, color: "var(--text-active)", marginBottom: 2 }}>{i.name}</div>
-              <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-dim)", lineHeight: 1.4 }}>{i.detail}</div>
-            </div>
-            <ToggleSwitch on={on} onToggle={() => setEnabled(prev => ({ ...prev, [i.name]: !prev[i.name] }))} />
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function AIBehaviorSection() {
-  const settings = [
-    { id: "proactive", label: "Proactive Assistance", desc: "Arthur predicts and executes your next move without being asked" },
-    { id: "tone", label: "Tone of Voice", desc: "Direct, technical, no-fluff communication style" },
-    { id: "context", label: "Deep Context", desc: "Load all project memory and knowledge into every session" },
-  ];
-  const [states, setStates] = useState<Record<string, boolean>>({ proactive: true, tone: true, context: true });
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
-      {settings.map(s => (
-        <div key={s.id} style={{
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      {integrations.map(i => (
+        <div key={i.name} style={{
           display: "flex",
           alignItems: "center",
-          gap: "var(--space-4)",
-          padding: "var(--space-3) var(--space-4)",
-          background: "var(--glass-bg-faint)",
-          border: "1px solid var(--glass-border)",
-          borderRadius: 10,
+          gap: "16px",
+          padding: "16px",
+          background: "var(--bg-mid)",
+          border: "1px solid var(--glass-t1-border)",
+          borderRadius: "var(--radius-card)",
         }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: "var(--fs-small)", fontWeight: 600, color: "var(--text-active)", marginBottom: 2 }}>{s.label}</div>
-            <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-dim)" }}>{s.desc}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "15px", fontWeight: 600, color: "var(--text-active)", marginBottom: "4px" }}>
+              {i.name}
+              <StatusBadge status={i.status} />
+            </div>
+            <div style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.4 }}>{i.detail}</div>
           </div>
-          <ToggleSwitch on={states[s.id]} onToggle={() => setStates(prev => ({ ...prev, [s.id]: !prev[s.id] }))} />
+          <button style={{
+            background: "var(--glass-t1-bg)",
+            border: "1px solid var(--glass-t1-border)",
+            borderRadius: "var(--radius-pill)",
+            color: "var(--text-main)",
+            fontSize: "13px",
+            padding: "6px 16px",
+            cursor: "pointer",
+            flexShrink: 0,
+            transition: "background 150ms ease, border-color 150ms ease",
+          }}
+            onMouseOver={e => { e.currentTarget.style.background = 'var(--glass-t2-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t2-border)'; }}
+            onMouseOut={e => { e.currentTarget.style.background = 'var(--glass-t1-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t1-border)'; }}
+          >
+            {i.status === 'ok' ? 'Manage' : 'Connect'}
+          </button>
         </div>
       ))}
     </div>
@@ -245,17 +210,14 @@ function AIBehaviorSection() {
 
 function DangerSection({ onDelete }: { onDelete: () => void }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-      <p style={{
-        fontSize: "var(--fs-small)",
-        color: "var(--text-dim)",
-        lineHeight: 1.65,
-        margin: 0,
-      }}>
-        Destructive actions are irreversible. Most can be performed from the Arthur CLI at{" "}
-        <code style={{ fontSize: "var(--fs-mono)", color: "var(--text-dim)" }}>~/arthur/scripts/</code>.
-      </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px", marginTop: "48px", paddingTop: "32px", borderTop: "1px solid var(--line-separator)" }}>
+       <div style={{ marginBottom: "-8px" }}>
+          <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600, color: "var(--tint-red)" }}>Danger Zone</h3>
+          <p style={{ fontSize: "14px", color: "var(--text-muted)", marginTop: "4px", lineHeight: 1.6 }}>
+            Destructive actions are irreversible. Most can be performed from the Arthur CLI.
+          </p>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {[
           { label: "Clear session memory", desc: "Wipes ~/.arthur/data/memory.json. Learning history is lost." },
           { label: "Reset learning loop", desc: "Clears corrections.jsonl and dynamic-rules/. Classifier reverts to base constitution." },
@@ -265,92 +227,75 @@ function DangerSection({ onDelete }: { onDelete: () => void }) {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: "var(--space-4)",
-            padding: "var(--space-3) var(--space-4)",
-            background: "rgba(239,68,68,0.04)",
-            border: "1px solid rgba(239,68,68,0.15)",
-            borderRadius: 8,
+            gap: "16px",
+            padding: "16px",
+            background: "var(--tint-red-soft)",
+            border: "1px solid var(--tint-red)",
+            borderRadius: "var(--radius-card)",
           }}>
             <div>
-              <div style={{ fontSize: "var(--fs-small)", fontWeight: 600, color: "#ef4444", marginBottom: 2 }}>{action.label}</div>
-              <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-faint)" }}>{action.desc}</div>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-active)", marginBottom: "4px" }}>{action.label}</div>
+              <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>{action.desc}</div>
             </div>
             <button style={{
               flexShrink: 0,
-              background: "none",
-              border: "1px solid rgba(239,68,68,0.4)",
-              borderRadius: 6,
-              color: "#ef4444",
-              fontSize: "var(--fs-mono)",
-              letterSpacing: "0.04em",
-              padding: "5px 12px",
+              background: "transparent",
+              border: "1px solid var(--tint-red)",
+              borderRadius: "var(--radius-pill)",
+              color: "var(--tint-red)",
+              fontSize: "13px",
+              padding: "6px 16px",
               cursor: "pointer",
-            }}
-              onClick={action.label.toLowerCase().includes("delete") ? onDelete : undefined}
-            >
-              run
+            }}>
+              Run
             </button>
           </div>
         ))}
       </div>
       <div style={{
-        padding: "var(--space-3) var(--space-4)",
-        background: "rgba(239,68,68,0.04)",
-        border: "1px solid rgba(239,68,68,0.25)",
-        borderRadius: 8,
-        marginTop: "var(--space-2)",
+        padding: "16px",
+        background: "var(--tint-red-soft)",
+        border: "1px solid var(--tint-red)",
+        borderRadius: "var(--radius-card)",
       }}>
-        <div style={{ fontSize: "var(--fs-small)", fontWeight: 600, color: "#ef4444", marginBottom: "var(--space-2)" }}>Delete account</div>
-        <p style={{ fontSize: "var(--fs-mono)", color: "var(--text-faint)", lineHeight: 1.6, margin: "0 0 var(--space-3)" }}>
+        <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-active)", marginBottom: "8px" }}>Delete account</div>
+        <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6, margin: "0 0 16px" }}>
           Permanently deletes all Arthur data, sessions, credentials, and integrations. Cannot be undone.
         </p>
         <button
           onClick={onDelete}
           style={{
-            background: "#ef4444",
+            background: "var(--tint-red)",
             border: "none",
-            borderRadius: 7,
-            color: "#fff",
-            fontSize: "var(--fs-small)",
-            fontWeight: 700,
-            padding: "8px 20px",
+            borderRadius: "var(--radius-sm)",
+            color: "var(--text-active)",
+            fontSize: "14px",
+            fontWeight: 600,
+            padding: "10px 20px",
             cursor: "pointer",
           }}
         >
-          Delete account
+          Delete account...
         </button>
       </div>
     </div>
   );
 }
 
-// ── Shared form components ────────────────────────────────────────────────────
-
 function FormField({
-  label,
-  id,
-  defaultValue,
-  helpText,
-  type = "text",
+  label, id, defaultValue, helpText, type = "text",
 }: {
-  label: string;
-  id: string;
-  defaultValue?: string;
-  helpText?: string;
-  type?: string;
+  label: string; id: string; defaultValue?: string; helpText?: string; type?: string;
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
-      <label
-        htmlFor={id}
-        style={{
-          fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-          fontSize: "var(--fs-mono)",
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          color: "var(--text-faint)",
-        }}
-      >
+    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+      <label htmlFor={id} style={{
+        fontSize: "12px",
+        fontWeight: 500,
+        color: "var(--text-muted)",
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+      }}>
         {label}
       </label>
       <input
@@ -358,32 +303,27 @@ function FormField({
         type={type}
         defaultValue={defaultValue}
         style={{
-          background: "var(--panel-elev)",
-          border: "1px solid var(--border)",
-          borderRadius: 8,
-          color: "var(--text)",
-          fontSize: "var(--fs-small)",
-          padding: "10px var(--space-3)",
+          background: "var(--bg-mid)",
+          border: "1px solid var(--glass-t1-border)",
+          borderRadius: "var(--radius-sm)",
+          color: "var(--text-main)",
+          fontSize: "14px",
+          padding: "12px 16px",
           outline: "none",
-          transition: "border-color var(--duration-quick) var(--ease-out-soft), box-shadow var(--duration-quick) var(--ease-out-soft)",
+          transition: "border-color 150ms ease, box-shadow 150ms ease",
           width: "100%",
         }}
         onFocus={e => {
           e.currentTarget.style.borderColor = "var(--accent-orange)";
-          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(212,255,61,0.12)";
+          e.currentTarget.style.boxShadow = `0 0 0 3px var(--accent-glow)`;
         }}
         onBlur={e => {
-          e.currentTarget.style.borderColor = "var(--glass-border)";
+          e.currentTarget.style.borderColor = "var(--glass-t1-border)";
           e.currentTarget.style.boxShadow = "none";
         }}
       />
       {helpText && (
-        <p style={{
-          fontSize: "var(--fs-mono)",
-          color: "var(--text-faint)",
-          margin: 0,
-          lineHeight: 1.5,
-        }}>
+        <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
           {helpText}
         </p>
       )}
@@ -394,28 +334,29 @@ function FormField({
 function SaveRow() {
   const [saved, setSaved] = useState(false);
   return (
-    <div style={{ display: "flex", gap: "var(--space-3)", paddingTop: "var(--space-2)" }}>
+    <div style={{ display: "flex", gap: "12px", paddingTop: "8px" }}>
       <button
         onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2000); }}
         style={{
-          background: saved ? "#4ade80" : "var(--accent-orange)",
+          background: saved ? "var(--tint-emerald)" : "var(--accent-orange)",
           border: "none",
-          borderRadius: 8,
-          color: saved ? "#000" : "var(--accent-text-on)",
-          fontSize: "var(--fs-small)",
-          fontWeight: 700,
-          padding: "9px 20px",
+          borderRadius: "var(--radius-sm)",
+          color: saved ? "var(--text-active)" : "var(--accent-text-on)",
+          fontSize: "14px",
+          fontWeight: 600,
+          padding: "12px 24px",
           cursor: "pointer",
-          transition: "background var(--duration-quick) var(--ease-out-soft)",
+          transition: "background 150ms ease",
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
         }}
       >
-        {saved ? "Saved" : "Save changes"}
+        {saved && '✓'} {saved ? "Saved" : "Save changes"}
       </button>
     </div>
   );
 }
-
-// ── Delete confirm modal ──────────────────────────────────────────────────────
 
 function DeleteModal({ onClose }: { onClose: () => void }) {
   const [confirm, setConfirm] = useState("");
@@ -430,36 +371,36 @@ function DeleteModal({ onClose }: { onClose: () => void }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "rgba(5,6,10,0.85)",
-        backdropFilter: "blur(8px)",
+        background: "rgba(0,0,0,0.7)",
+        backdropFilter: "blur(var(--glass-t3-blur))",
       }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{
-        background: "var(--panel)",
-        border: "1px solid rgba(239,68,68,0.35)",
-        borderRadius: 14,
-        padding: "var(--space-6)",
+        background: "var(--bg-surface)",
+        border: "1px solid var(--tint-red)",
+        borderRadius: "var(--radius-panel)",
+        padding: "32px",
         width: "100%",
         maxWidth: 420,
-        boxShadow: "var(--glass-shadow)",
+        boxShadow: "var(--glass-t3-shadow)",
       }}>
         <div style={{
-          fontFamily: "var(--font-jetbrains, monospace)",
-          fontSize: "var(--fs-mono)",
-          letterSpacing: "0.1em",
+          fontSize: "12px",
+          letterSpacing: "0.08em",
           textTransform: "uppercase",
-          color: "#ef4444",
-          marginBottom: "var(--space-3)",
+          fontWeight: 600,
+          color: "var(--tint-red)",
+          marginBottom: "12px",
         }}>
-          danger zone
+          Danger Zone
         </div>
-        <h2 style={{ fontSize: "var(--fs-h3)", fontWeight: 700, color: "var(--text)", margin: "0 0 var(--space-3)" }}>
+        <h2 style={{ fontSize: "20px", fontWeight: 600, color: "var(--text-active)", margin: "0 0 12px" }}>
           Delete account?
         </h2>
-        <p style={{ fontSize: "var(--fs-small)", color: "var(--text-dim)", lineHeight: 1.65, margin: "0 0 var(--space-5)" }}>
+        <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: 1.6, margin: "0 0 24px" }}>
           This permanently deletes all Arthur sessions, memory, credentials, and integrations.
-          Type <strong style={{ color: "#ef4444" }}>DELETE</strong> to confirm.
+          Type <strong style={{ color: "var(--tint-red)", fontWeight: 700 }}>DELETE</strong> to confirm.
         </p>
         <input
           type="text"
@@ -468,30 +409,31 @@ function DeleteModal({ onClose }: { onClose: () => void }) {
           placeholder="DELETE"
           style={{
             width: "100%",
-            background: "var(--panel-elev)",
-            border: "1px solid var(--border-strong)",
-            borderRadius: 8,
-            color: "#ef4444",
-            fontSize: "var(--fs-small)",
-            padding: "10px var(--space-3)",
+            background: "var(--bg-mid)",
+            border: "1px solid var(--glass-t1-border)",
+            borderRadius: "var(--radius-sm)",
+            color: "var(--tint-red)",
+            fontSize: "14px",
+            padding: "12px 16px",
             outline: "none",
-            marginBottom: "var(--space-4)",
-            fontFamily: "var(--font-jetbrains, monospace)",
+            marginBottom: "16px",
             letterSpacing: "0.1em",
+            textAlign: "center",
           }}
         />
-        <div style={{ display: "flex", gap: "var(--space-3)" }}>
+        <div style={{ display: "flex", gap: "12px" }}>
           <button
             disabled={!ready}
             style={{
-              background: ready ? "#ef4444" : "var(--border)",
+              flex: 1,
+              background: "var(--tint-red)",
               border: "none",
-              borderRadius: 8,
-              color: ready ? "#fff" : "var(--text-faint)",
-              fontSize: "var(--fs-small)",
-              fontWeight: 700,
-              padding: "9px 20px",
-              cursor: ready ? "pointer" : "default",
+              borderRadius: "var(--radius-sm)",
+              color: "var(--text-active)",
+              fontSize: "14px",
+              fontWeight: 600,
+              padding: "12px 20px",
+              cursor: ready ? "pointer" : "not-allowed",
               opacity: ready ? 1 : 0.5,
             }}
           >
@@ -500,12 +442,13 @@ function DeleteModal({ onClose }: { onClose: () => void }) {
           <button
             onClick={onClose}
             style={{
-              background: "none",
-              border: "1px solid var(--border)",
-              borderRadius: 8,
-              color: "var(--text-dim)",
-              fontSize: "var(--fs-small)",
-              padding: "9px 20px",
+              flex: 1,
+              background: "var(--glass-t1-bg)",
+              border: "1px solid var(--glass-t1-border)",
+              borderRadius: "var(--radius-sm)",
+              color: "var(--text-main)",
+              fontSize: "14px",
+              padding: "12px 20px",
               cursor: "pointer",
             }}
           >
@@ -517,182 +460,93 @@ function DeleteModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
-
 export default function SettingsPage() {
-  const [activeSection, setActiveSection] = useState("profile");
+  const [activeTab, setActiveTab] = useState("general");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const current = SECTIONS.find(s => s.id === activeSection);
+  const renderContent = () => {
+    switch (activeTab) {
+      case "general":
+        return <ProfileSection />;
+      case "email":
+        return <PlaceholderSection title="Email Accounts" />;
+      case "notifications":
+        return <PlaceholderSection title="Notifications" />;
+      case "integrations":
+        return <IntegrationsSection />;
+      case "api":
+        return <PlaceholderSection title="API" />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <>
       <Nav />
-      <div className="wrap" style={{ paddingTop: 108, paddingBottom: "var(--space-9)" }}>
+      <main style={{ padding: `108px var(--page-gutter) 64px` }}>
+        <div style={{ maxWidth: "var(--max-w-narrow)", margin: "0 auto" }}>
+          {/* Header */}
+          <header style={{ marginBottom: "40px" }}>
+            <h1 style={{
+              fontSize: "36px",
+              fontWeight: 700,
+              letterSpacing: "-0.03em",
+              color: "var(--text-active)",
+              margin: "0 0 8px 0",
+            }}>
+              Settings
+            </h1>
+            <p style={{ fontSize: "16px", color: "var(--text-muted)", maxWidth: "52ch", lineHeight: 1.6, margin: 0 }}>
+              Configure Arthur&apos;s integrations, connected accounts, and system behavior.
+            </p>
+          </header>
 
-        {/* Header */}
-        <div style={{ marginBottom: "var(--space-6)" }}>
-          <span style={{
-            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-            fontSize: "var(--fs-mono)",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "var(--text-muted)",
-          }}>
-            system configuration
-          </span>
-          <h1 style={{
-            fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-            fontWeight: 800,
-            fontSize: "clamp(2rem, 4vw, 3rem)",
-            letterSpacing: "-0.03em",
-            color: "var(--text-main)",
-            margin: "var(--space-2) 0 var(--space-3)",
-            lineHeight: 0.95,
-          }}>
-            settings.
-          </h1>
-          <p style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", maxWidth: "52ch", lineHeight: 1.65, margin: 0 }}>
-            Configure Arthur&apos;s integrations, connected accounts, and system behavior.
-          </p>
-        </div>
-
-        {/* 280px sidebar + 1fr content */}
-        <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: "var(--space-5)", alignItems: "flex-start" }}>
-
-          {/* Sidebar glass panel */}
-          <div style={{
-            background: "var(--glass-bg)",
-            backdropFilter: "blur(var(--blur-amount))",
-            border: "1px solid var(--glass-border)",
-            borderRadius: "var(--radius-panel)",
-            padding: "var(--space-sm)",
-            boxShadow: "var(--glass-shadow)",
-            position: "sticky",
-            top: 108,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-          }}>
-            {SECTIONS.map(s => {
-              const isActive = s.id === activeSection;
-              const isDanger = (s as { danger?: boolean }).danger;
-              const isLink = s.href && s.href !== "/settings" && s.id !== "danger";
-
-              const itemStyle = {
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--space-sm)",
-                padding: "10px var(--space-sm)",
-                background: isActive ? (isDanger ? "rgba(239,68,68,0.10)" : "var(--glass-bg-strong)") : "transparent",
-                border: "none",
-                borderLeft: isActive ? (isDanger ? "3px solid #ef4444" : "3px solid var(--accent-orange)") : "3px solid transparent",
-                borderRadius: isActive ? "0 10px 10px 0" : 10,
-                cursor: "pointer",
-                textAlign: "left" as const,
-                width: "100%",
-                transition: "background var(--duration-quick) var(--ease-out-soft)",
-                marginTop: isDanger ? "var(--space-sm)" : 0,
-                textDecoration: "none",
-              };
-
-              const iconStyle = {
-                width: 28, height: 28, borderRadius: 7,
-                background: isActive ? (isDanger ? "rgba(239,68,68,0.2)" : "var(--glass-bg-strong)") : "var(--glass-bg-faint)",
-                border: `1px solid ${isActive ? (isDanger ? "rgba(239,68,68,0.35)" : "var(--glass-border)") : "var(--glass-border)"}`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 12,
-                color: isDanger ? "#ef4444" : (isActive ? "var(--text-active)" : "var(--text-dim)"),
-                flexShrink: 0,
-                fontFamily: "monospace",
-              };
-
-              const labelStyle = {
-                fontSize: "var(--fs-small)",
-                fontWeight: isActive ? 600 : 400,
-                color: isDanger ? "#ef4444" : (isActive ? "var(--text-active)" : "var(--text-dim)"),
-              };
-
-              if (isLink) {
-                return (
-                  <Link key={s.id} href={s.href!} style={{ ...itemStyle, textDecoration: "none" }}>
-                    <span style={iconStyle}>{s.icon}</span>
-                    <span style={labelStyle}>{s.label}</span>
-                  </Link>
-                );
-              }
-
+          {/* Tabs */}
+          <div style={{ display: "flex", gap: "8px", marginBottom: "24px", borderBottom: "1px solid var(--line-separator)" }}>
+            {TABS.map(tab => {
+              const isActive = activeTab === tab.id;
               return (
                 <button
-                  key={s.id}
-                  onClick={() => setActiveSection(s.id)}
-                  style={itemStyle}
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    padding: "10px 16px",
+                    background: "none",
+                    border: "none",
+                    borderBottom: `2px solid ${isActive ? "var(--accent-orange)" : "transparent"}`,
+                    color: isActive ? "var(--text-active)" : "var(--text-muted)",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    fontWeight: isActive ? 600 : 500,
+                    transition: "color 150ms ease, border-color 150ms ease",
+                    marginBottom: "-1px",
+                  }}
                 >
-                  <span style={iconStyle}>{s.icon}</span>
-                  <span style={labelStyle}>{s.label}</span>
+                  {tab.label}
                 </button>
               );
             })}
           </div>
 
-          {/* Content glass panel */}
+          {/* Content Panel */}
           <div style={{
-            background: "var(--glass-bg)",
-            backdropFilter: "blur(var(--blur-amount))",
-            border: `1px solid ${activeSection === "danger" ? "rgba(239,68,68,0.25)" : "var(--glass-border)"}`,
+            background: "var(--glass-t1-bg)",
+            backdropFilter: "blur(var(--glass-t1-blur))",
+            border: "1px solid var(--glass-t1-border)",
             borderRadius: "var(--radius-panel)",
-            padding: "var(--space-lg)",
-            boxShadow: "var(--glass-shadow)",
+            padding: "32px",
+            boxShadow: "var(--glass-t1-shadow)",
           }}>
-            {/* Section header */}
-            <div style={{ marginBottom: "var(--space-md)" }}>
-              <div style={{
-                fontFamily: "var(--font-jetbrains, monospace)",
-                fontSize: "var(--fs-mono)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: activeSection === "danger" ? "#ef4444" : "var(--text-muted)",
-                marginBottom: "var(--space-xs)",
-              }}>
-                {current?.label ?? "Profile"}
-              </div>
-              <p style={{ fontSize: "var(--fs-small)", color: "rgba(255,255,255,0.5)", margin: 0, lineHeight: 1.5 }}>
-                {current?.desc}
-              </p>
-            </div>
-
-            {/* Divider */}
-            <div style={{ height: 1, background: "var(--glass-border)", marginBottom: "var(--space-md)" }} />
-
-            {/* Section content */}
-            {activeSection === "profile" && <ProfileSection />}
-            {activeSection === "integrations" && <IntegrationsSection />}
-            {activeSection === "ai" && <AIBehaviorSection />}
-            {activeSection === "billing" && (
-              <div style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", lineHeight: 1.65 }}>
-                Subscription management lives at{" "}
-                <Link href="/subscriptions" style={{ color: "var(--accent-orange)", textDecoration: "underline" }}>
-                  /subscriptions
-                </Link>
-                .
-              </div>
-            )}
-            {activeSection === "danger" && (
-              <DangerSection onDelete={() => setShowDeleteModal(true)} />
-            )}
+            {renderContent()}
+            {activeTab === "general" && <DangerSection onDelete={() => setShowDeleteModal(true)} />}
           </div>
         </div>
-      </div>
+      </main>
 
       {showDeleteModal && <DeleteModal onClose={() => setShowDeleteModal(false)} />}
 
       <Footer />
-
-      <style>{`
-        @media (max-width: 768px) {
-          .wrap > div:last-child > div:first-child { display: grid; grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </>
   );
 }
