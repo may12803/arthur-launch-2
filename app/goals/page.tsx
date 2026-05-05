@@ -158,12 +158,14 @@ function GoalCard({
 
   return (
     <div style={{
-      background: "var(--panel)",
-      border: "1px solid var(--border)",
-      borderLeft: `3px solid ${statusColor}`,
-      borderRadius: 10,
+      background: "var(--glass-bg)",
+      border: "1px solid var(--glass-border)",
+      borderLeft: `4px solid ${statusColor}`,
+      backdropFilter: "blur(var(--blur-amount))",
+      borderRadius: "var(--radius-panel)",
       overflow: "hidden",
-      transition: "border-color 0.15s",
+      boxShadow: "var(--glass-shadow)",
+      transition: "border-color 0.15s, box-shadow 0.15s",
     }}>
       {/* Header */}
       <div
@@ -266,6 +268,40 @@ function GoalCard({
           ×
         </button>
       </div>
+
+      {/* Progress bar (in_progress goals) */}
+      {goal.status === "in_progress" && totalSteps > 0 && (
+        <div style={{
+          marginTop: "12px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}>
+          <div style={{
+            flex: 1,
+            height: "4px",
+            background: "rgba(255,255,255,0.05)",
+            borderRadius: "2px",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              height: "100%",
+              background: statusColor,
+              width: `${(completedSteps / totalSteps) * 100}%`,
+              transition: "width 0.3s ease",
+            }} />
+          </div>
+          <span style={{
+            fontSize: "10px",
+            color: "var(--text-faint)",
+            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+            minWidth: "40px",
+            textAlign: "right",
+          }}>
+            {Math.round((completedSteps / totalSteps) * 100)}%
+          </span>
+        </div>
+      )}
 
       {/* Expanded body */}
       {expanded && (
@@ -497,6 +533,8 @@ export default function GoalsPage() {
   const [goals,   setGoals]   = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding,  setAdding]  = useState(false);
+  const [statusFilter, setStatusFilter] = useState<GoalStatus | "all">("in_progress");
+  const [priorityFilter, setPriorityFilter] = useState<number | "all">("all");
 
   // Form state
   const [title,    setTitle]    = useState("");
@@ -635,32 +673,40 @@ export default function GoalsPage() {
   return (
     <>
       <Nav />
-      <div style={{ maxWidth: 780, margin: "0 auto", padding: "40px 20px 80px" }}>
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "108px var(--space-md) var(--space-xl)" }}>
 
         {/* Header */}
-        <div style={{ marginBottom: 32 }}>
+        <div style={{ marginBottom: "var(--space-lg)" }}>
+          <span style={{
+            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+            fontSize: "var(--fs-mono)", letterSpacing: "0.12em", textTransform: "uppercase",
+            color: "var(--text-muted)",
+          }}>objective tracker</span>
           <h1 style={{
-            margin: 0,
-            fontSize: 32,
-            fontWeight: 800,
-            letterSpacing: "-0.03em",
+            margin: "8px 0 12px",
             fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-            color: "var(--text)",
+            fontWeight: 800,
+            fontSize: "var(--fs-h1)",
+            letterSpacing: "-0.03em",
+            color: "var(--text-active)",
+            lineHeight: 0.95,
           }}>
             goals.
           </h1>
-          <p style={{ margin: "6px 0 0", fontSize: 14, color: "var(--text-dim)", lineHeight: 1.5 }}>
-            what do you need to get done?
+          <p style={{ margin: 0, fontSize: "var(--fs-body)", color: "var(--text-muted)", lineHeight: 1.65 }}>
+            what do you need to get done? arthur plans, executes, and tracks.
           </p>
         </div>
 
-        {/* Input form */}
+        {/* Input form — glass with orange accent */}
         <div style={{
-          background: "var(--panel)",
-          border: "1px solid var(--border-strong)",
-          borderRadius: 12,
-          padding: 20,
-          marginBottom: 32,
+          background: "var(--glass-bg)",
+          border: "1px solid rgba(235,64,0,0.35)",
+          backdropFilter: "blur(var(--blur-amount))",
+          borderRadius: "var(--radius-panel)",
+          padding: "var(--space-md)",
+          marginBottom: "var(--space-lg)",
+          boxShadow: "0 8px 32px -8px rgba(235,64,0,0.15), var(--glass-shadow)",
         }}>
           <textarea
             ref={textareaRef}
@@ -698,7 +744,7 @@ export default function GoalsPage() {
             <select
               value={priority}
               onChange={e => setPriority(Number(e.target.value))}
-              style={{ ...inputStyle, flex: "0 0 auto", width: "auto", fontSize: 12, minWidth: 0 }}
+              style={{ ...inputStyle, flex: "1 1 120px", width: "auto", fontSize: 12, minWidth: 0, minHeight: 44 }}
             >
               {[1,2,3,4,5].map(p => (
                 <option key={p} value={p}>{p} — {PRIORITY_LABELS[p]}</option>
@@ -708,9 +754,10 @@ export default function GoalsPage() {
             {/* Due date */}
             <input
               type="date"
+              aria-label="Due date"
               value={dueDate}
               onChange={e => setDueDate(e.target.value)}
-              style={{ ...inputStyle, flex: "0 0 auto", width: "auto", fontSize: 12, colorScheme: "dark", minWidth: 0 }}
+              style={{ ...inputStyle, flex: "1 1 140px", width: "auto", fontSize: 12, colorScheme: "light", minWidth: 0, minHeight: 44 }}
             />
 
             <button
@@ -736,28 +783,107 @@ export default function GoalsPage() {
           </div>
         </div>
 
+        {/* Goals orange stat banner */}
+        {goals.length > 0 && !loading && (
+          <div style={{
+            background: "rgba(235,64,0,0.20)",
+            border: "1px solid rgba(235,64,0,0.35)",
+            backdropFilter: "blur(var(--blur-amount))",
+            borderRadius: "var(--radius-panel)",
+            padding: "var(--space-md) var(--space-lg)",
+            marginBottom: "var(--space-md)",
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--space-lg)",
+          }}>
+            <div>
+              <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--accent-orange)", lineHeight: 1, letterSpacing: "-0.03em" }}>
+                {goals.filter(g => g.status === "in_progress").length}
+              </div>
+              <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "var(--fs-mono)", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-active)", marginTop: 2, opacity: 0.65 }}>in progress</div>
+            </div>
+            <div style={{ width: 1, height: 36, background: "rgba(235,64,0,0.3)" }} />
+            <div>
+              <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--accent-orange)", lineHeight: 1, letterSpacing: "-0.03em" }}>
+                {goals.filter(g => g.status !== "done").length}
+              </div>
+              <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "var(--fs-mono)", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-active)", marginTop: 2, opacity: 0.65 }}>active</div>
+            </div>
+            <div style={{ width: 1, height: 36, background: "rgba(235,64,0,0.3)" }} />
+            <div>
+              <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--accent-orange)", lineHeight: 1, letterSpacing: "-0.03em" }}>
+                {goals.filter(g => g.status === "done").length}
+              </div>
+              <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "var(--fs-mono)", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-active)", marginTop: 2, opacity: 0.65 }}>done</div>
+            </div>
+          </div>
+        )}
+
+        {/* Filter tabs */}
+        {goals.length > 0 && !loading && (
+          <div style={{
+            display: "flex",
+            gap: "var(--space-sm)",
+            marginBottom: "var(--space-md)",
+            borderBottom: "1px solid var(--glass-border)",
+            paddingBottom: "var(--space-sm)",
+            overflowX: "auto",
+            scrollBehavior: "smooth",
+          }}>
+            {(["all", "in_progress", "approved", "done"] as Array<"all" | GoalStatus>).map(status => {
+              const count = status === "all" ? goals.length : goals.filter(g => g.status === status).length;
+              return (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: "6px 12px",
+                    fontSize: 12,
+                    fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+                    color: statusFilter === status ? "var(--accent-orange)" : "var(--text-muted)",
+                    cursor: "pointer",
+                    transition: "color 0.12s",
+                    borderBottom: statusFilter === status ? "2px solid var(--accent-orange)" : "2px solid transparent",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    fontWeight: statusFilter === status ? 600 : 400,
+                  }}
+                >
+                  {status} ({count})
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Goals list */}
         {loading ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-sm)" }}>
             {[1,2,3].map(i => (
-              <div key={i} className="skeleton" style={{ height: 64, borderRadius: 10, opacity: 0.3 + i * 0.1 }} />
+              <div key={i} className="skeleton" style={{ height: 72, borderRadius: "var(--radius-panel)", opacity: 0.3 + i * 0.1 }} />
             ))}
           </div>
         ) : goals.length === 0 ? (
-          <div style={{
+          <div className="glass" style={{
+            borderRadius: "var(--radius-panel)",
             textAlign: "center",
-            padding: "60px 20px",
-            color: "var(--text-faint)",
-            fontSize: 13,
+            padding: "60px var(--space-md)",
+            color: "var(--text-muted)",
+            fontSize: "var(--fs-body)",
             lineHeight: 1.8,
           }}>
-            <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.4 }}>◎</div>
+            <div style={{ fontSize: 32, marginBottom: 16, opacity: 0.4 }}>◎</div>
             no goals yet.<br />
             tell arthur what you need to get done.
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {goals.map(goal => (
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-sm)" }}>
+            {goals
+              .filter(g => statusFilter === "all" || g.status === statusFilter)
+              .filter(g => priorityFilter === "all" || g.priority === priorityFilter)
+              .map(goal => (
               <GoalCard
                 key={goal.id}
                 goal={goal}
@@ -791,28 +917,28 @@ export default function GoalsPage() {
 // ── Shared styles ──────────────────────────────────────────────────────────────
 
 const inputStyle: React.CSSProperties = {
-  background:    "var(--panel-elev)",
-  border:        "1px solid var(--border-strong)",
-  borderRadius:  7,
-  padding:       "8px 12px",
-  color:         "var(--text)",
-  fontSize:      13,
-  fontFamily:    "inherit",
-  outline:       "none",
-  boxSizing:     "border-box",
+  background:   "var(--glass-bg)",
+  border:       "1px solid var(--glass-border)",
+  borderRadius: "var(--radius-panel)",
+  padding:      "var(--space-sm) var(--space-md)",
+  color:        "var(--text-active)",
+  fontSize:     "var(--fs-small)",
+  fontFamily:   "inherit",
+  outline:      "none",
+  boxSizing:    "border-box",
 };
 
 const accentBtnStyle: React.CSSProperties = {
-  background:   "var(--accent)",
-  color:        "#fff",
-  border:       "none",
-  borderRadius: 7,
-  padding:      "8px 16px",
-  fontSize:     12,
-  fontWeight:   600,
-  cursor:       "pointer",
+  background:    "var(--accent-orange)",
+  color:         "#fff",
+  border:        "none",
+  borderRadius:  "var(--radius-pill)",
+  padding:       "8px 20px",
+  fontSize:      "var(--fs-small)",
+  fontWeight:    700,
+  cursor:        "pointer",
   letterSpacing: "0.01em",
-  transition:   "opacity 0.15s",
+  transition:    "opacity 0.15s, transform 0.1s",
 };
 
 const ghostBtnStyle: React.CSSProperties = {

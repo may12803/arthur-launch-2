@@ -247,6 +247,7 @@ function InlineEdit({
   return (
     <input
       ref={inputRef}
+      aria-label="Edit field"
       value={draft}
       onChange={e => setDraft(e.target.value)}
       onBlur={() => { setEditing(false); if (draft !== value) onSave(draft); }}
@@ -693,7 +694,7 @@ export default function LegalPage() {
     <>
       <Nav />
 
-      <div style={{ minHeight: "calc(100vh - 120px)", display: "flex", flexDirection: "column" }}>
+      <div style={{ minHeight: "calc(100vh - 60px)", display: "flex", flexDirection: "column", paddingTop: 108 }}>
 
         {/* ── Top bar ── */}
         <div
@@ -708,15 +709,16 @@ export default function LegalPage() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10, flex: "0 0 auto" }}>
-            <span style={{
+            <h1 style={{
               fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
               fontWeight: 700,
               fontSize: 18,
               letterSpacing: "-0.01em",
               color: "var(--text)",
+              margin: 0,
             }}>
               legal vault.
-            </span>
+            </h1>
             {expiringSoon > 0 && (
               <span style={{
                 background: "rgba(239,68,68,0.15)",
@@ -783,6 +785,7 @@ export default function LegalPage() {
           {/* Search */}
           <input
             type="search"
+            aria-label="Search legal documents"
             placeholder="search title, description, text…"
             value={q}
             onChange={e => setQ(e.target.value)}
@@ -873,7 +876,7 @@ export default function LegalPage() {
           >
             <div style={{ flex: 1, overflowY: "auto" }}>
               {loading ? (
-                <div style={{ padding: 24, color: "var(--text-faint)", fontSize: 12.5 }}>loading…</div>
+                <div style={{ padding: 24, color: "var(--text-faint)", fontSize: 12.5 }}>pulling documents…</div>
               ) : rows.length === 0 ? (
                 <div style={{ padding: "20px 16px" }}>
                   <div style={{ fontSize: 12.5, color: "var(--text-dim)" }}>
@@ -939,7 +942,7 @@ export default function LegalPage() {
             )}
 
             {selectedId && loadingDetail && (
-              <div style={{ padding: 40, color: "var(--text-faint)", fontSize: 13 }}>loading…</div>
+              <div style={{ padding: 40, color: "var(--text-faint)", fontSize: 13 }}>reading document…</div>
             )}
 
             {selected != null && !loadingDetail && (
@@ -961,7 +964,7 @@ export default function LegalPage() {
                     fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
                   }}>
                     <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#818cf8", animation: "pulse 1.2s infinite" }} />
-                    Pioneer is reading this document and determining entity, category, and details…
+                    reading this document — extracting entity, category, and details…
                   </div>
                 )}
 
@@ -975,7 +978,7 @@ export default function LegalPage() {
                     fontSize: 12.5,
                     color: "#ef4444",
                   }}>
-                    Extraction failed. {selected.extraction_error && <span style={{ fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", fontSize: 11 }}>{selected.extraction_error}</span>}
+                    couldn't read this document. {selected.extraction_error && <span style={{ fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", fontSize: 11 }}>{selected.extraction_error}</span>}
                     <button
                       onClick={reextract}
                       disabled={extracting}

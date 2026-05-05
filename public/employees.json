@@ -1,0 +1,369 @@
+{
+  "c-suite": [
+    {
+      "id": "cdo",
+      "name": "Chief Data Officer",
+      "model": "sonnet"
+    },
+    {
+      "id": "ceo",
+      "name": "Chief Executive Officer",
+      "model": "opus"
+    },
+    {
+      "id": "cfo",
+      "name": "Chief Financial Officer",
+      "model": "sonnet"
+    },
+    {
+      "id": "chief-of-staff",
+      "name": "Chief of Staff",
+      "model": "haiku"
+    },
+    {
+      "id": "chro",
+      "name": "Chief Human Resources Officer",
+      "model": "haiku"
+    },
+    {
+      "id": "clo",
+      "name": "Chief Legal Officer / General Counsel",
+      "model": "sonnet"
+    },
+    {
+      "id": "cmo",
+      "name": "Chief Marketing Officer",
+      "model": "sonnet"
+    },
+    {
+      "id": "coo",
+      "name": "Chief Operating Officer",
+      "model": "sonnet"
+    },
+    {
+      "id": "cpo",
+      "name": "Chief Product Officer",
+      "model": "sonnet"
+    },
+    {
+      "id": "cro",
+      "name": "Chief Revenue Officer",
+      "model": "sonnet"
+    },
+    {
+      "id": "cto",
+      "name": "Chief Technology Officer",
+      "model": "sonnet"
+    }
+  ],
+  "data-team": [
+    {
+      "id": "bi-engineer",
+      "name": "BI Engineer",
+      "model": "haiku"
+    },
+    {
+      "id": "data-analyst",
+      "name": "Data Analyst",
+      "model": "haiku"
+    },
+    {
+      "id": "data-engineer",
+      "name": "Data Engineer",
+      "model": "sonnet"
+    },
+    {
+      "id": "data-scientist",
+      "name": "Data Scientist",
+      "model": "sonnet"
+    },
+    {
+      "id": "pricing-analyst",
+      "name": "Pricing Analyst",
+      "model": "sonnet"
+    }
+  ],
+  "design-team": [
+    {
+      "id": "brand-designer",
+      "name": "Brand Designer",
+      "model": "sonnet"
+    },
+    {
+      "id": "copywriter",
+      "name": "Copywriter",
+      "model": "sonnet"
+    }
+  ],
+  "engineering-team": [
+    {
+      "id": "ai-engineer",
+      "name": "AI/ML Engineer",
+      "model": "sonnet"
+    },
+    {
+      "id": "backend-engineer",
+      "name": "Backend Engineer",
+      "model": "haiku"
+    },
+    {
+      "id": "devops-sre",
+      "name": "DevOps / SRE",
+      "model": "haiku"
+    },
+    {
+      "id": "frontend-engineer",
+      "name": "Frontend Engineer",
+      "model": "haiku"
+    },
+    {
+      "id": "mobile-engineer",
+      "name": "Mobile Engineer",
+      "model": "haiku"
+    },
+    {
+      "id": "qa-lead",
+      "name": "QA Lead",
+      "model": "haiku"
+    },
+    {
+      "id": "security-engineer",
+      "name": "Security Engineer",
+      "model": "sonnet"
+    },
+    {
+      "id": "vp-engineering",
+      "name": "VP of Engineering",
+      "model": "sonnet"
+    }
+  ],
+  "entity-aspen-may": [
+    {
+      "id": "holding-ops",
+      "name": "Holding Ops Manager",
+      "model": "sonnet"
+    }
+  ],
+  "entity-dabney": [
+    {
+      "id": "beverage-director",
+      "name": "Beverage Director",
+      "model": "sonnet"
+    },
+    {
+      "id": "events-coordinator",
+      "name": "Events Coordinator",
+      "model": "haiku"
+    },
+    {
+      "id": "foh-manager",
+      "name": "FOH Manager",
+      "model": "haiku"
+    },
+    {
+      "id": "general-manager",
+      "name": "General Manager",
+      "model": "sonnet"
+    }
+  ],
+  "entity-essex": [
+    {
+      "id": "supply-chain-ops",
+      "name": "Supply Chain Ops Analyst",
+      "model": "sonnet"
+    }
+  ],
+  "entity-kronos": [
+    {
+      "id": "bookkeeping-ops",
+      "name": "Bookkeeping Ops Manager",
+      "model": "sonnet"
+    }
+  ],
+  "entity-loveleeday": [
+    {
+      "id": "delivery-manager",
+      "name": "Client Delivery Manager",
+      "model": "haiku"
+    },
+    {
+      "id": "dev-lead",
+      "name": "Dev Lead",
+      "model": "sonnet"
+    }
+  ],
+  "entity-olldae": [
+    {
+      "id": "customer-support",
+      "name": "Customer Support",
+      "model": "haiku"
+    },
+    {
+      "id": "onboarding-specialist",
+      "name": "SaaS Onboarding Specialist",
+      "model": "haiku"
+    }
+  ],
+  "finance-team": [
+    {
+      "id": "controller",
+      "name": "Controller",
+      "model": "sonnet"
+    },
+    {
+      "id": "credit-underwriter",
+      "name": "Credit Underwriter",
+      "model": "sonnet"
+    },
+    {
+      "id": "fpa-analyst",
+      "name": "FP&A Analyst",
+      "model": "sonnet"
+    },
+    {
+      "id": "tax-manager",
+      "name": "Tax Manager",
+      "model": "sonnet"
+    },
+    {
+      "id": "treasurer",
+      "name": "Treasurer",
+      "model": "sonnet"
+    }
+  ],
+  "legal-team": [
+    {
+      "id": "compliance-officer",
+      "name": "Compliance Officer",
+      "model": "sonnet"
+    },
+    {
+      "id": "contracts-attorney",
+      "name": "Contracts Attorney",
+      "model": "sonnet"
+    },
+    {
+      "id": "corporate-counsel",
+      "name": "Corporate Counsel",
+      "model": "sonnet"
+    },
+    {
+      "id": "ip-counsel",
+      "name": "IP Counsel",
+      "model": "sonnet"
+    },
+    {
+      "id": "paralegal",
+      "name": "Paralegal",
+      "model": "haiku"
+    },
+    {
+      "id": "templates",
+      "name": "Templates",
+      "model": "sonnet"
+    }
+  ],
+  "marketing-team": [
+    {
+      "id": "brand-strategist",
+      "name": "Brand Strategist",
+      "model": "sonnet"
+    },
+    {
+      "id": "content-strategist",
+      "name": "Content Strategist",
+      "model": "sonnet"
+    },
+    {
+      "id": "performance-marketing",
+      "name": "Performance Marketing Manager",
+      "model": "sonnet"
+    },
+    {
+      "id": "pr-comms",
+      "name": "PR / Communications",
+      "model": "sonnet"
+    },
+    {
+      "id": "seo-specialist",
+      "name": "SEO Specialist",
+      "model": "haiku"
+    }
+  ],
+  "people-team": [
+    {
+      "id": "culture-ld",
+      "name": "Culture & L&D",
+      "model": "haiku"
+    },
+    {
+      "id": "hr-compliance",
+      "name": "HR Compliance",
+      "model": "haiku"
+    },
+    {
+      "id": "recruiter",
+      "name": "Recruiter",
+      "model": "haiku"
+    },
+    {
+      "id": "travel-planner",
+      "name": "Travel Planner",
+      "model": "haiku"
+    }
+  ],
+  "product-team": [
+    {
+      "id": "pm-kronos",
+      "name": "Product Manager — Kronos",
+      "model": "sonnet"
+    },
+    {
+      "id": "pm-olldae",
+      "name": "Product Manager — olldae",
+      "model": "sonnet"
+    },
+    {
+      "id": "product-designer",
+      "name": "Product Designer",
+      "model": "sonnet"
+    },
+    {
+      "id": "ux-researcher",
+      "name": "UX Researcher",
+      "model": "haiku"
+    }
+  ],
+  "sales-team": [
+    {
+      "id": "account-manager",
+      "name": "Account Manager",
+      "model": "haiku"
+    },
+    {
+      "id": "customer-success",
+      "name": "Customer Success Manager",
+      "model": "haiku"
+    },
+    {
+      "id": "enterprise-sales",
+      "name": "Enterprise Sales Manager",
+      "model": "sonnet"
+    },
+    {
+      "id": "partnerships",
+      "name": "Partnerships",
+      "model": "sonnet"
+    },
+    {
+      "id": "playbooks",
+      "name": "Playbooks",
+      "model": "sonnet"
+    },
+    {
+      "id": "templates",
+      "name": "Templates",
+      "model": "sonnet"
+    }
+  ]
+}

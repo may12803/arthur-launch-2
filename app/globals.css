@@ -1,33 +1,321 @@
 @import "tailwindcss";
 
-/* ─── Design Tokens ──────────────────────────────────────────────────────────
- *
- * All color, typography, and spacing primitives live here.
- * Page-level code must reference these vars — no magic hex literals.
- *
- * Contrast audit (WCAG AA = 4.5:1 body, 3:1 large):
- *   --text      on --bg        → 16.65 ✓
- *   --text-dim  on --bg        →  5.80 ✓
- *   --text-dim  on --panel     →  5.25 ✓
- *   --text-faint on --bg       →  5.07 ✓  (bumped from #4a4f5a → #7a8090)
- *   --text-faint on --panel    →  4.59 ✓  (bumped from #4a4f5a → #7a8090)
- *   --accent    on --bg        →  5.88 ✓
- *   --accent    on --panel     →  5.32 ✓
- *   #0d0500     on --accent    →  5.93 ✓  (btn text, replaces white which fails @ 3.41)
+/* ─── ARTHUR OS — Design Tokens (DEEP MIDNIGHT) ─────────────────────────────
+ * Glass-morphism on near-black canvas. Dark theme. Translucent panels.
+ * #d4ff3d chartreuse accent reserved for moments. White text on glass.
+ * Picked by Daniel from color mockup option 2 (2026-05-04).
  * ─────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Backgrounds — dark scale from deepest to elevated */
-  --bg:            #07080b;   /* page canvas */
-  --panel:         #13161b;   /* card / sidebar surfaces */
-  --panel-elev:    #181b21;   /* raised elements inside panels */
-  --panel-bg:      #13161b;   /* alias: panel — kept for dashboard compat */
+  /* Arthur OS canvas — Deep Midnight */
+  --bg-base:        #0c0e12;
+  --grid-line:      rgba(255, 255, 255, 0.045);
 
-  /* Text — three legibility tiers */
-  --text:          #e8eaf0;   /* primary body text (16.65:1 on --bg) */
-  --text-dim:      #868a95;   /* secondary / supporting text (5.8:1 on --bg) */
-  --text-faint:    #7a8090;   /* labels, eyebrows, meta (4.59:1 on --panel ✓) */
-  --fg:            #e8eaf0;   /* alias: text — kept for dashboard compat */
+  /* Glass panel surface — 3-tier depth system */
+  /* Tier 1 (inactive): subtle, faint background */
+  --glass-bg:       rgba(255, 255, 255, 0.04);
+  --glass-bg-strong: rgba(255, 255, 255, 0.08);
+  --glass-bg-faint: rgba(255, 255, 255, 0.02);
+  --glass-border:   rgba(255, 255, 255, 0.08);
+  --glass-shadow:   0 4px 16px rgba(0, 0, 0, 0.2);
+  
+  /* Tier 2 (interactive): medium depth with responsive hover */
+  --glass-bg-tier2: rgba(255, 255, 255, 0.08);
+  --glass-border-tier2: rgba(255, 255, 255, 0.12);
+  --glass-shadow-tier2: 0 8px 24px rgba(0, 0, 0, 0.3);
+  
+  /* Tier 3 (elevated/selected): deepest, most prominent */
+  --glass-bg-tier3: rgba(255, 255, 255, 0.12);
+  --glass-border-tier3: rgba(255, 255, 255, 0.16);
+  --glass-shadow-tier3: 0 12px 40px rgba(0, 0, 0, 0.4);
+
+  /* Text — light primary, accent for high-emphasis (the inverse of the grey theme) */
+  --text-main:      rgba(245, 246, 248, 0.85);
+  --text-active:    #f5f6f8;
+  --text-muted:     rgba(245, 246, 248, 0.45);
+  --line-separator: rgba(255, 255, 255, 0.12);
+
+  /* Accent — chartreuse, used sparingly. Black text on accent for high contrast. */
+  --accent-orange:  #d4ff3d;
+  --accent-orange-soft: rgba(212, 255, 61, 0.18);
+  --accent-text-on: #1a2400;
+
+  /* Geometry */
+  --radius-pill:    100px;
+  --radius-panel:   24px;
+  --blur-amount:    24px;
+  
+  /* Max content width — prevents overwhelming on 4K monitors */
+  --max-content-width: 1120px;
+  --max-content-gutter: var(--space-lg);
+
+  /* Spacing scale */
+  --space-xs:       4px;
+  --space-sm:       12px;
+  --space-md:       20px;
+  --space-lg:       32px;
+  --space-xl:       48px;
+
+  /* ─── Backwards-compat aliases — DARK THEME values (re-inverted) ─── */
+  --bg:            var(--bg-base);
+  --bg-canvas:     var(--bg-base);
+  --bg-elev-1:     var(--glass-bg);
+  --bg-elev-2:     var(--glass-bg-strong);
+  --panel:         var(--glass-bg);
+  --panel-elev:    var(--glass-bg-strong);
+  --panel-bg:      var(--glass-bg);
+  --text:          var(--text-active);
+  --text-dim:      rgba(245, 246, 248, 0.70);
+  --text-faint:    rgba(245, 246, 248, 0.45);
+  --fg:            var(--text-active);
+  --fg-primary:    var(--text-active);
+  --fg-secondary:  var(--text-main);
+  --fg-tertiary:   rgba(245, 246, 248, 0.45);
+  --muted:         rgba(245, 246, 248, 0.55);
+  --border:        var(--glass-border);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.20);
+  --accent:        var(--accent-orange);
+  --accent-primary: var(--accent-orange);
+  --accent-warm:   var(--accent-orange);
+  --accent-cool:   rgba(91, 141, 239, 0.7);
+  --accent-dark:   var(--accent-text-on);
+  --accent-hover:  #c5f028;
+
+  /* Type scale — hero commanding presence (ENHANCED for redesign) */
+  --fs-display:    clamp(4rem, 8vw, 6rem);
+  --fs-h1:         clamp(3rem, 6vw, 4.5rem);
+  --fs-h2:         clamp(1.875rem, 3.5vw, 2.5rem);
+  --fs-h3:         clamp(1.25rem, 2.5vw, 1.625rem);
+  --fs-body:       1rem;
+  --fs-small:      0.875rem;
+  --fs-mono:       0.75rem;
+
+  /* Spacing scale (numbered alias) */
+  --space-1:       var(--space-xs);
+  --space-2:       8px;
+  --space-3:       var(--space-sm);
+  --space-4:       16px;
+  --space-5:       var(--space-md);
+  --space-6:       var(--space-lg);
+  --space-7:       var(--space-xl);
+  --space-8:       64px;
+  --space-9:       96px;
+  --space-10:      128px;
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-quick: 180ms;
+  --duration-slow: 420ms;
+  
+  /* Responsive breakpoints (mobile-first) */
+  --break-xs: 320px;
+  --break-sm: 480px;
+  --break-md: 768px;
+  --break-lg: 1024px;
+  --break-xl: 1440px;
+  --break-2xl: 1920px;
+}
+
+/* ─── Body — grey canvas + grid pattern ─── */
+html, body {
+  background-color: var(--bg-base);
+}
+body {
+  background-color: var(--bg-base);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 60px 60px;
+  background-position: center top;
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "Inter", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* ─── Glass panel primitives (3-tier depth system) ─── */
+.glass-panel,
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--glass-shadow);
+  transition: all var(--duration-quick) var(--ease-out-soft);
+}
+
+.glass-panel:hover {
+  background: var(--glass-bg-tier2);
+  border-color: var(--glass-border-tier2);
+  box-shadow: var(--glass-shadow-tier2);
+}
+
+.glass-panel-strong,
+.glass-tier2 {
+  background: var(--glass-bg-tier2);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border-tier2);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--glass-shadow-tier2);
+  transition: all var(--duration-quick) var(--ease-out-soft);
+}
+
+.glass-tier3,
+.glass-elevated {
+  background: var(--glass-bg-tier3);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border-tier3);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--glass-shadow-tier3);
+}
+
+/* Typography utility classes */
+.title-large  { font-size: clamp(32px, 7vw, 42px); line-height: 1.1; text-transform: uppercase; letter-spacing: -0.02em; font-weight: 400; color: var(--text-active); }
+.title-medium { font-size: clamp(18px, 4vw, 24px); letter-spacing: -0.01em; font-weight: 400; color: var(--text-active); }
+.body-text    { font-size: 14px; line-height: 1.5; color: var(--text-active); }
+.meta-text    { font-size: 12px; line-height: 1.4; color: var(--text-muted); }
+.eyebrow      { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(0, 0, 0, 0.55); font-family: ui-monospace, "JetBrains Mono", monospace; }
+
+/* Accessibility — focus visible indicators */
+:focus-visible {
+  outline: 2px solid var(--accent-orange);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent-orange);
+  outline-offset: 2px;
+}
+
+/* Touch target minimum (44px per WCAG 2.1 AAA) */
+button, a[role="button"], [role="tab"], input[type="checkbox"], input[type="radio"] {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Panel-internal nav (tabs) */
+.panel-nav { display: flex; gap: var(--space-md); border-bottom: 1px solid var(--line-separator); padding-bottom: var(--space-xs); margin-bottom: var(--space-md); }
+.panel-nav-item { font-size: 18px; color: var(--text-main); cursor: pointer; }
+.panel-nav-item.active { color: var(--text-active); font-weight: 500; }
+
+/* Panel-internal lists */
+.list-item { display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--line-separator); cursor: pointer; }
+.list-item:last-child { border-bottom: none; }
+.list-item:hover .item-title { color: var(--text-active); }
+.item-title { font-size: 16px; color: var(--text-main); transition: color 0.2s ease; }
+.item-title.unread { color: var(--text-active); font-weight: 500; }
+
+/* Floating Nav Island (consumed by Layout.tsx Nav) */
+.os-topbar { position: fixed; top: var(--space-md); left: 0; width: 100%; display: flex; justify-content: center; z-index: 100; pointer-events: none; }
+.nav-island { pointer-events: auto; display: flex; align-items: center; gap: 2px; }
+.nav-pill {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--blur-amount));
+  backdrop-filter: blur(var(--blur-amount));
+  border: 1px solid var(--glass-border);
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-md);
+  color: var(--text-main);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out-soft);
+}
+.nav-pill:hover { background: rgba(255, 255, 255, 0.45); }
+.nav-pill.left   { border-radius: var(--radius-pill) 8px 8px var(--radius-pill); padding-left: 24px; }
+.nav-pill.center { border-radius: 8px; gap: 24px; padding: 0 32px; }
+.nav-pill.right  { border-radius: 8px var(--radius-pill) var(--radius-pill) 8px; padding-right: 24px; }
+.nav-link { color: var(--text-main); text-decoration: none; font-size: 18px; transition: color 0.2s var(--ease-out-soft); }
+.nav-link.active {
+  color: var(--text-active);
+  font-weight: 500;
+  position: relative;
+}
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-orange);
+  border-radius: 1px;
+}
+.user-avatar { width: 28px; height: 28px; background: #000; border-radius: 50%; margin-left: 8px; }
+.dots-icon { display: flex; gap: 4px; }
+.dots-icon span { width: 4px; height: 4px; background: var(--text-main); border-radius: 50%; }
+.bag-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  margin-left: 8px;
+  transition: background 0.2s var(--ease-out-soft), border-color 0.2s var(--ease-out-soft), color 0.2s var(--ease-out-soft);
+}
+/* Orange tint when task count is a real number */
+.bag-count[data-active="true"] {
+  background: var(--accent-orange-soft);
+  border-color: var(--accent-orange);
+  color: var(--accent-orange);
+  font-weight: 600;
+}
+
+/* ─── Mobile nav island: collapse center pill to icon-only at ≤768px ─── */
+@media (max-width: 768px) {
+  .nav-pill.center { gap: 16px; padding: 0 20px; }
+  .nav-link { font-size: 14px; }
+  /* Hide text labels — keep avatar */
+  .nav-pill.center .nav-link-text { display: none; }
+  .nav-pill.left { padding-left: 16px; }
+  .nav-pill.right { padding-right: 16px; }
+}
+
+/* ─── Small mobile: compress island so Tasks pill stays visible ─── */
+@media (max-width: 430px) {
+  .nav-pill.center { gap: 12px; padding: 0 14px; }
+  .nav-pill.left   { padding-left: 12px; padding-right: 12px; }
+  .nav-pill.right  { padding-left: 10px; padding-right: 14px; }
+  .nav-link { font-size: 13px; }
+  .bag-count { width: 20px; height: 20px; font-size: 12px; }
+}
+
+@media (max-width: 390px) {
+  .os-topbar { gap: 0; }
+  .nav-island { gap: 1px; }
+  .nav-pill.center { gap: 10px; padding: 0 12px; }
+}
+
+/* Buttons */
+.btn-accent { background: var(--accent-orange); color: white; border: none; border-radius: var(--radius-pill); padding: 0 20px; height: 40px; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
+.btn-accent:hover { opacity: 0.9; }
+.btn-secondary { background: var(--glass-bg-strong); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 8px; color: var(--text-active); font-size: 14px; cursor: pointer; font-weight: 500; }
+
+/* Original tokens kept below for any references not yet migrated */
+:root {
+  /* legacy alias: these were the dark-theme values; kept for any deep imports
+     that still reference them. The Arthur OS root above takes precedence. */
+  --legacy-bg-dark: #07080b;
+  --legacy-panel-dark: #13161b;
+  --fg-dim:        rgba(0, 0, 0, 0.65);   /* alias for fg-secondary, on light */
   --muted:         #868a95;   /* alias: text-dim — kept for subscriptions compat */
 
   /* Borders */
@@ -1226,6 +1514,144 @@ footer.site .footer-bottom {
   }
 }
 
+/* ─── Page Wrap — universal nav clearance ───────────────────────────────────
+ * Nav island: position:fixed, top:20px, height:48px → total ~88px.
+ * Visual designers apply .page-wrap on their route containers.
+ * .page-wrap-full for graph/lock/any full-viewport routes.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+.page-wrap {
+  padding-top: calc(48px + var(--space-md) * 4);  /* 48px nav + 80px clearance */
+  padding-left: var(--space-lg);
+  padding-right: var(--space-lg);
+  padding-bottom: var(--space-xl);
+  max-width: 1120px;
+  margin: 0 auto;
+  width: 100%;
+  width: clamp(320px, 100%, 1120px);
+}
+
+/* Mobile-first responsive adjustments */
+@media (max-width: 480px) {
+  .page-wrap {
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+    padding-top: calc(48px + var(--space-md) * 2);
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .page-wrap {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-wrap {
+    padding-left: var(--space-xl);
+    padding-right: var(--space-xl);
+  }
+}
+
+.page-wrap-full {
+  padding-top: calc(48px + var(--space-md) * 2.5); /* tighter for full-viewport */
+  width: 100%;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .page-wrap {
+    padding-top: calc(48px + var(--space-md) * 3);
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+    padding-bottom: calc(var(--space-xl) + var(--mobile-nav-h));
+  }
+  .page-wrap-full {
+    padding-top: calc(48px + var(--space-md) * 2);
+  }
+}
+
+/* ─── Utility: Interactive lift ─── */
+.lift {
+  transition: transform 0.18s var(--ease-out-soft), box-shadow 0.18s var(--ease-out-soft);
+}
+.lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.14);
+}
+
+/* ─── Accessibility: Global focus ring ─── */
+*:focus-visible {
+  outline: 2px solid var(--accent-orange);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Skeleton shimmer for loading states ─── */
+@keyframes shimmer {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+.skeleton {
+  background: var(--glass-bg);
+  border-radius: 8px;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* ─── Empty-state pattern ─── */
+.empty-state {
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--fs-body);
+}
+
+/* ─── Panel inner spacing ─── */
+.panel-pad    { padding: var(--space-lg); }
+.panel-pad-sm { padding: var(--space-md); }
+.panel-pad-lg { padding: var(--space-xl); }
+
+/* ─── Mono label ─── */
+.mono-label {
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+  font-size: var(--fs-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* ─── Flex utilities ─── */
+.col-stack { display: flex; flex-direction: column; gap: var(--space-md); }
+.row-flex  { display: flex; gap: var(--space-md); flex-wrap: wrap; }
+
+/* ─── Section header pattern (eyebrow + h2) ─── */
+.section-header { margin-bottom: var(--space-lg); }
+.section-header .eyebrow { margin-bottom: var(--space-xs); }
+.section-header h2 { font-size: var(--fs-h2); color: var(--text-active); margin: 0; }
+
+/* ─── Standardized breakpoints ───────────────────────────────────────────────
+ * @media (max-width: 1024px) — tablet
+ * @media (max-width: 768px)  — mobile
+ * @media (max-width: 430px)  — small mobile
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* Tablet adjustments */
+@media (max-width: 1024px) {
+  .page-wrap {
+    max-width: 100%;
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 430px) {
+  .page-wrap {
+    padding-left: var(--space-sm);
+    padding-right: var(--space-sm);
+  }
+}
+
 /* Live status badge — shown in nav */
 .nav-live-badge {
   display: inline-flex;
@@ -1258,4 +1684,43 @@ footer.site .footer-bottom {
 .nav-live-badge.live-err .live-dot {
   background: #ef4444;
   box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+}
+
+/* ─── Content wrapper utility (Phase 2 redesign) ─── */
+.content-wrapper {
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+  padding-left: var(--max-content-gutter);
+  padding-right: var(--max-content-gutter);
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .content-wrapper {
+    padding-left: var(--space-sm);
+    padding-right: var(--space-sm);
+  }
+}
+
+/* ─── Enhanced spacing for redesign ─── */
+:root {
+  --section-gap: clamp(3rem, 8vw, 5rem);
+  --card-gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+/* ─── Container queries for responsive layouts ─── */
+@supports (container-type: inline-size) {
+  @container (min-width: 768px) {
+    .container-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @container (min-width: 1024px) {
+    .container-grid { grid-template-columns: repeat(3, 1fr); }
+  }
 }

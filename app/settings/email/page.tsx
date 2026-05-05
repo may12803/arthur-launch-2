@@ -72,20 +72,20 @@ export default function EmailSettingsPage() {
     const reason = p.get("reason");
     if (status === "connected")     setStatusBanner({ type: "success", msg: `Connected ${email ?? "account"} successfully.` });
     if (status === "gcal_connected") setStatusBanner({ type: "success", msg: `Google Calendar connected for ${email ?? "account"}.` });
-    if (status === "gcal_error")     setStatusBanner({ type: "error",   msg: `Google Calendar connection failed: ${reason ?? "unknown error"}` });
-    if (status === "error")          setStatusBanner({ type: "error",   msg: `Connection failed: ${reason ?? "unknown error"}` });
+    if (status === "gcal_error")     setStatusBanner({ type: "error",   msg: `couldn't connect Google Calendar — ${reason ?? "try again"}` });
+    if (status === "error")          setStatusBanner({ type: "error",   msg: `connection didn't go through — ${reason ?? "try again"}` });
     load();
   }, [load]);
 
   async function handleDisconnect(id: string, email: string) {
-    if (!confirm(`Disconnect ${email}? This removes it from Arthur's automation pipeline.`)) return;
+    if (!confirm(`Disconnect ${email}? Arthur will stop monitoring this inbox.`)) return;
     setDisconnecting(id);
     try {
       const res = await fetch(`/api/email/accounts/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(`${res.status}`);
       setAccounts(prev => prev.filter(a => a.id !== id));
     } catch (e) {
-      alert(`Disconnect failed: ${(e as Error).message}`);
+      alert(`couldn't disconnect — ${(e as Error).message}`);
     } finally {
       setDisconnecting(null);
     }
@@ -100,10 +100,10 @@ export default function EmailSettingsPage() {
         body: JSON.stringify({ email }),
       });
       const data = await res.json() as { auth_url?: string; error?: string };
-      if (!data.auth_url) { alert(data.error ?? "Failed to start Google Calendar OAuth"); return; }
+      if (!data.auth_url) { alert(data.error ?? "couldn't start Google Calendar sign-in — try again"); return; }
       window.location.href = data.auth_url;
     } catch (e) {
-      alert(`Error: ${(e as Error).message}`);
+      alert(`something went sideways — ${(e as Error).message}`);
     } finally {
       setConnectingGcal(null);
     }
@@ -119,13 +119,13 @@ export default function EmailSettingsPage() {
       });
       const data = await res.json() as { auth_url?: string; error?: string; setup_required?: boolean; instructions?: string };
       if (data.setup_required) {
-        alert(`Setup required: NYLAS_CLIENT_ID not configured.\n\n${data.instructions ?? ""}`);
+        alert(`setup needed: NYLAS_CLIENT_ID not configured.\n\n${data.instructions ?? ""}`);
         return;
       }
-      if (!data.auth_url) { alert(data.error ?? "Failed to start OAuth"); return; }
+      if (!data.auth_url) { alert(data.error ?? "couldn't start sign-in — try again"); return; }
       window.location.href = data.auth_url;
     } catch (e) {
-      alert(`Error: ${(e as Error).message}`);
+      alert(`something went sideways — ${(e as Error).message}`);
     } finally {
       setConnectingOAuth(null);
     }
@@ -151,10 +151,10 @@ export default function EmailSettingsPage() {
       const data = await res.json() as { ok?: boolean; error?: string; setup_required?: boolean };
 
       if (data.setup_required) {
-        setImapError("Setup required: NYLAS_CLIENT_ID not configured. Add it via: fly secrets set NYLAS_CLIENT_ID=<id> -a arthur-online");
+        setImapError("setup needed: NYLAS_CLIENT_ID not configured. Add it via: fly secrets set NYLAS_CLIENT_ID=<id> -a arthur-online");
         return;
       }
-      if (!data.ok) { setImapError(data.error ?? "Connection failed"); return; }
+      if (!data.ok) { setImapError(data.error ?? "couldn't connect — check credentials and try again"); return; }
 
       setImapSuccess(true);
       setImapForm({ email: "", password: "", imap_host: "", imap_port: "", smtp_host: "", smtp_port: "" });
@@ -170,11 +170,19 @@ export default function EmailSettingsPage() {
   return (
     <>
       <Nav />
-      <main className="wrap" style={{ padding: "40px 32px 80px" }}>
+      <main className="wrap" style={{ paddingTop: 108, paddingLeft: "var(--space-lg)", paddingRight: "var(--space-lg)", paddingBottom: 80, maxWidth: 900, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)" }}>email settings.</h1>
-          <p style={{ margin: "6px 0 0", color: "var(--text-dim)", fontSize: 13 }}>
+          <div style={{
+            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+            fontSize: "var(--fs-mono)",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--accent-orange)",
+            marginBottom: 8,
+          }}>Settings / Email</div>
+          <h1 style={{ margin: 0, fontSize: "clamp(1.75rem, 3vw, 2.5rem)", fontWeight: 200, letterSpacing: "-0.03em", color: "var(--text-active)", fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)" }}>email accounts.</h1>
+          <p style={{ margin: "6px 0 0", color: "var(--text-muted)", fontSize: 13 }}>
             connected inboxes arthur monitors and processes automatically.
           </p>
         </div>
@@ -198,12 +206,14 @@ export default function EmailSettingsPage() {
 
         {/* Connected accounts */}
         <section style={{
-          background: "var(--panel)",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
+          background: "var(--glass-bg)",
+          backdropFilter: "blur(var(--blur-amount))",
+          border: "1px solid var(--glass-border)",
+          borderRadius: "var(--radius-panel)",
+          boxShadow: "var(--glass-shadow)",
           marginBottom: 24,
         }}>
-          <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--glass-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h2 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--text)" }}>
               connected accounts
               {accounts.length > 0 && (
@@ -215,11 +225,11 @@ export default function EmailSettingsPage() {
           </div>
 
           {loading ? (
-            <div style={{ padding: "32px 20px", textAlign: "center", color: "var(--text-dim)", fontSize: 13 }}>Loading…</div>
+            <div style={{ padding: "32px 20px", textAlign: "center", color: "var(--text-dim)", fontSize: 13 }}>pulling accounts…</div>
           ) : error ? (
             <div style={{ padding: "20px", color: "var(--accent)", fontSize: 13 }}>Error: {error}</div>
           ) : accounts.length === 0 ? (
-            <div style={{ padding: "32px 20px", textAlign: "center", color: "var(--text-dim)", fontSize: 13 }}>No accounts connected yet.</div>
+            <div style={{ padding: "32px 20px", textAlign: "center", color: "var(--text-dim)", fontSize: 13 }}>no inboxes connected yet — add one below.</div>
           ) : (
             <div>
               {accounts.map((acct, i) => (
@@ -228,7 +238,7 @@ export default function EmailSettingsPage() {
                   alignItems: "flex-start",
                   gap: 12,
                   padding: "14px 20px",
-                  borderBottom: i < accounts.length - 1 ? "1px solid var(--border)" : "none",
+                  borderBottom: i < accounts.length - 1 ? "1px solid var(--glass-border)" : "none",
                   flexWrap: "wrap",
                 }}>
                   {/* Provider icon */}
@@ -327,11 +337,12 @@ export default function EmailSettingsPage() {
               disabled={connectingOAuth === "gmail"}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
-                background: "var(--panel)", border: "1px solid var(--border-strong)",
+                background: "var(--glass-bg)", backdropFilter: "blur(var(--blur-amount))",
+                border: "1px solid var(--glass-border)",
                 borderRadius: 10, padding: "12px 20px", cursor: "pointer",
-                color: "var(--text)", fontSize: 13, fontWeight: 500,
+                color: "var(--text-active)", fontSize: 13, fontWeight: 500,
                 opacity: connectingOAuth === "gmail" ? 0.6 : 1,
-                transition: "border-color 0.15s",
+                transition: "border-color 0.15s, background 0.15s",
               }}
             >
               <span style={{ width: 20, height: 20, borderRadius: 4, background: "#EA433520", border: "1px solid #EA433540", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#EA4335" }}>G</span>
@@ -344,9 +355,10 @@ export default function EmailSettingsPage() {
               disabled={connectingOAuth === "microsoft"}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
-                background: "var(--panel)", border: "1px solid var(--border-strong)",
+                background: "var(--glass-bg)", backdropFilter: "blur(var(--blur-amount))",
+                border: "1px solid var(--glass-border)",
                 borderRadius: 10, padding: "12px 20px", cursor: "pointer",
-                color: "var(--text)", fontSize: 13, fontWeight: 500,
+                color: "var(--text-active)", fontSize: 13, fontWeight: 500,
                 opacity: connectingOAuth === "microsoft" ? 0.6 : 1,
               }}
             >
@@ -359,10 +371,11 @@ export default function EmailSettingsPage() {
               onClick={() => { setShowImap(v => !v); setImapError(null); setImapSuccess(false); }}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
-                background: showImap ? "var(--panel-elev)" : "var(--panel)",
-                border: `1px solid ${showImap ? "var(--border-strong)" : "var(--border)"}`,
+                background: showImap ? "var(--glass-bg-strong)" : "var(--glass-bg)",
+                backdropFilter: "blur(var(--blur-amount))",
+                border: `1px solid ${showImap ? "var(--accent-orange)" : "var(--glass-border)"}`,
                 borderRadius: 10, padding: "12px 20px", cursor: "pointer",
-                color: "var(--text)", fontSize: 13, fontWeight: 500,
+                color: "var(--text-active)", fontSize: 13, fontWeight: 500,
               }}
             >
               <span style={{ width: 20, height: 20, borderRadius: 4, background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#f59e0b" }}>✉</span>
@@ -374,8 +387,9 @@ export default function EmailSettingsPage() {
           {showImap && (
             <form onSubmit={handleImapSubmit} style={{
               marginTop: 16,
-              background: "var(--panel)",
-              border: "1px solid var(--border-strong)",
+              background: "var(--glass-bg)",
+              backdropFilter: "blur(var(--blur-amount))",
+              border: "1px solid var(--glass-border)",
               borderRadius: 12,
               padding: 20,
             }}>
@@ -459,7 +473,7 @@ export default function EmailSettingsPage() {
         </section>
 
         {/* Info note */}
-        <div style={{ marginTop: 32, padding: "14px 18px", background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12, color: "var(--text-dim)", lineHeight: 1.6 }}>
+        <div style={{ marginTop: 32, padding: "14px 18px", background: "var(--glass-bg)", backdropFilter: "blur(var(--blur-amount))", border: "1px solid var(--glass-border)", borderRadius: 10, fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6 }}>
           <strong style={{ color: "var(--text)" }}>Note:</strong> OAuth connect requires <code>NYLAS_CLIENT_ID</code> and <code>NYLAS_CLIENT_SECRET</code> to be set as Fly secrets.
           If not yet configured, run: <code>fly secrets set NYLAS_CLIENT_ID=&lt;id&gt; NYLAS_CLIENT_SECRET=&lt;secret&gt; -a arthur-online</code>.
           The Nylas Client ID is <code>21640001-154e-426f-8710-545c97318298</code> (already in vault).
@@ -472,11 +486,11 @@ export default function EmailSettingsPage() {
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "var(--panel-elev)",
-  border: "1px solid var(--border-strong)",
+  background: "var(--glass-bg-strong)",
+  border: "1px solid var(--glass-border)",
   borderRadius: 7,
   padding: "8px 12px",
-  color: "var(--text)",
+  color: "var(--text-active)",
   fontSize: 13,
   outline: "none",
 };
@@ -492,20 +506,20 @@ const labelStyle: React.CSSProperties = {
 };
 
 const submitBtnStyle: React.CSSProperties = {
-  background: "var(--accent)",
-  color: "#fff",
+  background: "var(--accent-orange)",
+  color: "var(--accent-text-on)",
   border: "none",
   borderRadius: 7,
   padding: "9px 18px",
   cursor: "pointer",
   fontSize: 13,
-  fontWeight: 600,
+  fontWeight: 700,
 };
 
 const cancelBtnStyle: React.CSSProperties = {
   background: "none",
-  color: "var(--text-dim)",
-  border: "1px solid var(--border)",
+  color: "var(--text-muted)",
+  border: "1px solid var(--glass-border)",
   borderRadius: 7,
   padding: "9px 18px",
   cursor: "pointer",

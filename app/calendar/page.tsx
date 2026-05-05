@@ -380,7 +380,7 @@ export default function CalendarPage() {
   return (
     <>
       <Nav />
-      <div style={{ display: "flex", height: "calc(100vh - 57px)", overflow: "hidden", background: "var(--bg)" }}>
+      <div className="cal-outer" style={{ display: "flex", height: "calc(100vh - 108px)", overflow: "hidden", background: "var(--bg)", marginTop: 108 }}>
 
         {/* ── LEFT RAIL ── */}
         <aside style={{
@@ -592,7 +592,7 @@ export default function CalendarPage() {
         <main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
 
           {/* Toolbar */}
-          <div style={{
+          <div className="cal-toolbar" style={{
             padding: "12px 20px",
             borderBottom: "1px solid var(--border)",
             display: "flex",
@@ -976,7 +976,7 @@ export default function CalendarPage() {
         /* Scrollbar styles for timeline */
         .cal-timeline::-webkit-scrollbar { width: 5px; }
         .cal-timeline::-webkit-scrollbar-track { background: transparent; }
-        .cal-timeline::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+        .cal-timeline::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 3px; }
 
         /* Ticker strip scrollbar hide */
         .cal-ticker-strip::-webkit-scrollbar { display: none; }
@@ -985,18 +985,51 @@ export default function CalendarPage() {
         /* Agenda list scrollbar */
         .cal-agenda-list::-webkit-scrollbar { width: 3px; }
         .cal-agenda-list::-webkit-scrollbar-track { background: transparent; }
-        .cal-agenda-list::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+        .cal-agenda-list::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 3px; }
 
-        /* Skeleton shimmer */
+        /* Skeleton shimmer — Deep Midnight white-tone */
         @keyframes shimmer {
           0%   { background-position: -400px 0; }
           100% { background-position: 400px 0; }
         }
         .skeleton {
-          background: linear-gradient(90deg, var(--panel) 25%, var(--panel-elev) 50%, var(--panel) 75%);
+          background: linear-gradient(90deg,
+            rgba(255,255,255,0.04) 25%,
+            rgba(255,255,255,0.08) 50%,
+            rgba(255,255,255,0.04) 75%);
           background-size: 800px 100%;
           animation: shimmer 1.5s infinite;
           border-radius: 4px;
+        }
+
+        /* Deep Midnight glass rails */
+        .cal-left-rail {
+          background: var(--glass-bg) !important;
+          backdrop-filter: blur(var(--blur-amount)) !important;
+          -webkit-backdrop-filter: blur(var(--blur-amount)) !important;
+          border-right: 1px solid var(--line-separator) !important;
+          box-shadow: var(--glass-shadow) !important;
+        }
+        .cal-right-rail {
+          background: var(--glass-bg) !important;
+          backdrop-filter: blur(var(--blur-amount)) !important;
+          -webkit-backdrop-filter: blur(var(--blur-amount)) !important;
+          border-left: 1px solid var(--line-separator) !important;
+          box-shadow: var(--glass-shadow) !important;
+        }
+        /* Main area toolbar */
+        .cal-toolbar {
+          background: var(--glass-bg) !important;
+          border-bottom: 1px solid var(--line-separator) !important;
+        }
+        /* Top-level outer container */
+        .cal-outer {
+          background: var(--bg-base) !important;
+        }
+        @media (max-width: 899px) {
+          .cal-outer {
+            height: calc(100vh - 108px) !important;
+          }
         }
       `}</style>
     </>

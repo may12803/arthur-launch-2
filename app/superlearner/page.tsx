@@ -42,7 +42,7 @@ const DOMAIN_LABELS: Record<string, string> = {
 };
 
 function AccuracyBadge({ value }: { value: number | null }) {
-  if (value === null) return <span style={{ color: "var(--text-faint)", fontSize: 11 }}>no data</span>;
+  if (value === null) return <span style={{ color: "var(--text-faint)", fontSize: 11 }}>—</span>;
   const pct = Math.round(value * 100);
   const color = pct >= 90 ? "#4ade80" : pct >= 75 ? "#facc15" : "#f87171";
   return (
@@ -69,13 +69,24 @@ function DomainCard({ ds }: { ds: DomainStats }) {
   return (
     <div
       style={{
-        background: "var(--panel)",
-        border: "1px solid var(--border)",
-        borderRadius: 10,
-        padding: "20px 24px",
+        background: "var(--glass-bg)",
+        border: "1px solid var(--glass-border)",
+        backdropFilter: "blur(var(--blur-amount))",
+        borderRadius: "var(--radius-panel)",
+        padding: "var(--space-md) var(--space-lg)",
         display: "flex",
         flexDirection: "column",
-        gap: 16,
+        gap: "var(--space-md)",
+        boxShadow: "var(--glass-shadow)",
+        transition: "transform 0.15s var(--ease-out-soft), box-shadow 0.15s",
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 32px -8px rgba(245,246,248,0.06)";
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--glass-shadow)";
       }}
     >
       {/* Header */}
@@ -182,23 +193,104 @@ export default function SuperlearnerPage() {
   return (
     <>
       <Nav />
-      <main className="wrap" style={{ padding: "40px 0 80px", minHeight: "80vh" }}>
+      <style>{`
+        @keyframes pulse-ring {
+          0%   { transform: scale(1); opacity: 1; }
+          100% { transform: scale(2.5); opacity: 0; }
+        }
+      `}</style>
+      <main className="wrap" style={{ paddingTop: 108, paddingBottom: "var(--space-xl)", minHeight: "80vh" }}>
         {/* Header */}
-        <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 6px", color: "var(--text)" }}>
-            superlearner
-          </h1>
-          <p style={{ fontSize: 13, color: "var(--text-dim)", margin: 0, maxWidth: 600 }}>
-            experience-based learning via daniel&apos;s feedback signal. every correction trains the next prompt. nightly regen at 1 am.
+        <div style={{ marginBottom: "var(--space-lg)" }}>
+          <span style={{
+            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+            fontSize: "var(--fs-mono)", letterSpacing: "0.12em", textTransform: "uppercase",
+            color: "var(--text-muted)",
+          }}>experience-based learning · nightly regen 01:00</span>
+          <h1 style={{
+            fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+            fontWeight: 800, fontSize: "var(--fs-h1)",
+            letterSpacing: "-0.03em", color: "var(--text-active)", margin: "8px 0 12px", lineHeight: 0.95,
+          }}>superlearner.</h1>
+          <p style={{ fontSize: "var(--fs-body)", color: "var(--text-muted)", maxWidth: "58ch", lineHeight: 1.65, margin: 0 }}>
+            Every correction trains the next prompt. The brain reads its own failures and gets better.
           </p>
         </div>
 
-        {/* Summary bar */}
+        {/* Training run status card */}
+        <div style={{
+          background: "var(--glass-bg)",
+          border: "1px solid rgba(235,64,0,0.3)",
+          backdropFilter: "blur(var(--blur-amount))",
+          borderRadius: "var(--radius-panel)",
+          padding: "var(--space-md) var(--space-lg)",
+          marginBottom: "var(--space-md)",
+          display: "flex",
+          alignItems: "center",
+          gap: "var(--space-md)",
+          boxShadow: "var(--glass-shadow)",
+        }}>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "var(--accent-orange)", boxShadow: "0 0 12px rgba(235,64,0,0.6)" }} />
+            <div style={{ position: "absolute", inset: -4, borderRadius: "50%", border: "1px solid rgba(235,64,0,0.3)", animation: "pulse-ring 2s ease-out infinite" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "var(--fs-mono)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--accent-orange)", marginBottom: 4 }}>
+              arthur-tuned-2026-05-03 · active
+            </div>
+            <div style={{ fontSize: "var(--fs-small)", color: "var(--text-active)", lineHeight: 1.55 }}>
+              Base: Qwen2.5-7B-Instruct-4bit · LoRA r8 s20 8L 189it · lr=1e-4 · corpus: 92KB
+            </div>
+          </div>
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--text-active)", letterSpacing: "-0.03em", lineHeight: 1 }}>189</div>
+            <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 2 }}>iterations</div>
+          </div>
+        </div>
+
+        {/* Memory continuity cards */}
+        <div style={{ marginBottom: "var(--space-md)" }}>
+          <div style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "var(--space-sm)", fontFamily: "var(--font-jetbrains, monospace)" }}>
+            memory continuity · wired 2026-05-03
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "var(--space-sm)" }}>
+            {[
+              { label: "getRecentSessions()", note: "wired ✓", path: "session-bridge.js", ok: true },
+              { label: "route-advisor.js", note: "injects 📚🎓🌐", path: "route-advisor.js", ok: true },
+              { label: "session-learner.js", note: "Stop hook — wired ✓", path: "session-learner.js", ok: true },
+              { label: "learning-loop.sh", note: "step 4 — wired ✓", path: "learning-loop.sh", ok: true },
+            ].map(item => (
+              <div key={item.label} style={{
+                background: "var(--glass-bg)",
+                border: `1px solid ${item.ok ? "rgba(74,222,128,0.35)" : "rgba(239,68,68,0.35)"}`,
+                backdropFilter: "blur(var(--blur-amount))",
+                borderRadius: "var(--radius-panel)",
+                padding: "var(--space-sm) var(--space-md)",
+                display: "flex", gap: "var(--space-sm)", alignItems: "flex-start",
+                boxShadow: "var(--glass-shadow)",
+              }}>
+                <span style={{ fontSize: 14, color: item.ok ? "#4ade80" : "#f87171", flexShrink: 0, marginTop: 1 }}>
+                  {item.ok ? "✓" : "✗"}
+                </span>
+                <div>
+                  <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "var(--fs-small)", color: "var(--text-active)", fontWeight: 600, marginBottom: 2 }}>
+                    {item.label}
+                  </div>
+                  <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-muted)", lineHeight: 1.5 }}>{item.note}</div>
+                  <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: "var(--font-jetbrains, monospace)", marginTop: 2 }}>{item.path}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Summary KPI strip */}
         <div
+          className="glass"
           style={{
-            display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16,
-            background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 10,
-            padding: "20px 24px", marginBottom: 28,
+            display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--space-md)",
+            borderRadius: "var(--radius-panel)",
+            padding: "var(--space-md) var(--space-lg)", marginBottom: "var(--space-md)",
             overflowX: "auto",
           }}
         >
@@ -228,7 +320,7 @@ export default function SuperlearnerPage() {
 
         {error && (
           <div style={{ color: "#f87171", fontSize: 13, padding: "20px 0" }}>
-            error: {error}
+            couldn't load — {error}
           </div>
         )}
 

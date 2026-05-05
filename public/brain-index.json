@@ -1,0 +1,3282 @@
+{
+  "totals": {
+    "files": 585,
+    "sizeBytes": 14802817
+  },
+  "generated_at": "2026-05-05T19:58:11.472Z",
+  "roots": [
+    {
+      "name": "external-skills",
+      "label": "external-skills",
+      "categories": [
+        {
+          "name": "anthropic-skills",
+          "files": [
+            {
+              "name": "3p-updates.md",
+              "relativePath": "external-skills/anthropic-skills/skills/internal-comms/examples/3p-updates.md",
+              "sizeBytes": 4206
+            },
+            {
+              "name": "agent-design.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/agent-design.md",
+              "sizeBytes": 9323
+            },
+            {
+              "name": "agent-skills-spec.md",
+              "relativePath": "external-skills/anthropic-skills/spec/agent-skills-spec.md",
+              "sizeBytes": 87
+            },
+            {
+              "name": "analyzer.md",
+              "relativePath": "external-skills/anthropic-skills/skills/skill-creator/agents/analyzer.md",
+              "sizeBytes": 11311
+            },
+            {
+              "name": "arctic-frost.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/themes/arctic-frost.md",
+              "sizeBytes": 1213
+            },
+            {
+              "name": "batches.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/python/claude-api/batches.md",
+              "sizeBytes": 5823
+            },
+            {
+              "name": "batches.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/typescript/claude-api/batches.md",
+              "sizeBytes": 3370
+            },
+            {
+              "name": "botanical-garden.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/themes/botanical-garden.md",
+              "sizeBytes": 1172
+            },
+            {
+              "name": "claude-api.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/csharp/claude-api.md",
+              "sizeBytes": 14893
+            },
+            {
+              "name": "claude-api.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/go/claude-api.md",
+              "sizeBytes": 14380
+            },
+            {
+              "name": "claude-api.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/java/claude-api.md",
+              "sizeBytes": 15598
+            },
+            {
+              "name": "claude-api.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/php/claude-api.md",
+              "sizeBytes": 11666
+            },
+            {
+              "name": "claude-api.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/ruby/claude-api.md",
+              "sizeBytes": 3464
+            },
+            {
+              "name": "company-newsletter.md",
+              "relativePath": "external-skills/anthropic-skills/skills/internal-comms/examples/company-newsletter.md",
+              "sizeBytes": 4170
+            },
+            {
+              "name": "comparator.md",
+              "relativePath": "external-skills/anthropic-skills/skills/skill-creator/agents/comparator.md",
+              "sizeBytes": 8080
+            },
+            {
+              "name": "desert-rose.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/themes/desert-rose.md",
+              "sizeBytes": 1169
+            },
+            {
+              "name": "editing.md",
+              "relativePath": "external-skills/anthropic-skills/skills/pptx/editing.md",
+              "sizeBytes": 7800
+            },
+            {
+              "name": "error-codes.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/error-codes.md",
+              "sizeBytes": 8883
+            },
+            {
+              "name": "evaluation.md",
+              "relativePath": "external-skills/anthropic-skills/skills/mcp-builder/reference/evaluation.md",
+              "sizeBytes": 22448
+            },
+            {
+              "name": "examples.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/curl/examples.md",
+              "sizeBytes": 7086
+            },
+            {
+              "name": "faq-answers.md",
+              "relativePath": "external-skills/anthropic-skills/skills/internal-comms/examples/faq-answers.md",
+              "sizeBytes": 3301
+            },
+            {
+              "name": "files-api.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/python/claude-api/files-api.md",
+              "sizeBytes": 4794
+            },
+            {
+              "name": "files-api.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/typescript/claude-api/files-api.md",
+              "sizeBytes": 3165
+            },
+            {
+              "name": "forest-canopy.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/themes/forest-canopy.md",
+              "sizeBytes": 1171
+            },
+            {
+              "name": "forms.md",
+              "relativePath": "external-skills/anthropic-skills/skills/pdf/forms.md",
+              "sizeBytes": 13035
+            },
+            {
+              "name": "general-comms.md",
+              "relativePath": "external-skills/anthropic-skills/skills/internal-comms/examples/general-comms.md",
+              "sizeBytes": 1633
+            },
+            {
+              "name": "golden-hour.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/themes/golden-hour.md",
+              "sizeBytes": 1201
+            },
+            {
+              "name": "grader.md",
+              "relativePath": "external-skills/anthropic-skills/skills/skill-creator/agents/grader.md",
+              "sizeBytes": 9933
+            },
+            {
+              "name": "live-sources.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/live-sources.md",
+              "sizeBytes": 17636
+            },
+            {
+              "name": "managed-agents-api-reference.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/managed-agents-api-reference.md",
+              "sizeBytes": 22537
+            },
+            {
+              "name": "managed-agents-client-patterns.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/managed-agents-client-patterns.md",
+              "sizeBytes": 10358
+            },
+            {
+              "name": "managed-agents-core.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/managed-agents-core.md",
+              "sizeBytes": 13911
+            },
+            {
+              "name": "managed-agents-environments.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/managed-agents-environments.md",
+              "sizeBytes": 11664
+            },
+            {
+              "name": "managed-agents-events.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/managed-agents-events.md",
+              "sizeBytes": 9587
+            },
+            {
+              "name": "managed-agents-memory.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/managed-agents-memory.md",
+              "sizeBytes": 10514
+            },
+            {
+              "name": "managed-agents-onboarding.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/managed-agents-onboarding.md",
+              "sizeBytes": 9075
+            },
+            {
+              "name": "managed-agents-overview.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/managed-agents-overview.md",
+              "sizeBytes": 9575
+            },
+            {
+              "name": "managed-agents-tools.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/managed-agents-tools.md",
+              "sizeBytes": 14457
+            },
+            {
+              "name": "managed-agents.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/curl/managed-agents.md",
+              "sizeBytes": 8151
+            },
+            {
+              "name": "mcp_best_practices.md",
+              "relativePath": "external-skills/anthropic-skills/skills/mcp-builder/reference/mcp_best_practices.md",
+              "sizeBytes": 8378
+            },
+            {
+              "name": "midnight-galaxy.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/themes/midnight-galaxy.md",
+              "sizeBytes": 1170
+            },
+            {
+              "name": "model-migration.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/model-migration.md",
+              "sizeBytes": 66496
+            },
+            {
+              "name": "models.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/models.md",
+              "sizeBytes": 8595
+            },
+            {
+              "name": "modern-minimalist.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/themes/modern-minimalist.md",
+              "sizeBytes": 1202
+            },
+            {
+              "name": "node_mcp_server.md",
+              "relativePath": "external-skills/anthropic-skills/skills/mcp-builder/reference/node_mcp_server.md",
+              "sizeBytes": 29550
+            },
+            {
+              "name": "ocean-depths.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/themes/ocean-depths.md",
+              "sizeBytes": 1218
+            },
+            {
+              "name": "pptxgenjs.md",
+              "relativePath": "external-skills/anthropic-skills/skills/pptx/pptxgenjs.md",
+              "sizeBytes": 13550
+            },
+            {
+              "name": "prompt-caching.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/prompt-caching.md",
+              "sizeBytes": 10810
+            },
+            {
+              "name": "python_mcp_server.md",
+              "relativePath": "external-skills/anthropic-skills/skills/mcp-builder/reference/python_mcp_server.md",
+              "sizeBytes": 25929
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/README.md",
+              "sizeBytes": 6165
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/go/managed-agents/README.md",
+              "sizeBytes": 19108
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/java/managed-agents/README.md",
+              "sizeBytes": 17211
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/php/managed-agents/README.md",
+              "sizeBytes": 13812
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/python/claude-api/README.md",
+              "sizeBytes": 628
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/python/managed-agents/README.md",
+              "sizeBytes": 10452
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/ruby/managed-agents/README.md",
+              "sizeBytes": 10801
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/README.md",
+              "sizeBytes": 2545
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/typescript/claude-api/README.md",
+              "sizeBytes": 655
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/typescript/managed-agents/README.md",
+              "sizeBytes": 10033
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/internal-comms/examples/README.md",
+              "sizeBytes": 670
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/mcp-builder/reference/README.md",
+              "sizeBytes": 719
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/pdf/README.md",
+              "sizeBytes": 512
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/pptx/README.md",
+              "sizeBytes": 431
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/skill-creator/agents/README.md",
+              "sizeBytes": 488
+            },
+            {
+              "name": "README.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/themes/README.md",
+              "sizeBytes": 1464
+            },
+            {
+              "name": "reference.md",
+              "relativePath": "external-skills/anthropic-skills/skills/pdf/reference.md",
+              "sizeBytes": 17538
+            },
+            {
+              "name": "schemas.md",
+              "relativePath": "external-skills/anthropic-skills/skills/skill-creator/references/schemas.md",
+              "sizeBytes": 12061
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/algorithmic-art/SKILL.md",
+              "sizeBytes": 20300
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/brand-guidelines/SKILL.md",
+              "sizeBytes": 2808
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/canvas-design/SKILL.md",
+              "sizeBytes": 12328
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/SKILL.md",
+              "sizeBytes": 33463
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/doc-coauthoring/SKILL.md",
+              "sizeBytes": 16232
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/docx/SKILL.md",
+              "sizeBytes": 20487
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/frontend-design/SKILL.md",
+              "sizeBytes": 4855
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/internal-comms/SKILL.md",
+              "sizeBytes": 2060
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/mcp-builder/SKILL.md",
+              "sizeBytes": 9531
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/pdf/SKILL.md",
+              "sizeBytes": 8710
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/pptx/SKILL.md",
+              "sizeBytes": 9853
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/skill-creator/SKILL.md",
+              "sizeBytes": 33720
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/slack-gif-creator/SKILL.md",
+              "sizeBytes": 8315
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/SKILL.md",
+              "sizeBytes": 3609
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/web-artifacts-builder/SKILL.md",
+              "sizeBytes": 3739
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/webapp-testing/SKILL.md",
+              "sizeBytes": 4516
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/skills/xlsx/SKILL.md",
+              "sizeBytes": 12020
+            },
+            {
+              "name": "SKILL.md",
+              "relativePath": "external-skills/anthropic-skills/template/SKILL.md",
+              "sizeBytes": 140
+            },
+            {
+              "name": "streaming.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/python/claude-api/streaming.md",
+              "sizeBytes": 6051
+            },
+            {
+              "name": "streaming.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/typescript/claude-api/streaming.md",
+              "sizeBytes": 6434
+            },
+            {
+              "name": "sunset-boulevard.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/themes/sunset-boulevard.md",
+              "sizeBytes": 1213
+            },
+            {
+              "name": "tech-innovation.md",
+              "relativePath": "external-skills/anthropic-skills/skills/theme-factory/themes/tech-innovation.md",
+              "sizeBytes": 1202
+            },
+            {
+              "name": "THIRD_PARTY_NOTICES.md",
+              "relativePath": "external-skills/anthropic-skills/THIRD_PARTY_NOTICES.md",
+              "sizeBytes": 46406
+            },
+            {
+              "name": "tool-use-concepts.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/shared/tool-use-concepts.md",
+              "sizeBytes": 17630
+            },
+            {
+              "name": "tool-use.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/python/claude-api/tool-use.md",
+              "sizeBytes": 17830
+            },
+            {
+              "name": "tool-use.md",
+              "relativePath": "external-skills/anthropic-skills/skills/claude-api/typescript/claude-api/tool-use.md",
+              "sizeBytes": 16115
+            }
+          ]
+        }
+      ],
+      "files": 93,
+      "sizeBytes": 943598
+    },
+    {
+      "name": "meta",
+      "label": "meta",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "arthur-operating-manual.md",
+              "relativePath": "meta/arthur-operating-manual.md",
+              "sizeBytes": 61334
+            },
+            {
+              "name": "arthur-session-playbooks.md",
+              "relativePath": "meta/arthur-session-playbooks.md",
+              "sizeBytes": 43841
+            },
+            {
+              "name": "arthur-v1-capability-manifest.md",
+              "relativePath": "meta/arthur-v1-capability-manifest.md",
+              "sizeBytes": 75792
+            },
+            {
+              "name": "arthur-vs-emergent-sh.md",
+              "relativePath": "meta/arthur-vs-emergent-sh.md",
+              "sizeBytes": 3232
+            },
+            {
+              "name": "brain-analysis.md",
+              "relativePath": "meta/brain-analysis.md",
+              "sizeBytes": 5530
+            },
+            {
+              "name": "BRAIN-ATLAS.md",
+              "relativePath": "meta/BRAIN-ATLAS.md",
+              "sizeBytes": 78766
+            },
+            {
+              "name": "cross-domain-synthesis-mastery.md",
+              "relativePath": "meta/cross-domain-synthesis-mastery.md",
+              "sizeBytes": 78736
+            },
+            {
+              "name": "customer-relationship-management.md",
+              "relativePath": "meta/customer-relationship-management.md",
+              "sizeBytes": 5594
+            },
+            {
+              "name": "dedup-report.md",
+              "relativePath": "meta/dedup-report.md",
+              "sizeBytes": 16931
+            },
+            {
+              "name": "entity-registry-audit.md",
+              "relativePath": "meta/entity-registry-audit.md",
+              "sizeBytes": 6897
+            },
+            {
+              "name": "financial-injection-diagnosis.md",
+              "relativePath": "meta/financial-injection-diagnosis.md",
+              "sizeBytes": 10453
+            },
+            {
+              "name": "improvement-log.md",
+              "relativePath": "meta/improvement-log.md",
+              "sizeBytes": 4108
+            },
+            {
+              "name": "INDEX-by-domain.md",
+              "relativePath": "meta/INDEX-by-domain.md",
+              "sizeBytes": 6223
+            },
+            {
+              "name": "inventory-management.md",
+              "relativePath": "meta/inventory-management.md",
+              "sizeBytes": 5330
+            },
+            {
+              "name": "kg-ingestion-audit.md",
+              "relativePath": "meta/kg-ingestion-audit.md",
+              "sizeBytes": 2250
+            },
+            {
+              "name": "knowledge-gaps-apr14.md",
+              "relativePath": "meta/knowledge-gaps-apr14.md",
+              "sizeBytes": 2571
+            },
+            {
+              "name": "knowledge-gaps-master.md",
+              "relativePath": "meta/knowledge-gaps-master.md",
+              "sizeBytes": 27242
+            },
+            {
+              "name": "KNOWLEDGE-INDEX-v2.md",
+              "relativePath": "meta/KNOWLEDGE-INDEX-v2.md",
+              "sizeBytes": 46573
+            },
+            {
+              "name": "KNOWLEDGE-INDEX.md",
+              "relativePath": "meta/KNOWLEDGE-INDEX.md",
+              "sizeBytes": 72250
+            },
+            {
+              "name": "longmemeval-runner-audit.md",
+              "relativePath": "meta/longmemeval-runner-audit.md",
+              "sizeBytes": 13820
+            },
+            {
+              "name": "memory-utility-report.md",
+              "relativePath": "meta/memory-utility-report.md",
+              "sizeBytes": 7280
+            },
+            {
+              "name": "meta-gaps-implementation-audit.md",
+              "relativePath": "meta/meta-gaps-implementation-audit.md",
+              "sizeBytes": 11791
+            },
+            {
+              "name": "msa-4b-deployment-status.md",
+              "relativePath": "meta/msa-4b-deployment-status.md",
+              "sizeBytes": 5232
+            },
+            {
+              "name": "operator-vs-arthur.md",
+              "relativePath": "meta/operator-vs-arthur.md",
+              "sizeBytes": 24045
+            },
+            {
+              "name": "pending-upgrades.md",
+              "relativePath": "meta/pending-upgrades.md",
+              "sizeBytes": 115747
+            },
+            {
+              "name": "personal-eval-2026-04-27.md",
+              "relativePath": "meta/personal-eval-2026-04-27.md",
+              "sizeBytes": 13290
+            },
+            {
+              "name": "policy-tuner-2026-04-27.md",
+              "relativePath": "meta/policy-tuner-2026-04-27.md",
+              "sizeBytes": 4559
+            },
+            {
+              "name": "principles-monotonicity.md",
+              "relativePath": "meta/principles-monotonicity.md",
+              "sizeBytes": 2547
+            },
+            {
+              "name": "probe-daily-2026-04-27.md",
+              "relativePath": "meta/probe-daily-2026-04-27.md",
+              "sizeBytes": 2180
+            },
+            {
+              "name": "recipe-health-2026-04-28.md",
+              "relativePath": "meta/recipe-health-2026-04-28.md",
+              "sizeBytes": 1432
+            },
+            {
+              "name": "retrieval-daily-2026-04-27.md",
+              "relativePath": "meta/retrieval-daily-2026-04-27.md",
+              "sizeBytes": 4025
+            },
+            {
+              "name": "retrieval-daily-2026-05-02.md",
+              "relativePath": "meta/retrieval-daily-2026-05-02.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-04.md",
+              "relativePath": "meta/retrieval-daily-2026-05-04.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-05.md",
+              "relativePath": "meta/retrieval-daily-2026-05-05.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-weekly.md",
+              "relativePath": "meta/retrieval-weekly.md",
+              "sizeBytes": 2058
+            },
+            {
+              "name": "self-heal-2026-04-26.md",
+              "relativePath": "meta/self-heal-2026-04-26.md",
+              "sizeBytes": 13790
+            },
+            {
+              "name": "self-improvement-report.md",
+              "relativePath": "meta/self-improvement-report.md",
+              "sizeBytes": 3530
+            },
+            {
+              "name": "self-teach-log.md",
+              "relativePath": "meta/self-teach-log.md",
+              "sizeBytes": 2639
+            },
+            {
+              "name": "state-persistence-session-continuity.md",
+              "relativePath": "meta/state-persistence-session-continuity.md",
+              "sizeBytes": 73865
+            },
+            {
+              "name": "type-prior-replay.md",
+              "relativePath": "meta/type-prior-replay.md",
+              "sizeBytes": 5914
+            },
+            {
+              "name": "video-transcript-synthesis-index.md",
+              "relativePath": "meta/video-transcript-synthesis-index.md",
+              "sizeBytes": 5908
+            },
+            {
+              "name": "web-agent-coverage.md",
+              "relativePath": "meta/web-agent-coverage.md",
+              "sizeBytes": 7808
+            }
+          ]
+        },
+        {
+          "name": "gap-fill-archive",
+          "files": [
+            {
+              "name": "gap-fill-1776435894430.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1776435894430.md",
+              "sizeBytes": 1670
+            },
+            {
+              "name": "gap-fill-1776947412244.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1776947412244.md",
+              "sizeBytes": 1772
+            },
+            {
+              "name": "gap-fill-1776947413567.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1776947413567.md",
+              "sizeBytes": 1792
+            },
+            {
+              "name": "gap-fill-1776947415052.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1776947415052.md",
+              "sizeBytes": 1739
+            },
+            {
+              "name": "gap-fill-1777028710774.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777028710774.md",
+              "sizeBytes": 1694
+            },
+            {
+              "name": "gap-fill-1777028710830.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777028710830.md",
+              "sizeBytes": 1580
+            },
+            {
+              "name": "gap-fill-1777028712017.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777028712017.md",
+              "sizeBytes": 1792
+            },
+            {
+              "name": "gap-fill-1777030208572.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777030208572.md",
+              "sizeBytes": 1704
+            },
+            {
+              "name": "gap-fill-1777030212566.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777030212566.md",
+              "sizeBytes": 1902
+            },
+            {
+              "name": "gap-fill-1777030213116.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777030213116.md",
+              "sizeBytes": 1864
+            },
+            {
+              "name": "gap-fill-1777306344665.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306344665.md",
+              "sizeBytes": 1732
+            },
+            {
+              "name": "gap-fill-1777306347823.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306347823.md",
+              "sizeBytes": 1838
+            },
+            {
+              "name": "gap-fill-1777306350264.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306350264.md",
+              "sizeBytes": 1660
+            },
+            {
+              "name": "gap-fill-1777306351140.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306351140.md",
+              "sizeBytes": 1694
+            },
+            {
+              "name": "gap-fill-1777306355804.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306355804.md",
+              "sizeBytes": 1803
+            },
+            {
+              "name": "gap-fill-1777306362166.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306362166.md",
+              "sizeBytes": 1826
+            },
+            {
+              "name": "gap-fill-1777307131638.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307131638.md",
+              "sizeBytes": 1681
+            },
+            {
+              "name": "gap-fill-1777307132226.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307132226.md",
+              "sizeBytes": 1968
+            },
+            {
+              "name": "gap-fill-1777307133655.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307133655.md",
+              "sizeBytes": 1717
+            },
+            {
+              "name": "gap-fill-1777307136625.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307136625.md",
+              "sizeBytes": 1670
+            },
+            {
+              "name": "gap-fill-1777307140833.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307140833.md",
+              "sizeBytes": 1751
+            },
+            {
+              "name": "gap-fill-1777307144171.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307144171.md",
+              "sizeBytes": 1724
+            },
+            {
+              "name": "gap-fill-1777307146310.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307146310.md",
+              "sizeBytes": 1764
+            }
+          ]
+        }
+      ],
+      "files": 65,
+      "sizeBytes": 916002
+    },
+    {
+      "name": "business",
+      "label": "business",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "100-best-business-books.md",
+              "relativePath": "business/100-best-business-books.md",
+              "sizeBytes": 77381
+            },
+            {
+              "name": "advanced-negotiation-mastery.md",
+              "relativePath": "business/advanced-negotiation-mastery.md",
+              "sizeBytes": 47356
+            },
+            {
+              "name": "agentic-reasoning-mastery.md",
+              "relativePath": "business/agentic-reasoning-mastery.md",
+              "sizeBytes": 30472
+            },
+            {
+              "name": "alibaba-global-trade-mastery.md",
+              "relativePath": "business/alibaba-global-trade-mastery.md",
+              "sizeBytes": 22123
+            },
+            {
+              "name": "behavioral-economics-deep-mastery.md",
+              "relativePath": "business/behavioral-economics-deep-mastery.md",
+              "sizeBytes": 52367
+            },
+            {
+              "name": "book-wisdom-leadership.md",
+              "relativePath": "business/book-wisdom-leadership.md",
+              "sizeBytes": 41253
+            },
+            {
+              "name": "book-wisdom-psychology.md",
+              "relativePath": "business/book-wisdom-psychology.md",
+              "sizeBytes": 60653
+            },
+            {
+              "name": "book-wisdom-strategy.md",
+              "relativePath": "business/book-wisdom-strategy.md",
+              "sizeBytes": 75624
+            },
+            {
+              "name": "build-your-own-x.md",
+              "relativePath": "business/build-your-own-x.md",
+              "sizeBytes": 47813
+            },
+            {
+              "name": "community-building-devrel-mastery.md",
+              "relativePath": "business/community-building-devrel-mastery.md",
+              "sizeBytes": 51051
+            },
+            {
+              "name": "competitive-intelligence-mastery.md",
+              "relativePath": "business/competitive-intelligence-mastery.md",
+              "sizeBytes": 58763
+            },
+            {
+              "name": "conflict-resolution-mediation-mastery.md",
+              "relativePath": "business/conflict-resolution-mediation-mastery.md",
+              "sizeBytes": 35332
+            },
+            {
+              "name": "crisis-management-pr-mastery.md",
+              "relativePath": "business/crisis-management-pr-mastery.md",
+              "sizeBytes": 48565
+            },
+            {
+              "name": "customer-research-methods-mastery.md",
+              "relativePath": "business/customer-research-methods-mastery.md",
+              "sizeBytes": 42543
+            },
+            {
+              "name": "ecommerce-mastery-books.md",
+              "relativePath": "business/ecommerce-mastery-books.md",
+              "sizeBytes": 40959
+            },
+            {
+              "name": "education-learning-design-mastery.md",
+              "relativePath": "business/education-learning-design-mastery.md",
+              "sizeBytes": 44424
+            },
+            {
+              "name": "energy-climate-sustainability-mastery.md",
+              "relativePath": "business/energy-climate-sustainability-mastery.md",
+              "sizeBytes": 64379
+            },
+            {
+              "name": "etsy-mastery.md",
+              "relativePath": "business/etsy-mastery.md",
+              "sizeBytes": 8995
+            },
+            {
+              "name": "founder-health-performance-mastery.md",
+              "relativePath": "business/founder-health-performance-mastery.md",
+              "sizeBytes": 50471
+            },
+            {
+              "name": "franchise-licensing-models-mastery.md",
+              "relativePath": "business/franchise-licensing-models-mastery.md",
+              "sizeBytes": 45184
+            },
+            {
+              "name": "game-theory-strategic-decisions.md",
+              "relativePath": "business/game-theory-strategic-decisions.md",
+              "sizeBytes": 64587
+            },
+            {
+              "name": "hiring-team-building-mastery.md",
+              "relativePath": "business/hiring-team-building-mastery.md",
+              "sizeBytes": 55648
+            },
+            {
+              "name": "history-geopolitics-patterns.md",
+              "relativePath": "business/history-geopolitics-patterns.md",
+              "sizeBytes": 52737
+            },
+            {
+              "name": "hospitality-tech-landscape-mastery.md",
+              "relativePath": "business/hospitality-tech-landscape-mastery.md",
+              "sizeBytes": 52411
+            },
+            {
+              "name": "kalamazoo-market-intelligence.md",
+              "relativePath": "business/kalamazoo-market-intelligence.md",
+              "sizeBytes": 38623
+            },
+            {
+              "name": "lean-operations-efficiency-mastery.md",
+              "relativePath": "business/lean-operations-efficiency-mastery.md",
+              "sizeBytes": 45051
+            },
+            {
+              "name": "loyalty-membership-programs-mastery.md",
+              "relativePath": "business/loyalty-membership-programs-mastery.md",
+              "sizeBytes": 51654
+            },
+            {
+              "name": "micro-saas-vertical-growth-playbook.md",
+              "relativePath": "business/micro-saas-vertical-growth-playbook.md",
+              "sizeBytes": 30117
+            },
+            {
+              "name": "mit-ocw-computer-science.md",
+              "relativePath": "business/mit-ocw-computer-science.md",
+              "sizeBytes": 40803
+            },
+            {
+              "name": "mit-ocw-engineering.md",
+              "relativePath": "business/mit-ocw-engineering.md",
+              "sizeBytes": 36205
+            },
+            {
+              "name": "mit-ocw-mathematics.md",
+              "relativePath": "business/mit-ocw-mathematics.md",
+              "sizeBytes": 34344
+            },
+            {
+              "name": "neuroscience-learning-mastery.md",
+              "relativePath": "business/neuroscience-learning-mastery.md",
+              "sizeBytes": 56425
+            },
+            {
+              "name": "personal-brand-reputation-mastery.md",
+              "relativePath": "business/personal-brand-reputation-mastery.md",
+              "sizeBytes": 44278
+            },
+            {
+              "name": "philosophy-first-principles.md",
+              "relativePath": "business/philosophy-first-principles.md",
+              "sizeBytes": 66198
+            },
+            {
+              "name": "plg-onboarding-activation.md",
+              "relativePath": "business/plg-onboarding-activation.md",
+              "sizeBytes": 16862
+            },
+            {
+              "name": "pricing-science-monetization-mastery.md",
+              "relativePath": "business/pricing-science-monetization-mastery.md",
+              "sizeBytes": 49803
+            },
+            {
+              "name": "product-management-deep-mastery.md",
+              "relativePath": "business/product-management-deep-mastery.md",
+              "sizeBytes": 57493
+            },
+            {
+              "name": "public-speaking-presence-mastery.md",
+              "relativePath": "business/public-speaking-presence-mastery.md",
+              "sizeBytes": 45987
+            },
+            {
+              "name": "README.md",
+              "relativePath": "business/README.md",
+              "sizeBytes": 8864
+            },
+            {
+              "name": "saas-customer-success.md",
+              "relativePath": "business/saas-customer-success.md",
+              "sizeBytes": 50072
+            },
+            {
+              "name": "scaling-growth-playbook-mastery.md",
+              "relativePath": "business/scaling-growth-playbook-mastery.md",
+              "sizeBytes": 44905
+            },
+            {
+              "name": "shopify-ecommerce-mastery.md",
+              "relativePath": "business/shopify-ecommerce-mastery.md",
+              "sizeBytes": 23826
+            },
+            {
+              "name": "sociology-cultural-trends-mastery.md",
+              "relativePath": "business/sociology-cultural-trends-mastery.md",
+              "sizeBytes": 75663
+            },
+            {
+              "name": "supply-chain-operations-mastery.md",
+              "relativePath": "business/supply-chain-operations-mastery.md",
+              "sizeBytes": 63855
+            },
+            {
+              "name": "ted-talks-expert-knowledge.md",
+              "relativePath": "business/ted-talks-expert-knowledge.md",
+              "sizeBytes": 55913
+            },
+            {
+              "name": "time-management-productivity-mastery.md",
+              "relativePath": "business/time-management-productivity-mastery.md",
+              "sizeBytes": 40506
+            },
+            {
+              "name": "titans-industrial-global.md",
+              "relativePath": "business/titans-industrial-global.md",
+              "sizeBytes": 80424
+            },
+            {
+              "name": "titans-leadership-statesmanship.md",
+              "relativePath": "business/titans-leadership-statesmanship.md",
+              "sizeBytes": 59594
+            },
+            {
+              "name": "titans-media-creative.md",
+              "relativePath": "business/titans-media-creative.md",
+              "sizeBytes": 66760
+            },
+            {
+              "name": "titans-modern-disruptors.md",
+              "relativePath": "business/titans-modern-disruptors.md",
+              "sizeBytes": 69389
+            },
+            {
+              "name": "titans-of-industry.md",
+              "relativePath": "business/titans-of-industry.md",
+              "sizeBytes": 46902
+            },
+            {
+              "name": "titans-retail-consumer.md",
+              "relativePath": "business/titans-retail-consumer.md",
+              "sizeBytes": 64334
+            },
+            {
+              "name": "titans-tech-founders.md",
+              "relativePath": "business/titans-tech-founders.md",
+              "sizeBytes": 103281
+            },
+            {
+              "name": "upwork-freelance-bidding-mastery.md",
+              "relativePath": "business/upwork-freelance-bidding-mastery.md",
+              "sizeBytes": 58102
+            },
+            {
+              "name": "vendor-supplier-relationship-mastery.md",
+              "relativePath": "business/vendor-supplier-relationship-mastery.md",
+              "sizeBytes": 48378
+            },
+            {
+              "name": "yc-companies-2026.md",
+              "relativePath": "business/yc-companies-2026.md",
+              "sizeBytes": 49712
+            }
+          ]
+        }
+      ],
+      "files": 56,
+      "sizeBytes": 2795414
+    },
+    {
+      "name": "engineering",
+      "label": "engineering",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "advanced-css-animation-implementation.md",
+              "relativePath": "engineering/advanced-css-animation-implementation.md",
+              "sizeBytes": 56394
+            },
+            {
+              "name": "ai-agent-orchestration-2026-mastery.md",
+              "relativePath": "engineering/ai-agent-orchestration-2026-mastery.md",
+              "sizeBytes": 15769
+            },
+            {
+              "name": "ai-ml-engineering-mastery.md",
+              "relativePath": "engineering/ai-ml-engineering-mastery.md",
+              "sizeBytes": 41712
+            },
+            {
+              "name": "algorithms-data-structures-mastery.md",
+              "relativePath": "engineering/algorithms-data-structures-mastery.md",
+              "sizeBytes": 57575
+            },
+            {
+              "name": "api-design-mastery.md",
+              "relativePath": "engineering/api-design-mastery.md",
+              "sizeBytes": 37343
+            },
+            {
+              "name": "api-economy-integrations-mastery.md",
+              "relativePath": "engineering/api-economy-integrations-mastery.md",
+              "sizeBytes": 67566
+            },
+            {
+              "name": "applied-statistics-data-science-mastery.md",
+              "relativePath": "engineering/applied-statistics-data-science-mastery.md",
+              "sizeBytes": 48868
+            },
+            {
+              "name": "asi-deep-errorRecovery-145.md",
+              "relativePath": "engineering/asi-deep-errorRecovery-145.md",
+              "sizeBytes": 5144
+            },
+            {
+              "name": "asi-deep-errorRecovery-153.md",
+              "relativePath": "engineering/asi-deep-errorRecovery-153.md",
+              "sizeBytes": 5994
+            },
+            {
+              "name": "asi-deep-errorRecovery-163.md",
+              "relativePath": "engineering/asi-deep-errorRecovery-163.md",
+              "sizeBytes": 5717
+            },
+            {
+              "name": "asi-deep-reasoning-148.md",
+              "relativePath": "engineering/asi-deep-reasoning-148.md",
+              "sizeBytes": 4555
+            },
+            {
+              "name": "asi-deep-reasoning-149.md",
+              "relativePath": "engineering/asi-deep-reasoning-149.md",
+              "sizeBytes": 4843
+            },
+            {
+              "name": "asi-deep-reasoning-150.md",
+              "relativePath": "engineering/asi-deep-reasoning-150.md",
+              "sizeBytes": 5529
+            },
+            {
+              "name": "asi-deep-reasoning-151.md",
+              "relativePath": "engineering/asi-deep-reasoning-151.md",
+              "sizeBytes": 4414
+            },
+            {
+              "name": "automation-nocode-tools-mastery.md",
+              "relativePath": "engineering/automation-nocode-tools-mastery.md",
+              "sizeBytes": 55055
+            },
+            {
+              "name": "autonomous-workflow-mastery.md",
+              "relativePath": "engineering/autonomous-workflow-mastery.md",
+              "sizeBytes": 66896
+            },
+            {
+              "name": "book-wisdom-engineering.md",
+              "relativePath": "engineering/book-wisdom-engineering.md",
+              "sizeBytes": 76135
+            },
+            {
+              "name": "caching-queues-event-architecture.md",
+              "relativePath": "engineering/caching-queues-event-architecture.md",
+              "sizeBytes": 38651
+            },
+            {
+              "name": "cro-conversion-science-mastery.md",
+              "relativePath": "engineering/cro-conversion-science-mastery.md",
+              "sizeBytes": 56301
+            },
+            {
+              "name": "data-engineering-pipelines-mastery.md",
+              "relativePath": "engineering/data-engineering-pipelines-mastery.md",
+              "sizeBytes": 54163
+            },
+            {
+              "name": "database-design-postgres-mastery.md",
+              "relativePath": "engineering/database-design-postgres-mastery.md",
+              "sizeBytes": 51248
+            },
+            {
+              "name": "email-deliverability-mastery.md",
+              "relativePath": "engineering/email-deliverability-mastery.md",
+              "sizeBytes": 34748
+            },
+            {
+              "name": "error-handling-resilience-mastery.md",
+              "relativePath": "engineering/error-handling-resilience-mastery.md",
+              "sizeBytes": 52374
+            },
+            {
+              "name": "git-github-workflow-mastery.md",
+              "relativePath": "engineering/git-github-workflow-mastery.md",
+              "sizeBytes": 50931
+            },
+            {
+              "name": "github-actions-cicd-mastery.md",
+              "relativePath": "engineering/github-actions-cicd-mastery.md",
+              "sizeBytes": 34984
+            },
+            {
+              "name": "growth-engineering-revops-mastery.md",
+              "relativePath": "engineering/growth-engineering-revops-mastery.md",
+              "sizeBytes": 53711
+            },
+            {
+              "name": "identity-account-automation-mastery.md",
+              "relativePath": "engineering/identity-account-automation-mastery.md",
+              "sizeBytes": 68605
+            },
+            {
+              "name": "internationalization-localization-mastery.md",
+              "relativePath": "engineering/internationalization-localization-mastery.md",
+              "sizeBytes": 67591
+            },
+            {
+              "name": "js-runtimes-mastery.md",
+              "relativePath": "engineering/js-runtimes-mastery.md",
+              "sizeBytes": 29577
+            },
+            {
+              "name": "llm-architecture-self-improvement-mastery.md",
+              "relativePath": "engineering/llm-architecture-self-improvement-mastery.md",
+              "sizeBytes": 55034
+            },
+            {
+              "name": "marketplace-platform-design-mastery.md",
+              "relativePath": "engineering/marketplace-platform-design-mastery.md",
+              "sizeBytes": 65272
+            },
+            {
+              "name": "meta-harness-stanford-2026.md",
+              "relativePath": "engineering/meta-harness-stanford-2026.md",
+              "sizeBytes": 10727
+            },
+            {
+              "name": "mobile-app-development-mastery.md",
+              "relativePath": "engineering/mobile-app-development-mastery.md",
+              "sizeBytes": 50160
+            },
+            {
+              "name": "multi-tenant-saas-architecture-mastery.md",
+              "relativePath": "engineering/multi-tenant-saas-architecture-mastery.md",
+              "sizeBytes": 55124
+            },
+            {
+              "name": "network-science-complexity-mastery.md",
+              "relativePath": "engineering/network-science-complexity-mastery.md",
+              "sizeBytes": 51608
+            },
+            {
+              "name": "new-project-bootstrap.md",
+              "relativePath": "engineering/new-project-bootstrap.md",
+              "sizeBytes": 1655
+            },
+            {
+              "name": "nextjs-seo-performance-mastery.md",
+              "relativePath": "engineering/nextjs-seo-performance-mastery.md",
+              "sizeBytes": 26878
+            },
+            {
+              "name": "observability-monitoring-mastery.md",
+              "relativePath": "engineering/observability-monitoring-mastery.md",
+              "sizeBytes": 27908
+            },
+            {
+              "name": "open-source-strategy-mastery.md",
+              "relativePath": "engineering/open-source-strategy-mastery.md",
+              "sizeBytes": 52353
+            },
+            {
+              "name": "postgresql-mastery.md",
+              "relativePath": "engineering/postgresql-mastery.md",
+              "sizeBytes": 57575
+            },
+            {
+              "name": "project-scoping-estimation-mastery.md",
+              "relativePath": "engineering/project-scoping-estimation-mastery.md",
+              "sizeBytes": 48006
+            },
+            {
+              "name": "prompt-engineering-ai-apps-mastery.md",
+              "relativePath": "engineering/prompt-engineering-ai-apps-mastery.md",
+              "sizeBytes": 55577
+            },
+            {
+              "name": "rapid-prototyping-visual-speed-mastery.md",
+              "relativePath": "engineering/rapid-prototyping-visual-speed-mastery.md",
+              "sizeBytes": 55431
+            },
+            {
+              "name": "react-nextjs-performance-deep-mastery.md",
+              "relativePath": "engineering/react-nextjs-performance-deep-mastery.md",
+              "sizeBytes": 51559
+            },
+            {
+              "name": "react-state-management-mastery.md",
+              "relativePath": "engineering/react-state-management-mastery.md",
+              "sizeBytes": 39901
+            },
+            {
+              "name": "README.md",
+              "relativePath": "engineering/README.md",
+              "sizeBytes": 10577
+            },
+            {
+              "name": "realtime-websocket-mastery.md",
+              "relativePath": "engineering/realtime-websocket-mastery.md",
+              "sizeBytes": 28914
+            },
+            {
+              "name": "recurring-error-patterns.md",
+              "relativePath": "engineering/recurring-error-patterns.md",
+              "sizeBytes": 11370
+            },
+            {
+              "name": "saas-onboarding-activation-mastery.md",
+              "relativePath": "engineering/saas-onboarding-activation-mastery.md",
+              "sizeBytes": 54523
+            },
+            {
+              "name": "supabase-advanced-production-mastery.md",
+              "relativePath": "engineering/supabase-advanced-production-mastery.md",
+              "sizeBytes": 51759
+            },
+            {
+              "name": "technical-writing-docs-mastery.md",
+              "relativePath": "engineering/technical-writing-docs-mastery.md",
+              "sizeBytes": 52812
+            },
+            {
+              "name": "testing-strategy-mastery.md",
+              "relativePath": "engineering/testing-strategy-mastery.md",
+              "sizeBytes": 25095
+            },
+            {
+              "name": "vercel-edge-computing-mastery.md",
+              "relativePath": "engineering/vercel-edge-computing-mastery.md",
+              "sizeBytes": 51116
+            }
+          ]
+        }
+      ],
+      "files": 53,
+      "sizeBytes": 2143327
+    },
+    {
+      "name": "ai-research",
+      "label": "ai · research",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "alibaba-damo-2026.md",
+              "relativePath": "ai-research/alibaba-damo-2026.md",
+              "sizeBytes": 12365
+            },
+            {
+              "name": "baai-2026.md",
+              "relativePath": "ai-research/baai-2026.md",
+              "sizeBytes": 11896
+            },
+            {
+              "name": "baidu-research-2026.md",
+              "relativePath": "ai-research/baidu-research-2026.md",
+              "sizeBytes": 9705
+            },
+            {
+              "name": "berkeley-bair-2026.md",
+              "relativePath": "ai-research/berkeley-bair-2026.md",
+              "sizeBytes": 10411
+            },
+            {
+              "name": "bytedance-ai-2026.md",
+              "relativePath": "ai-research/bytedance-ai-2026.md",
+              "sizeBytes": 13583
+            },
+            {
+              "name": "caltech-ai-2026.md",
+              "relativePath": "ai-research/caltech-ai-2026.md",
+              "sizeBytes": 10540
+            },
+            {
+              "name": "cambridge-ai-2026.md",
+              "relativePath": "ai-research/cambridge-ai-2026.md",
+              "sizeBytes": 7899
+            },
+            {
+              "name": "CHINA-CLUSTER-2026-SUMMARY.md",
+              "relativePath": "ai-research/CHINA-CLUSTER-2026-SUMMARY.md",
+              "sizeBytes": 7667
+            },
+            {
+              "name": "CLUSTER-ANALYSIS-2026.md",
+              "relativePath": "ai-research/CLUSTER-ANALYSIS-2026.md",
+              "sizeBytes": 12736
+            },
+            {
+              "name": "CLUSTER-ANALYSIS-GT-UW-Toronto-Columbia-Yale-Apr2026.md",
+              "relativePath": "ai-research/CLUSTER-ANALYSIS-GT-UW-Toronto-Columbia-Yale-Apr2026.md",
+              "sizeBytes": 7756
+            },
+            {
+              "name": "cmu-ai-2026.md",
+              "relativePath": "ai-research/cmu-ai-2026.md",
+              "sizeBytes": 9968
+            },
+            {
+              "name": "columbia-ai-2026.md",
+              "relativePath": "ai-research/columbia-ai-2026.md",
+              "sizeBytes": 9416
+            },
+            {
+              "name": "cornell-ai-2026.md",
+              "relativePath": "ai-research/cornell-ai-2026.md",
+              "sizeBytes": 7277
+            },
+            {
+              "name": "deepseek-2026.md",
+              "relativePath": "ai-research/deepseek-2026.md",
+              "sizeBytes": 9716
+            },
+            {
+              "name": "edinburgh-ai-2026.md",
+              "relativePath": "ai-research/edinburgh-ai-2026.md",
+              "sizeBytes": 11559
+            },
+            {
+              "name": "epfl-ai-2026.md",
+              "relativePath": "ai-research/epfl-ai-2026.md",
+              "sizeBytes": 6653
+            },
+            {
+              "name": "eth-zurich-ai-2026.md",
+              "relativePath": "ai-research/eth-zurich-ai-2026.md",
+              "sizeBytes": 11851
+            },
+            {
+              "name": "georgia-tech-ai-2026.md",
+              "relativePath": "ai-research/georgia-tech-ai-2026.md",
+              "sizeBytes": 6201
+            },
+            {
+              "name": "harvard-ai-2026.md",
+              "relativePath": "ai-research/harvard-ai-2026.md",
+              "sizeBytes": 9927
+            },
+            {
+              "name": "huawei-noah-2026.md",
+              "relativePath": "ai-research/huawei-noah-2026.md",
+              "sizeBytes": 7677
+            },
+            {
+              "name": "imperial-ai-2026.md",
+              "relativePath": "ai-research/imperial-ai-2026.md",
+              "sizeBytes": 9035
+            },
+            {
+              "name": "INDEX-Apr2026-Cluster.md",
+              "relativePath": "ai-research/INDEX-Apr2026-Cluster.md",
+              "sizeBytes": 5215
+            },
+            {
+              "name": "kaist-ai-2026.md",
+              "relativePath": "ai-research/kaist-ai-2026.md",
+              "sizeBytes": 9434
+            },
+            {
+              "name": "kimi-k2-6-moonshot.md",
+              "relativePath": "ai-research/kimi-k2-6-moonshot.md",
+              "sizeBytes": 5646
+            },
+            {
+              "name": "META-china-ai-cluster-analysis.md",
+              "relativePath": "ai-research/META-china-ai-cluster-analysis.md",
+              "sizeBytes": 8781
+            },
+            {
+              "name": "META-CHINA-SUPERBRAIN-2026.md",
+              "relativePath": "ai-research/META-CHINA-SUPERBRAIN-2026.md",
+              "sizeBytes": 11036
+            },
+            {
+              "name": "META-GAPS-top25-2026.md",
+              "relativePath": "ai-research/META-GAPS-top25-2026.md",
+              "sizeBytes": 9439
+            },
+            {
+              "name": "mit-csail-2026.md",
+              "relativePath": "ai-research/mit-csail-2026.md",
+              "sizeBytes": 9311
+            },
+            {
+              "name": "moonshot-kimi-2026.md",
+              "relativePath": "ai-research/moonshot-kimi-2026.md",
+              "sizeBytes": 11802
+            },
+            {
+              "name": "nus-ai-2026.md",
+              "relativePath": "ai-research/nus-ai-2026.md",
+              "sizeBytes": 9424
+            },
+            {
+              "name": "oxford-ai-2026.md",
+              "relativePath": "ai-research/oxford-ai-2026.md",
+              "sizeBytes": 7342
+            },
+            {
+              "name": "peking-ai-2026.md",
+              "relativePath": "ai-research/peking-ai-2026.md",
+              "sizeBytes": 7361
+            },
+            {
+              "name": "princeton-ai-2026.md",
+              "relativePath": "ai-research/princeton-ai-2026.md",
+              "sizeBytes": 7932
+            },
+            {
+              "name": "README.md",
+              "relativePath": "ai-research/README.md",
+              "sizeBytes": 4277
+            },
+            {
+              "name": "sensetime-2026.md",
+              "relativePath": "ai-research/sensetime-2026.md",
+              "sizeBytes": 9841
+            },
+            {
+              "name": "stanford-ai-lab-2026.md",
+              "relativePath": "ai-research/stanford-ai-lab-2026.md",
+              "sizeBytes": 9366
+            },
+            {
+              "name": "stepfun-2026.md",
+              "relativePath": "ai-research/stepfun-2026.md",
+              "sizeBytes": 11005
+            },
+            {
+              "name": "tencent-ai-2026.md",
+              "relativePath": "ai-research/tencent-ai-2026.md",
+              "sizeBytes": 10838
+            },
+            {
+              "name": "toronto-ai-2026.md",
+              "relativePath": "ai-research/toronto-ai-2026.md",
+              "sizeBytes": 7193
+            },
+            {
+              "name": "tsinghua-ai-2026.md",
+              "relativePath": "ai-research/tsinghua-ai-2026.md",
+              "sizeBytes": 8224
+            },
+            {
+              "name": "ucla-ai-2026.md",
+              "relativePath": "ai-research/ucla-ai-2026.md",
+              "sizeBytes": 12397
+            },
+            {
+              "name": "uiuc-ai-2026.md",
+              "relativePath": "ai-research/uiuc-ai-2026.md",
+              "sizeBytes": 14450
+            },
+            {
+              "name": "uw-ai-2026.md",
+              "relativePath": "ai-research/uw-ai-2026.md",
+              "sizeBytes": 6767
+            },
+            {
+              "name": "xiaomi-ai-2026.md",
+              "relativePath": "ai-research/xiaomi-ai-2026.md",
+              "sizeBytes": 8349
+            },
+            {
+              "name": "yale-ai-2026.md",
+              "relativePath": "ai-research/yale-ai-2026.md",
+              "sizeBytes": 8904
+            },
+            {
+              "name": "yi-01ai-2026.md",
+              "relativePath": "ai-research/yi-01ai-2026.md",
+              "sizeBytes": 9230
+            },
+            {
+              "name": "zhipu-glm-2026.md",
+              "relativePath": "ai-research/zhipu-glm-2026.md",
+              "sizeBytes": 8603
+            }
+          ]
+        }
+      ],
+      "files": 47,
+      "sizeBytes": 436005
+    },
+    {
+      "name": "design",
+      "label": "design",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "accessibility-inclusive-design-deep.md",
+              "relativePath": "design/accessibility-inclusive-design-deep.md",
+              "sizeBytes": 72614
+            },
+            {
+              "name": "accessibility-wcag-mastery.md",
+              "relativePath": "design/accessibility-wcag-mastery.md",
+              "sizeBytes": 41988
+            },
+            {
+              "name": "analytics-dashboard-design-mastery.md",
+              "relativePath": "design/analytics-dashboard-design-mastery.md",
+              "sizeBytes": 60112
+            },
+            {
+              "name": "architecture-spatial-design-mastery.md",
+              "relativePath": "design/architecture-spatial-design-mastery.md",
+              "sizeBytes": 64714
+            },
+            {
+              "name": "awwwards-patterns-mastery.md",
+              "relativePath": "design/awwwards-patterns-mastery.md",
+              "sizeBytes": 41458
+            },
+            {
+              "name": "book-wisdom-design.md",
+              "relativePath": "design/book-wisdom-design.md",
+              "sizeBytes": 55355
+            },
+            {
+              "name": "brand-mastery.md",
+              "relativePath": "design/brand-mastery.md",
+              "sizeBytes": 54798
+            },
+            {
+              "name": "brand-naming-mastery.md",
+              "relativePath": "design/brand-naming-mastery.md",
+              "sizeBytes": 39506
+            },
+            {
+              "name": "calendar-ux-research.md",
+              "relativePath": "design/calendar-ux-research.md",
+              "sizeBytes": 51621
+            },
+            {
+              "name": "color-palette-mastery.md",
+              "relativePath": "design/color-palette-mastery.md",
+              "sizeBytes": 45539
+            },
+            {
+              "name": "color-typography-production-systems.md",
+              "relativePath": "design/color-typography-production-systems.md",
+              "sizeBytes": 57006
+            },
+            {
+              "name": "component-patterns-mastery.md",
+              "relativePath": "design/component-patterns-mastery.md",
+              "sizeBytes": 45124
+            },
+            {
+              "name": "css-tailwind-mastery.md",
+              "relativePath": "design/css-tailwind-mastery.md",
+              "sizeBytes": 35916
+            },
+            {
+              "name": "dark-mode-theming-mastery.md",
+              "relativePath": "design/dark-mode-theming-mastery.md",
+              "sizeBytes": 33113
+            },
+            {
+              "name": "design-masters-study.md",
+              "relativePath": "design/design-masters-study.md",
+              "sizeBytes": 35767
+            },
+            {
+              "name": "design-patterns-code-part1.md",
+              "relativePath": "design/design-patterns-code-part1.md",
+              "sizeBytes": 106086
+            },
+            {
+              "name": "design-patterns-code-part2.md",
+              "relativePath": "design/design-patterns-code-part2.md",
+              "sizeBytes": 92507
+            },
+            {
+              "name": "design-portfolio-reference-library.md",
+              "relativePath": "design/design-portfolio-reference-library.md",
+              "sizeBytes": 37038
+            },
+            {
+              "name": "design-practice-taste-development.md",
+              "relativePath": "design/design-practice-taste-development.md",
+              "sizeBytes": 70471
+            },
+            {
+              "name": "design-system-creation-mastery.md",
+              "relativePath": "design/design-system-creation-mastery.md",
+              "sizeBytes": 35355
+            },
+            {
+              "name": "google-design-systems-mastery.md",
+              "relativePath": "design/google-design-systems-mastery.md",
+              "sizeBytes": 56562
+            },
+            {
+              "name": "heatmap-attention-prediction-mastery.md",
+              "relativePath": "design/heatmap-attention-prediction-mastery.md",
+              "sizeBytes": 59593
+            },
+            {
+              "name": "information-architecture-mastery.md",
+              "relativePath": "design/information-architecture-mastery.md",
+              "sizeBytes": 45553
+            },
+            {
+              "name": "midjourney-ux-mastery.md",
+              "relativePath": "design/midjourney-ux-mastery.md",
+              "sizeBytes": 31946
+            },
+            {
+              "name": "motion-design-mastery.md",
+              "relativePath": "design/motion-design-mastery.md",
+              "sizeBytes": 49104
+            },
+            {
+              "name": "photo-video-production-mastery.md",
+              "relativePath": "design/photo-video-production-mastery.md",
+              "sizeBytes": 43206
+            },
+            {
+              "name": "README.md",
+              "relativePath": "design/README.md",
+              "sizeBytes": 5045
+            },
+            {
+              "name": "responsive-design-mastery.md",
+              "relativePath": "design/responsive-design-mastery.md",
+              "sizeBytes": 28134
+            },
+            {
+              "name": "typography-mastery.md",
+              "relativePath": "design/typography-mastery.md",
+              "sizeBytes": 35822
+            },
+            {
+              "name": "user-testing-simulation-mastery.md",
+              "relativePath": "design/user-testing-simulation-mastery.md",
+              "sizeBytes": 82418
+            },
+            {
+              "name": "ux-research-mastery.md",
+              "relativePath": "design/ux-research-mastery.md",
+              "sizeBytes": 47956
+            },
+            {
+              "name": "variant-design-mastery.md",
+              "relativePath": "design/variant-design-mastery.md",
+              "sizeBytes": 35574
+            },
+            {
+              "name": "web-components-design-systems.md",
+              "relativePath": "design/web-components-design-systems.md",
+              "sizeBytes": 47060
+            }
+          ]
+        }
+      ],
+      "files": 33,
+      "sizeBytes": 1644061
+    },
+    {
+      "name": "finance",
+      "label": "finance",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "accounting-automation-mastery.md",
+              "relativePath": "finance/accounting-automation-mastery.md",
+              "sizeBytes": 48935
+            },
+            {
+              "name": "acquisition-financing-no-money-down.md",
+              "relativePath": "finance/acquisition-financing-no-money-down.md",
+              "sizeBytes": 38149
+            },
+            {
+              "name": "advanced-financial-modeling.md",
+              "relativePath": "finance/advanced-financial-modeling.md",
+              "sizeBytes": 17597
+            },
+            {
+              "name": "ar-debt-collection-mastery.md",
+              "relativePath": "finance/ar-debt-collection-mastery.md",
+              "sizeBytes": 47883
+            },
+            {
+              "name": "backend-advancement-apr15.md",
+              "relativePath": "finance/backend-advancement-apr15.md",
+              "sizeBytes": 9552
+            },
+            {
+              "name": "book-wisdom-investing.md",
+              "relativePath": "finance/book-wisdom-investing.md",
+              "sizeBytes": 56160
+            },
+            {
+              "name": "business-debt-credit-strategy-mastery.md",
+              "relativePath": "finance/business-debt-credit-strategy-mastery.md",
+              "sizeBytes": 44926
+            },
+            {
+              "name": "commercial-real-estate.md",
+              "relativePath": "finance/commercial-real-estate.md",
+              "sizeBytes": 20248
+            },
+            {
+              "name": "creative-real-estate-financing.md",
+              "relativePath": "finance/creative-real-estate-financing.md",
+              "sizeBytes": 48847
+            },
+            {
+              "name": "fundraising-investor-relations.md",
+              "relativePath": "finance/fundraising-investor-relations.md",
+              "sizeBytes": 48119
+            },
+            {
+              "name": "holding-company-tax-optimization.md",
+              "relativePath": "finance/holding-company-tax-optimization.md",
+              "sizeBytes": 68700
+            },
+            {
+              "name": "insurance-risk-management-mastery.md",
+              "relativePath": "finance/insurance-risk-management-mastery.md",
+              "sizeBytes": 59128
+            },
+            {
+              "name": "investment-banking-mastery.md",
+              "relativePath": "finance/investment-banking-mastery.md",
+              "sizeBytes": 92048
+            },
+            {
+              "name": "payments-fintech-mastery.md",
+              "relativePath": "finance/payments-fintech-mastery.md",
+              "sizeBytes": 64128
+            },
+            {
+              "name": "payroll-hr-compliance-deep-mastery.md",
+              "relativePath": "finance/payroll-hr-compliance-deep-mastery.md",
+              "sizeBytes": 47461
+            },
+            {
+              "name": "payroll-tax-audit-mastery.md",
+              "relativePath": "finance/payroll-tax-audit-mastery.md",
+              "sizeBytes": 32774
+            },
+            {
+              "name": "personal-finance-wealth-mastery.md",
+              "relativePath": "finance/personal-finance-wealth-mastery.md",
+              "sizeBytes": 58401
+            },
+            {
+              "name": "private-equity-mna-mastery.md",
+              "relativePath": "finance/private-equity-mna-mastery.md",
+              "sizeBytes": 96961
+            },
+            {
+              "name": "quantitative-math-quick-reference.md",
+              "relativePath": "finance/quantitative-math-quick-reference.md",
+              "sizeBytes": 15030
+            },
+            {
+              "name": "quantitative-mathematics-expert-knowledge.md",
+              "relativePath": "finance/quantitative-mathematics-expert-knowledge.md",
+              "sizeBytes": 51026
+            },
+            {
+              "name": "README.md",
+              "relativePath": "finance/README.md",
+              "sizeBytes": 5103
+            },
+            {
+              "name": "real-estate-operations-mastery.md",
+              "relativePath": "finance/real-estate-operations-mastery.md",
+              "sizeBytes": 64492
+            },
+            {
+              "name": "restaurant-financial-modeling.md",
+              "relativePath": "finance/restaurant-financial-modeling.md",
+              "sizeBytes": 40363
+            },
+            {
+              "name": "saas-arr-waterfall-model.md",
+              "relativePath": "finance/saas-arr-waterfall-model.md",
+              "sizeBytes": 10177
+            },
+            {
+              "name": "stripe-decline-codes-reference.md",
+              "relativePath": "finance/stripe-decline-codes-reference.md",
+              "sizeBytes": 13706
+            },
+            {
+              "name": "stripe-optimization.md",
+              "relativePath": "finance/stripe-optimization.md",
+              "sizeBytes": 81590
+            },
+            {
+              "name": "tax-return-preparation-mastery.md",
+              "relativePath": "finance/tax-return-preparation-mastery.md",
+              "sizeBytes": 58376
+            },
+            {
+              "name": "tax-strategy-optimization-mastery.md",
+              "relativePath": "finance/tax-strategy-optimization-mastery.md",
+              "sizeBytes": 61456
+            },
+            {
+              "name": "titans-investors.md",
+              "relativePath": "finance/titans-investors.md",
+              "sizeBytes": 64052
+            },
+            {
+              "name": "venture-capital-fund-operations-mastery.md",
+              "relativePath": "finance/venture-capital-fund-operations-mastery.md",
+              "sizeBytes": 53815
+            },
+            {
+              "name": "wealth-transfer-estate-planning-mastery.md",
+              "relativePath": "finance/wealth-transfer-estate-planning-mastery.md",
+              "sizeBytes": 44338
+            }
+          ]
+        }
+      ],
+      "files": 31,
+      "sizeBytes": 1463541
+    },
+    {
+      "name": "sales",
+      "label": "sales",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "ad-buying-automation-media-planning.md",
+              "relativePath": "sales/ad-buying-automation-media-planning.md",
+              "sizeBytes": 57294
+            },
+            {
+              "name": "ad-campaign-builder.md",
+              "relativePath": "sales/ad-campaign-builder.md",
+              "sizeBytes": 8288
+            },
+            {
+              "name": "book-wisdom-sales-marketing.md",
+              "relativePath": "sales/book-wisdom-sales-marketing.md",
+              "sizeBytes": 54332
+            },
+            {
+              "name": "consultative-selling-mastery.md",
+              "relativePath": "sales/consultative-selling-mastery.md",
+              "sizeBytes": 26799
+            },
+            {
+              "name": "content-monetization-creator-economy-mastery.md",
+              "relativePath": "sales/content-monetization-creator-economy-mastery.md",
+              "sizeBytes": 53182
+            },
+            {
+              "name": "copywriting-direct-response-mastery.md",
+              "relativePath": "sales/copywriting-direct-response-mastery.md",
+              "sizeBytes": 64569
+            },
+            {
+              "name": "customer-success-retention-mastery.md",
+              "relativePath": "sales/customer-success-retention-mastery.md",
+              "sizeBytes": 52256
+            },
+            {
+              "name": "email-marketing-sequences-mastery.md",
+              "relativePath": "sales/email-marketing-sequences-mastery.md",
+              "sizeBytes": 60099
+            },
+            {
+              "name": "EXECUTE-FIRST-WEEK.md",
+              "relativePath": "sales/EXECUTE-FIRST-WEEK.md",
+              "sizeBytes": 9857
+            },
+            {
+              "name": "google-ads-mastery.md",
+              "relativePath": "sales/google-ads-mastery.md",
+              "sizeBytes": 8941
+            },
+            {
+              "name": "INDEX-olddae-sales-engine.md",
+              "relativePath": "sales/INDEX-olddae-sales-engine.md",
+              "sizeBytes": 14696
+            },
+            {
+              "name": "influencer-partnership-marketing-mastery.md",
+              "relativePath": "sales/influencer-partnership-marketing-mastery.md",
+              "sizeBytes": 51009
+            },
+            {
+              "name": "meta-ads-mastery.md",
+              "relativePath": "sales/meta-ads-mastery.md",
+              "sizeBytes": 7206
+            },
+            {
+              "name": "olddae-email-templates.md",
+              "relativePath": "sales/olddae-email-templates.md",
+              "sizeBytes": 17936
+            },
+            {
+              "name": "olddae-gtm-cheatsheet.md",
+              "relativePath": "sales/olddae-gtm-cheatsheet.md",
+              "sizeBytes": 9862
+            },
+            {
+              "name": "olddae-sales-action-plan-2026q2.md",
+              "relativePath": "sales/olddae-sales-action-plan-2026q2.md",
+              "sizeBytes": 14310
+            },
+            {
+              "name": "podcast-content-strategy-mastery.md",
+              "relativePath": "sales/podcast-content-strategy-mastery.md",
+              "sizeBytes": 61249
+            },
+            {
+              "name": "proposal-pitch-templates-mastery.md",
+              "relativePath": "sales/proposal-pitch-templates-mastery.md",
+              "sizeBytes": 51417
+            },
+            {
+              "name": "README-OLDDAE-SALES.md",
+              "relativePath": "sales/README-OLDDAE-SALES.md",
+              "sizeBytes": 12983
+            },
+            {
+              "name": "README.md",
+              "relativePath": "sales/README.md",
+              "sizeBytes": 4182
+            },
+            {
+              "name": "restaurant-marketing-local-seo.md",
+              "relativePath": "sales/restaurant-marketing-local-seo.md",
+              "sizeBytes": 65935
+            },
+            {
+              "name": "revops-saas-mastery.md",
+              "relativePath": "sales/revops-saas-mastery.md",
+              "sizeBytes": 32937
+            },
+            {
+              "name": "rhetoric-communication-mastery.md",
+              "relativePath": "sales/rhetoric-communication-mastery.md",
+              "sizeBytes": 54890
+            },
+            {
+              "name": "saas-gtm-sales.md",
+              "relativePath": "sales/saas-gtm-sales.md",
+              "sizeBytes": 31736
+            },
+            {
+              "name": "sales-mastery-books.md",
+              "relativePath": "sales/sales-mastery-books.md",
+              "sizeBytes": 82052
+            },
+            {
+              "name": "seo-content-link-building-mastery.md",
+              "relativePath": "sales/seo-content-link-building-mastery.md",
+              "sizeBytes": 65784
+            },
+            {
+              "name": "social-media-advertising-deep-mastery.md",
+              "relativePath": "sales/social-media-advertising-deep-mastery.md",
+              "sizeBytes": 49741
+            },
+            {
+              "name": "storytelling-narrative-mastery.md",
+              "relativePath": "sales/storytelling-narrative-mastery.md",
+              "sizeBytes": 57226
+            }
+          ]
+        }
+      ],
+      "files": 28,
+      "sizeBytes": 1080768
+    },
+    {
+      "name": "experiments-25x",
+      "label": "experiments",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "00-constitutional-ai-principles.md",
+              "relativePath": "experiments-25x/00-constitutional-ai-principles.md",
+              "sizeBytes": 1349
+            },
+            {
+              "name": "00-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/00-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 3095
+            },
+            {
+              "name": "01-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/01-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 3278
+            },
+            {
+              "name": "02-Qwen_ThinkingModeWrapper.md",
+              "relativePath": "experiments-25x/02-Qwen_ThinkingModeWrapper.md",
+              "sizeBytes": 906
+            },
+            {
+              "name": "03-causal-reasoning-prelight.md",
+              "relativePath": "experiments-25x/03-causal-reasoning-prelight.md",
+              "sizeBytes": 2568
+            },
+            {
+              "name": "04-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/04-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 2597
+            },
+            {
+              "name": "05-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/05-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 2589
+            },
+            {
+              "name": "07-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/07-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 2853
+            },
+            {
+              "name": "09-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/09-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 2849
+            },
+            {
+              "name": "10-explainable-ai.md",
+              "relativePath": "experiments-25x/10-explainable-ai.md",
+              "sizeBytes": 1374
+            },
+            {
+              "name": "10-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/10-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 2761
+            },
+            {
+              "name": "11-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/11-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 2570
+            },
+            {
+              "name": "13-causal_reasoning_knowledge.md",
+              "relativePath": "experiments-25x/13-causal_reasoning_knowledge.md",
+              "sizeBytes": 2437
+            },
+            {
+              "name": "14-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/14-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 2517
+            },
+            {
+              "name": "16-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/16-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 2851
+            },
+            {
+              "name": "19-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/19-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 2787
+            },
+            {
+              "name": "21-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/21-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 3157
+            },
+            {
+              "name": "22-speech-recognition-cmu-capability.md",
+              "relativePath": "experiments-25x/22-speech-recognition-cmu-capability.md",
+              "sizeBytes": 2422
+            },
+            {
+              "name": "23-computer-vision-system-prompt.md",
+              "relativePath": "experiments-25x/23-computer-vision-system-prompt.md",
+              "sizeBytes": 2690
+            },
+            {
+              "name": "24-orchestrator_preflight_knowledge.md",
+              "relativePath": "experiments-25x/24-orchestrator_preflight_knowledge.md",
+              "sizeBytes": 2834
+            }
+          ]
+        },
+        {
+          "name": "drafts",
+          "files": [
+            {
+              "name": "05-knowledge-graph-embedding.md",
+              "relativePath": "experiments-25x/drafts/05-knowledge-graph-embedding.md",
+              "sizeBytes": 1344
+            },
+            {
+              "name": "12-philosophy-and-logic-reasoning.md",
+              "relativePath": "experiments-25x/drafts/12-philosophy-and-logic-reasoning.md",
+              "sizeBytes": 2150
+            },
+            {
+              "name": "19-nlp_knowledge.md",
+              "relativePath": "experiments-25x/drafts/19-nlp_knowledge.md",
+              "sizeBytes": 1813
+            },
+            {
+              "name": "23-ai_ethics_duke.md",
+              "relativePath": "experiments-25x/drafts/23-ai_ethics_duke.md",
+              "sizeBytes": 1099
+            }
+          ]
+        }
+      ],
+      "files": 24,
+      "sizeBytes": 56890
+    },
+    {
+      "name": "research",
+      "label": "research",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "2026-04-26-agentic-patterns.md",
+              "relativePath": "research/2026-04-26-agentic-patterns.md",
+              "sizeBytes": 21449
+            },
+            {
+              "name": "2026-04-26-china-labs.md",
+              "relativePath": "research/2026-04-26-china-labs.md",
+              "sizeBytes": 33517
+            },
+            {
+              "name": "2026-04-26-emergence-deep-dive.md",
+              "relativePath": "research/2026-04-26-emergence-deep-dive.md",
+              "sizeBytes": 6720
+            },
+            {
+              "name": "2026-04-26-emergent-sh.md",
+              "relativePath": "research/2026-04-26-emergent-sh.md",
+              "sizeBytes": 18164
+            },
+            {
+              "name": "2026-04-26-emerging-regions.md",
+              "relativePath": "research/2026-04-26-emerging-regions.md",
+              "sizeBytes": 43360
+            },
+            {
+              "name": "2026-04-26-europe-uk-labs.md",
+              "relativePath": "research/2026-04-26-europe-uk-labs.md",
+              "sizeBytes": 26883
+            },
+            {
+              "name": "2026-04-26-inference-efficiency.md",
+              "relativePath": "research/2026-04-26-inference-efficiency.md",
+              "sizeBytes": 28578
+            },
+            {
+              "name": "2026-04-26-MASTER-COMPETITIVE-SYNTHESIS.md",
+              "relativePath": "research/2026-04-26-MASTER-COMPETITIVE-SYNTHESIS.md",
+              "sizeBytes": 9112
+            },
+            {
+              "name": "2026-04-26-MASTER-SYNTHESIS.md",
+              "relativePath": "research/2026-04-26-MASTER-SYNTHESIS.md",
+              "sizeBytes": 11879
+            },
+            {
+              "name": "2026-04-26-memory-architectures.md",
+              "relativePath": "research/2026-04-26-memory-architectures.md",
+              "sizeBytes": 46975
+            },
+            {
+              "name": "2026-04-26-operator-deep-dive.md",
+              "relativePath": "research/2026-04-26-operator-deep-dive.md",
+              "sizeBytes": 12301
+            },
+            {
+              "name": "2026-04-26-pioneer-ai.md",
+              "relativePath": "research/2026-04-26-pioneer-ai.md",
+              "sizeBytes": 19700
+            },
+            {
+              "name": "2026-04-26-self-improvement.md",
+              "relativePath": "research/2026-04-26-self-improvement.md",
+              "sizeBytes": 28035
+            },
+            {
+              "name": "2026-04-26-self-introspection.md",
+              "relativePath": "research/2026-04-26-self-introspection.md",
+              "sizeBytes": 8739
+            },
+            {
+              "name": "2026-04-26-us-frontier-labs.md",
+              "relativePath": "research/2026-04-26-us-frontier-labs.md",
+              "sizeBytes": 49131
+            },
+            {
+              "name": "2026-04-27-longmemeval-results.md",
+              "relativePath": "research/2026-04-27-longmemeval-results.md",
+              "sizeBytes": 38791
+            },
+            {
+              "name": "mechanize-deep-dive.md",
+              "relativePath": "research/mechanize-deep-dive.md",
+              "sizeBytes": 44817
+            },
+            {
+              "name": "README.md",
+              "relativePath": "research/README.md",
+              "sizeBytes": 2711
+            }
+          ]
+        }
+      ],
+      "files": 18,
+      "sizeBytes": 450862
+    },
+    {
+      "name": "legal",
+      "label": "legal",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "board-governance-corporate-law-mastery.md",
+              "relativePath": "legal/board-governance-corporate-law-mastery.md",
+              "sizeBytes": 51896
+            },
+            {
+              "name": "compliance-checklists-all-businesses.md",
+              "relativePath": "legal/compliance-checklists-all-businesses.md",
+              "sizeBytes": 51452
+            },
+            {
+              "name": "contract-negotiation-mastery.md",
+              "relativePath": "legal/contract-negotiation-mastery.md",
+              "sizeBytes": 17053
+            },
+            {
+              "name": "contracts-legal-templates-mastery.md",
+              "relativePath": "legal/contracts-legal-templates-mastery.md",
+              "sizeBytes": 70154
+            },
+            {
+              "name": "data-privacy-compliance-mastery.md",
+              "relativePath": "legal/data-privacy-compliance-mastery.md",
+              "sizeBytes": 64383
+            },
+            {
+              "name": "delaware-business-tax-law-mastery.md",
+              "relativePath": "legal/delaware-business-tax-law-mastery.md",
+              "sizeBytes": 48535
+            },
+            {
+              "name": "equity-crowdfunding-guide.md",
+              "relativePath": "legal/equity-crowdfunding-guide.md",
+              "sizeBytes": 46955
+            },
+            {
+              "name": "hr-people-operations.md",
+              "relativePath": "legal/hr-people-operations.md",
+              "sizeBytes": 35768
+            },
+            {
+              "name": "intellectual-property-deep-mastery.md",
+              "relativePath": "legal/intellectual-property-deep-mastery.md",
+              "sizeBytes": 74784
+            },
+            {
+              "name": "michigan-business-law-mastery.md",
+              "relativePath": "legal/michigan-business-law-mastery.md",
+              "sizeBytes": 54436
+            },
+            {
+              "name": "mlcc-compliance.md",
+              "relativePath": "legal/mlcc-compliance.md",
+              "sizeBytes": 22341
+            },
+            {
+              "name": "README.md",
+              "relativePath": "legal/README.md",
+              "sizeBytes": 2333
+            },
+            {
+              "name": "saas-legal-patterns.md",
+              "relativePath": "legal/saas-legal-patterns.md",
+              "sizeBytes": 50653
+            },
+            {
+              "name": "supply-chain-procurement.md",
+              "relativePath": "legal/supply-chain-procurement.md",
+              "sizeBytes": 45954
+            },
+            {
+              "name": "trademark-ip-protection.md",
+              "relativePath": "legal/trademark-ip-protection.md",
+              "sizeBytes": 38177
+            }
+          ]
+        }
+      ],
+      "files": 15,
+      "sizeBytes": 674874
+    },
+    {
+      "name": "restaurant",
+      "label": "restaurant",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "bartender-operations-service-mastery.md",
+              "relativePath": "restaurant/bartender-operations-service-mastery.md",
+              "sizeBytes": 46014
+            },
+            {
+              "name": "catering-event-sales.md",
+              "relativePath": "restaurant/catering-event-sales.md",
+              "sizeBytes": 15304
+            },
+            {
+              "name": "event-marketing-mastery.md",
+              "relativePath": "restaurant/event-marketing-mastery.md",
+              "sizeBytes": 9616
+            },
+            {
+              "name": "event-planning-production-mastery.md",
+              "relativePath": "restaurant/event-planning-production-mastery.md",
+              "sizeBytes": 45606
+            },
+            {
+              "name": "financial-optimization.md",
+              "relativePath": "restaurant/financial-optimization.md",
+              "sizeBytes": 28580
+            },
+            {
+              "name": "food-science-culinary-mastery.md",
+              "relativePath": "restaurant/food-science-culinary-mastery.md",
+              "sizeBytes": 72887
+            },
+            {
+              "name": "honeybook-private-events.md",
+              "relativePath": "restaurant/honeybook-private-events.md",
+              "sizeBytes": 11088
+            },
+            {
+              "name": "inventory-management.md",
+              "relativePath": "restaurant/inventory-management.md",
+              "sizeBytes": 5621
+            },
+            {
+              "name": "local-marketing-mastery.md",
+              "relativePath": "restaurant/local-marketing-mastery.md",
+              "sizeBytes": 38918
+            },
+            {
+              "name": "music-entertainment-booking-mastery.md",
+              "relativePath": "restaurant/music-entertainment-booking-mastery.md",
+              "sizeBytes": 54192
+            },
+            {
+              "name": "README.md",
+              "relativePath": "restaurant/README.md",
+              "sizeBytes": 2475
+            },
+            {
+              "name": "restaurant-bar-finance-mastery.md",
+              "relativePath": "restaurant/restaurant-bar-finance-mastery.md",
+              "sizeBytes": 11807
+            },
+            {
+              "name": "restaurant-operations.md",
+              "relativePath": "restaurant/restaurant-operations.md",
+              "sizeBytes": 49066
+            },
+            {
+              "name": "staff-management.md",
+              "relativePath": "restaurant/staff-management.md",
+              "sizeBytes": 5801
+            },
+            {
+              "name": "wine-spirits-mastery.md",
+              "relativePath": "restaurant/wine-spirits-mastery.md",
+              "sizeBytes": 47664
+            }
+          ]
+        }
+      ],
+      "files": 15,
+      "sizeBytes": 444639
+    },
+    {
+      "name": "languages",
+      "label": "languages",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "c-systems-mastery.md",
+              "relativePath": "languages/c-systems-mastery.md",
+              "sizeBytes": 41913
+            },
+            {
+              "name": "dart-flutter-mastery.md",
+              "relativePath": "languages/dart-flutter-mastery.md",
+              "sizeBytes": 50010
+            },
+            {
+              "name": "elixir-mastery.md",
+              "relativePath": "languages/elixir-mastery.md",
+              "sizeBytes": 39994
+            },
+            {
+              "name": "go-mastery.md",
+              "relativePath": "languages/go-mastery.md",
+              "sizeBytes": 85192
+            },
+            {
+              "name": "kotlin-java-mastery.md",
+              "relativePath": "languages/kotlin-java-mastery.md",
+              "sizeBytes": 48598
+            },
+            {
+              "name": "lua-mastery.md",
+              "relativePath": "languages/lua-mastery.md",
+              "sizeBytes": 12819
+            },
+            {
+              "name": "python-official-tutorial.md",
+              "relativePath": "languages/python-official-tutorial.md",
+              "sizeBytes": 65264
+            },
+            {
+              "name": "python-stdlib-reference.md",
+              "relativePath": "languages/python-stdlib-reference.md",
+              "sizeBytes": 47144
+            },
+            {
+              "name": "r-data-science.md",
+              "relativePath": "languages/r-data-science.md",
+              "sizeBytes": 13884
+            },
+            {
+              "name": "README.md",
+              "relativePath": "languages/README.md",
+              "sizeBytes": 1767
+            },
+            {
+              "name": "rust-mastery.md",
+              "relativePath": "languages/rust-mastery.md",
+              "sizeBytes": 44735
+            },
+            {
+              "name": "swift-swiftui-mastery.md",
+              "relativePath": "languages/swift-swiftui-mastery.md",
+              "sizeBytes": 97242
+            },
+            {
+              "name": "typescript-mastery.md",
+              "relativePath": "languages/typescript-mastery.md",
+              "sizeBytes": 48150
+            }
+          ]
+        }
+      ],
+      "files": 13,
+      "sizeBytes": 596712
+    },
+    {
+      "name": "security",
+      "label": "security",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "ai-ethics-responsible-ai.md",
+              "relativePath": "security/ai-ethics-responsible-ai.md",
+              "sizeBytes": 86562
+            },
+            {
+              "name": "cloud-security-hardening.md",
+              "relativePath": "security/cloud-security-hardening.md",
+              "sizeBytes": 19719
+            },
+            {
+              "name": "compliance-frameworks-mastery.md",
+              "relativePath": "security/compliance-frameworks-mastery.md",
+              "sizeBytes": 48471
+            },
+            {
+              "name": "cryptography-auth-mastery.md",
+              "relativePath": "security/cryptography-auth-mastery.md",
+              "sizeBytes": 44560
+            },
+            {
+              "name": "incident-response-forensics.md",
+              "relativePath": "security/incident-response-forensics.md",
+              "sizeBytes": 40323
+            },
+            {
+              "name": "network-infrastructure-security.md",
+              "relativePath": "security/network-infrastructure-security.md",
+              "sizeBytes": 31412
+            },
+            {
+              "name": "offensive-security-pentesting.md",
+              "relativePath": "security/offensive-security-pentesting.md",
+              "sizeBytes": 50931
+            },
+            {
+              "name": "README.md",
+              "relativePath": "security/README.md",
+              "sizeBytes": 1783
+            },
+            {
+              "name": "security-operations-devsecops-mastery.md",
+              "relativePath": "security/security-operations-devsecops-mastery.md",
+              "sizeBytes": 47625
+            },
+            {
+              "name": "supply-chain-security.md",
+              "relativePath": "security/supply-chain-security.md",
+              "sizeBytes": 27406
+            },
+            {
+              "name": "threat-modeling-security-architecture.md",
+              "relativePath": "security/threat-modeling-security-architecture.md",
+              "sizeBytes": 34537
+            }
+          ]
+        }
+      ],
+      "files": 11,
+      "sizeBytes": 433329
+    },
+    {
+      "name": "algorithms",
+      "label": "algorithms",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "complexity-theory.md",
+              "relativePath": "algorithms/complexity-theory.md",
+              "sizeBytes": 4464
+            },
+            {
+              "name": "data-structures-advanced.md",
+              "relativePath": "algorithms/data-structures-advanced.md",
+              "sizeBytes": 4981
+            },
+            {
+              "name": "dynamic-programming.md",
+              "relativePath": "algorithms/dynamic-programming.md",
+              "sizeBytes": 4358
+            },
+            {
+              "name": "graph-algorithms.md",
+              "relativePath": "algorithms/graph-algorithms.md",
+              "sizeBytes": 4289
+            },
+            {
+              "name": "greedy-divide-conquer.md",
+              "relativePath": "algorithms/greedy-divide-conquer.md",
+              "sizeBytes": 4498
+            },
+            {
+              "name": "ml-algorithms.md",
+              "relativePath": "algorithms/ml-algorithms.md",
+              "sizeBytes": 4848
+            },
+            {
+              "name": "optimization-algorithms.md",
+              "relativePath": "algorithms/optimization-algorithms.md",
+              "sizeBytes": 4160
+            },
+            {
+              "name": "README.md",
+              "relativePath": "algorithms/README.md",
+              "sizeBytes": 1376
+            },
+            {
+              "name": "sorting-searching.md",
+              "relativePath": "algorithms/sorting-searching.md",
+              "sizeBytes": 4105
+            },
+            {
+              "name": "string-algorithms.md",
+              "relativePath": "algorithms/string-algorithms.md",
+              "sizeBytes": 3847
+            }
+          ]
+        }
+      ],
+      "files": 10,
+      "sizeBytes": 40926
+    },
+    {
+      "name": "platforms",
+      "label": "platforms",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "anthropic-ai-mastery.md",
+              "relativePath": "platforms/anthropic-ai-mastery.md",
+              "sizeBytes": 4541
+            },
+            {
+              "name": "bash-scripting-mastery.md",
+              "relativePath": "platforms/bash-scripting-mastery.md",
+              "sizeBytes": 54551
+            },
+            {
+              "name": "claude-ai-mastery.md",
+              "relativePath": "platforms/claude-ai-mastery.md",
+              "sizeBytes": 2028
+            },
+            {
+              "name": "figma-design-detailed.md",
+              "relativePath": "platforms/figma-design-detailed.md",
+              "sizeBytes": 22835
+            },
+            {
+              "name": "figma-design-mastery.md",
+              "relativePath": "platforms/figma-design-mastery.md",
+              "sizeBytes": 12031
+            },
+            {
+              "name": "google-analytics-mastery.md",
+              "relativePath": "platforms/google-analytics-mastery.md",
+              "sizeBytes": 3325
+            },
+            {
+              "name": "meta-ads-mastery.md",
+              "relativePath": "platforms/meta-ads-mastery.md",
+              "sizeBytes": 4335
+            },
+            {
+              "name": "README.md",
+              "relativePath": "platforms/README.md",
+              "sizeBytes": 1214
+            },
+            {
+              "name": "zsh-mastery.md",
+              "relativePath": "platforms/zsh-mastery.md",
+              "sizeBytes": 36293
+            }
+          ]
+        }
+      ],
+      "files": 9,
+      "sizeBytes": 141153
+    },
+    {
+      "name": "credit",
+      "label": "credit",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "credit-card-processing-for-bars-and-restaurants.md",
+              "relativePath": "credit/credit-card-processing-for-bars-and-restaurants.md",
+              "sizeBytes": 5267
+            },
+            {
+              "name": "credit-repair-reporting-mastery.md",
+              "relativePath": "credit/credit-repair-reporting-mastery.md",
+              "sizeBytes": 45112
+            },
+            {
+              "name": "credit-scoring-models-deep.md",
+              "relativePath": "credit/credit-scoring-models-deep.md",
+              "sizeBytes": 21346
+            },
+            {
+              "name": "managing-credit-risks-in-the-hospitality-industry.md",
+              "relativePath": "credit/managing-credit-risks-in-the-hospitality-industry.md",
+              "sizeBytes": 5936
+            },
+            {
+              "name": "private-credit-lending-mastery.md",
+              "relativePath": "credit/private-credit-lending-mastery.md",
+              "sizeBytes": 42042
+            },
+            {
+              "name": "README.md",
+              "relativePath": "credit/README.md",
+              "sizeBytes": 1158
+            },
+            {
+              "name": "underwriting-collections-mastery.md",
+              "relativePath": "credit/underwriting-collections-mastery.md",
+              "sizeBytes": 64075
+            }
+          ]
+        }
+      ],
+      "files": 7,
+      "sizeBytes": 184936
+    },
+    {
+      "name": "email",
+      "label": "email",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "customer-reservation-emails.md",
+              "relativePath": "email/customer-reservation-emails.md",
+              "sizeBytes": 6144
+            },
+            {
+              "name": "email-guest-feedback-surveys.md",
+              "relativePath": "email/email-guest-feedback-surveys.md",
+              "sizeBytes": 6154
+            },
+            {
+              "name": "email-reservation-confirmations.md",
+              "relativePath": "email/email-reservation-confirmations.md",
+              "sizeBytes": 6044
+            },
+            {
+              "name": "marketing-campaign-management.md",
+              "relativePath": "email/marketing-campaign-management.md",
+              "sizeBytes": 7503
+            },
+            {
+              "name": "README.md",
+              "relativePath": "email/README.md",
+              "sizeBytes": 933
+            },
+            {
+              "name": "triage-pipeline.md",
+              "relativePath": "email/triage-pipeline.md",
+              "sizeBytes": 8682
+            },
+            {
+              "name": "yahoo-oauth-guide.md",
+              "relativePath": "email/yahoo-oauth-guide.md",
+              "sizeBytes": 6654
+            }
+          ]
+        }
+      ],
+      "files": 7,
+      "sizeBytes": 42114
+    },
+    {
+      "name": "news",
+      "label": "news",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "2026-04-21-digest.md",
+              "relativePath": "news/2026-04-21-digest.md",
+              "sizeBytes": 12371
+            },
+            {
+              "name": "2026-04-25-digest.md",
+              "relativePath": "news/2026-04-25-digest.md",
+              "sizeBytes": 1100
+            },
+            {
+              "name": "2026-04-27-digest.md",
+              "relativePath": "news/2026-04-27-digest.md",
+              "sizeBytes": 12226
+            },
+            {
+              "name": "2026-04-28-digest.md",
+              "relativePath": "news/2026-04-28-digest.md",
+              "sizeBytes": 12283
+            },
+            {
+              "name": "2026-04-29-digest.md",
+              "relativePath": "news/2026-04-29-digest.md",
+              "sizeBytes": 12427
+            },
+            {
+              "name": "2026-04-30-digest.md",
+              "relativePath": "news/2026-04-30-digest.md",
+              "sizeBytes": 12236
+            },
+            {
+              "name": "README.md",
+              "relativePath": "news/README.md",
+              "sizeBytes": 1030
+            }
+          ]
+        }
+      ],
+      "files": 7,
+      "sizeBytes": 63673
+    },
+    {
+      "name": "xero-expert",
+      "label": "xero-expert",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "accounting.md",
+              "relativePath": "xero-expert/accounting.md",
+              "sizeBytes": 6718
+            },
+            {
+              "name": "api.md",
+              "relativePath": "xero-expert/api.md",
+              "sizeBytes": 5915
+            },
+            {
+              "name": "edge.md",
+              "relativePath": "xero-expert/edge.md",
+              "sizeBytes": 5661
+            },
+            {
+              "name": "migration.md",
+              "relativePath": "xero-expert/migration.md",
+              "sizeBytes": 4697
+            },
+            {
+              "name": "README.md",
+              "relativePath": "xero-expert/README.md",
+              "sizeBytes": 973
+            },
+            {
+              "name": "reporting.md",
+              "relativePath": "xero-expert/reporting.md",
+              "sizeBytes": 5076
+            },
+            {
+              "name": "ui.md",
+              "relativePath": "xero-expert/ui.md",
+              "sizeBytes": 4788
+            }
+          ]
+        }
+      ],
+      "files": 7,
+      "sizeBytes": 33828
+    },
+    {
+      "name": "essex",
+      "label": "essex",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "essex-beverage-cost-control.md",
+              "relativePath": "essex/essex-beverage-cost-control.md",
+              "sizeBytes": 7137
+            },
+            {
+              "name": "essex-inventory-shrinkage-recovery.md",
+              "relativePath": "essex/essex-inventory-shrinkage-recovery.md",
+              "sizeBytes": 6490
+            },
+            {
+              "name": "essex-margin-architecture.md",
+              "relativePath": "essex/essex-margin-architecture.md",
+              "sizeBytes": 7255
+            },
+            {
+              "name": "essex-supplier-negotiation.md",
+              "relativePath": "essex/essex-supplier-negotiation.md",
+              "sizeBytes": 7458
+            },
+            {
+              "name": "industrial-distribution-pricing.md",
+              "relativePath": "essex/industrial-distribution-pricing.md",
+              "sizeBytes": 12803
+            },
+            {
+              "name": "README.md",
+              "relativePath": "essex/README.md",
+              "sizeBytes": 897
+            }
+          ]
+        }
+      ],
+      "files": 6,
+      "sizeBytes": 42040
+    },
+    {
+      "name": "gliner",
+      "label": "gliner",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "gliner-entity-extraction-recipes.md",
+              "relativePath": "gliner/gliner-entity-extraction-recipes.md",
+              "sizeBytes": 6823
+            },
+            {
+              "name": "gliner-inventory-labeling.md",
+              "relativePath": "gliner/gliner-inventory-labeling.md",
+              "sizeBytes": 6541
+            },
+            {
+              "name": "gliner-pos-integration.md",
+              "relativePath": "gliner/gliner-pos-integration.md",
+              "sizeBytes": 6593
+            },
+            {
+              "name": "gliner-recipe-costing.md",
+              "relativePath": "gliner/gliner-recipe-costing.md",
+              "sizeBytes": 5964
+            },
+            {
+              "name": "integration.md",
+              "relativePath": "gliner/integration.md",
+              "sizeBytes": 5658
+            },
+            {
+              "name": "README.md",
+              "relativePath": "gliner/README.md",
+              "sizeBytes": 806
+            }
+          ]
+        }
+      ],
+      "files": 6,
+      "sizeBytes": 32385
+    },
+    {
+      "name": "mathematics",
+      "label": "mathematics",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "calculus-optimization.md",
+              "relativePath": "mathematics/calculus-optimization.md",
+              "sizeBytes": 4006
+            },
+            {
+              "name": "linear-algebra.md",
+              "relativePath": "mathematics/linear-algebra.md",
+              "sizeBytes": 3602
+            },
+            {
+              "name": "multi-step-reasoning-patterns.md",
+              "relativePath": "mathematics/multi-step-reasoning-patterns.md",
+              "sizeBytes": 5210
+            },
+            {
+              "name": "number-theory-crypto.md",
+              "relativePath": "mathematics/number-theory-crypto.md",
+              "sizeBytes": 4133
+            },
+            {
+              "name": "probability-statistics.md",
+              "relativePath": "mathematics/probability-statistics.md",
+              "sizeBytes": 4664
+            },
+            {
+              "name": "README.md",
+              "relativePath": "mathematics/README.md",
+              "sizeBytes": 810
+            }
+          ]
+        }
+      ],
+      "files": 6,
+      "sizeBytes": 22425
+    },
+    {
+      "name": "principles",
+      "label": "principles",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "principles-food-safety-compliance.md",
+              "relativePath": "principles/principles-food-safety-compliance.md",
+              "sizeBytes": 6815
+            },
+            {
+              "name": "principles-guest-experience-design.md",
+              "relativePath": "principles/principles-guest-experience-design.md",
+              "sizeBytes": 8348
+            },
+            {
+              "name": "principles-inventory-cost-control.md",
+              "relativePath": "principles/principles-inventory-cost-control.md",
+              "sizeBytes": 5901
+            },
+            {
+              "name": "principles-operational-excellence.md",
+              "relativePath": "principles/principles-operational-excellence.md",
+              "sizeBytes": 6937
+            },
+            {
+              "name": "principles-revenue-optimization.md",
+              "relativePath": "principles/principles-revenue-optimization.md",
+              "sizeBytes": 6572
+            },
+            {
+              "name": "principles-service-recovery.md",
+              "relativePath": "principles/principles-service-recovery.md",
+              "sizeBytes": 5995
+            }
+          ]
+        }
+      ],
+      "files": 6,
+      "sizeBytes": 40568
+    },
+    {
+      "name": "superbrain",
+      "label": "superbrain",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "beverage-program-design.md",
+              "relativePath": "superbrain/beverage-program-design.md",
+              "sizeBytes": 7058
+            },
+            {
+              "name": "customer-experience-retention-loyalty.md",
+              "relativePath": "superbrain/customer-experience-retention-loyalty.md",
+              "sizeBytes": 6346
+            },
+            {
+              "name": "hospitality-operations-playbook.md",
+              "relativePath": "superbrain/hospitality-operations-playbook.md",
+              "sizeBytes": 6510
+            },
+            {
+              "name": "inventory-cost-management-mastery.md",
+              "relativePath": "superbrain/inventory-cost-management-mastery.md",
+              "sizeBytes": 6199
+            },
+            {
+              "name": "pos-integration-revenue-optimization.md",
+              "relativePath": "superbrain/pos-integration-revenue-optimization.md",
+              "sizeBytes": 5609
+            },
+            {
+              "name": "staff-training-compliance-operations.md",
+              "relativePath": "superbrain/staff-training-compliance-operations.md",
+              "sizeBytes": 8717
+            }
+          ]
+        }
+      ],
+      "files": 6,
+      "sizeBytes": 40439
+    },
+    {
+      "name": "unverified",
+      "label": "unverified",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "cost-control-pour-tracking.md",
+              "relativePath": "unverified/cost-control-pour-tracking.md",
+              "sizeBytes": 6366
+            },
+            {
+              "name": "inventory-management-systems.md",
+              "relativePath": "unverified/inventory-management-systems.md",
+              "sizeBytes": 5595
+            },
+            {
+              "name": "pos-inventory-integration.md",
+              "relativePath": "unverified/pos-inventory-integration.md",
+              "sizeBytes": 5987
+            },
+            {
+              "name": "staff-training-compliance.md",
+              "relativePath": "unverified/staff-training-compliance.md",
+              "sizeBytes": 6690
+            },
+            {
+              "name": "supplier-management-procurement.md",
+              "relativePath": "unverified/supplier-management-procurement.md",
+              "sizeBytes": 6521
+            },
+            {
+              "name": "waste-reduction-spoilage-control.md",
+              "relativePath": "unverified/waste-reduction-spoilage-control.md",
+              "sizeBytes": 7149
+            }
+          ]
+        }
+      ],
+      "files": 6,
+      "sizeBytes": 38308
+    }
+  ]
+}

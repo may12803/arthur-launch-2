@@ -237,7 +237,181 @@ function LiveBadge() {
 
 // ── Nav ───────────────────────────────────────────────────────────────────────
 
+// ── Arthur OS Floating Nav Island ───────────────────────────────────────────
+// Replaces the prior horizontal navbar. Pill-shaped segmented island fixed
+// top-center, glass-morphism, three pills: dots-drawer | center-links | tasks.
+
+const ALL_ROUTES_GROUPED = [
+  { group: "Workspace", links: [
+    { href: "/dashboard",      label: "Dashboard" },
+    { href: "/inbox",          label: "Mail" },
+    { href: "/calendar",       label: "Calendar" },
+    { href: "/messenger",      label: "Messenger" },
+    { href: "/communications", label: "Communications" },
+    { href: "/goals",          label: "Goals" },
+    { href: "/legal",          label: "Legal Vault" },
+    { href: "/employees",      label: "Team / Employees" },
+    { href: "/iphone",         label: "iPhone" },
+  ]},
+  { group: "Brain", links: [
+    { href: "/brain",        label: "Brain Map" },
+    { href: "/graph",        label: "Knowledge Graph" },
+    { href: "/skills",       label: "Skills" },
+    { href: "/benchmarks",   label: "Benchmarks" },
+    { href: "/principles",   label: "Principles" },
+    { href: "/superlearner", label: "Superlearner" },
+  ]},
+  { group: "System", links: [
+    { href: "/settings",      label: "Settings" },
+    { href: "/subscriptions", label: "Subscriptions" },
+    { href: "/lock",          label: "Lock Screen" },
+  ]},
+];
+
+function ArthurOSNav({ pathname }: { pathname: string }) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [tasksCount, setTasksCount] = useState<number | "">("");
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  // Best-effort tasks count
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/state").then(r => r.ok ? r.json() : null).then(d => {
+      if (cancelled || !d) return;
+      const n = (d as { pending_tasks?: number; tasks?: { length?: number } }).pending_tasks
+        ?? (d as { tasks?: { length?: number } }).tasks?.length ?? "";
+      setTasksCount(typeof n === "number" ? n : (n || ""));
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [pathname]);
+
+  // Esc closes drawer
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setDrawerOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [drawerOpen]);
+
+  const isCenterActive = (href: string) =>
+    pathname === href || (href !== "/" && pathname.startsWith(href + "/"));
+
+  const arthurActive = pathname === "/" || pathname === "/dashboard" || pathname.startsWith("/brain") || pathname.startsWith("/superlearner") || pathname.startsWith("/principles") || pathname.startsWith("/skills") || pathname.startsWith("/benchmarks") || pathname.startsWith("/graph");
+
+  return (
+    <>
+      <header className="os-topbar">
+        <div className="nav-island">
+          <button
+            type="button"
+            className="nav-pill left"
+            onClick={() => setDrawerOpen(o => !o)}
+            aria-label="Open all routes"
+            style={{ background: drawerOpen ? "var(--glass-bg-strong)" : undefined }}
+          >
+            <div className="dots-icon"><span /><span /><span /></div>
+          </button>
+
+          <div className="nav-pill center">
+            <Link href="/dashboard" className={"nav-link" + (arthurActive ? " active" : "")}>
+              <span className="nav-link-text">Arthur</span>
+            </Link>
+            <Link href="/inbox" className={"nav-link" + (isCenterActive("/inbox") ? " active" : "")}>
+              <span className="nav-link-text">Mail</span>
+            </Link>
+            <Link href="/calendar" className={"nav-link" + (isCenterActive("/calendar") ? " active" : "")}>
+              <span className="nav-link-text">Cal</span>
+            </Link>
+            <Link href="/legal" className={"nav-link" + (isCenterActive("/legal") ? " active" : "")}>
+              <span className="nav-link-text">Docs</span>
+            </Link>
+            <Link href="/employees" className={"nav-link" + (isCenterActive("/employees") ? " active" : "")}>
+              <span className="nav-link-text">Team</span>
+            </Link>
+            <Link href="/settings" className="user-avatar" aria-label="Settings" />
+          </div>
+
+          <Link href="/goals" className="nav-pill right" style={{ textDecoration: "none" }}>
+            <span style={{ color: pathname === "/goals" ? "var(--text-active)" : "var(--text-main)", fontWeight: pathname === "/goals" ? 500 : 400 }}>
+              <span className="nav-link-text">Tasks</span>
+            </span>
+            <span
+              className="bag-count"
+              data-active={typeof tasksCount === "number" && tasksCount > 0 ? "true" : "false"}
+            >
+              {tasksCount === "" ? "·" : tasksCount}
+            </span>
+          </Link>
+        </div>
+      </header>
+
+      {drawerOpen && (
+        <>
+          <div
+            onClick={() => setDrawerOpen(false)}
+            style={{
+              position: "fixed", inset: 0, zIndex: 90,
+              background: "rgba(0, 0, 0, 0.15)",
+              backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
+            }}
+          />
+          <aside
+            ref={drawerRef}
+            style={{
+              position: "fixed", top: 0, left: 0, bottom: 0,
+              width: 320, zIndex: 95,
+              background: "var(--glass-bg)",
+              backdropFilter: "blur(var(--blur-amount))",
+              WebkitBackdropFilter: "blur(var(--blur-amount))",
+              borderRight: "1px solid var(--glass-border)",
+              padding: "var(--space-xl) var(--space-lg)",
+              overflowY: "auto",
+            }}
+          >
+            <div style={{ marginBottom: "var(--space-lg)" }}>
+              <div className="title-large" style={{ fontSize: 24, marginBottom: 4 }}>Arthur OS</div>
+              <div className="meta-text">All routes · Esc to close</div>
+            </div>
+            {ALL_ROUTES_GROUPED.map(g => (
+              <div key={g.group} style={{ marginBottom: "var(--space-lg)" }}>
+                <div className="eyebrow" style={{ marginBottom: 8 }}>{g.group}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {g.links.map(l => (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      onClick={() => setDrawerOpen(false)}
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        textDecoration: "none",
+                        fontSize: 16,
+                        color: isCenterActive(l.href) ? "var(--text-active)" : "var(--text-main)",
+                        fontWeight: isCenterActive(l.href) ? 500 : 400,
+                        background: isCenterActive(l.href) ? "var(--glass-bg-strong)" : "transparent",
+                        transition: "background 0.15s",
+                      }}
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </aside>
+        </>
+      )}
+    </>
+  );
+}
+
 export function Nav() {
+  const pathname = usePathname();
+  return <ArthurOSNav pathname={pathname} />;
+}
+
+function _LegacyNav_unused() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);

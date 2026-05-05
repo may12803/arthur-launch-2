@@ -33,7 +33,6 @@ interface EmailRow {
   annotation: string | null;
   direction: "inbound" | "outbound";
   in_reply_to: string | null;
-  // automation fields
   classification: Classification | null;
   auto_action: "none" | "archive" | "delete" | "draft" | "flag" | null;
   auto_action_at: string | null;
@@ -84,38 +83,36 @@ function hashToFolder(hash: string): Folder {
   return "inbox";
 }
 
-// Intent badge colors
 const INTENT_COLORS: Record<string, { bg: string; color: string }> = {
-  newsletter:     { bg: "#1e3a5f", color: "#7eb8f7" },
-  promotion:      { bg: "#3a1e5f", color: "#c07ef7" },
-  cold_sales:     { bg: "#5f1e1e", color: "#f78e7e" },
-  confirmation:   { bg: "#1e4f3a", color: "#7ef7b0" },
-  catering:       { bg: "#4f3a1e", color: "#f7c07e" },
-  vendor_invoice: { bg: "#3a3a1e", color: "#f7f07e" },
-  press:          { bg: "#1e4f4f", color: "#7ef7f7" },
-  personal:       { bg: "#4f4f1e", color: "#f7f7a0" },
-  legal:          { bg: "#5f0000", color: "#ff7070" },
-  auto_reply:     { bg: "#2a2a2a", color: "#aaaaaa" },
-  other:          { bg: "#252525", color: "#888888" },
+  newsletter:     { bg: "rgba(30,58,95,0.6)",  color: "#7eb8f7" },
+  promotion:      { bg: "rgba(58,30,95,0.6)",  color: "#c07ef7" },
+  cold_sales:     { bg: "rgba(95,30,30,0.6)",  color: "#f78e7e" },
+  confirmation:   { bg: "rgba(30,79,58,0.6)",  color: "#7ef7b0" },
+  catering:       { bg: "rgba(79,58,30,0.6)",  color: "#f7c07e" },
+  vendor_invoice: { bg: "rgba(58,58,30,0.6)",  color: "#f7f07e" },
+  press:          { bg: "rgba(30,79,79,0.6)",  color: "#7ef7f7" },
+  personal:       { bg: "rgba(79,79,30,0.6)",  color: "#f7f7a0" },
+  legal:          { bg: "rgba(95,0,0,0.6)",    color: "#ff7070" },
+  auto_reply:     { bg: "rgba(40,40,40,0.6)",  color: "rgba(245,246,248,0.45)" },
+  other:          { bg: "rgba(30,30,30,0.6)",  color: "rgba(245,246,248,0.35)" },
 };
 
 function IntentBadge({ intent }: { intent: string }) {
   const colors = INTENT_COLORS[intent] ?? INTENT_COLORS.other;
   return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "1px 6px",
-        borderRadius: 4,
-        fontSize: 9,
-        fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-        letterSpacing: "0.08em",
-        textTransform: "uppercase",
-        background: colors.bg,
-        color: colors.color,
-        flexShrink: 0,
-      }}
-    >
+    <span style={{
+      display: "inline-block",
+      padding: "1px 6px",
+      borderRadius: 4,
+      fontSize: 9,
+      fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+      letterSpacing: "0.08em",
+      textTransform: "uppercase",
+      background: colors.bg,
+      color: colors.color,
+      flexShrink: 0,
+      border: "1px solid rgba(255,255,255,0.08)",
+    }}>
       {intent.replace(/_/g, " ")}
     </span>
   );
@@ -125,13 +122,11 @@ function IntentBadge({ intent }: { intent: string }) {
 
 export default function InboxPage() {
   const [folder, setFolder] = useState<Folder>("inbox");
-
   const [domain, setDomain] = useState("");
   const [q, setQ] = useState("");
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [repliedOnly, setRepliedOnly] = useState(false);
   const [smart, setSmart] = useState<"" | "needs_attention" | "awaiting_reply" | "this_week">("");
-  const [showRawFilters, setShowRawFilters] = useState(false);
 
   const [rows, setRows] = useState<EmailRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -143,7 +138,6 @@ export default function InboxPage() {
   const [selected, setSelected] = useState<EmailFull | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-  // Manual reply composer
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyTo, setReplyTo] = useState("");
   const [replySubject, setReplySubject] = useState("");
@@ -151,7 +145,6 @@ export default function InboxPage() {
   const [replying, setReplying] = useState(false);
   const [replyStatus, setReplyStatus] = useState("");
 
-  // Draft approval composer (auto-generated)
   const [draftTo, setDraftTo] = useState("");
   const [draftSubject, setDraftSubject] = useState("");
   const [draftBody, setDraftBody] = useState("");
@@ -161,10 +154,7 @@ export default function InboxPage() {
   const [annotation, setAnnotation] = useState("");
   const [reverting, setReverting] = useState(false);
   const [mobilePane, setMobilePane] = useState<"list" | "detail">("list");
-
   const [automationOn, setAutomationOn] = useState<boolean | null>(null);
-
-  // Today snapshot (shown in empty right pane)
   const [snapshot, setSnapshot] = useState<{
     pendingApprovals: number;
     extractionsToday: number;
@@ -172,10 +162,8 @@ export default function InboxPage() {
   } | null>(null);
 
   const prevTotalRef = useRef(0);
-
   const domains = Array.from(new Set(rows.map(r => r.domain).filter(Boolean))) as string[];
 
-  // Fetch automation status for indicator
   useEffect(() => {
     fetch("/api/inbox/settings")
       .then(r => r.json())
@@ -183,30 +171,21 @@ export default function InboxPage() {
       .catch(() => setAutomationOn(null));
   }, []);
 
-  // Fetch today snapshot for empty pane
   useEffect(() => {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     today.setHours(0, 0, 0, 0);
-
     Promise.allSettled([
       fetch("/api/inbox/list?smart=needs_attention").then(r => r.json()),
       fetch(`/api/calendar/events?start=${today.toISOString()}&end=${tomorrow.toISOString()}`).then(r => r.json()),
     ]).then(([approvals, cal]) => {
-      const pendingApprovals =
-        approvals.status === "fulfilled"
-          ? ((approvals.value as { rows?: unknown[] }).rows ?? []).length
-          : 0;
-      const calendarToday =
-        cal.status === "fulfilled" && Array.isArray(cal.value)
-          ? (cal.value as unknown[]).length
-          : 0;
+      const pendingApprovals = approvals.status === "fulfilled" ? ((approvals.value as { rows?: unknown[] }).rows ?? []).length : 0;
+      const calendarToday = cal.status === "fulfilled" && Array.isArray(cal.value) ? (cal.value as unknown[]).length : 0;
       setSnapshot({ pendingApprovals, extractionsToday: 0, calendarToday });
     }).catch(() => {});
   }, []);
 
-  // ── URL hash sync ──────────────────────────────────────────────────────────
   useEffect(() => {
     setFolder(hashToFolder(window.location.hash));
     function onHashChange() {
@@ -228,7 +207,6 @@ export default function InboxPage() {
     setRepliedOnly(false);
   }
 
-  // ── Fetch list ─────────────────────────────────────────────────────────────
   const fetchList = useCallback(
     async (silent = false) => {
       if (!silent) setLoading(true);
@@ -239,7 +217,6 @@ export default function InboxPage() {
       if (unreadOnly) params.set("unread_only", "true");
       if (repliedOnly) params.set("replied_only", "true");
       if (smart) params.set("smart", smart);
-
       try {
         const res = await fetch(`/api/inbox/list?${params}`);
         if (!res.ok) return;
@@ -247,7 +224,6 @@ export default function InboxPage() {
         setRows(json.rows);
         setTotal(json.total);
         if (json.counts) setCounts(json.counts);
-
         if (silent && json.total > prevTotalRef.current) {
           setNewCount(json.total - prevTotalRef.current);
           setTimeout(() => setNewCount(0), 4000);
@@ -266,7 +242,6 @@ export default function InboxPage() {
     return () => clearInterval(id);
   }, [fetchList]);
 
-  // ── Fetch single email ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!selectedId) { setSelected(null); return; }
     setLoadingDetail(true);
@@ -280,7 +255,6 @@ export default function InboxPage() {
         setReplyText("");
         setReplyOpen(false);
         setReplyStatus("");
-        // Draft fields
         setDraftTo(data.draft_to ?? "");
         setDraftSubject(data.draft_subject ?? "");
         setDraftBody(data.draft_body ?? "");
@@ -291,9 +265,7 @@ export default function InboxPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ is_read: true }),
           }).then(() => {
-            setRows(prev =>
-              prev.map(r => (r.id === selectedId ? { ...r, is_read: true } : r))
-            );
+            setRows(prev => prev.map(r => (r.id === selectedId ? { ...r, is_read: true } : r)));
           });
         }
       })
@@ -301,7 +273,6 @@ export default function InboxPage() {
       .finally(() => setLoadingDetail(false));
   }, [selectedId]);
 
-  // ── Actions ────────────────────────────────────────────────────────────────
   function openEmail(id: string) {
     setSelectedId(id);
     setMobilePane("detail");
@@ -314,12 +285,7 @@ export default function InboxPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
     }).then(() => {
-      const removesFromView =
-        patch.is_archived === true ||
-        patch.is_deleted === true ||
-        patch.is_deleted === false ||
-        patch.is_archived === false;
-
+      const removesFromView = patch.is_archived === true || patch.is_deleted === true || patch.is_deleted === false || patch.is_archived === false;
       if (removesFromView) {
         setRows(prev => prev.filter(r => r.id !== selectedId));
         setSelectedId(null);
@@ -374,7 +340,6 @@ export default function InboxPage() {
         setDraftStatus("error: " + (json.error ?? res.statusText));
       } else {
         setDraftStatus("sent.");
-        // Clear draft fields on the email row
         await fetch(`/api/inbox/${selectedId}/mark`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -395,7 +360,6 @@ export default function InboxPage() {
 
   async function discardDraft() {
     if (!selectedId) return;
-    // Revert the draft auto_action
     await revertAutoAction();
     setRows(prev => prev.filter(r => r.id !== selectedId));
     setSelectedId(null);
@@ -441,17 +405,10 @@ export default function InboxPage() {
     });
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
   const unreadCount = rows.filter(r => !r.is_read && r.direction === "inbound").length;
-
-  // Mobile: is folder dropdown open?
   const [mobileFolderOpen, setMobileFolderOpen] = useState(false);
-
-  // Total unread across all folders (for dropdown label)
-  const totalUnread = useMemo(
-    () => counts.inbox + counts.flagged + counts.drafts,
-    [counts]
-  );
+  const totalUnread = useMemo(() => counts.inbox + counts.flagged + counts.drafts, [counts]);
+  void unreadOnly; void repliedOnly; void totalUnread;
 
   const AUTO_ACTION_LABELS: Record<string, string> = {
     archive: "archived",
@@ -460,96 +417,124 @@ export default function InboxPage() {
     flag: "flagged for review",
   };
 
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).toLowerCase();
+
   return (
     <>
       <Nav />
 
-      <div style={{ minHeight: "calc(100vh - 120px)", display: "flex", flexDirection: "column" }}>
-        {/* ── Top bar ── */}
-        <div
-          style={{
-            borderBottom: "1px solid var(--border)",
-            padding: "14px 24px",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            flexWrap: "wrap",
-            background: "var(--panel)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flex: "0 0 auto" }}>
-            <span
-              style={{
-                fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-                fontWeight: 700,
-                fontSize: 18,
-                letterSpacing: "-0.01em",
-                color: "var(--text)",
-              }}
-            >
+      <div className="inbox-root" style={{
+        minHeight: "calc(100vh - 108px)",
+        display: "flex",
+        flexDirection: "column",
+        paddingTop: 108,
+        background: "var(--bg-base)",
+      }}>
+        {/* ── Page header ── */}
+        <div style={{
+          padding: "24px 28px 20px",
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: 16,
+          borderBottom: "1px solid var(--line-separator)",
+          flexShrink: 0,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <h1 style={{
+              margin: 0,
+              fontWeight: 300,
+              fontSize: "clamp(2rem, 4vw, 2.8rem)",
+              letterSpacing: "-0.03em",
+              color: "var(--text-active)",
+              lineHeight: 1,
+            }}>
               inbox.
-            </span>
+            </h1>
             {unreadCount > 0 && (
-              <span
-                style={{
-                  background: "var(--accent)",
-                  color: "#fff",
-                  borderRadius: 10,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  padding: "2px 7px",
-                  fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                  letterSpacing: "0.04em",
-                }}
-              >
+              <span style={{
+                background: "var(--accent-orange)",
+                color: "var(--accent-text-on)",
+                borderRadius: "var(--radius-pill)",
+                fontSize: 10,
+                fontWeight: 700,
+                padding: "3px 10px",
+                fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+                letterSpacing: "0.06em",
+              }}>
                 {unreadCount} unread
               </span>
             )}
             {newCount > 0 && (
-              <span
-                style={{
-                  background: "var(--lobe-upgrades)",
-                  color: "#000",
-                  borderRadius: 10,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  padding: "2px 7px",
-                  fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                }}
-              >
+              <span style={{
+                background: "var(--accent-orange)",
+                color: "var(--accent-text-on)",
+                borderRadius: "var(--radius-pill)",
+                fontSize: 10,
+                fontWeight: 700,
+                padding: "3px 10px",
+                fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+              }}>
                 +{newCount} new
               </span>
             )}
           </div>
+          <div style={{
+            fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+            fontSize: 11,
+            color: "var(--text-muted)",
+            letterSpacing: "0.04em",
+            paddingBottom: 4,
+          }}>
+            {dateStr}
+          </div>
+        </div>
 
-          {/* Search */}
+        {/* ── Filter bar ── */}
+        <div style={{
+          padding: "10px 20px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          flexWrap: "wrap",
+          borderBottom: "1px solid var(--line-separator)",
+          background: "var(--glass-bg)",
+          backdropFilter: "blur(var(--blur-amount))",
+          flexShrink: 0,
+        }}>
           <input
             type="search"
+            aria-label="Search inbox by subject, sender, or body"
             placeholder="search subject, from, body…"
             value={q}
             onChange={e => setQ(e.target.value)}
             style={{
               flex: "1 1 200px",
-              maxWidth: 320,
+              maxWidth: 300,
               padding: "7px 12px",
-              fontSize: 12.5,
-              height: 34,
+              fontSize: 12,
+              height: 32,
               minHeight: "unset",
+              background: "var(--glass-bg-strong)",
+              border: "1px solid var(--glass-border)",
+              borderRadius: 8,
+              color: "var(--text-active)",
+              fontFamily: "inherit",
+              outline: "none",
             }}
           />
-
-          {/* Domain filter */}
           <select
             value={domain}
             onChange={e => setDomain(e.target.value)}
             style={{
-              background: "var(--panel-elev)",
-              border: "1px solid var(--border-strong)",
+              background: "var(--glass-bg-strong)",
+              border: "1px solid var(--glass-border)",
               borderRadius: 8,
-              color: "var(--text-dim)",
-              fontSize: 12.5,
+              color: "var(--text-main)",
+              fontSize: 12,
               padding: "6px 10px",
-              height: 34,
+              height: 32,
               cursor: "pointer",
               fontFamily: "inherit",
             }}
@@ -562,65 +547,39 @@ export default function InboxPage() {
               <option key={d} value={d}>{d}</option>
             ))}
           </select>
-
-          {/* Smart filter chips — horizontal scroll on mobile */}
-          <div className="inbox-filter-chips">
+          <div className="inbox-filter-chips" style={{ display: "flex", gap: 6 }}>
             {folder === "inbox" && (
               <>
-                <FilterToggle
-                  label="needs attention"
-                  active={smart === "needs_attention"}
-                  onToggle={() => setSmart(p => p === "needs_attention" ? "" : "needs_attention")}
-                />
-                <FilterToggle
-                  label="this week"
-                  active={smart === "this_week"}
-                  onToggle={() => setSmart(p => p === "this_week" ? "" : "this_week")}
-                />
+                <FilterChip label="needs attention" active={smart === "needs_attention"} onToggle={() => setSmart(p => p === "needs_attention" ? "" : "needs_attention")} />
+                <FilterChip label="this week" active={smart === "this_week"} onToggle={() => setSmart(p => p === "this_week" ? "" : "this_week")} />
               </>
             )}
             {folder === "sent" && (
-              <FilterToggle
-                label="awaiting reply"
-                active={smart === "awaiting_reply"}
-                onToggle={() => setSmart(p => p === "awaiting_reply" ? "" : "awaiting_reply")}
-              />
+              <FilterChip label="awaiting reply" active={smart === "awaiting_reply"} onToggle={() => setSmart(p => p === "awaiting_reply" ? "" : "awaiting_reply")} />
             )}
           </div>
-
-          {/* Automation indicator */}
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
             <button
               onClick={toggleAutomation}
-              title="Toggle automation — click to flip, go to /inbox/settings for full control"
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 5,
-                background: automationOn ? "rgba(0,200,100,0.12)" : "var(--panel-elev)",
-                border: `1px solid ${automationOn ? "rgba(0,200,100,0.35)" : "var(--border-strong)"}`,
+                background: automationOn ? "rgba(212,255,61,0.10)" : "var(--glass-bg-strong)",
+                border: `1px solid ${automationOn ? "rgba(212,255,61,0.30)" : "var(--glass-border)"}`,
                 borderRadius: 6,
                 padding: "4px 10px",
-                fontSize: 10.5,
-                fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+                fontSize: 10,
+                fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
                 letterSpacing: "0.06em",
-                color: automationOn ? "#4ade80" : "var(--text-faint)",
+                color: automationOn ? "var(--accent-orange)" : "var(--text-muted)",
                 cursor: "pointer",
               }}
             >
               <span>⚙</span>
               <span>automation: {automationOn === null ? "…" : automationOn ? "on" : "off"}</span>
             </button>
-            <a
-              href="/inbox/settings"
-              style={{
-                fontSize: 10.5,
-                fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                color: "var(--text-faint)",
-                textDecoration: "none",
-                letterSpacing: "0.04em",
-              }}
-            >
+            <a href="/inbox/settings" style={{ fontSize: 10, fontFamily: "ui-monospace, 'JetBrains Mono', monospace", color: "var(--text-muted)", textDecoration: "none", letterSpacing: "0.04em" }}>
               settings →
             </a>
           </div>
@@ -629,221 +588,181 @@ export default function InboxPage() {
         {/* ── Three-pane body ── */}
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
-          {/* ── Left sidebar ── */}
-          <div
-            className="inbox-list-pane"
-            style={{
-              width: 340,
-              minWidth: 0,
-              borderRight: "1px solid var(--border)",
-              overflowY: "auto",
-              flexShrink: 0,
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            {/* Folder nav — desktop: vertical list; mobile: dropdown */}
-            <div
-              style={{
-                borderBottom: "1px solid var(--border)",
-                padding: "8px 10px",
-                flexShrink: 0,
-              }}
-            >
-              {/* Mobile folder dropdown */}
-              <div className="folder-dropdown-mobile">
-                <button
-                  onClick={() => setMobileFolderOpen(o => !o)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    background: "var(--panel-elev)",
-                    border: "1px solid var(--border-strong)",
-                    borderRadius: 7,
-                    padding: "8px 12px",
-                    cursor: "pointer",
-                    fontSize: 12.5,
-                    color: "var(--accent)",
-                    fontWeight: 600,
-                    fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                  }}
-                >
-                  <span>{FOLDER_ICONS[folder]} {folder}</span>
-                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    {counts[folder] > 0 && (
-                      <span style={{
-                        background: "var(--accent-soft)",
-                        color: "var(--accent)",
-                        borderRadius: 8,
-                        fontSize: 10,
-                        fontWeight: 700,
-                        padding: "1px 6px",
-                      }}>
-                        {counts[folder]}
-                      </span>
-                    )}
-                    <span style={{ fontSize: 9, opacity: 0.6 }}>{mobileFolderOpen ? "▲" : "▼"}</span>
-                  </span>
-                </button>
-                {mobileFolderOpen && (
-                  <div style={{
-                    position: "absolute",
-                    zIndex: 50,
-                    background: "var(--panel-elev)",
-                    border: "1px solid var(--border-strong)",
-                    borderRadius: 8,
-                    padding: 6,
-                    marginTop: 4,
-                    width: "calc(100% - 20px)",
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
-                  }}>
-                    {(["inbox", "sent", "archived", "deleted", "drafts", "flagged"] as Folder[]).map(f => (
-                      <button
-                        key={f}
-                        onClick={() => { switchFolder(f); setMobileFolderOpen(false); }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          width: "100%",
-                          textAlign: "left",
-                          background: folder === f ? "var(--accent-soft)" : "transparent",
-                          border: "none",
-                          borderRadius: 5,
-                          padding: "8px 10px",
-                          cursor: "pointer",
-                          color: folder === f ? "var(--accent)" : "var(--text-dim)",
-                          fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                          fontSize: 11.5,
-                        }}
-                      >
-                        <span style={{ width: 14, textAlign: "center", opacity: 0.6 }}>{FOLDER_ICONS[f]}</span>
-                        <span style={{ flex: 1 }}>{f}</span>
-                        {counts[f] > 0 && (
-                          <span style={{
-                            fontSize: 10,
-                            background: "var(--panel)",
-                            borderRadius: 8,
-                            padding: "1px 6px",
-                            color: "var(--text-faint)",
-                          }}>
-                            {counts[f]}
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Desktop folder list */}
-              <div className="folder-list-desktop" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {(["inbox", "sent", "archived", "deleted", "drafts", "flagged"] as Folder[]).map(f => (
-                  <FolderButton
-                    key={f}
-                    label={f}
-                    count={counts[f]}
-                    active={folder === f}
-                    onClick={() => switchFolder(f)}
-                  />
-                ))}
-              </div>
+          {/* ── Folder rail (220px glass card) ── */}
+          <div className="inbox-folder-rail" style={{
+            width: 220,
+            flexShrink: 0,
+            borderRight: "1px solid var(--line-separator)",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            padding: "12px 10px",
+            gap: 2,
+            background: "var(--glass-bg)",
+            backdropFilter: "blur(var(--blur-amount))",
+          }}>
+            <div style={{
+              fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+              fontSize: 9,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "var(--text-muted)",
+              padding: "4px 8px 8px",
+            }}>
+              folders
             </div>
-
-            {/* Email list */}
-            <div style={{ flex: 1, overflowY: "auto" }}>
-              {loading ? (
-                <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 6 }}>
-                  {[1,2,3,4,5].map(i => (
-                    <div key={i} className="inbox-skeleton" style={{ height: 62, borderRadius: 6, opacity: 0.2 + i * 0.06 }} />
+            {/* Mobile dropdown */}
+            <div className="folder-dropdown-mobile">
+              <button
+                onClick={() => setMobileFolderOpen(o => !o)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  background: "var(--glass-bg-strong)",
+                  border: "1px solid var(--glass-border)",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  color: "var(--accent-orange)",
+                  fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+                }}
+              >
+                <span>{FOLDER_ICONS[folder]} {folder}</span>
+                <span style={{ fontSize: 9, opacity: 0.6 }}>{mobileFolderOpen ? "▲" : "▼"}</span>
+              </button>
+              {mobileFolderOpen && (
+                <div style={{
+                  position: "absolute",
+                  zIndex: 50,
+                  background: "var(--glass-bg-strong)",
+                  border: "1px solid var(--glass-border)",
+                  backdropFilter: "blur(var(--blur-amount))",
+                  borderRadius: 8,
+                  padding: 6,
+                  marginTop: 4,
+                  width: "calc(100% - 20px)",
+                  boxShadow: "var(--glass-shadow)",
+                }}>
+                  {(["inbox", "sent", "archived", "deleted", "drafts", "flagged"] as Folder[]).map(f => (
+                    <button
+                      key={f}
+                      onClick={() => { switchFolder(f); setMobileFolderOpen(false); }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        width: "100%",
+                        textAlign: "left",
+                        background: folder === f ? "rgba(212,255,61,0.10)" : "transparent",
+                        border: "none",
+                        borderRadius: 5,
+                        padding: "8px 10px",
+                        cursor: "pointer",
+                        color: folder === f ? "var(--accent-orange)" : "var(--text-main)",
+                        fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+                        fontSize: 11,
+                      }}
+                    >
+                      <span style={{ width: 14, textAlign: "center", opacity: 0.6 }}>{FOLDER_ICONS[f]}</span>
+                      <span style={{ flex: 1 }}>{f}</span>
+                      {counts[f] > 0 && (
+                        <span style={{ fontSize: 10, background: "var(--glass-bg)", borderRadius: 8, padding: "1px 6px", color: "var(--text-muted)" }}>
+                          {counts[f]}
+                        </span>
+                      )}
+                    </button>
                   ))}
                 </div>
-              ) : rows.length === 0 ? (
-                <div style={{ padding: "24px 16px" }}>
-                  <div style={{ fontSize: 12.5, color: "var(--text-dim)", marginBottom: 6 }}>
-                    {q || domain ? "no messages match this filter." : `${folder} is empty.`}
-                  </div>
-                  {!q && !domain && folder === "inbox" && (
-                    <div style={{ fontSize: 11.5, color: "var(--text-faint)", lineHeight: 1.6 }}>
-                      arthur monitors connected inboxes and routes messages here. connect accounts via email settings.
-                    </div>
-                  )}
-                </div>
-              ) : (
-                rows.map(row => (
-                  <EmailCell
-                    key={row.id}
-                    row={row}
-                    active={row.id === selectedId}
-                    onClick={() => openEmail(row.id)}
-                  />
-                ))
               )}
-              {!loading && rows.length > 0 && (
-                <div style={{ padding: "12px 16px", color: "var(--text-faint)", fontSize: 11, textAlign: "center" }}>
-                  {total} total
-                </div>
-              )}
+            </div>
+            {/* Desktop folder list */}
+            <div className="folder-list-desktop" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {(["inbox", "sent", "archived", "deleted", "drafts", "flagged"] as Folder[]).map(f => (
+                <FolderButton key={f} label={f} count={counts[f]} active={folder === f} onClick={() => switchFolder(f)} />
+              ))}
             </div>
           </div>
 
-          {/* Reading pane */}
-          <div
-            className="inbox-reading-pane"
-            style={{ flex: 1, overflowY: "auto", minWidth: 0 }}
-          >
-            {mobilePane === "detail" && (
-              <button
-                className="btn-ghost inbox-back-btn"
-                onClick={() => { setMobilePane("list"); setSelectedId(null); }}
-                style={{
-                  margin: "12px 16px",
-                  fontSize: 11.5,
-                  padding: "6px 12px",
-                  minHeight: "unset",
-                }}
-              >
-                ← back to inbox
-              </button>
+          {/* ── Thread list (flex 1) ── */}
+          <div className="inbox-list-pane" style={{
+            flex: 1,
+            minWidth: 0,
+            borderRight: "1px solid var(--line-separator)",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            background: "var(--glass-bg)",
+          }}>
+            {loading ? (
+              <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 6 }}>
+                {[1,2,3,4,5].map(i => (
+                  <div key={i} className="inbox-skeleton" style={{ height: 70, borderRadius: 8, opacity: 0.15 + i * 0.05 }} />
+                ))}
+              </div>
+            ) : rows.length === 0 ? (
+              <div style={{ padding: "32px 20px" }}>
+                <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 8 }}>
+                  {q || domain ? "no messages match this filter." : folder === "inbox" ? "inbox is clear." : `${folder} is empty.`}
+                </div>
+                {!q && !domain && folder === "inbox" && (
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6, opacity: 0.7 }}>
+                    arthur monitors connected inboxes and routes messages here.
+                  </div>
+                )}
+              </div>
+            ) : (
+              rows.map(row => (
+                <EmailCell key={row.id} row={row} active={row.id === selectedId} onClick={() => openEmail(row.id)} />
+              ))
             )}
+            {!loading && rows.length > 0 && (
+              <div style={{ padding: "12px 16px", color: "var(--text-muted)", fontSize: 10, textAlign: "center", fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>
+                {total} total
+              </div>
+            )}
+          </div>
+
+          {/* ── Reading pane (flex 2, glass-bg-strong) ── */}
+          <div className="inbox-reading-pane" style={{
+            flex: 2,
+            overflowY: "auto",
+            minWidth: 0,
+            background: "var(--glass-bg-strong)",
+            backdropFilter: "blur(var(--blur-amount))",
+          }}>
+            <button
+              className="inbox-back-btn"
+              onClick={() => { setMobilePane("list"); setSelectedId(null); }}
+              style={{
+                margin: "12px 16px",
+                fontSize: 11,
+                padding: "6px 12px",
+                background: "var(--glass-bg)",
+                border: "1px solid var(--glass-border)",
+                borderRadius: 6,
+                color: "var(--text-main)",
+                cursor: "pointer",
+              }}
+            >
+              ← back
+            </button>
 
             {!selectedId && (
               <div style={{ padding: "32px 32px" }}>
-                <div style={{ fontSize: 13, color: "var(--text-dim)", marginBottom: 24 }}>
+                <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 24 }}>
                   select a message to read it.
                 </div>
                 {snapshot && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 480 }}>
-                    <div style={{
-                      fontSize: 10,
-                      fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      color: "var(--text-faint)",
-                      marginBottom: 4,
-                    }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 420 }}>
+                    <div style={{ fontSize: 9, fontFamily: "ui-monospace, 'JetBrains Mono', monospace", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 4 }}>
                       today&apos;s snapshot
                     </div>
-                    <SnapshotCard
-                      label="pending approvals"
-                      count={snapshot.pendingApprovals}
-                      color="var(--accent)"
-                      href="/inbox?smart=needs_attention"
-                    />
-                    <SnapshotCard
-                      label="calendar events"
-                      count={snapshot.calendarToday}
-                      color="var(--lobe-agentic)"
-                      href="/calendar"
-                    />
-                    <SnapshotCard
-                      label="extractions today"
-                      count={snapshot.extractionsToday}
-                      color="var(--lobe-upgrades)"
-                      href="/legal"
-                    />
+                    <SnapshotCard label="pending approvals" count={snapshot.pendingApprovals} href="/inbox?smart=needs_attention" />
+                    <SnapshotCard label="calendar events" count={snapshot.calendarToday} href="/calendar" />
+                    <SnapshotCard label="extractions today" count={snapshot.extractionsToday} href="/legal" />
                   </div>
                 )}
               </div>
@@ -851,63 +770,56 @@ export default function InboxPage() {
 
             {selectedId && loadingDetail && (
               <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 12, maxWidth: 800 }}>
-                <div className="inbox-skeleton" style={{ height: 24, width: "60%", borderRadius: 4, opacity: 0.3 }} />
-                <div className="inbox-skeleton" style={{ height: 14, width: "40%", borderRadius: 4, opacity: 0.2 }} />
-                <div className="inbox-skeleton" style={{ height: 200, borderRadius: 8, opacity: 0.15, marginTop: 16 }} />
+                <div className="inbox-skeleton" style={{ height: 24, width: "60%", borderRadius: 4, opacity: 0.2 }} />
+                <div className="inbox-skeleton" style={{ height: 14, width: "40%", borderRadius: 4, opacity: 0.15 }} />
+                <div className="inbox-skeleton" style={{ height: 200, borderRadius: 8, opacity: 0.10, marginTop: 16 }} />
               </div>
             )}
 
             {selected && !loadingDetail && (
               <div style={{ padding: "24px 28px", maxWidth: 800 }}>
-                {/* Sent indicator badge */}
                 {selected.direction === "outbound" && (
                   <div style={{ marginBottom: 12 }}>
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                        background: "var(--panel-elev)",
-                        border: "1px solid var(--border-strong)",
-                        borderRadius: 5,
-                        padding: "2px 8px",
-                        fontSize: 10,
-                        fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                        letterSpacing: "0.06em",
-                        color: "var(--text-faint)",
-                        textTransform: "uppercase",
-                      }}
-                    >
+                    <span style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      background: "var(--glass-bg)",
+                      border: "1px solid var(--glass-border)",
+                      borderRadius: 5,
+                      padding: "2px 8px",
+                      fontSize: 9,
+                      fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+                      letterSpacing: "0.06em",
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                    }}>
                       ↗ sent
                     </span>
                   </div>
                 )}
 
-                {/* Auto-action banner */}
                 {selected.auto_action && selected.auto_action !== "none" && selected.actor === "arthur" && (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      background: "rgba(255,180,50,0.08)",
-                      border: "1px solid rgba(255,180,50,0.25)",
-                      borderRadius: 8,
-                      padding: "8px 14px",
-                      marginBottom: 16,
-                      fontSize: 12,
-                      color: "var(--text-dim)",
-                      fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                    }}
-                  >
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    background: "rgba(212,255,61,0.06)",
+                    border: "1px solid rgba(212,255,61,0.20)",
+                    borderRadius: 8,
+                    padding: "8px 14px",
+                    marginBottom: 16,
+                    fontSize: 11,
+                    color: "var(--text-main)",
+                    fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+                  }}>
                     <span style={{ flex: 1 }}>
-                      ⚙ Arthur {AUTO_ACTION_LABELS[selected.auto_action] ?? selected.auto_action}
+                      ⚙ arthur {AUTO_ACTION_LABELS[selected.auto_action] ?? selected.auto_action}
                       {selected.auto_action_at ? ` ${relativeTime(selected.auto_action_at)}` : ""}
                       {selected.classification?.reasoning ? ` — ${selected.classification.reasoning}` : ""}
                     </span>
                     <button
-                      className="btn-ghost"
-                      style={{ fontSize: 11, padding: "4px 10px", minHeight: "unset" }}
+                      style={{ fontSize: 10, padding: "4px 10px", background: "var(--glass-bg)", border: "1px solid var(--glass-border)", borderRadius: 5, color: "var(--text-main)", cursor: "pointer" }}
                       onClick={revertAutoAction}
                       disabled={reverting}
                     >
@@ -916,18 +828,14 @@ export default function InboxPage() {
                   </div>
                 )}
 
-                {/* Subject */}
-                <h2
-                  style={{
-                    fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-                    fontWeight: 700,
-                    fontSize: 20,
-                    letterSpacing: "-0.01em",
-                    color: "var(--text)",
-                    margin: "0 0 16px",
-                    lineHeight: 1.3,
-                  }}
-                >
+                <h2 style={{
+                  fontWeight: 400,
+                  fontSize: 20,
+                  letterSpacing: "-0.02em",
+                  color: "var(--text-active)",
+                  margin: "0 0 16px",
+                  lineHeight: 1.3,
+                }}>
                   {selected.subject ?? "(no subject)"}
                 </h2>
 
@@ -943,228 +851,94 @@ export default function InboxPage() {
                   </>
                 )}
                 <MetaRow label="date" value={new Date(selected.received_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })} />
-                {selected.replied_at && (
-                  <MetaRow label="replied" value={relativeTime(selected.replied_at)} accent />
-                )}
+                {selected.replied_at && <MetaRow label="replied" value={relativeTime(selected.replied_at)} accent />}
                 {selected.label && <MetaRow label="label" value={selected.label} />}
                 {selected.classification && (
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                    <span
-                      style={{
-                        fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                        fontSize: 10,
-                        color: "var(--text-faint)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                        minWidth: 48,
-                      }}
-                    >
+                    <span style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em", minWidth: 48 }}>
                       intent
                     </span>
                     <IntentBadge intent={selected.classification.intent} />
-                    <span style={{ fontSize: 10, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)" }}>
+                    <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>
                       {Math.round(selected.classification.confidence * 100)}% · {selected.classification.urgency}
                     </span>
                   </div>
                 )}
 
-                {/* Draft approval composer */}
                 {selected.auto_action === "draft" && selected.requires_review && (
-                  <div
-                    style={{
-                      border: "1px solid rgba(255,180,50,0.35)",
-                      borderRadius: 10,
-                      padding: 16,
-                      marginBottom: 20,
-                      background: "rgba(255,180,50,0.06)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 10,
-                        color: "rgba(255,180,50,0.9)",
-                        fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                        letterSpacing: "0.1em",
-                        textTransform: "uppercase",
-                        marginBottom: 10,
-                      }}
-                    >
-                      ⚙ Arthur&apos;s proposed reply — review before sending
+                  <div style={{
+                    border: "1px solid rgba(212,255,61,0.25)",
+                    borderRadius: 10,
+                    padding: 16,
+                    marginBottom: 20,
+                    background: "rgba(212,255,61,0.05)",
+                  }}>
+                    <div style={{ fontSize: 9, color: "var(--accent-orange)", fontFamily: "ui-monospace, 'JetBrains Mono', monospace", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>
+                      ⚙ arthur&apos;s proposed reply — review before sending
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <input
-                        value={draftTo}
-                        onChange={e => setDraftTo(e.target.value)}
-                        placeholder="to"
-                        style={{ fontSize: 12.5, padding: "7px 10px", height: 34, minHeight: "unset" }}
-                      />
-                      <input
-                        value={draftSubject}
-                        onChange={e => setDraftSubject(e.target.value)}
-                        placeholder="subject"
-                        style={{ fontSize: 12.5, padding: "7px 10px", height: 34, minHeight: "unset" }}
-                      />
-                      <textarea
-                        value={draftBody}
-                        onChange={e => setDraftBody(e.target.value)}
-                        rows={6}
-                        style={{ fontSize: 12.5 }}
-                      />
+                      <input value={draftTo} onChange={e => setDraftTo(e.target.value)} placeholder="to" style={inputSt} />
+                      <input value={draftSubject} onChange={e => setDraftSubject(e.target.value)} placeholder="subject" style={inputSt} />
+                      <textarea value={draftBody} onChange={e => setDraftBody(e.target.value)} rows={6} style={{ ...inputSt, resize: "vertical" }} />
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <button
-                          className="cta-btn"
-                          style={{ fontSize: 11.5, padding: "7px 16px", minHeight: "unset" }}
-                          onClick={approveDraftAndSend}
-                          disabled={draftSending}
-                        >
+                        <button onClick={approveDraftAndSend} disabled={draftSending} style={accentBtn}>
                           {draftSending ? "sending…" : "approve & send →"}
                         </button>
-                        <button
-                          className="btn-ghost"
-                          style={{ fontSize: 11.5, padding: "7px 14px", minHeight: "unset" }}
-                          onClick={discardDraft}
-                        >
-                          discard
-                        </button>
-                        {draftStatus && (
-                          <span
-                            style={{
-                              fontSize: 11.5,
-                              color: draftStatus.startsWith("error") ? "#ef4444" : "var(--lobe-upgrades)",
-                              fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                            }}
-                          >
-                            {draftStatus}
-                          </span>
-                        )}
+                        <button onClick={discardDraft} style={ghostBtn}>discard</button>
+                        {draftStatus && <span style={{ fontSize: 11, color: draftStatus.startsWith("error") ? "#ef4444" : "var(--accent-orange)", fontFamily: "ui-monospace, monospace" }}>{draftStatus}</span>}
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Action row */}
                 <div style={{ display: "flex", gap: 8, margin: "16px 0", flexWrap: "wrap" }}>
                   {selected.direction === "inbound" && !selected.is_deleted && (
-                    <button
-                      className="btn-ghost"
-                      style={{ fontSize: 11.5, padding: "6px 12px", minHeight: "unset" }}
-                      onClick={() => setReplyOpen(o => !o)}
-                    >
-                      {replyOpen ? "cancel reply" : "reply"}
-                    </button>
+                    <button onClick={() => setReplyOpen(o => !o)} style={ghostBtn}>{replyOpen ? "cancel reply" : "reply"}</button>
                   )}
                   {selected.direction === "inbound" && !selected.is_deleted && (
-                    <button
-                      className="btn-ghost"
-                      style={{ fontSize: 11.5, padding: "6px 12px", minHeight: "unset" }}
-                      onClick={() => markAction({ is_archived: !selected.is_archived })}
-                    >
+                    <button onClick={() => markAction({ is_archived: !selected.is_archived })} style={ghostBtn}>
                       {selected.is_archived ? "unarchive" : "archive"}
                     </button>
                   )}
                   {selected.direction === "inbound" && !selected.is_deleted && (
-                    <button
-                      className="btn-ghost"
-                      style={{ fontSize: 11.5, padding: "6px 12px", minHeight: "unset" }}
-                      onClick={() => markAction({ is_read: !selected.is_read })}
-                    >
+                    <button onClick={() => markAction({ is_read: !selected.is_read })} style={ghostBtn}>
                       {selected.is_read ? "mark unread" : "mark read"}
                     </button>
                   )}
                   {!selected.is_deleted && (
-                    <button
-                      className="btn-ghost"
-                      style={{
-                        fontSize: 11.5,
-                        padding: "6px 12px",
-                        minHeight: "unset",
-                        color: "var(--text-faint)",
-                        borderColor: "var(--border-strong)",
-                      }}
-                      onClick={() => markAction({ is_deleted: true })}
-                    >
-                      delete
-                    </button>
+                    <button onClick={() => markAction({ is_deleted: true })} style={{ ...ghostBtn, color: "var(--text-muted)" }}>delete</button>
                   )}
                   {selected.is_deleted && (
-                    <button
-                      className="btn-ghost"
-                      style={{ fontSize: 11.5, padding: "6px 12px", minHeight: "unset" }}
-                      onClick={() => markAction({ is_deleted: false })}
-                    >
-                      restore
-                    </button>
+                    <button onClick={() => markAction({ is_deleted: false })} style={ghostBtn}>restore</button>
                   )}
                   {selected.direction === "inbound" && !selected.is_deleted && (
-                    <LabelPicker
-                      current={selected.label}
-                      onChange={label => markAction({ label: label as EmailRow["label"] })}
-                    />
+                    <LabelPicker current={selected.label} onChange={label => markAction({ label: label as EmailRow["label"] })} />
                   )}
                 </div>
 
-                {/* Manual reply composer */}
                 {replyOpen && (
-                  <div
-                    style={{
-                      border: "1px solid var(--border-strong)",
-                      borderRadius: 10,
-                      padding: 16,
-                      marginBottom: 20,
-                      background: "var(--panel-elev)",
-                    }}
-                  >
-                    <div style={{ fontSize: 11, color: "var(--text-faint)", marginBottom: 10, fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)" }}>
+                  <div style={{ border: "1px solid var(--glass-border)", borderRadius: 10, padding: 16, marginBottom: 20, background: "var(--glass-bg)" }}>
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 10, fontFamily: "ui-monospace, monospace" }}>
                       from: {selected.to_email}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <input
-                        value={replyTo}
-                        onChange={e => setReplyTo(e.target.value)}
-                        placeholder="to"
-                        style={{ fontSize: 12.5, padding: "7px 10px", height: 34, minHeight: "unset" }}
-                      />
-                      <input
-                        value={replySubject}
-                        onChange={e => setReplySubject(e.target.value)}
-                        placeholder="subject"
-                        style={{ fontSize: 12.5, padding: "7px 10px", height: 34, minHeight: "unset" }}
-                      />
-                      <textarea
-                        value={replyText}
-                        onChange={e => setReplyText(e.target.value)}
-                        placeholder="write your reply…"
-                        rows={5}
-                        style={{ fontSize: 12.5 }}
-                      />
+                      <input value={replyTo} onChange={e => setReplyTo(e.target.value)} placeholder="to" style={inputSt} />
+                      <input value={replySubject} onChange={e => setReplySubject(e.target.value)} placeholder="subject" style={inputSt} />
+                      <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="write your reply…" rows={5} style={{ ...inputSt, resize: "vertical" }} />
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <button className="cta-btn" style={{ fontSize: 11.5, padding: "7px 16px", minHeight: "unset" }} onClick={sendReply} disabled={replying}>
-                          {replying ? "sending…" : "send →"}
-                        </button>
-                        {replyStatus && (
-                          <span style={{ fontSize: 11.5, color: replyStatus.startsWith("error") ? "#ef4444" : "var(--lobe-upgrades)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)" }}>
-                            {replyStatus}
-                          </span>
-                        )}
+                        <button onClick={sendReply} disabled={replying} style={accentBtn}>{replying ? "sending…" : "send →"}</button>
+                        {replyStatus && <span style={{ fontSize: 11, color: replyStatus.startsWith("error") ? "#ef4444" : "var(--accent-orange)", fontFamily: "ui-monospace, monospace" }}>{replyStatus}</span>}
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Body */}
-                <div style={{ borderTop: "1px solid var(--border)", paddingTop: 20, marginTop: 4 }}>
+                <div style={{ borderTop: "1px solid var(--line-separator)", paddingTop: 20, marginTop: 4 }}>
                   {selected.body_html ? (
                     <iframe
                       srcDoc={selected.body_html}
                       sandbox="allow-popups allow-popups-to-escape-sandbox"
-                      style={{
-                        width: "100%",
-                        minHeight: 320,
-                        border: "none",
-                        borderRadius: 8,
-                        background: "#fff",
-                        colorScheme: "light",
-                      }}
+                      style={{ width: "100%", minHeight: 320, border: "none", borderRadius: 8, background: "#fff", colorScheme: "light" }}
                       onLoad={(e) => {
                         const iframe = e.currentTarget;
                         try {
@@ -1174,26 +948,15 @@ export default function InboxPage() {
                       }}
                     />
                   ) : (
-                    <pre
-                      style={{
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-word",
-                        fontSize: 13,
-                        color: "var(--text-dim)",
-                        lineHeight: 1.65,
-                        fontFamily: "inherit",
-                        margin: 0,
-                      }}
-                    >
+                    <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "var(--text-main)", lineHeight: 1.65, fontFamily: "inherit", margin: 0 }}>
                       {selected.body_text ?? "(no body)"}
                     </pre>
                   )}
                 </div>
 
-                {/* Arthur's note */}
                 {selected.direction === "inbound" && (
-                  <div style={{ marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: 10.5, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>
+                  <div style={{ marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--line-separator)" }}>
+                    <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: "ui-monospace, 'JetBrains Mono', monospace", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>
                       arthur&apos;s note
                     </div>
                     <textarea
@@ -1202,7 +965,7 @@ export default function InboxPage() {
                       onBlur={saveAnnotation}
                       placeholder="add a note about this email…"
                       rows={3}
-                      style={{ fontSize: 12.5 }}
+                      style={{ ...inputSt, width: "100%", resize: "vertical" }}
                     />
                   </div>
                 )}
@@ -1212,57 +975,38 @@ export default function InboxPage() {
         </div>
       </div>
 
-      <style>{`
+      <style jsx>{`
         @media (max-width: 700px) {
+          .inbox-folder-rail { display: none !important; }
           .inbox-list-pane {
             width: 100% !important;
             border-right: none !important;
             display: ${mobilePane === "detail" ? "none" : "flex"} !important;
-            position: relative;
           }
           .inbox-reading-pane {
             display: ${mobilePane === "list" ? "none" : "flex"} !important;
             flex-direction: column !important;
           }
-          .inbox-back-btn {
-            display: inline-flex !important;
-          }
-          /* Mobile: hide desktop folder list, show dropdown */
+          .inbox-back-btn { display: inline-flex !important; }
           .folder-list-desktop { display: none !important; }
           .folder-dropdown-mobile { display: block !important; }
-          /* Mobile: filter chips in horizontal scroll row */
-          .inbox-filter-chips {
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch !important;
-            gap: 6px !important;
-            scrollbar-width: none !important;
-          }
-          .inbox-filter-chips::-webkit-scrollbar { display: none !important; }
+          .inbox-filter-chips { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+          .inbox-filter-chips::-webkit-scrollbar { display: none; }
         }
         @media (min-width: 701px) {
-          .inbox-back-btn {
-            display: none !important;
-          }
-          /* Desktop: hide mobile dropdown, show list */
+          .inbox-back-btn { display: none !important; }
           .folder-dropdown-mobile { display: none !important; }
           .folder-list-desktop { display: flex !important; }
-          /* Desktop: filter chips can wrap */
-          .inbox-filter-chips {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            gap: 6px;
-          }
         }
         @keyframes inbox-shimmer {
           0%   { background-position: -600px 0; }
           100% { background-position: 600px 0; }
         }
         .inbox-skeleton {
-          background: linear-gradient(90deg, var(--panel) 25%, var(--panel-elev) 50%, var(--panel) 75%);
+          background: linear-gradient(90deg,
+            rgba(255,255,255,0.04) 25%,
+            rgba(255,255,255,0.08) 50%,
+            rgba(255,255,255,0.04) 75%);
           background-size: 1200px 100%;
           animation: inbox-shimmer 1.6s infinite;
         }
@@ -1284,17 +1028,44 @@ const FOLDER_ICONS: Record<Folder, string> = {
   flagged: "!",
 };
 
-function FolderButton({
-  label,
-  count,
-  active,
-  onClick,
-}: {
-  label: Folder;
-  count: number;
-  active: boolean;
-  onClick: () => void;
-}) {
+const inputSt: React.CSSProperties = {
+  background: "var(--glass-bg)",
+  border: "1px solid var(--glass-border)",
+  borderRadius: 8,
+  padding: "8px 12px",
+  color: "var(--text-active)",
+  fontSize: 12,
+  fontFamily: "inherit",
+  outline: "none",
+  width: "100%",
+  boxSizing: "border-box",
+  minHeight: "unset",
+  height: 36,
+};
+
+const accentBtn: React.CSSProperties = {
+  background: "var(--accent-orange)",
+  color: "var(--accent-text-on)",
+  border: "none",
+  borderRadius: "var(--radius-pill)",
+  padding: "7px 16px",
+  fontSize: 11,
+  fontWeight: 700,
+  cursor: "pointer",
+  letterSpacing: "0.01em",
+};
+
+const ghostBtn: React.CSSProperties = {
+  background: "transparent",
+  color: "var(--text-main)",
+  border: "1px solid var(--glass-border)",
+  borderRadius: 6,
+  padding: "6px 12px",
+  fontSize: 11,
+  cursor: "pointer",
+};
+
+function FolderButton({ label, count, active, onClick }: { label: Folder; count: number; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
@@ -1304,50 +1075,31 @@ function FolderButton({
         gap: 8,
         width: "100%",
         textAlign: "left",
-        background: active ? "var(--accent-soft)" : "transparent",
-        border: "none",
+        background: active ? "rgba(212,255,61,0.10)" : "transparent",
+        border: active ? "1px solid rgba(212,255,61,0.20)" : "1px solid transparent",
         borderRadius: 6,
         padding: "7px 10px",
         cursor: "pointer",
         transition: "background 0.12s",
-        color: active ? "var(--accent)" : "var(--text-dim)",
+        color: active ? "var(--accent-orange)" : "var(--text-main)",
       }}
     >
-      <span
-        style={{
-          fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-          fontSize: 11,
-          width: 14,
-          textAlign: "center",
-          flexShrink: 0,
-          opacity: 0.6,
-        }}
-      >
+      <span style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 11, width: 14, textAlign: "center", flexShrink: 0, opacity: 0.6 }}>
         {FOLDER_ICONS[label]}
       </span>
-      <span
-        style={{
-          fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-          fontSize: 11.5,
-          fontWeight: active ? 600 : 400,
-          letterSpacing: "0.04em",
-          flex: 1,
-        }}
-      >
+      <span style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 11, fontWeight: active ? 600 : 400, letterSpacing: "0.04em", flex: 1 }}>
         {label}
       </span>
       {count > 0 && (
-        <span
-          style={{
-            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-            fontSize: 10,
-            color: active ? "var(--accent)" : "var(--text-faint)",
-            background: active ? "var(--accent-soft)" : "var(--panel-elev)",
-            borderRadius: 8,
-            padding: "1px 6px",
-            flexShrink: 0,
-          }}
-        >
+        <span style={{
+          fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+          fontSize: 9,
+          color: active ? "var(--accent-orange)" : "var(--text-muted)",
+          background: active ? "rgba(212,255,61,0.12)" : "var(--glass-bg-strong)",
+          borderRadius: 8,
+          padding: "1px 6px",
+          flexShrink: 0,
+        }}>
           {count}
         </span>
       )}
@@ -1357,10 +1109,7 @@ function FolderButton({
 
 function EmailCell({ row, active, onClick }: { row: EmailRow; active: boolean; onClick: () => void }) {
   const isSent = row.direction === "outbound";
-  const displayName = isSent
-    ? `→ ${row.to_email}`
-    : row.from_name || row.from_email;
-
+  const displayName = isSent ? `→ ${row.to_email}` : row.from_name || row.from_email;
   return (
     <button
       onClick={onClick}
@@ -1368,104 +1117,51 @@ function EmailCell({ row, active, onClick }: { row: EmailRow; active: boolean; o
         display: "block",
         width: "100%",
         textAlign: "left",
-        background: active ? "var(--accent-soft)" : "transparent",
+        background: active ? "rgba(212,255,61,0.07)" : "transparent",
         border: "none",
-        borderBottom: "1px solid var(--border)",
-        borderLeft: active ? "2px solid var(--accent)" : "2px solid transparent",
+        borderBottom: "1px solid var(--line-separator)",
+        borderLeft: active ? "2px solid var(--accent-orange)" : "2px solid transparent",
         padding: "12px 14px",
         cursor: "pointer",
         transition: "background 0.12s",
-        opacity: row.is_deleted ? 0.6 : 1,
+        opacity: row.is_deleted ? 0.5 : 1,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
         {!row.is_read && !isSent && (
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", flexShrink: 0 }} />
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-orange)", flexShrink: 0 }} />
         )}
-        {isSent && (
-          <span style={{ fontSize: 9, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", flexShrink: 0 }}>
-            ↗
-          </span>
-        )}
-        <span
-          style={{
-            fontWeight: row.is_read || isSent ? 400 : 600,
-            fontSize: 12.5,
-            color: "var(--text)",
-            flex: 1,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
+        {isSent && <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: "ui-monospace, monospace", flexShrink: 0 }}>↗</span>}
+        <span style={{
+          fontWeight: row.is_read || isSent ? 400 : 600,
+          fontSize: 12,
+          color: "var(--text-active)",
+          flex: 1,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}>
           {displayName}
         </span>
-        <span style={{ fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", fontSize: 10, color: "var(--text-faint)", flexShrink: 0 }}>
+        <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, color: "var(--text-muted)", flexShrink: 0 }}>
           {relativeTime(row.received_at)}
         </span>
       </div>
-
-      <div
-        style={{
-          fontSize: 12,
-          color: row.is_read || isSent ? "var(--text-dim)" : "var(--text)",
-          fontWeight: row.is_read || isSent ? 400 : 500,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          marginBottom: 2,
-        }}
-      >
+      <div style={{ fontSize: 11.5, color: row.is_read || isSent ? "var(--text-main)" : "var(--text-active)", fontWeight: row.is_read || isSent ? 400 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 2 }}>
         {row.subject ?? "(no subject)"}
       </div>
-
-      <div
-        style={{
-          fontSize: 11.5,
-          color: "var(--text-faint)",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-      >
+      <div style={{ fontSize: 11, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {snippet(row.body_text, 80)}
       </div>
-
       <div style={{ display: "flex", gap: 4, marginTop: 5, flexWrap: "wrap" }}>
         {row.label && (
-          <span
-            style={{
-              display: "inline-block",
-              padding: "1px 7px",
-              borderRadius: 4,
-              fontSize: 10,
-              fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-              letterSpacing: "0.06em",
-              background: "var(--panel-elev)",
-              border: "1px solid var(--border-strong)",
-              color: "var(--text-dim)",
-              textTransform: "uppercase",
-            }}
-          >
+          <span style={{ display: "inline-block", padding: "1px 6px", borderRadius: 4, fontSize: 9, fontFamily: "ui-monospace, monospace", letterSpacing: "0.06em", background: "var(--glass-bg-strong)", border: "1px solid var(--glass-border)", color: "var(--text-muted)", textTransform: "uppercase" }}>
             {row.label}
           </span>
         )}
-        {row.classification?.intent && (
-          <IntentBadge intent={row.classification.intent} />
-        )}
+        {row.classification?.intent && <IntentBadge intent={row.classification.intent} />}
         {row.actor === "arthur" && row.auto_action && row.auto_action !== "none" && (
-          <span
-            style={{
-              display: "inline-block",
-              padding: "1px 6px",
-              borderRadius: 4,
-              fontSize: 9,
-              fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-              background: "rgba(255,180,50,0.12)",
-              color: "rgba(255,180,50,0.9)",
-              border: "1px solid rgba(255,180,50,0.25)",
-            }}
-          >
+          <span style={{ display: "inline-block", padding: "1px 6px", borderRadius: 4, fontSize: 9, fontFamily: "ui-monospace, monospace", background: "rgba(212,255,61,0.08)", color: "var(--accent-orange)", border: "1px solid rgba(212,255,61,0.18)" }}>
             ⚙ {row.auto_action}
           </span>
         )}
@@ -1476,44 +1172,35 @@ function EmailCell({ row, active, onClick }: { row: EmailRow; active: boolean; o
 
 function MetaRow({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div style={{ display: "flex", gap: 12, marginBottom: 6, alignItems: "baseline" }}>
-      <span
-        style={{
-          fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-          fontSize: 10,
-          color: "var(--text-faint)",
-          textTransform: "uppercase",
-          letterSpacing: "0.1em",
-          minWidth: 48,
-          flexShrink: 0,
-        }}
-      >
+    <div style={{ display: "flex", gap: 12, marginBottom: 6, alignItems: "baseline", borderBottom: "1px dashed rgba(255,255,255,0.10)", paddingBottom: 5 }}>
+      <span style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em", minWidth: 48, flexShrink: 0 }}>
         {label}
       </span>
-      <span style={{ fontSize: 12.5, color: accent ? "var(--lobe-upgrades)" : "var(--text-dim)" }}>
+      <span style={{ fontSize: 12, color: accent ? "var(--accent-orange)" : "var(--text-main)", fontFamily: "ui-monospace, monospace" }}>
         {value}
       </span>
     </div>
   );
 }
 
-function FilterToggle({ label, active, onToggle }: { label: string; active: boolean; onToggle: () => void }) {
+function FilterChip({ label, active, onToggle }: { label: string; active: boolean; onToggle: () => void }) {
   return (
     <button
       onClick={onToggle}
       style={{
-        background: active ? "var(--accent-soft)" : "transparent",
-        border: `1px solid ${active ? "var(--accent)" : "var(--border-strong)"}`,
+        background: active ? "rgba(212,255,61,0.12)" : "transparent",
+        border: `1px solid ${active ? "rgba(212,255,61,0.35)" : "var(--glass-border)"}`,
         borderRadius: 6,
-        color: active ? "var(--accent)" : "var(--text-dim)",
-        fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-        fontSize: 10.5,
+        color: active ? "var(--accent-orange)" : "var(--text-muted)",
+        fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+        fontSize: 9,
         letterSpacing: "0.06em",
         textTransform: "uppercase",
         padding: "4px 10px",
         cursor: "pointer",
         transition: "all 0.15s",
         height: 28,
+        whiteSpace: "nowrap",
       }}
     >
       {label}
@@ -1527,34 +1214,28 @@ function LabelPicker({ current, onChange }: { current: string | null; onChange: 
   const [open, setOpen] = useState(false);
   return (
     <div style={{ position: "relative" }}>
-      <button
-        className="btn-ghost"
-        style={{ fontSize: 11.5, padding: "6px 12px", minHeight: "unset" }}
-        onClick={() => setOpen(o => !o)}
-      >
+      <button onClick={() => setOpen(o => !o)} style={ghostBtn}>
         label{current ? `: ${current}` : ""}
       </button>
       {open && (
-        <div
-          style={{
-            position: "absolute",
-            top: "calc(100% + 4px)",
-            left: 0,
-            background: "var(--panel-elev)",
-            border: "1px solid var(--border-strong)",
-            borderRadius: 8,
-            padding: 6,
-            zIndex: 100,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            minWidth: 130,
-          }}
-        >
+        <div style={{
+          position: "absolute",
+          top: "calc(100% + 4px)",
+          left: 0,
+          background: "var(--glass-bg-strong)",
+          backdropFilter: "blur(var(--blur-amount))",
+          border: "1px solid var(--glass-border)",
+          borderRadius: 8,
+          padding: 6,
+          zIndex: 100,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          minWidth: 130,
+          boxShadow: "var(--glass-shadow)",
+        }}>
           <LabelOption label="(none)" active={!current} onClick={() => { onChange(null); setOpen(false); }} />
-          {LABELS.map(l => (
-            <LabelOption key={l} label={l} active={current === l} onClick={() => { onChange(l); setOpen(false); }} />
-          ))}
+          {LABELS.map(l => <LabelOption key={l} label={l} active={current === l} onClick={() => { onChange(l); setOpen(false); }} />)}
         </div>
       )}
     </div>
@@ -1566,11 +1247,11 @@ function LabelOption({ label, active, onClick }: { label: string; active: boolea
     <button
       onClick={onClick}
       style={{
-        background: active ? "var(--accent-soft)" : "transparent",
+        background: active ? "rgba(212,255,61,0.10)" : "transparent",
         border: "none",
         borderRadius: 5,
-        color: active ? "var(--accent)" : "var(--text-dim)",
-        fontSize: 12,
+        color: active ? "var(--accent-orange)" : "var(--text-main)",
+        fontSize: 11,
         padding: "6px 10px",
         textAlign: "left",
         cursor: "pointer",
@@ -1582,7 +1263,7 @@ function LabelOption({ label, active, onClick }: { label: string; active: boolea
   );
 }
 
-function SnapshotCard({ label, count, color, href }: { label: string; count: number; color: string; href: string }) {
+function SnapshotCard({ label, count, href }: { label: string; count: number; href: string }) {
   return (
     <a
       href={href}
@@ -1591,26 +1272,17 @@ function SnapshotCard({ label, count, color, href }: { label: string; count: num
         alignItems: "center",
         justifyContent: "space-between",
         padding: "12px 16px",
-        background: "var(--panel-elev)",
-        border: "1px solid var(--border-strong)",
-        borderRadius: 8,
+        background: "var(--glass-bg)",
+        border: "1px solid var(--glass-border)",
+        borderRadius: 10,
         textDecoration: "none",
-        transition: "border-color 0.15s",
+        transition: "transform 0.15s, box-shadow 0.15s",
       }}
     >
-      <span style={{
-        fontSize: 12.5,
-        color: "var(--text-dim)",
-        fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-      }}>
+      <span style={{ fontSize: 11, color: "var(--text-main)", fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>
         {label}
       </span>
-      <span style={{
-        fontSize: 18,
-        fontWeight: 700,
-        color,
-        fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-      }}>
+      <span style={{ fontSize: 20, fontWeight: 300, color: "var(--accent-orange)", fontFamily: "ui-monospace, monospace", letterSpacing: "-0.02em" }}>
         {count}
       </span>
     </a>

@@ -312,7 +312,7 @@ export default function IphonePage() {
         body:    JSON.stringify({ api_key: pushcutKey.trim() || "current" }),
       });
       const data = await res.json() as { test_sent?: boolean; test_error?: string; message?: string };
-      setTestResult(data.test_sent ? "Test notification sent to your iPhone." : data.test_error ?? "Failed.");
+      setTestResult(data.test_sent ? "Test notification sent to your iPhone." : data.test_error ?? "couldn't send — check your Pushcut API key.");
     } catch (e) {
       setTestResult((e as Error).message);
     } finally {
@@ -323,7 +323,7 @@ export default function IphonePage() {
   return (
     <>
       <Nav />
-      <main style={{ minHeight: "100vh", paddingTop: 80, paddingBottom: 80 }}>
+      <main style={{ minHeight: "100vh", paddingTop: 108, paddingBottom: 80 }}>
         <div className="wrap" style={{ maxWidth: 740 }}>
 
           {/* ── Header ──────────────────────────────────────────────────────── */}
@@ -425,6 +425,7 @@ export default function IphonePage() {
                 <div style={{ display: "flex", gap: 8 }}>
                   <input
                     type="text"
+                    aria-label="Pushcut API key"
                     value={pushcutKey}
                     onChange={e => setPushcutKey(e.target.value)}
                     placeholder="Paste Pushcut API key…"
