@@ -256,7 +256,7 @@ export default function SuperlearnerPage() {
               </p>
             </div>
             <div className="glass-t1" style={{ padding: '12px 16px', borderRadius: 'var(--radius-card)', textAlign: 'center' }}>
-              <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: 24, fontWeight: 700, color: "var(--text-active)", letterSpacing: "-0.03em", lineHeight: 1, color: 'var(--tint-emerald)' }}>94.8%</div>
+              <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1, color: 'var(--tint-emerald)' }}>94.8%</div>
               <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 6 }}>accuracy</div>
             </div>
           </div>

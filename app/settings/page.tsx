@@ -158,7 +158,7 @@ function PlaceholderSection({ title }: { title: string }) {
 }
 
 function IntegrationsSection() {
-  const integrations = [
+  const integrations: { name: string; status: 'ok' | 'pending' | 'error'; detail: string }[] = [
     { name: "Google Mail", status: "ok", detail: "3 inboxes active — blackmarble, yahoo, drinkswithdabney" },
     { name: "Google Calendar", status: "ok", detail: "Multi-account sync via iCloud CalDAV push" },
     { name: "Xero", status: "ok", detail: "Dabney & Co — last sync 2h ago" },

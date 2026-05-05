@@ -277,7 +277,7 @@ function ContractCard({ doc, active, onClick }: { doc: DocRow; active: boolean; 
         backdropFilter: 'blur(var(--card-blur))',
         boxShadow: 'var(--card-shadow)',
         gap: '12px',
-      }}
+      } as React.CSSProperties}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
         <h3 style={{

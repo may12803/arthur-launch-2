@@ -382,7 +382,7 @@ export default function GoalsPage() {
               if (columnGoals.length === 0 && activeFilter !== 'all') return null;
               return (
                 <div key={status} className="kanban-column">
-                  <div className="kanban-column-header" style={{ '--status-color': STATUS_CONFIG[status].color }}>
+                  <div className="kanban-column-header" style={{ '--status-color': STATUS_CONFIG[status].color } as React.CSSProperties}>
                     <h3>{STATUS_CONFIG[status].label}</h3>
                     <span>{columnGoals.length}</span>
                   </div>
