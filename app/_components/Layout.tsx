@@ -15,7 +15,7 @@ function isAppRoute(pathname: string): boolean {
 }
 
 // ── Dropdown ─────────────────────────────────────────────────────────────────
-
+// NOTE: This is a legacy component, preserved for compatibility.
 function NavDropdown({
   label,
   links,
@@ -53,7 +53,7 @@ function NavDropdown({
           font: "inherit",
           fontSize: 12.5,
           letterSpacing: "0.01em",
-          color: isActive ? "var(--text)" : "var(--text-dim)",
+          color: isActive ? "var(--text-active)" : "var(--text-muted)",
           fontWeight: isActive ? 600 : 400,
           padding: 0,
           display: "inline-flex",
@@ -71,16 +71,18 @@ function NavDropdown({
             position: "absolute",
             top: "calc(100% + 8px)",
             left: 0,
-            background: "var(--panel-elev)",
-            border: "1px solid var(--border-strong)",
-            borderRadius: 8,
+            background: "var(--glass-t3-bg)",
+            border: "1px solid var(--glass-t3-border)",
+            borderRadius: "var(--radius-card)",
             padding: 6,
             zIndex: 200,
             minWidth: 160,
             display: "flex",
             flexDirection: "column",
             gap: 2,
-            boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+            boxShadow: "var(--glass-t3-shadow)",
+            backdropFilter: "blur(var(--glass-t3-blur))",
+            WebkitBackdropFilter: "blur(var(--glass-t3-blur))",
           }}
         >
           {links.map(l => {
@@ -93,10 +95,10 @@ function NavDropdown({
                 style={{
                   display: "block",
                   padding: "7px 12px",
-                  borderRadius: 5,
+                  borderRadius: "var(--radius-sm)",
                   fontSize: 12.5,
-                  color: active ? "var(--accent)" : "var(--text-dim)",
-                  background: active ? "var(--accent-soft)" : "transparent",
+                  color: active ? "var(--accent-orange)" : "var(--text-main)",
+                  background: active ? "var(--accent-orange-soft)" : "transparent",
                   fontWeight: active ? 600 : 400,
                   transition: "background 0.12s, color 0.12s",
                 }}
@@ -170,7 +172,6 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   ),
 };
 
-// Mobile bottom nav items (5 most-used on phone)
 const BOTTOM_NAV_ITEMS = [
   { href: "/inbox",     label: "inbox" },
   { href: "/calendar",  label: "cal" },
@@ -181,7 +182,7 @@ const BOTTOM_NAV_ITEMS = [
 
 function MobileBottomNav({ pathname }: { pathname: string }) {
   return (
-    <nav className="mobile-bottom-nav" aria-label="primary mobile navigation">
+    <nav className="mobile-bottom-nav" aria-label="Primary mobile navigation">
       <div className="mobile-bottom-nav-inner">
         {BOTTOM_NAV_ITEMS.map(item => {
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -205,7 +206,7 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
 }
 
 // ── Live heartbeat badge ──────────────────────────────────────────────────────
-
+// NOTE: This is a legacy component, preserved for compatibility.
 function LiveBadge() {
   const [status, setStatus] = useState<"ok" | "err" | "unknown">("unknown");
 
@@ -235,11 +236,7 @@ function LiveBadge() {
   );
 }
 
-// ── Nav ───────────────────────────────────────────────────────────────────────
-
-// ── Arthur OS Floating Nav Island ───────────────────────────────────────────
-// Replaces the prior horizontal navbar. Pill-shaped segmented island fixed
-// top-center, glass-morphism, three pills: dots-drawer | center-links | tasks.
+// ── Arthur OS Nav System ────────────────────────────────────────────────────
 
 const ALL_ROUTES_GROUPED = [
   { group: "Workspace", links: [
@@ -273,7 +270,6 @@ function ArthurOSNav({ pathname }: { pathname: string }) {
   const [tasksCount, setTasksCount] = useState<number | "">("");
   const drawerRef = useRef<HTMLDivElement>(null);
 
-  // Best-effort tasks count
   useEffect(() => {
     let cancelled = false;
     fetch("/api/state").then(r => r.ok ? r.json() : null).then(d => {
@@ -285,7 +281,6 @@ function ArthurOSNav({ pathname }: { pathname: string }) {
     return () => { cancelled = true; };
   }, [pathname]);
 
-  // Esc closes drawer
   useEffect(() => {
     if (!drawerOpen) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setDrawerOpen(false); };
@@ -300,6 +295,143 @@ function ArthurOSNav({ pathname }: { pathname: string }) {
 
   return (
     <>
+      <style jsx global>{`
+        .os-topbar {
+          position: fixed;
+          top: 16px;
+          left: 0;
+          right: 0;
+          z-index: 100;
+          display: flex;
+          justify-content: center;
+          padding: 0 var(--page-gutter);
+        }
+        .nav-island {
+          display: flex;
+          align-items: center;
+          height: 48px;
+          padding: 4px;
+          gap: 4px;
+          background: var(--glass-t2-bg);
+          border: 1px solid var(--glass-t2-border);
+          box-shadow: var(--glass-t2-shadow);
+          border-radius: var(--radius-pill);
+          backdrop-filter: blur(var(--glass-t2-blur));
+          -webkit-backdrop-filter: blur(var(--glass-t2-blur));
+          transition: all 0.2s ease-in-out;
+        }
+        .nav-pill {
+          display: flex;
+          align-items: center;
+          height: 40px;
+          border-radius: var(--radius-pill);
+          transition: background 0.15s ease-in-out;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          color: var(--text-main);
+          padding: 0;
+        }
+        .nav-pill.left { padding: 0 12px; }
+        .nav-pill.left:hover { background: var(--glass-t1-bg); }
+        .nav-pill.left[data-open="true"] { background: var(--glass-t3-bg); }
+        .nav-pill.right { padding: 0 16px; gap: 8px; text-decoration: none; }
+        .nav-pill.right:hover { background: var(--glass-t1-bg); }
+        .nav-pill.center { gap: 4px; }
+        .nav-link {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 40px;
+          padding: 0 12px;
+          border-radius: var(--radius-pill);
+          text-decoration: none;
+          color: var(--text-main);
+          font-size: 14px;
+          font-weight: 500;
+          transition: all 0.15s ease-in-out;
+        }
+        .nav-link:hover { background: var(--glass-t1-bg); color: var(--text-active); }
+        .nav-link.active { background: var(--glass-bg-faint); color: var(--text-active); }
+        .user-avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background-color: var(--glass-t1-bg);
+          background-image: url(/avatar.png);
+          background-size: cover;
+          margin-left: 4px;
+        }
+        .bag-count {
+          background: var(--accent-orange);
+          color: var(--accent-text-on);
+          border-radius: var(--radius-pill);
+          font-size: 12px;
+          font-weight: 600;
+          min-width: 20px;
+          height: 20px;
+          padding: 0 6px;
+          display: grid;
+          place-items: center;
+          transition: transform 0.2s ease, opacity 0.2s ease;
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        .bag-count[data-active="true"] {
+          opacity: 1;
+          transform: scale(1);
+        }
+        .dots-icon { display: flex; gap: 3px; }
+        .dots-icon span { width: 4px; height: 4px; background: currentColor; border-radius: 50%; }
+
+        .mobile-bottom-nav { display: none; }
+
+        @media (max-width: 768px) {
+          .nav-link.hide-tablet { display: none; }
+        }
+        @media (max-width: 640px) {
+          .nav-pill.center { display: none; }
+          .mobile-bottom-nav {
+            display: block;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: var(--glass-t2-bg);
+            border-top: 1px solid var(--glass-t2-border);
+            backdrop-filter: blur(var(--glass-t2-blur));
+            -webkit-backdrop-filter: blur(var(--glass-t2-blur));
+          }
+          .mobile-bottom-nav-inner {
+            display: flex;
+            justify-content: space-around;
+            max-width: var(--max-w-narrow);
+            margin: 0 auto;
+            padding: 8px var(--page-gutter) calc(8px + env(safe-area-inset-bottom));
+          }
+          .mobile-bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            flex: 1;
+            padding: 4px 0;
+          }
+          .mobile-bottom-nav-item.active {
+            color: var(--text-active);
+          }
+          .mobile-bottom-nav-icon {
+            width: 24px;
+            height: 24px;
+            display: grid;
+            place-items: center;
+          }
+        }
+      `}</style>
       <header className="os-topbar">
         <div className="nav-island">
           <button
@@ -307,37 +439,37 @@ function ArthurOSNav({ pathname }: { pathname: string }) {
             className="nav-pill left"
             onClick={() => setDrawerOpen(o => !o)}
             aria-label="Open all routes"
-            style={{ background: drawerOpen ? "var(--glass-bg-strong)" : undefined }}
+            data-open={drawerOpen}
           >
             <div className="dots-icon"><span /><span /><span /></div>
           </button>
 
           <div className="nav-pill center">
             <Link href="/dashboard" className={"nav-link" + (arthurActive ? " active" : "")}>
-              <span className="nav-link-text">Arthur</span>
+              Arthur
             </Link>
             <Link href="/inbox" className={"nav-link" + (isCenterActive("/inbox") ? " active" : "")}>
-              <span className="nav-link-text">Mail</span>
+              Mail
             </Link>
             <Link href="/calendar" className={"nav-link" + (isCenterActive("/calendar") ? " active" : "")}>
-              <span className="nav-link-text">Cal</span>
+              Cal
             </Link>
-            <Link href="/legal" className={"nav-link" + (isCenterActive("/legal") ? " active" : "")}>
-              <span className="nav-link-text">Docs</span>
+            <Link href="/legal" className={"nav-link hide-tablet" + (isCenterActive("/legal") ? " active" : "")}>
+              Docs
             </Link>
-            <Link href="/employees" className={"nav-link" + (isCenterActive("/employees") ? " active" : "")}>
-              <span className="nav-link-text">Team</span>
+            <Link href="/employees" className={"nav-link hide-tablet" + (isCenterActive("/employees") ? " active" : "")}>
+              Team
             </Link>
             <Link href="/settings" className="user-avatar" aria-label="Settings" />
           </div>
 
-          <Link href="/goals" className="nav-pill right" style={{ textDecoration: "none" }}>
-            <span style={{ color: pathname === "/goals" ? "var(--text-active)" : "var(--text-main)", fontWeight: pathname === "/goals" ? 500 : 400 }}>
-              <span className="nav-link-text">Tasks</span>
+          <Link href="/goals" className="nav-pill right">
+            <span style={{ color: isCenterActive("/goals") ? "var(--text-active)" : "var(--text-main)", fontWeight: isCenterActive("/goals") ? 500 : 400, fontSize: 14 }}>
+              Tasks
             </span>
             <span
               className="bag-count"
-              data-active={typeof tasksCount === "number" && tasksCount > 0 ? "true" : "false"}
+              data-active={typeof tasksCount === "number" && tasksCount > 0}
             >
               {tasksCount === "" ? "·" : tasksCount}
             </span>
@@ -351,7 +483,7 @@ function ArthurOSNav({ pathname }: { pathname: string }) {
             onClick={() => setDrawerOpen(false)}
             style={{
               position: "fixed", inset: 0, zIndex: 90,
-              background: "rgba(0, 0, 0, 0.15)",
+              background: "rgba(0, 0, 0, 0.2)",
               backdropFilter: "blur(4px)",
               WebkitBackdropFilter: "blur(4px)",
             }}
@@ -360,22 +492,22 @@ function ArthurOSNav({ pathname }: { pathname: string }) {
             ref={drawerRef}
             style={{
               position: "fixed", top: 0, left: 0, bottom: 0,
-              width: 320, zIndex: 95,
-              background: "var(--glass-bg)",
-              backdropFilter: "blur(var(--blur-amount))",
-              WebkitBackdropFilter: "blur(var(--blur-amount))",
-              borderRight: "1px solid var(--glass-border)",
-              padding: "var(--space-xl) var(--space-lg)",
+              width: 300, zIndex: 95,
+              background: "var(--glass-t3-bg)",
+              backdropFilter: "blur(var(--glass-t3-blur))",
+              WebkitBackdropFilter: "blur(var(--glass-t3-blur))",
+              borderRight: "1px solid var(--glass-t3-border)",
+              padding: "var(--page-gutter)",
               overflowY: "auto",
             }}
           >
-            <div style={{ marginBottom: "var(--space-lg)" }}>
-              <div className="title-large" style={{ fontSize: 24, marginBottom: 4 }}>Arthur OS</div>
-              <div className="meta-text">All routes · Esc to close</div>
+            <div style={{ marginBottom: 24, padding: "0 12px" }}>
+              <div style={{ fontSize: 24, fontWeight: 600, color: "var(--text-active)", marginBottom: 4 }}>Arthur OS</div>
+              <div style={{ color: "var(--text-muted)", fontSize: 13 }}>All routes · Esc to close</div>
             </div>
             {ALL_ROUTES_GROUPED.map(g => (
-              <div key={g.group} style={{ marginBottom: "var(--space-lg)" }}>
-                <div className="eyebrow" style={{ marginBottom: 8 }}>{g.group}</div>
+              <div key={g.group} style={{ marginBottom: 24 }}>
+                <div style={{ marginBottom: 8, padding: "0 12px", fontSize: 12, fontWeight: 500, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{g.group}</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   {g.links.map(l => (
                     <Link
@@ -383,13 +515,13 @@ function ArthurOSNav({ pathname }: { pathname: string }) {
                       href={l.href}
                       onClick={() => setDrawerOpen(false)}
                       style={{
-                        padding: "10px 12px",
-                        borderRadius: 10,
+                        padding: "8px 12px",
+                        borderRadius: "var(--radius-sm)",
                         textDecoration: "none",
-                        fontSize: 16,
+                        fontSize: 15,
                         color: isCenterActive(l.href) ? "var(--text-active)" : "var(--text-main)",
                         fontWeight: isCenterActive(l.href) ? 500 : 400,
-                        background: isCenterActive(l.href) ? "var(--glass-bg-strong)" : "transparent",
+                        background: isCenterActive(l.href) ? "var(--glass-t2-bg)" : "transparent",
                         transition: "background 0.15s",
                       }}
                     >
@@ -408,7 +540,14 @@ function ArthurOSNav({ pathname }: { pathname: string }) {
 
 export function Nav() {
   const pathname = usePathname();
-  return <ArthurOSNav pathname={pathname} />;
+  const onApp = isAppRoute(pathname);
+
+  return (
+    <>
+      <ArthurOSNav pathname={pathname} />
+      {onApp && <MobileBottomNav pathname={pathname} />}
+    </>
+  );
 }
 
 function _LegacyNav_unused() {
@@ -516,7 +655,7 @@ function _LegacyNav_unused() {
                 display: "block", width: "100%", textAlign: "left",
                 background: "none", border: "none", cursor: "pointer",
                 padding: "11px 14px", borderRadius: 7, fontSize: 14,
-                color: "var(--text-dim)", letterSpacing: "0.01em",
+                color: "var(--text-muted)", letterSpacing: "0.01em",
               }}
             >
               settings {mobileSettingsOpen ? "▲" : "▼"}
@@ -543,7 +682,7 @@ function _LegacyNav_unused() {
                 display: "block", width: "100%", textAlign: "left",
                 background: "none", border: "none", cursor: "pointer",
                 padding: "11px 14px", borderRadius: 7, fontSize: 14,
-                color: "var(--text-dim)", letterSpacing: "0.01em",
+                color: "var(--text-muted)", letterSpacing: "0.01em",
               }}
             >
               system {mobileSystemOpen ? "▲" : "▼"}
