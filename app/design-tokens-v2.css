@@ -1,6 +1,8 @@
-/* ─── Arthur OS — Design Tokens v2 (2026-05-05) ─────────────────────────────
- * Phase 1 Foundation. Supersedes legacy compat aliases in globals.css.
- * Source of truth for: glass tiers, shadows, type scale, spacing, motion.
+/* ─── Arthur OS — Design Tokens v2 (PHASE 1 COMPLETE 2026-05-05) ────────────
+ * COMPLETE REDESIGN SPEC IMPLEMENTATION — Phase 1 Foundation.
+ * Supersedes ALL legacy tokens in globals.css.
+ * Source of truth for: glass tiers, shadows, type scale, spacing, motion,
+ *   breakpoints, nav geometry, z-index ladder, animation keyframes.
  * Import order: this file FIRST, then globals.css so cascade is correct.
  * Never edit this file for page-specific overrides — use scoped <style> tags.
  * ─────────────────────────────────────────────────────────────────────────── */
@@ -220,4 +222,62 @@
   --type-small:           var(--fs-xs);
   --type-micro:           var(--fs-mono);
   --mobile-nav-h:         64px;
+
+  /* ─── Breakpoints (as custom properties for JS access) ─── */
+  --bp-sm:                640px;
+  --bp-md:                768px;
+  --bp-lg:                1024px;
+  --bp-xl:                1280px;
+  --bp-2xl:               1440px;
+
+  /* ─── Grid system ─── */
+  --grid-cols:            12;
+  --grid-gap:             clamp(12px, 2vw, 24px);
+  --sidebar-w:            240px;
+  --sidebar-w-collapsed:  64px;
+}
+
+/* ─── Animation Keyframes ─── */
+
+@keyframes arthur-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes arthur-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes arthur-scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes arthur-slide-right {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes arthur-glow-pulse {
+  0%, 100% { box-shadow: 0 0 12px var(--accent-glow); }
+  50%       { box-shadow: 0 0 28px var(--accent-glow), 0 0 48px var(--accent-glow); }
+}
+
+@keyframes arthur-spinner {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Utility animation classes ─── */
+
+.arthur-enter {
+  animation: arthur-fade-in var(--duration-default) var(--ease-out-soft) both;
+}
+
+.arthur-enter-up {
+  animation: arthur-fade-up var(--duration-slow) var(--ease-out-soft) both;
+}
+
+.arthur-enter-scale {
+  animation: arthur-scale-in var(--duration-default) var(--ease-spring) both;
 }
