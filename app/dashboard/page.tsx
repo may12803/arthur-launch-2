@@ -108,6 +108,19 @@ export default function Dashboard() {
   const streamRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
+  // ── Cmd+K — focus composer ──
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        taRef.current?.focus();
+        taRef.current?.select();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   // Tick the elapsed timer while busy
   useEffect(() => {
     if (!busy || !turnStartedAt) { setElapsedMs(0); return; }
