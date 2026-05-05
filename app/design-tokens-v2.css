@@ -1,0 +1,223 @@
+/* ─── Arthur OS — Design Tokens v2 (2026-05-05) ─────────────────────────────
+ * Phase 1 Foundation. Supersedes legacy compat aliases in globals.css.
+ * Source of truth for: glass tiers, shadows, type scale, spacing, motion.
+ * Import order: this file FIRST, then globals.css so cascade is correct.
+ * Never edit this file for page-specific overrides — use scoped <style> tags.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ─── Canvas ─── */
+  --bg-base:               #0c0e12;
+  --bg-mid:                #10121a;
+  --bg-surface:            #14161e;
+  --grid-line:             rgba(255, 255, 255, 0.04);
+  --max-w:                 1120px;
+  --max-w-narrow:          720px;
+  --max-w-wide:            1440px;
+  --page-gutter:           clamp(16px, 4vw, 48px);
+
+  /* ─── Glass Morphism — 3-Tier Depth System ─── */
+
+  /* Tier 1 — Inactive / background panels */
+  --glass-t1-bg:           rgba(255, 255, 255, 0.04);
+  --glass-t1-border:       rgba(255, 255, 255, 0.08);
+  --glass-t1-blur:         12px;
+  --glass-t1-shadow:       0 2px 8px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.04);
+
+  /* Tier 2 — Interactive / hover / selected */
+  --glass-t2-bg:           rgba(255, 255, 255, 0.08);
+  --glass-t2-border:       rgba(255, 255, 255, 0.15);
+  --glass-t2-blur:         16px;
+  --glass-t2-shadow:       0 6px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.08);
+
+  /* Tier 3 — Elevated / modal / focus */
+  --glass-t3-bg:           rgba(255, 255, 255, 0.12);
+  --glass-t3-border:       rgba(255, 255, 255, 0.20);
+  --glass-t3-blur:         24px;
+  --glass-t3-shadow:       0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.12);
+
+  /* Backward-compat aliases (still used by many pages) */
+  --glass-bg:              var(--glass-t1-bg);
+  --glass-bg-strong:       var(--glass-t2-bg);
+  --glass-bg-faint:        rgba(255, 255, 255, 0.02);
+  --glass-border:          var(--glass-t1-border);
+  --glass-shadow:          var(--glass-t1-shadow);
+  --glass-bg-tier2:        var(--glass-t2-bg);
+  --glass-border-tier2:    var(--glass-t2-border);
+  --glass-shadow-tier2:    var(--glass-t2-shadow);
+  --glass-bg-tier3:        var(--glass-t3-bg);
+  --glass-border-tier3:    var(--glass-t3-border);
+  --glass-shadow-tier3:    var(--glass-t3-shadow);
+  --blur-amount:           16px;
+  --radius-panel:          20px;
+  --radius-card:           16px;
+  --radius-sm:             10px;
+  --radius-pill:           100px;
+
+  /* ─── Color Palette ─── */
+  --text-active:           #f5f6f8;
+  --text-main:             rgba(245, 246, 248, 0.85);
+  --text-muted:            rgba(245, 246, 248, 0.50);
+  --text-faint:            rgba(245, 246, 248, 0.30);
+  --line-separator:        rgba(255, 255, 255, 0.10);
+
+  /* Accent — chartreuse #d4ff3d (deep dark text on accent bg) */
+  --accent-orange:         #d4ff3d;
+  --accent-orange-soft:    rgba(212, 255, 61, 0.14);
+  --accent-text-on:        #1a2400;
+  --accent-hover:          #c5f028;
+  --accent-glow:           rgba(212, 255, 61, 0.30);
+
+  /* Tint palette — secondary accents (subtle, not competing with chartreuse) */
+  --tint-blue:             rgba(91, 141, 239, 0.70);
+  --tint-blue-soft:        rgba(91, 141, 239, 0.12);
+  --tint-violet:           rgba(167, 139, 250, 0.70);
+  --tint-violet-soft:      rgba(167, 139, 250, 0.12);
+  --tint-emerald:          rgba(52, 211, 153, 0.70);
+  --tint-emerald-soft:     rgba(52, 211, 153, 0.12);
+  --tint-amber:            rgba(251, 191, 36, 0.70);
+  --tint-amber-soft:       rgba(251, 191, 36, 0.12);
+  --tint-red:              rgba(239, 68, 68, 0.70);
+  --tint-red-soft:         rgba(239, 68, 68, 0.12);
+
+  /* Calendar source colors — preserved from v1 */
+  --cal-gcal:              #3b82f6;
+  --cal-icloud:            #60a5fa;
+  --cal-tracking:          #f97316;
+  --cal-ticket:            #a855f7;
+  --cal-reservation:       #22c55e;
+  --cal-approval:          #ef4444;
+
+  /* Brain lobe palette — preserved from v1 */
+  --lobe-knowledge:        #d4ff3d;
+  --lobe-memory:           #f59e0b;
+  --lobe-skills:           #a78bfa;
+  --lobe-agentic:          #60a5fa;
+  --lobe-upgrades:         #4ade80;
+  --lobe-data:             #c084fc;
+
+  /* ─── Typography ─── */
+  --font-display:         var(--font-space-grotesk, 'Space Grotesk', sans-serif);
+  --font-body:            var(--font-inter, 'Inter', system-ui, sans-serif);
+  --font-mono:            var(--font-jetbrains, 'JetBrains Mono', monospace);
+
+  /* Type scale — clamp(min, preferred, max) */
+  --fs-display:           clamp(4rem, 10vw, 6rem);
+  --fs-h1:                clamp(2.5rem, 5vw, 3.5rem);
+  --fs-h2:                clamp(1.625rem, 3vw, 2rem);
+  --fs-h3:                clamp(1.125rem, 2vw, 1.375rem);
+  --fs-body-lg:           1.0625rem;     /* 17px — comfortable reading */
+  --fs-body:              1rem;          /* 16px — default */
+  --fs-small:             0.875rem;      /* 14px */
+  --fs-xs:                0.75rem;       /* 12px */
+  --fs-mono:              0.6875rem;     /* 11px — eyebrows, labels */
+
+  /* Line-heights */
+  --lh-display:           0.92;
+  --lh-heading:           1.15;
+  --lh-body:              1.6;
+  --lh-tight:             1.3;
+
+  /* Letter-spacing */
+  --ls-display:           -0.04em;
+  --ls-heading:           -0.02em;
+  --ls-eyebrow:           0.12em;
+
+  /* ─── Spacing Scale ─── */
+  --space-1:              4px;
+  --space-2:              8px;
+  --space-3:              12px;
+  --space-4:              16px;
+  --space-5:              20px;
+  --space-6:              24px;
+  --space-7:              32px;
+  --space-8:              40px;
+  --space-9:              48px;
+  --space-10:             64px;
+  --space-11:             80px;
+  --space-12:             96px;
+  --space-13:             128px;
+
+  /* Named aliases used throughout */
+  --space-xs:             var(--space-1);
+  --space-sm:             var(--space-3);
+  --space-md:             var(--space-5);
+  --space-lg:             var(--space-7);
+  --space-xl:             var(--space-9);
+
+  /* Card padding — spec says 16px internal, breathing room outside */
+  --card-pad:             var(--space-4);
+  --card-pad-lg:          var(--space-6);
+  --panel-pad:            var(--space-6);
+
+  /* ─── Shadow System ─── */
+  --shadow-xs:            0 1px 3px rgba(0,0,0,0.20);
+  --shadow-sm:            0 2px 8px rgba(0,0,0,0.30);
+  --shadow-md:            0 4px 16px rgba(0,0,0,0.35);
+  --shadow-lg:            0 8px 32px rgba(0,0,0,0.45);
+  --shadow-xl:            0 16px 56px rgba(0,0,0,0.55);
+  --shadow-accent:        0 0 24px var(--accent-glow);
+  --shadow-focus:         0 0 0 3px rgba(212, 255, 61, 0.40);
+
+  /* ─── Motion ─── */
+  --ease-out-soft:        cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring:          cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-linear:          linear;
+  --duration-instant:     80ms;
+  --duration-quick:       160ms;
+  --duration-default:     240ms;
+  --duration-slow:        400ms;
+  --duration-deliberate:  600ms;
+
+  /* ─── Navigation ─── */
+  --nav-h:                64px;          /* top island height */
+  --mobile-nav-h:         64px;          /* bottom bar on mobile */
+  --page-top:             calc(var(--nav-h) + var(--space-7));
+
+  /* ─── Z-index ladder ─── */
+  --z-base:               0;
+  --z-elevated:           10;
+  --z-sticky:             20;
+  --z-dropdown:           30;
+  --z-overlay:            40;
+  --z-modal:              50;
+  --z-nav:                60;
+  --z-toast:              70;
+  --z-max:                999;
+
+  /* ─── Legacy compat (do not use in new code) ─── */
+  --bg:                   var(--bg-base);
+  --bg-canvas:            var(--bg-base);
+  --bg-elev-1:            var(--glass-t1-bg);
+  --bg-elev-2:            var(--glass-t2-bg);
+  --panel:                var(--glass-t1-bg);
+  --panel-elev:           var(--glass-t2-bg);
+  --panel-bg:             var(--glass-t1-bg);
+  --text:                 var(--text-active);
+  --text-dim:             var(--text-main);
+  --fg:                   var(--text-active);
+  --fg-primary:           var(--text-active);
+  --fg-secondary:         var(--text-main);
+  --fg-tertiary:          var(--text-muted);
+  --muted:                var(--text-muted);
+  --border:               var(--glass-t1-border);
+  --border-subtle:        rgba(255, 255, 255, 0.05);
+  --border-strong:        rgba(255, 255, 255, 0.18);
+  --accent:               var(--accent-orange);
+  --accent-primary:       var(--accent-orange);
+  --accent-warm:          var(--accent-orange);
+  --accent-cool:          var(--tint-blue);
+  --accent-dark:          var(--accent-text-on);
+  --accent-soft:          var(--accent-orange-soft);
+  --accent-glow-color:    var(--accent-glow);
+  --max-content-width:    var(--max-w);
+  --max-content-gutter:   var(--page-gutter);
+  --type-hero:            var(--fs-display);
+  --type-section:         var(--fs-h1);
+  --type-h2:              var(--fs-h2);
+  --type-h3:              var(--fs-h3);
+  --type-body:            var(--fs-small);
+  --type-small:           var(--fs-xs);
+  --type-micro:           var(--fs-mono);
+  --mobile-nav-h:         64px;
+}

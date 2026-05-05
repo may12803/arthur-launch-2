@@ -69,7 +69,7 @@ async function inferLocationFromIP(ip: string): Promise<{ city: string; region: 
 function buildSystemPrompt(contextDigest: string, currentLocation?: string | null, toolsEnabled = true): string {
   return buildPersona({
     contextDigest,
-    currentLocation,
+    currentLocation: currentLocation ?? undefined,
     surface: "dashboard",
     // Pass empty tools list when this turn is chat-only — prevents Cerebras/Groq
     // (which lack native tool_use protocol) from hallucinating tool-call syntax

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./design-tokens-v2.css";
 
 /* ─── ARTHUR OS — Design Tokens (DEEP MIDNIGHT) ─────────────────────────────
  * Glass-morphism on near-black canvas. Dark theme. Translucent panels.
