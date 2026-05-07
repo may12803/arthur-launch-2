@@ -2,10 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Nav, Footer } from "../_components/Layout";
-import { GlassPanel } from "../_components/GlassPanel";
-import { PageHeader } from "../_components/PageHeader";
-import { TokenChip } from "../_components/TokenChip";
-import { EmptyState } from "../_components/EmptyState";
 
 interface MetaPage {
   id: string;
@@ -49,10 +45,10 @@ function relTime(iso: string): string {
 const inputSt: React.CSSProperties = {
   background: "var(--glass-bg)",
   border: "1px solid var(--glass-border)",
-  borderRadius: "var(--radius-sm)",
-  padding: "var(--space-2) var(--space-3)",
+  borderRadius: 8,
+  padding: "8px 12px",
   color: "var(--text-active)",
-  fontSize: "var(--fs-xs)",
+  fontSize: 12,
   fontFamily: "inherit",
   outline: "none",
   width: "100%",
@@ -178,52 +174,57 @@ export default function MessengerPage() {
     display: "block",
     background: "var(--glass-bg-strong)",
     border: "1px solid var(--glass-border)",
-    borderRadius: "var(--radius-sm)",
-    padding: "var(--space-2) var(--space-4)",
-    fontSize: "var(--fs-mono)",
-    fontFamily: "var(--font-mono)",
+    borderRadius: 6,
+    padding: "10px 14px",
+    fontSize: 11,
+    fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
     color: "var(--text-main)",
     overflowX: "auto",
     whiteSpace: "pre",
-    marginTop: "var(--space-1)",
-    marginBottom: "var(--space-1)",
+    marginTop: 4,
+    marginBottom: 4,
   };
 
   return (
     <>
       <Nav />
       <div style={{ minHeight: "calc(100vh - 108px)", paddingTop: 108, background: "var(--bg-base)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 var(--space-6) var(--space-11)" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
 
           {/* Header */}
-          <PageHeader
-            eyebrow="meta business messaging"
-            title="messenger."
-            actions={
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-mono)", color: "var(--text-muted)" }}>
-                {dateStr}
+          <div style={{ paddingTop: 24, paddingBottom: 28, borderBottom: "1px solid var(--line-separator)", marginBottom: 28, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>
+                meta business messaging
               </div>
-            }
-            style={{ paddingTop: "var(--space-6)", paddingBottom: "var(--space-7)", borderBottom: "1px solid var(--line-separator)", marginBottom: "var(--space-7)" }}
-          />
+              <h1 style={{ margin: 0, fontWeight: 300, fontSize: "clamp(2rem, 4vw, 2.8rem)", letterSpacing: "-0.03em", color: "var(--text-active)", lineHeight: 1 }}>
+                messenger.
+              </h1>
+            </div>
+            <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 10, color: "var(--text-muted)", paddingBottom: 4 }}>
+              {dateStr}
+            </div>
+          </div>
 
           {/* Setup instructions (not configured) */}
           {notConfigured && (
-            <GlassPanel
-              style={{
-                padding: "var(--space-7)",
-                maxWidth: 640,
-                marginBottom: "var(--space-7)",
-              }}
-            >
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-mono)", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "var(--space-1)" }}>
+            <div style={{
+              background: "var(--glass-bg)",
+              border: "1px solid var(--glass-border)",
+              backdropFilter: "blur(var(--blur-amount))",
+              borderRadius: "var(--radius-panel)",
+              padding: "var(--space-lg)",
+              maxWidth: 640,
+              marginBottom: 28,
+            }}>
+              <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 4 }}>
                 setup required
               </div>
-              <h2 style={{ margin: "0 0 var(--space-3)", fontWeight: 400, fontSize: 20, color: "var(--text-active)" }}>no pages connected.</h2>
-              <p style={{ color: "var(--text-main)", fontSize: "var(--fs-small)", marginBottom: "var(--space-5)", lineHeight: 1.6 }}>
+              <h2 style={{ margin: "0 0 12px", fontWeight: 400, fontSize: 20, color: "var(--text-active)" }}>no pages connected.</h2>
+              <p style={{ color: "var(--text-main)", fontSize: 13, marginBottom: 20, lineHeight: 1.6 }}>
                 follow these steps to enable auto-responses.
               </p>
-              <ol style={{ color: "var(--text-muted)", fontSize: "var(--fs-xs)", lineHeight: 2.2, paddingLeft: "var(--space-5)", listStyleType: "decimal" }}>
+              <ol style={{ color: "var(--text-muted)", fontSize: 12, lineHeight: 2.2, paddingLeft: 20, listStyleType: "decimal" }}>
                 <li>go to <a href="https://developers.facebook.com" target="_blank" rel="noreferrer" style={{ color: "var(--accent-orange)" }}>developers.facebook.com</a> → apps → create app (business type)</li>
                 <li>add the messenger product to your app</li>
                 <li>in messenger settings → generate page access token for dabney &amp; co page</li>
@@ -240,29 +241,31 @@ export default function MessengerPage() {
                   <pre style={codeBlockStyle}>fly secrets set META_PAGE_ACCESS_TOKEN_DABNEY=&lt;token&gt; -a arthur-online</pre>
                 </li>
               </ol>
-            </GlassPanel>
+            </div>
           )}
 
           {/* Connect a page form */}
-          <GlassPanel
-            style={{
-              padding: "var(--space-7)",
-              maxWidth: 480,
-              marginBottom: "var(--space-7)",
-            }}
-          >
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-mono)", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "var(--space-1)" }}>
+          <div style={{
+            background: "var(--glass-bg)",
+            border: "1px solid var(--glass-border)",
+            backdropFilter: "blur(var(--blur-amount))",
+            borderRadius: "var(--radius-panel)",
+            padding: "var(--space-lg)",
+            maxWidth: 480,
+            marginBottom: 28,
+          }}>
+            <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 4 }}>
               connect page
             </div>
-            <h3 style={{ margin: "0 0 var(--space-4)", fontWeight: 400, fontSize: 18, color: "var(--text-active)" }}>add a page.</h3>
-            <form onSubmit={handleConnectPage} style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+            <h3 style={{ margin: "0 0 16px", fontWeight: 400, fontSize: 18, color: "var(--text-active)" }}>add a page.</h3>
+            <form onSubmit={handleConnectPage} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <input
                 aria-label="Facebook Page ID"
                 value={connectPageId}
                 onChange={e => setConnectPageId(e.target.value)}
                 placeholder="page ID"
                 required
-                style={{ ...inputSt, fontFamily: "var(--font-mono)" }}
+                style={{ ...inputSt, fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}
               />
               <input
                 aria-label="Facebook Page name"
@@ -279,9 +282,9 @@ export default function MessengerPage() {
                 placeholder="page access token"
                 type="password"
                 required
-                style={{ ...inputSt, fontFamily: "var(--font-mono)" }}
+                style={{ ...inputSt, fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}
               />
-              <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "center", marginTop: "var(--space-1)" }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 4 }}>
                 <button
                   type="submit"
                   disabled={connecting}
@@ -290,8 +293,8 @@ export default function MessengerPage() {
                     color: "var(--accent-text-on)",
                     border: "none",
                     borderRadius: "var(--radius-pill)",
-                    padding: "var(--space-2) var(--space-5)",
-                    fontSize: "var(--fs-xs)",
+                    padding: "8px 20px",
+                    fontSize: 12,
                     fontWeight: 700,
                     cursor: connecting ? "not-allowed" : "pointer",
                     opacity: connecting ? 0.7 : 1,
@@ -301,67 +304,67 @@ export default function MessengerPage() {
                 </button>
                 {connectStatus && (
                   <span style={{
-                    fontSize: "var(--fs-mono)",
-                    color: connectStatus.startsWith("error") ? "var(--tint-red)" : "var(--accent-orange)",
-                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    color: connectStatus.startsWith("error") ? "#ef4444" : "var(--accent-orange)",
+                    fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
                   }}>
                     {connectStatus}
                   </span>
                 )}
               </div>
             </form>
-          </GlassPanel>
+          </div>
 
           {/* Two-column thread UI */}
           {!notConfigured && (
             <div style={{
               display: "grid",
               gridTemplateColumns: "260px 1fr",
-              gap: "var(--space-4)",
+              gap: 16,
               height: "calc(100vh - 320px)",
               minHeight: 400,
             }}>
               {/* Conversation list */}
-              <GlassPanel
-                style={{
-                  overflow: "hidden",
-                  display: "flex",
-                  flexDirection: "column",
-                  borderRadius: "var(--radius-panel)",
-                }}
-              >
+              <div style={{
+                background: "var(--glass-bg)",
+                border: "1px solid var(--glass-border)",
+                backdropFilter: "blur(var(--blur-amount))",
+                borderRadius: "var(--radius-panel)",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+              }}>
                 <div style={{
-                  padding: "var(--space-4)",
+                  padding: "14px 16px",
                   borderBottom: "1px solid var(--line-separator)",
                   display: "flex",
                   alignItems: "center",
-                  gap: "var(--space-2)",
+                  gap: 8,
                 }}>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-mono)", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                  <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
                     conversations
                   </div>
-                  <TokenChip
-                    label={String(threads.length)}
-                    size="xs"
-                    color="orange"
-                    style={{ background: "var(--accent-orange-soft)" }}
-                  />
+                  <span style={{
+                    fontFamily: "ui-monospace, monospace",
+                    fontSize: 10,
+                    color: "var(--accent-orange)",
+                    background: "rgba(212,255,61,0.10)",
+                    borderRadius: 8,
+                    padding: "1px 6px",
+                  }}>
+                    {threads.length}
+                  </span>
                 </div>
                 <div style={{ overflowY: "auto", flex: 1 }}>
                   {loading && (
-                    <div style={{ padding: "var(--space-3) var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+                    <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
                       {[1,2,3].map(i => (
-                        <div key={i} className="arthur-skeleton" style={{ height: 64 }} />
+                        <div key={i} style={{ height: 64, borderRadius: 8, background: "linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.04) 75%)", backgroundSize: "600px 100%", animation: "shimmer 1.5s infinite" }} />
                       ))}
                     </div>
                   )}
                   {threads.length === 0 && !loading && (
-                    <EmptyState
-                      title="no conversations yet."
-                      subtitle="messages will appear here once a page is connected."
-                      size="sm"
-                      align="left"
-                    />
+                    <div style={{ padding: "24px 16px", color: "var(--text-muted)", fontSize: 12 }}>no conversations yet.</div>
                   )}
                   {threads.map(t => (
                     <button
@@ -370,8 +373,8 @@ export default function MessengerPage() {
                       style={{
                         width: "100%",
                         textAlign: "left",
-                        padding: "var(--space-4)",
-                        background: active?.sender_id === t.sender_id ? "var(--accent-orange-soft)" : "transparent",
+                        padding: "14px 16px",
+                        background: active?.sender_id === t.sender_id ? "rgba(212,255,61,0.08)" : "transparent",
                         border: "none",
                         borderBottom: "1px solid var(--line-separator)",
                         borderLeft: active?.sender_id === t.sender_id ? "2px solid var(--accent-orange)" : "2px solid transparent",
@@ -379,46 +382,44 @@ export default function MessengerPage() {
                         transition: "background 0.12s",
                       }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-1)" }}>
-                        <span style={{ fontWeight: 500, fontSize: "var(--fs-small)", color: "var(--text-active)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                        <span style={{ fontWeight: 500, fontSize: 13, color: "var(--text-active)" }}>
                           {t.sender_name ?? t.sender_id.slice(-8)}
                         </span>
-                        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-1)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           {t.unreviewed > 0 && (
-                            <TokenChip
-                              label={String(t.unreviewed)}
-                              size="xs"
-                              color="orange"
-                            />
+                            <span style={{ background: "var(--accent-orange)", color: "var(--accent-text-on)", fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 10 }}>
+                              {t.unreviewed}
+                            </span>
                           )}
-                          <span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-mono)", color: "var(--text-muted)" }}>
+                          <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, color: "var(--text-muted)" }}>
                             {relTime(t.last_at)}
                           </span>
                         </div>
                       </div>
-                      <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {t.messages.at(-1)?.message_text?.slice(0, 40) ?? "—"}
                       </div>
                     </button>
                   ))}
                 </div>
-              </GlassPanel>
+              </div>
 
               {/* Thread detail */}
-              <GlassPanel
-                tier={2}
-                style={{
-                  overflow: "hidden",
-                  display: "flex",
-                  flexDirection: "column",
-                  borderRadius: "var(--radius-panel)",
-                }}
-              >
+              <div style={{
+                background: "var(--glass-bg-strong)",
+                border: "1px solid var(--glass-border)",
+                backdropFilter: "blur(var(--blur-amount))",
+                borderRadius: "var(--radius-panel)",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+              }}>
                 {active ? (
                   <>
                     {/* Thread header */}
                     <div style={{
-                      padding: "var(--space-4) var(--space-5)",
+                      padding: "16px 20px",
                       borderBottom: "1px solid var(--line-separator)",
                       display: "flex",
                       alignItems: "center",
@@ -426,14 +427,14 @@ export default function MessengerPage() {
                     }}>
                       <div>
                         <div style={{ fontWeight: 400, fontSize: 16, color: "var(--text-active)" }}>{active.sender_name ?? active.sender_id.slice(-8)}</div>
-                        <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-muted)", fontFamily: "var(--font-mono)", marginTop: "var(--space-1)" }}>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "ui-monospace, monospace", marginTop: 2 }}>
                           {pages.find(p => p.page_id === active.page_id)?.page_name ?? active.page_id}
                         </div>
                       </div>
                     </div>
 
                     {/* Messages */}
-                    <div style={{ flex: 1, overflowY: "auto", padding: "var(--space-5)", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+                    <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
                       {active.messages
                         .sort((a, b) => a.created_at.localeCompare(b.created_at))
                         .map(m => (
@@ -450,25 +451,25 @@ export default function MessengerPage() {
                                 : "var(--glass-bg)",
                               border: m.direction === "outbound"
                                 ? "none"
-                                : `1px solid ${m.requires_review ? "var(--tint-red)" : "var(--glass-border)"}`,
+                                : `1px solid ${m.requires_review ? "rgba(239,68,68,0.4)" : "var(--glass-border)"}`,
                               borderRadius: m.direction === "outbound" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-                              padding: "var(--space-2) var(--space-4)",
+                              padding: "10px 14px",
                             }}>
                               <div style={{
-                                fontSize: "var(--fs-small)",
+                                fontSize: 13,
                                 lineHeight: 1.5,
                                 color: m.direction === "outbound" ? "var(--accent-text-on)" : "var(--text-active)",
                               }}>
                                 {m.message_text}
                               </div>
                               <div style={{
-                                fontSize: "var(--fs-mono)",
+                                fontSize: 10,
                                 color: m.direction === "outbound" ? "rgba(26,36,0,0.6)" : "var(--text-muted)",
-                                marginTop: "var(--space-1)",
-                                fontFamily: "var(--font-mono)",
+                                marginTop: 5,
+                                fontFamily: "ui-monospace, monospace",
                               }}>
                                 {m.direction === "outbound" ? "arthur → sent" : "customer"} · {new Date(m.created_at).toLocaleTimeString()}
-                                {m.requires_review && <span style={{ color: "var(--tint-red)", marginLeft: "var(--space-2)" }}>⚠ needs review</span>}
+                                {m.requires_review && <span style={{ color: "#ef4444", marginLeft: 8 }}>⚠ needs review</span>}
                               </div>
                             </div>
                           </div>
@@ -476,21 +477,21 @@ export default function MessengerPage() {
                     </div>
 
                     {/* Composer */}
-                    <div style={{ padding: "var(--space-4) var(--space-5)", borderTop: "1px solid var(--line-separator)" }}>
-                      <div style={{ position: "relative", marginBottom: "var(--space-2)" }}>
+                    <div style={{ padding: "16px 20px", borderTop: "1px solid var(--line-separator)" }}>
+                      <div style={{ position: "relative", marginBottom: 8 }}>
                         <span style={{
                           position: "absolute",
                           top: -18,
                           right: 0,
-                          fontFamily: "var(--font-mono)",
-                          fontSize: "var(--fs-mono)",
+                          fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+                          fontSize: 9,
                           color: "var(--text-muted)",
                           letterSpacing: "0.04em",
                         }}>
                           ↵ send · ⇧↵ newline
                         </span>
                       </div>
-                      <div style={{ display: "flex", gap: "var(--space-2)" }}>
+                      <div style={{ display: "flex", gap: 10 }}>
                         <textarea
                           value={editMsg}
                           onChange={e => setEditMsg(e.target.value)}
@@ -503,10 +504,10 @@ export default function MessengerPage() {
                             flex: 1,
                             background: "var(--glass-bg)",
                             border: "1px solid var(--glass-border)",
-                            borderRadius: "var(--radius-sm)",
-                            padding: "var(--space-2) var(--space-4)",
+                            borderRadius: 10,
+                            padding: "10px 14px",
                             color: "var(--text-active)",
-                            fontSize: "var(--fs-small)",
+                            fontSize: 13,
                             resize: "none",
                             outline: "none",
                             fontFamily: "inherit",
@@ -520,9 +521,9 @@ export default function MessengerPage() {
                             color: editMsg.trim() ? "var(--accent-text-on)" : "var(--text-muted)",
                             border: "none",
                             borderRadius: "var(--radius-pill)",
-                            padding: "0 var(--space-5)",
+                            padding: "0 20px",
                             cursor: editMsg.trim() ? "pointer" : "not-allowed",
-                            fontSize: "var(--fs-small)",
+                            fontSize: 13,
                             fontWeight: 700,
                             flexShrink: 0,
                             transition: "background 0.15s",
@@ -531,19 +532,25 @@ export default function MessengerPage() {
                           {sending ? "sending…" : "send →"}
                         </button>
                       </div>
-                      {sendErr && <p style={{ color: "var(--tint-red)", fontSize: "var(--fs-mono)", marginTop: "var(--space-1)", fontFamily: "var(--font-mono)" }}>{sendErr}</p>}
+                      {sendErr && <p style={{ color: "#ef4444", fontSize: 11, marginTop: 6, fontFamily: "ui-monospace, monospace" }}>{sendErr}</p>}
                     </div>
                   </>
                 ) : (
-                  <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: "var(--fs-small)" }}>
+                  <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: 13 }}>
                     select a conversation
                   </div>
                 )}
-              </GlassPanel>
+              </div>
             </div>
           )}
         </div>
       </div>
+      <style jsx>{`
+        @keyframes shimmer {
+          0%   { background-position: -600px 0; }
+          100% { background-position: 600px 0; }
+        }
+      `}</style>
       <Footer />
     </>
   );

@@ -2,10 +2,6 @@ import fs from "fs";
 import path from "path";
 import Link from "next/link";
 import { Nav, Footer } from "../_components/Layout";
-import { GlassPanel } from "../_components/GlassPanel";
-import { PageHeader } from "../_components/PageHeader";
-import { TokenChip } from "../_components/TokenChip";
-import { EmptyState } from "../_components/EmptyState";
 import BenchChart from "./BenchChart";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -63,12 +59,12 @@ function loadData(): BenchData | null {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 const LOBE_CYCLE = [
-  "var(--accent-orange)",
-  "var(--tint-amber)",
-  "var(--tint-violet)",
-  "var(--tint-blue)",
-  "var(--tint-emerald)",
-  "var(--lobe-data)",
+  "#ff4713",
+  "#f59e0b",
+  "#a78bfa",
+  "#60a5fa",
+  "#4ade80",
+  "#c084fc",
 ];
 
 function lobeColor(i: number) {
@@ -95,17 +91,24 @@ function daysSince(iso?: string | null) {
 // ─── Sub-components ─────────────────────────────────────────────────────────
 
 function StatusPill({ status }: { status: string }) {
-  const colorMap: Record<string, "success" | "warning" | "error" | "blue" | "muted"> = {
-    measured: "success",
-    stale: "warning",
-    missing: "error",
-    smoke: "blue",
-    blocked: "error",
-    open: "warning",
-    done: "success",
+  const map: Record<string, { bg: string; color: string; label: string }> = {
+    measured: { bg: "rgba(74,222,128,0.12)", color: "#4ade80", label: "measured" },
+    stale: { bg: "rgba(245,158,11,0.12)", color: "#f59e0b", label: "stale" },
+    missing: { bg: "rgba(239,68,68,0.12)", color: "#ef4444", label: "missing" },
+    smoke: { bg: "rgba(96,165,250,0.12)", color: "#60a5fa", label: "smoke" },
+    blocked: { bg: "rgba(239,68,68,0.12)", color: "#ef4444", label: "blocked" },
+    open: { bg: "rgba(245,158,11,0.12)", color: "#f59e0b", label: "open" },
+    done: { bg: "rgba(74,222,128,0.12)", color: "#4ade80", label: "done" },
   };
-  const color = colorMap[status] ?? "error";
-  return <TokenChip label={status} variant="status" size="xs" color={color} />;
+  const s = map[status] || map.missing;
+  return (
+    <span
+      className="bench-status-pill"
+      style={{ background: s.bg, color: s.color }}
+    >
+      {s.label}
+    </span>
+  );
 }
 
 function PassFailBar({ passed, total }: { passed: number; total: number }) {
@@ -125,7 +128,7 @@ function BenchCard({ bench, idx }: { bench: Benchmark; idx: number }) {
   return (
     <div className="bench-card glass">
       <div className="bench-card-header">
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span
             className="principle-dot"
             style={{ background: color, boxShadow: `0 0 8px ${color}80`, marginTop: 1 }}
@@ -151,14 +154,14 @@ function BenchCard({ bench, idx }: { bench: Benchmark; idx: number }) {
             <div className="bench-score-meta">
               {bench.latest.passed != null && bench.latest.failed != null ? (
                 <>
-                  <span style={{ color: "var(--tint-emerald)" }}>{bench.latest.passed} pass</span>
-                  <span style={{ color: "var(--text-faint)", margin: "0 var(--space-1)" }}>/</span>
-                  <span style={{ color: "var(--tint-red)" }}>{bench.latest.failed} fail</span>
-                  <span style={{ color: "var(--text-faint)", margin: "0 var(--space-1)" }}>·</span>
+                  <span style={{ color: "#4ade80" }}>{bench.latest.passed} pass</span>
+                  <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>/</span>
+                  <span style={{ color: "#ef4444" }}>{bench.latest.failed} fail</span>
+                  <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>·</span>
                 </>
               ) : null}
               <span>{bench.latest.total} total</span>
-              <span style={{ color: "var(--text-faint)", margin: "0 var(--space-1)" }}>·</span>
+              <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>·</span>
               <span>run {formatDate(bench.latest.ranAt)}</span>
             </div>
           )}
@@ -207,14 +210,14 @@ function BenchCard({ bench, idx }: { bench: Benchmark; idx: number }) {
             <div className="bench-score-meta">
               {bench.latest.passed != null && bench.latest.failed != null ? (
                 <>
-                  <span style={{ color: "var(--tint-emerald)" }}>{bench.latest.passed} pass</span>
-                  <span style={{ color: "var(--text-faint)", margin: "0 var(--space-1)" }}>/</span>
-                  <span style={{ color: "var(--tint-red)" }}>{bench.latest.failed} fail</span>
-                  <span style={{ color: "var(--text-faint)", margin: "0 var(--space-1)" }}>·</span>
+                  <span style={{ color: "#4ade80" }}>{bench.latest.passed} pass</span>
+                  <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>/</span>
+                  <span style={{ color: "#ef4444" }}>{bench.latest.failed} fail</span>
+                  <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>·</span>
                 </>
               ) : null}
               <span>{bench.latest.total} total</span>
-              <span style={{ color: "var(--text-faint)", margin: "0 var(--space-1)" }}>·</span>
+              <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>·</span>
               <span>run {formatDate(bench.latest.ranAt)}</span>
             </div>
           )}
@@ -254,17 +257,17 @@ export default function BenchmarksPage() {
     return (
       <>
         <Nav />
-        <div className="wrap" style={{ paddingTop: 108, paddingBottom: "var(--space-11)" }}>
-          <PageHeader
-            eyebrow="performance + gaps"
-            title="benchmarks."
-          />
-          <EmptyState
-            icon="📊"
-            title="no benchmark runs yet."
-            subtitle="generate a snapshot first: node scripts/snapshot-benchmarks.js"
-            size="md"
-          />
+        <div className="wrap" style={{ paddingTop: 108, paddingBottom: 80 }}>
+          <div className="app-page-top">
+            <span className="eyebrow">performance + gaps</span>
+            <h1 className="section-title">benchmarks.</h1>
+          </div>
+          <div className="glass" style={{ padding: 28 }}>
+            <p style={{ fontSize: 14, color: "var(--text-dim)", margin: 0 }}>
+              no benchmark runs yet. generate a snapshot first:{" "}
+              <code>node scripts/snapshot-benchmarks.js</code>
+            </p>
+          </div>
         </div>
         <Footer />
       </>
@@ -276,14 +279,20 @@ export default function BenchmarksPage() {
   return (
     <>
       <Nav />
-      <div className="wrap" style={{ paddingTop: 108, paddingBottom: "var(--space-12)" }}>
+      <div className="wrap" style={{ paddingTop: 108, paddingBottom: 96 }}>
 
         {/* ── Header ── */}
-        <PageHeader
-          eyebrow={`performance + gaps · ${data.lastUpdated ? new Date(data.lastUpdated).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "live"}`}
-          title="benchmarks."
-          style={{ marginBottom: "var(--space-lg)" }}
-        />
+        <div style={{ marginBottom: "var(--space-lg)" }}>
+          <span style={{
+            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+            fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-faint)",
+          }}>performance + gaps · {data.lastUpdated ? new Date(data.lastUpdated).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "live"}</span>
+          <h1 style={{
+            fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+            fontWeight: 800, fontSize: "clamp(2rem, 4vw, 3rem)",
+            letterSpacing: "-0.03em", color: "var(--text)", margin: "8px 0 12px", lineHeight: 0.95,
+          }}>benchmarks.</h1>
+        </div>
 
         {/* ── Hero stat + longmemeval iteration chart ── */}
         {(() => {
@@ -291,6 +300,7 @@ export default function BenchmarksPage() {
             .filter(b => b.latest?.score != null)
             .sort((a, b) => (b.latest?.score ?? 0) - (a.latest?.score ?? 0))[0];
 
+          // Canonical longmemeval-rag iteration history — 0%→96% climb
           const longmemevalPoints = [
             { i: 1, score: 0 },
             { i: 2, score: 0.40 },
@@ -300,39 +310,42 @@ export default function BenchmarksPage() {
             { i: 6, score: 0.96 },
           ];
 
+          // Use longmemeval data if top benchmark is longmemeval, else use it always
+          // since it's the canonical example from the superlearner mission
           const chartPoints = longmemevalPoints;
 
           return (
-            <GlassPanel style={{
+            <div className="glass" style={{
               display: "grid",
               gridTemplateColumns: "auto 1fr",
-              gap: "var(--space-7)",
+              gap: 32,
+              borderRadius: "var(--radius-panel)",
               padding: "var(--space-lg) var(--space-xl)",
               marginBottom: "var(--space-lg)",
               alignItems: "center",
             }}>
               <div>
                 <div style={{
-                  fontSize: "var(--fs-mono)",
+                  fontSize: 10,
                   color: "var(--text-faint)",
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
-                  fontFamily: "var(--font-mono)",
-                  marginBottom: "var(--space-1)",
+                  fontFamily: "var(--font-jetbrains, monospace)",
+                  marginBottom: 6,
                 }}>
                   {top ? top.name : "longmemeval-rag"}
                 </div>
                 <div style={{
-                  fontFamily: "var(--font-mono)",
+                  fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
                   fontSize: "var(--fs-display)",
                   fontWeight: 700,
                   color: "var(--accent-orange)",
                   lineHeight: 1,
-                  letterSpacing: "var(--ls-display)",
+                  letterSpacing: "-0.04em",
                 }}>
                   {top ? formatScore(top.latest?.score) : "96%"}
                 </div>
-                <div style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", marginTop: "var(--space-2)" }}>
+                <div style={{ fontSize: 13, color: "var(--text-dim)", marginTop: 8 }}>
                   {top ? "top benchmark score" : "longmemeval-rag · iter 6"}
                 </div>
               </div>
@@ -342,53 +355,53 @@ export default function BenchmarksPage() {
                   color: "var(--text-faint)",
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
-                  fontFamily: "var(--font-mono)",
-                  marginBottom: "var(--space-2)",
+                  fontFamily: "var(--font-jetbrains, monospace)",
+                  marginBottom: 8,
                 }}>
                   longmemeval-rag iteration timeline
                 </div>
                 <BenchChart points={chartPoints} />
               </div>
-            </GlassPanel>
+            </div>
           );
         })()}
 
         {/* ── Stat strip ── */}
         <div className="bench-stat-strip">
           <div className="bench-stat-tile glass">
-            <div className="bench-stat-num" style={{ color: "var(--tint-emerald)" }}>{stats.measured}</div>
+            <div className="bench-stat-num" style={{ color: "#4ade80" }}>{stats.measured}</div>
             <div className="bench-stat-label">MEASURED</div>
           </div>
           {stats.smoke ? (
             <div className="bench-stat-tile glass">
-              <div className="bench-stat-num" style={{ color: "var(--tint-blue)" }}>{stats.smoke}</div>
+              <div className="bench-stat-num" style={{ color: "#60a5fa" }}>{stats.smoke}</div>
               <div className="bench-stat-label">SMOKE</div>
             </div>
           ) : null}
           {stats.blocked ? (
             <div className="bench-stat-tile glass">
-              <div className="bench-stat-num" style={{ color: "var(--tint-red)" }}>{stats.blocked}</div>
+              <div className="bench-stat-num" style={{ color: "#ef4444" }}>{stats.blocked}</div>
               <div className="bench-stat-label">BLOCKED</div>
             </div>
           ) : null}
           {stats.missing ? (
             <div className="bench-stat-tile glass">
-              <div className="bench-stat-num" style={{ color: "var(--tint-red)" }}>{stats.missing}</div>
+              <div className="bench-stat-num" style={{ color: "#ef4444" }}>{stats.missing}</div>
               <div className="bench-stat-label">MISSING</div>
             </div>
           ) : null}
           <div className="bench-stat-tile glass">
-            <div className="bench-stat-num" style={{ color: "var(--tint-violet)" }}>{stats.gapFillCount}</div>
+            <div className="bench-stat-num" style={{ color: "#a78bfa" }}>{stats.gapFillCount}</div>
             <div className="bench-stat-label">GAP-FILL PLANS</div>
           </div>
           <div className="bench-stat-tile glass">
-            <div className="bench-stat-num" style={{ color: "var(--tint-blue)" }}>{totalRuns.toLocaleString()}</div>
+            <div className="bench-stat-num" style={{ color: "#60a5fa" }}>{totalRuns.toLocaleString()}</div>
             <div className="bench-stat-label">TOTAL RUNS</div>
           </div>
         </div>
 
         {/* ── Benchmarks grid ── */}
-        <div style={{ marginTop: "var(--space-8)" }}>
+        <div style={{ marginTop: 40 }}>
           <div className="bench-grid">
             {benchmarks.map((b, i) => (
               <BenchCard key={b.id} bench={b} idx={i} />
@@ -397,20 +410,20 @@ export default function BenchmarksPage() {
         </div>
 
         {/* ── Gap-fill queue ── */}
-        <div style={{ marginTop: "var(--space-10)" }}>
+        <div style={{ marginTop: 72 }}>
           <span className="eyebrow">self-teach queue</span>
           <h2 className="bench-section-h2">the brain&apos;s punch list.</h2>
-          <p className="section-lede" style={{ marginTop: "var(--space-3)" }}>
+          <p className="section-lede" style={{ marginTop: 12 }}>
             Arthur generates these plans whenever a query exposes a knowledge gap. Each one
             specifies what to research, where to store it, and how to wire the new file into
             the graph. {gapFillPlans.length} plans queued.
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)", marginTop: "var(--space-6)" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 24 }}>
             {gapFillPlans.map((plan, i) => (
               <div key={plan.file} className="panel bench-plan-card">
                 <div className="head">
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: "var(--space-2)" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                     <span
                       className="principle-dot"
                       style={{
@@ -436,10 +449,10 @@ export default function BenchmarksPage() {
         </div>
 
         {/* ── Pending upgrades band ── */}
-        <GlassPanel className="bench-upgrades-band" style={{ marginTop: "var(--space-10)" }}>
+        <div className="bench-upgrades-band glass" style={{ marginTop: 72 }}>
           <div className="bench-upgrades-header">
             <span className="eyebrow">research distillate</span>
-            <div className="bench-upgrades-count" style={{ color: "var(--tint-emerald)" }}>
+            <div className="bench-upgrades-count" style={{ color: "#4ade80" }}>
               {pendingUpgrades.count}
             </div>
             <div className="bench-upgrades-sub">
@@ -453,9 +466,9 @@ export default function BenchmarksPage() {
               : ""}
             .
           </p>
-        </GlassPanel>
+        </div>
 
-        <div style={{ display: "flex", gap: "var(--space-3)", marginTop: "var(--space-8)" }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 40 }}>
           <Link href="/dashboard" className="cta-btn">open dashboard →</Link>
           <Link href="/brain" className="btn-ghost">← the brain</Link>
         </div>

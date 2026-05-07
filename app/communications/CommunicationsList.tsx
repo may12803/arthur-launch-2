@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase/client";
-import { EmptyState } from "../_components/EmptyState";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -661,12 +660,13 @@ export default function CommunicationsList({ initialRows, initialTotal }: Props)
           {loading ? (
             <div style={{ padding: 24, color: "var(--text-muted)", fontSize: 12, fontFamily: "ui-monospace, monospace" }}>syncing…</div>
           ) : rows.length === 0 ? (
-            <EmptyState
-              icon="📡"
-              title={q || channel || direction ? "no messages match these filters." : "no messages yet."}
-              subtitle={!q && !channel && !direction ? "webhooks will populate this once Telnyx is live." : undefined}
-              size="md"
-            />
+            <div style={{ padding: 24 }}>
+              <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
+                {q || channel || direction
+                  ? "no messages match these filters."
+                  : "no messages yet — webhooks will populate this once Telnyx is live."}
+              </div>
+            </div>
           ) : (
             timeline.map((item) => {
               if (item.kind === "separator") {

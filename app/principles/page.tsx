@@ -2,9 +2,6 @@ import fs from "fs";
 import path from "path";
 import Link from "next/link";
 import { Nav, Footer } from "../_components/Layout";
-import { PageHeader } from "../_components/PageHeader";
-import { TokenChip } from "../_components/TokenChip";
-import { EmptyState } from "../_components/EmptyState";
 import PrinciplesSearch from "./_components/PrinciplesSearch";
 
 interface Principle {
@@ -35,13 +32,36 @@ export default function PrinciplesPage() {
     <>
       <Nav />
       <div className="wrap" style={{ paddingTop: 108, paddingBottom: "var(--space-xl)" }}>
-
-        <PageHeader
-          title="principles."
-          eyebrow="EvolveR distillation · nightly 03:25"
-          subtitle={`${principles.length} principles — distilled from session trajectories. Ranked by confidence. The brain reads its own logs and gets smarter while you sleep.`}
-          style={{ marginBottom: "var(--space-lg)" }}
-        />
+        {/* Header */}
+        <div style={{ marginBottom: "var(--space-lg)" }}>
+          <span style={{
+            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+            fontSize: "var(--fs-mono)",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--text-muted)",
+          }}>
+            EvolveR distillation · {principles.length} principles · nightly 03:25
+          </span>
+          <h1 style={{
+            fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+            fontWeight: 800,
+            fontSize: "var(--fs-h1)",
+            letterSpacing: "-0.03em",
+            color: "var(--text-active)",
+            margin: "8px 0 12px",
+            lineHeight: 0.95,
+          }}>principles.</h1>
+          <p style={{
+            fontSize: "var(--fs-body)",
+            color: "var(--text-muted)",
+            maxWidth: "58ch",
+            lineHeight: 1.65,
+            margin: 0,
+          }}>
+            Distilled from session trajectories. Ranked by confidence. The brain reads its own logs and gets smarter while you sleep.
+          </p>
+        </div>
 
         {/* Confidence legend strip */}
         <div style={{
@@ -50,17 +70,37 @@ export default function PrinciplesPage() {
           marginBottom: "var(--space-lg)",
           flexWrap: "wrap",
         }}>
-          <TokenChip label="high confidence" color="orange" size="sm" icon={<span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent-orange)", flexShrink: 0, display: "inline-block" }} />} title="≥ 85%" />
-          <TokenChip label="solid" color="blue" size="sm" icon={<span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--tint-blue)", flexShrink: 0, display: "inline-block" }} />} title="70–84%" />
-          <TokenChip label="emerging" color="muted" size="sm" icon={<span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--text-muted)", flexShrink: 0, display: "inline-block" }} />} title="< 70%" />
+          {[
+            { color: "var(--accent-orange)", label: "high confidence", range: "≥ 85%" },
+            { color: "var(--accent-cool)", label: "solid", range: "70–84%" },
+            { color: "var(--text-muted)", label: "emerging", range: "< 70%" },
+          ].map(({ color, label, range }) => (
+            <div key={label} style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--space-xs)",
+              background: "var(--glass-bg)",
+              border: "1px solid var(--glass-border)",
+              borderRadius: "var(--radius-pill)",
+              padding: "4px 14px",
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
+              <span style={{ fontSize: "var(--fs-mono)", color: "var(--text-active)", fontFamily: "var(--font-jetbrains, monospace)" }}>
+                {label}
+              </span>
+              <span style={{ fontSize: "var(--fs-mono)", color: "var(--text-muted)", fontFamily: "var(--font-jetbrains, monospace)" }}>
+                {range}
+              </span>
+            </div>
+          ))}
         </div>
 
         {principles.length === 0 ? (
-          <EmptyState
-            title="no principles yet."
-            subtitle="Run: node ~/arthur/agentic/evolver-distill.js --window 30"
-            size="md"
-          />
+          <div className="glass" style={{ borderRadius: "var(--radius-panel)", padding: "var(--space-lg)" }}>
+            <p style={{ fontSize: "var(--fs-body)", color: "var(--text-muted)", margin: 0 }}>
+              No principles yet. Run: <code>node ~/arthur/agentic/evolver-distill.js --window 30</code>
+            </p>
+          </div>
         ) : (
           <PrinciplesSearch principles={principles} />
         )}

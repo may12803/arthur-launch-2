@@ -199,22 +199,13 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-/* Touch target minimum (44px per WCAG 2.1 AAA) — applies to interactive
- * controls but NOT native form inputs (those get default sizing + dark theming
- * via color-scheme below; forcing 44px on them rendered as giant white blocks). */
-button, a[role="button"], [role="tab"] {
+/* Touch target minimum (44px per WCAG 2.1 AAA) */
+button, a[role="button"], [role="tab"], input[type="checkbox"], input[type="radio"] {
   min-height: 44px;
   min-width: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-/* Dark-theme native form controls — checkboxes, radios, selects, scrollbars all
- * pick up the dark canvas + chartreuse accent instead of OS default white. */
-input[type="checkbox"], input[type="radio"], select, textarea {
-  accent-color: var(--accent-orange);
-  color-scheme: dark;
 }
 
 /* Panel-internal nav (tabs) */

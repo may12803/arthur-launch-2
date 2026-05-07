@@ -1,8 +1,5 @@
 "use client";
 import { Nav } from "../_components/Layout";
-import { GlassPanel } from "../_components/GlassPanel";
-import { PageHeader } from "../_components/PageHeader";
-import { TokenChip } from "../_components/TokenChip";
 import { useState, useEffect } from "react";
 
 const SITE_URL = "https://arthur-online.fly.dev";
@@ -45,8 +42,7 @@ const SHORTCUTS = [
     body: null,
     addResult: "Show Result",
     addSpeak: true,
-    color: "var(--tint-amber)",
-    colorRaw: "#f59e0b",
+    color: "#f59e0b",
     icon: "sunrise.fill",
   },
   {
@@ -59,8 +55,7 @@ const SHORTCUTS = [
     body: null,
     addResult: "Show Result",
     addSpeak: false,
-    color: "var(--tint-violet)",
-    colorRaw: "#6366f1",
+    color: "#6366f1",
     icon: "envelope.badge.fill",
   },
   {
@@ -73,8 +68,7 @@ const SHORTCUTS = [
     body: JSON.stringify({ alert_message: "LOW CASH", hours: 4 }),
     addResult: "Show Result",
     addSpeak: false,
-    color: "var(--tint-blue)",
-    colorRaw: "#0ea5e9",
+    color: "#0ea5e9",
     icon: "moon.zzz.fill",
   },
   {
@@ -87,8 +81,7 @@ const SHORTCUTS = [
     body: "__ASK__",
     addResult: "Show Result",
     addSpeak: false,
-    color: "var(--tint-emerald)",
-    colorRaw: "#22c55e",
+    color: "#22c55e",
     icon: "bolt.fill",
   },
   {
@@ -101,8 +94,7 @@ const SHORTCUTS = [
     body: JSON.stringify({ event: "location_arrived", data: { place: "Dabney" } }),
     addResult: "Show Result",
     addSpeak: false,
-    color: "var(--tint-red)",
-    colorRaw: "#f43f5e",
+    color: "#f43f5e",
     icon: "mappin.circle.fill",
   },
 ];
@@ -159,24 +151,24 @@ function ShortcutSteps({ s }: { s: typeof SHORTCUTS[0] }) {
   });
 
   return (
-    <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+    <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
       {steps.map((step, i) => (
-        <li key={i} style={{ display: "flex", gap: "var(--space-3)", alignItems: "flex-start" }}>
+        <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
           <span style={{
             flexShrink: 0,
             width: 22, height: 22,
             borderRadius: "50%",
-            background: "var(--accent-orange-soft)",
-            color: "var(--accent-orange)",
-            fontSize: "var(--fs-xs)",
+            background: "var(--accent-soft)",
+            color: "var(--accent)",
+            fontSize: 11,
             fontWeight: 700,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}>{i + 1}</span>
           <div>
-            <div style={{ fontSize: "var(--fs-small)", color: "var(--text-active)", fontWeight: 500 }}>{step.label}</div>
-            <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-muted)", marginTop: "var(--space-1)" }}>{step.detail}</div>
+            <div style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>{step.label}</div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{step.detail}</div>
           </div>
         </li>
       ))}
@@ -217,20 +209,20 @@ function ShortcutJSON({ s }: { s: typeof SHORTCUTS[0] }) {
   }
 
   return (
-    <div style={{ marginTop: "var(--space-4)" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--space-2)" }}>
-        <span style={{ fontSize: "var(--fs-mono)", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+    <div style={{ marginTop: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <span style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
           Config reference
         </span>
         <button
           onClick={copy}
           style={{
-            background: copied ? "var(--accent-orange)" : "var(--glass-t2-bg)",
-            border: "1px solid var(--glass-t1-border)",
-            borderRadius: "var(--radius-sm)",
-            color: copied ? "var(--accent-text-on)" : "var(--text-main)",
+            background: copied ? "var(--accent)" : "var(--panel-elev)",
+            border: "1px solid var(--border)",
+            borderRadius: 5,
+            color: copied ? "#fff" : "var(--text-dim)",
             cursor: "pointer",
-            fontSize: "var(--fs-mono)",
+            fontSize: 11,
             padding: "3px 10px",
           }}
         >
@@ -238,12 +230,12 @@ function ShortcutJSON({ s }: { s: typeof SHORTCUTS[0] }) {
         </button>
       </div>
       <pre style={{
-        background: "var(--glass-t1-bg)",
-        border: "1px solid var(--glass-t1-border)",
-        borderRadius: "var(--radius-sm)",
-        padding: "10px var(--space-3)",
-        fontSize: "var(--fs-mono)",
-        color: "var(--text-main)",
+        background: "var(--panel)",
+        border: "1px solid var(--border)",
+        borderRadius: 6,
+        padding: "10px 12px",
+        fontSize: 11,
+        color: "var(--text-dim)",
         overflowX: "auto",
         margin: 0,
         lineHeight: 1.5,
@@ -331,22 +323,28 @@ export default function IphonePage() {
   return (
     <>
       <Nav />
-      <main style={{ minHeight: "100vh", paddingTop: 108, paddingBottom: "var(--space-11)" }}>
+      <main style={{ minHeight: "100vh", paddingTop: 108, paddingBottom: 80 }}>
         <div className="wrap" style={{ maxWidth: 740 }}>
 
           {/* ── Header ──────────────────────────────────────────────────────── */}
-          <PageHeader
-            eyebrow="Arthur · iPhone"
-            title="iPhone Control Surface"
-            subtitle="Arthur on your lock screen. 5 minutes to set up. Notifications with action buttons + shortcuts for the flows you run 10x a day."
-            style={{ marginBottom: "var(--space-8)" }}
-          />
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ fontSize: 11, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, marginBottom: 8 }}>
+              Arthur · iPhone
+            </div>
+            <h1 style={{ fontSize: 28, fontWeight: 700, color: "var(--text)", margin: 0, lineHeight: 1.2 }}>
+              iPhone Control Surface
+            </h1>
+            <p style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 8, marginBottom: 0, lineHeight: 1.6 }}>
+              Arthur on your lock screen. 5 minutes to set up. Notifications with action buttons + shortcuts
+              for the flows you run 10x a day.
+            </p>
+          </div>
 
           {/* ── Section A: Pushcut setup ─────────────────────────────────────── */}
-          <section style={{ marginBottom: "var(--space-9)" }}>
+          <section style={{ marginBottom: 48 }}>
             <SectionHeader letter="A" title="Pushcut setup" time="5 min" />
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {[
                 {
                   n: 1,
@@ -369,58 +367,62 @@ export default function IphonePage() {
                   detail: 'Tap "Settings" tab → "API" → copy the key shown. It starts with a long alphanumeric string.',
                 },
               ].map(step => (
-                <GlassPanel key={step.n} style={{
-                  borderRadius: "var(--radius-sm)",
-                  padding: "14px var(--space-4)",
+                <div key={step.n} style={{
+                  background: "var(--panel)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 10,
+                  padding: "14px 16px",
                   display: "flex",
-                  gap: "var(--space-4)",
+                  gap: 14,
                   alignItems: "flex-start",
                 }}>
                   <span style={{
                     flexShrink: 0,
                     width: 28, height: 28,
                     borderRadius: "50%",
-                    background: "var(--accent-orange-soft)",
-                    color: "var(--accent-orange)",
+                    background: "var(--accent-soft)",
+                    color: "var(--accent)",
                     fontWeight: 700,
-                    fontSize: "var(--fs-small)",
+                    fontSize: 13,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}>{step.n}</span>
                   <div>
-                    <div style={{ fontSize: "var(--fs-small)", fontWeight: 600, color: "var(--text-active)" }}>{step.title}</div>
-                    <div style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", marginTop: "var(--space-1)", lineHeight: 1.5 }}>{step.detail}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{step.title}</div>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3, lineHeight: 1.5 }}>{step.detail}</div>
                   </div>
-                </GlassPanel>
+                </div>
               ))}
 
               {/* Step 5 — paste API key */}
-              <GlassPanel style={{
-                borderRadius: "var(--radius-sm)",
-                padding: "14px var(--space-4)",
+              <div style={{
+                background: "var(--panel)",
+                border: "1px solid var(--border)",
+                borderRadius: 10,
+                padding: "14px 16px",
               }}>
-                <div style={{ display: "flex", gap: "var(--space-4)", alignItems: "flex-start", marginBottom: "var(--space-3)" }}>
+                <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 12 }}>
                   <span style={{
                     flexShrink: 0,
                     width: 28, height: 28,
                     borderRadius: "50%",
-                    background: "var(--accent-orange-soft)",
-                    color: "var(--accent-orange)",
+                    background: "var(--accent-soft)",
+                    color: "var(--accent)",
                     fontWeight: 700,
-                    fontSize: "var(--fs-small)",
+                    fontSize: 13,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}>5</span>
                   <div>
-                    <div style={{ fontSize: "var(--fs-small)", fontWeight: 600, color: "var(--text-active)" }}>Paste your API key here</div>
-                    <div style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", marginTop: "var(--space-1)" }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>Paste your API key here</div>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
                       Arthur stores it securely and fires a test push to confirm.
                     </div>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: "var(--space-2)" }}>
+                <div style={{ display: "flex", gap: 8 }}>
                   <input
                     type="text"
                     aria-label="Pushcut API key"
@@ -429,12 +431,12 @@ export default function IphonePage() {
                     placeholder="Paste Pushcut API key…"
                     style={{
                       flex: 1,
-                      background: "var(--glass-t2-bg)",
-                      border: "1px solid var(--glass-t2-border)",
-                      borderRadius: "var(--radius-sm)",
-                      color: "var(--text-active)",
-                      fontSize: "var(--fs-small)",
-                      padding: "9px var(--space-3)",
+                      background: "var(--panel-elev)",
+                      border: "1px solid var(--border-strong)",
+                      borderRadius: 8,
+                      color: "var(--text)",
+                      fontSize: 13,
+                      padding: "9px 12px",
                       fontFamily: "var(--font-jetbrains), monospace",
                     }}
                   />
@@ -442,14 +444,14 @@ export default function IphonePage() {
                     onClick={savePushcutKey}
                     disabled={pushcutSaving || !pushcutKey.trim()}
                     style={{
-                      background: pushcutSaving ? "var(--glass-t1-border)" : "var(--accent-orange)",
+                      background: pushcutSaving ? "var(--border)" : "var(--accent)",
                       border: "none",
-                      borderRadius: "var(--radius-sm)",
-                      color: "var(--accent-text-on)",
+                      borderRadius: 8,
+                      color: "#fff",
                       cursor: pushcutSaving || !pushcutKey.trim() ? "default" : "pointer",
-                      fontSize: "var(--fs-small)",
+                      fontSize: 13,
                       fontWeight: 600,
-                      padding: "9px var(--space-5)",
+                      padding: "9px 18px",
                       opacity: !pushcutKey.trim() ? 0.5 : 1,
                     }}
                   >
@@ -458,33 +460,33 @@ export default function IphonePage() {
                 </div>
                 {pushcutResult && (
                   <div style={{
-                    marginTop: "var(--space-3)",
-                    padding: "10px var(--space-3)",
-                    borderRadius: "var(--radius-sm)",
-                    background: pushcutResult.ok ? "var(--tint-emerald-soft)" : "var(--tint-red-soft)",
-                    border: `1px solid ${pushcutResult.ok ? "rgba(52,211,153,0.3)" : "rgba(239,68,68,0.3)"}`,
-                    color: pushcutResult.ok ? "var(--tint-emerald)" : "var(--tint-red)",
-                    fontSize: "var(--fs-small)",
+                    marginTop: 10,
+                    padding: "10px 12px",
+                    borderRadius: 7,
+                    background: pushcutResult.ok ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.1)",
+                    border: `1px solid ${pushcutResult.ok ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`,
+                    color: pushcutResult.ok ? "#22c55e" : "#ef4444",
+                    fontSize: 13,
                   }}>
                     {pushcutResult.ok ? "✓ " : "✗ "}{pushcutResult.message}
                   </div>
                 )}
-              </GlassPanel>
+              </div>
             </div>
           </section>
 
           {/* ── Section B: Shortcuts ──────────────────────────────────────────── */}
-          <section style={{ marginBottom: "var(--space-9)" }}>
+          <section style={{ marginBottom: 48 }}>
             <SectionHeader letter="B" title="Shortcut bundles" time="5 min" />
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {SHORTCUTS.map(s => {
                 const expanded = expandedShortcut === s.name;
                 return (
                   <div key={s.name} style={{
-                    background: "var(--glass-t1-bg)",
-                    border: `1px solid ${expanded ? "var(--accent-orange)" : "var(--glass-t1-border)"}`,
-                    borderRadius: "var(--radius-card)",
+                    background: "var(--panel)",
+                    border: `1px solid ${expanded ? "var(--accent)" : "var(--border)"}`,
+                    borderRadius: 12,
                     overflow: "hidden",
                     transition: "border-color 0.15s",
                   }}>
@@ -495,51 +497,51 @@ export default function IphonePage() {
                         background: "none",
                         border: "none",
                         cursor: "pointer",
-                        padding: "14px var(--space-4)",
+                        padding: "14px 16px",
                         display: "flex",
                         alignItems: "center",
-                        gap: "var(--space-3)",
+                        gap: 12,
                         textAlign: "left",
                       }}
                     >
                       <span style={{
-                        fontSize: "var(--fs-h3)",
+                        fontSize: 20,
                         width: 36, height: 36,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        borderRadius: "var(--radius-sm)",
-                        background: `${s.colorRaw}22`,
+                        borderRadius: 8,
+                        background: `${s.color}22`,
                         flexShrink: 0,
                       }}>{s.emoji}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: "var(--fs-small)", fontWeight: 600, color: "var(--text-active)" }}>{s.name}</div>
-                        <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-muted)", marginTop: "var(--space-1)" }}>{s.description}</div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{s.name}</div>
+                        <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{s.description}</div>
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "var(--space-1)", flexShrink: 0 }}>
-                        <span style={{ fontSize: "var(--fs-mono)", color: "var(--text-muted)", background: "var(--glass-t2-bg)", borderRadius: "var(--radius-sm)", padding: "2px var(--space-2)" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+                        <span style={{ fontSize: 10, color: "var(--text-muted)", background: "var(--panel-elev)", borderRadius: 4, padding: "2px 6px" }}>
                           {s.placement.split("·")[0].trim()}
                         </span>
-                        <span style={{ fontSize: "var(--fs-xs)", color: "var(--accent-orange)", opacity: 0.7 }}>{expanded ? "▲" : "▼"}</span>
+                        <span style={{ fontSize: 12, color: "var(--accent)", opacity: 0.7 }}>{expanded ? "▲" : "▼"}</span>
                       </div>
                     </button>
 
                     {expanded && (
-                      <div style={{ padding: "0 var(--space-4) var(--space-4)", borderTop: "1px solid var(--glass-t1-border)" }}>
-                        <div style={{ marginTop: "var(--space-4)", marginBottom: "var(--space-4)" }}>
-                          <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "var(--space-3)" }}>
+                      <div style={{ padding: "0 16px 16px", borderTop: "1px solid var(--border)" }}>
+                        <div style={{ marginTop: 14, marginBottom: 14 }}>
+                          <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
                             Build it step by step
                           </div>
                           <ShortcutSteps s={s} />
                         </div>
                         <div style={{
-                          fontSize: "var(--fs-mono)",
+                          fontSize: 11,
                           color: "var(--text-muted)",
-                          background: "var(--glass-t2-bg)",
-                          border: "1px solid var(--glass-t1-border)",
-                          borderRadius: "var(--radius-sm)",
-                          padding: "var(--space-2) var(--space-3)",
-                          marginBottom: "var(--space-1)",
+                          background: "var(--panel-elev)",
+                          border: "1px solid var(--border)",
+                          borderRadius: 6,
+                          padding: "6px 10px",
+                          marginBottom: 4,
                         }}>
                           Placement: {s.placement}
                         </div>
@@ -553,29 +555,33 @@ export default function IphonePage() {
           </section>
 
           {/* ── Section C: Status panel ───────────────────────────────────────── */}
-          <section style={{ marginBottom: "var(--space-9)" }}>
+          <section style={{ marginBottom: 48 }}>
             <SectionHeader letter="C" title="Live status" time="" />
 
             {statusLoading ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <div style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-                  gap: "var(--space-3)",
+                  gap: 12,
                 }}>
                   {[1,2,3,4,5].map(i => (
-                    <div key={i} className="arthur-skeleton" style={{ height: 70, opacity: 0.25 + i * 0.05 }} />
+                    <div key={i} className="iph-skeleton" style={{ height: 70, borderRadius: 10, opacity: 0.25 + i * 0.05 }} />
                   ))}
                 </div>
+                <style>{`
+                  @keyframes iph-shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
+                  .iph-skeleton { background: linear-gradient(90deg, var(--panel) 25%, var(--panel-elev) 50%, var(--panel) 75%); background-size: 1200px 100%; animation: iph-shimmer 1.6s infinite; }
+                `}</style>
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
                 {/* Counters */}
                 <div style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-                  gap: "var(--space-3)",
+                  gap: 12,
                 }}>
                   {[
                     { label: "inbox total",        value: status.counts?.total            ?? "—" },
@@ -584,65 +590,71 @@ export default function IphonePage() {
                     { label: "blackmarble",         value: status.counts?.blackmarble       ?? "—" },
                     { label: "drinkswithdabney",    value: status.counts?.drinkswithdabney  ?? "—" },
                   ].map(c => (
-                    <GlassPanel key={c.label} style={{
-                      borderRadius: "var(--radius-sm)",
-                      padding: "14px var(--space-4)",
+                    <div key={c.label} style={{
+                      background: "var(--panel)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 10,
+                      padding: "14px 16px",
                       textAlign: "center",
                     }}>
-                      <div style={{ fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--text-active)", fontFamily: "var(--font-jetbrains), monospace" }}>
+                      <div style={{ fontSize: 24, fontWeight: 700, color: "var(--text)", fontFamily: "var(--font-jetbrains), monospace" }}>
                         {c.value}
                       </div>
-                      <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-muted)", marginTop: "var(--space-1)" }}>{c.label}</div>
-                    </GlassPanel>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>{c.label}</div>
+                    </div>
                   ))}
                 </div>
 
                 {/* Send test notification */}
-                <GlassPanel style={{
-                  borderRadius: "var(--radius-sm)",
-                  padding: "14px var(--space-4)",
+                <div style={{
+                  background: "var(--panel)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 10,
+                  padding: "14px 16px",
                   display: "flex",
                   alignItems: "center",
-                  gap: "var(--space-3)",
+                  gap: 12,
                 }}>
                   <button
                     onClick={sendTestNotification}
                     disabled={sendingTest}
                     style={{
-                      background: "var(--accent-orange)",
+                      background: "var(--accent)",
                       border: "none",
-                      borderRadius: "var(--radius-sm)",
-                      color: "var(--accent-text-on)",
+                      borderRadius: 8,
+                      color: "#fff",
                       cursor: sendingTest ? "default" : "pointer",
-                      fontSize: "var(--fs-small)",
+                      fontSize: 13,
                       fontWeight: 600,
-                      padding: "9px var(--space-5)",
+                      padding: "9px 18px",
                       flexShrink: 0,
                     }}
                   >
                     {sendingTest ? "sending…" : "Send test notification"}
                   </button>
                   {testResult && (
-                    <span style={{ fontSize: "var(--fs-small)", color: testResult.includes("sent") ? "var(--tint-emerald)" : "var(--tint-red)" }}>
+                    <span style={{ fontSize: 13, color: testResult.includes("sent") ? "#22c55e" : "#ef4444" }}>
                       {testResult}
                     </span>
                   )}
                   {!testResult && (
-                    <span style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)" }}>
+                    <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
                       Fires a test push to confirm Pushcut is wired correctly.
                     </span>
                   )}
-                </GlassPanel>
+                </div>
 
                 {/* API endpoints reference */}
-                <GlassPanel style={{
-                  borderRadius: "var(--radius-sm)",
-                  padding: "14px var(--space-4)",
+                <div style={{
+                  background: "var(--panel)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 10,
+                  padding: "14px 16px",
                 }}>
-                  <div style={{ fontSize: "var(--fs-xs)", fontWeight: 600, color: "var(--text-active)", marginBottom: "var(--space-3)" }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", marginBottom: 10 }}>
                     iPhone API endpoints
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     {[
                       { method: "POST", path: "/api/iphone/daily-brief",       desc: "Morning brief text" },
                       { method: "POST", path: "/api/iphone/approve-next",       desc: "Next pending approval" },
@@ -653,21 +665,25 @@ export default function IphonePage() {
                       { method: "GET",  path: "/api/iphone/inbox-count",        desc: "Widget counter data" },
                       { method: "GET",  path: "/api/iphone/calendar-today",     desc: "Today's events compact" },
                     ].map(ep => (
-                      <div key={ep.path} style={{ display: "flex", gap: "var(--space-2)", alignItems: "center", fontSize: "var(--fs-xs)" }}>
-                        <TokenChip
-                          label={ep.method}
-                          size="xs"
-                          color={ep.method === "GET" ? "success" : "purple"}
-                          style={{ fontFamily: "var(--font-jetbrains), monospace" }}
-                        />
-                        <span style={{ fontFamily: "var(--font-jetbrains), monospace", color: "var(--text-main)", flex: 1 }}>
+                      <div key={ep.path} style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12 }}>
+                        <span style={{
+                          flexShrink: 0,
+                          background: ep.method === "GET" ? "rgba(34,197,94,0.15)" : "rgba(99,102,241,0.15)",
+                          color:       ep.method === "GET" ? "#22c55e" : "#6366f1",
+                          borderRadius: 4,
+                          padding: "1px 6px",
+                          fontFamily: "var(--font-jetbrains), monospace",
+                          fontSize: 10,
+                          fontWeight: 700,
+                        }}>{ep.method}</span>
+                        <span style={{ fontFamily: "var(--font-jetbrains), monospace", color: "var(--text-dim)", flex: 1 }}>
                           {ep.path}
                         </span>
                         <span style={{ color: "var(--text-muted)" }}>{ep.desc}</span>
                       </div>
                     ))}
                   </div>
-                </GlassPanel>
+                </div>
               </div>
             )}
           </section>
@@ -682,27 +698,27 @@ export default function IphonePage() {
 
 function SectionHeader({ letter, title, time }: { letter: string; title: string; time: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", marginBottom: "var(--space-4)" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
       <span style={{
         width: 28, height: 28,
         borderRadius: "50%",
-        background: "var(--accent-orange)",
-        color: "var(--accent-text-on)",
-        fontSize: "var(--fs-small)",
+        background: "var(--accent)",
+        color: "#fff",
+        fontSize: 13,
         fontWeight: 700,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         flexShrink: 0,
       }}>{letter}</span>
-      <h2 style={{ fontSize: "var(--fs-h3)", fontWeight: 700, color: "var(--text-active)", margin: 0 }}>{title}</h2>
+      <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", margin: 0 }}>{title}</h2>
       {time && (
         <span style={{
-          fontSize: "var(--fs-mono)",
-          color: "var(--accent-orange)",
-          background: "var(--accent-orange-soft)",
-          borderRadius: "var(--radius-pill)",
-          padding: "2px var(--space-3)",
+          fontSize: 11,
+          color: "var(--accent)",
+          background: "var(--accent-soft)",
+          borderRadius: 20,
+          padding: "2px 10px",
           fontWeight: 500,
         }}>{time}</span>
       )}

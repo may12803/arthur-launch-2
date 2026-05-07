@@ -1,10 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Nav, Footer } from "../_components/Layout";
-import { GlassPanel } from "../_components/GlassPanel";
-import { PageHeader } from "../_components/PageHeader";
-import { TokenChip } from "../_components/TokenChip";
-import { EmptyState } from "../_components/EmptyState";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -120,9 +116,9 @@ function EntityBadge({ entity }: { entity: string | null }) {
     <span
       style={{
         display: "inline-block",
-        padding: `var(--space-1) var(--space-2)`,
+        padding: "2px 8px",
         borderRadius: 'var(--radius-pill)',
-        fontSize: 'var(--fs-mono)',
+        fontSize: '11px',
         fontWeight: 500,
         lineHeight: 1.4,
         background: color.soft,
@@ -146,9 +142,9 @@ function ExtractionBadge({ status, onFix }: { status: DocRow["extraction_status"
         display: "inline-flex",
         alignItems: "center",
         gap: 6,
-        padding: `var(--space-1) var(--space-2)`,
+        padding: "2px 8px",
         borderRadius: 'var(--radius-pill)',
-        fontSize: 'var(--fs-mono)',
+        fontSize: '11px',
         fontWeight: 500,
         background: 'var(--tint-violet-soft)',
         color: 'var(--tint-violet)',
@@ -167,9 +163,9 @@ function ExtractionBadge({ status, onFix }: { status: DocRow["extraction_status"
           display: "inline-flex",
           alignItems: "center",
           gap: 6,
-          padding: `var(--space-1) var(--space-2)`,
+          padding: "2px 8px",
           borderRadius: 'var(--radius-pill)',
-          fontSize: 'var(--fs-mono)',
+          fontSize: '11px',
           fontWeight: 500,
           background: 'var(--tint-red-soft)',
           color: 'var(--tint-red)',
@@ -242,7 +238,7 @@ function InlineEdit({
         background: 'var(--glass-t3-bg)',
         border: '1px solid var(--accent-orange)',
         borderRadius: 'var(--radius-sm)',
-        padding: `var(--space-1) var(--space-2)`,
+        padding: "4px 8px",
         width: "100%",
         boxSizing: "border-box",
         boxShadow: '0 0 12px var(--accent-glow)',
@@ -275,17 +271,17 @@ function ContractCard({ doc, active, onClick }: { doc: DocRow; active: boolean; 
         background: 'var(--card-bg)',
         border: '1px solid var(--card-border)',
         borderRadius: 'var(--radius-card)',
-        padding: 'var(--space-4)',
+        padding: '16px',
         cursor: "pointer",
         transition: "background 0.2s, border-color 0.2s, box-shadow 0.2s",
         backdropFilter: 'blur(var(--card-blur))',
         boxShadow: 'var(--card-shadow)',
-        gap: 'var(--space-3)',
+        gap: '12px',
       } as React.CSSProperties}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-2)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
         <h3 style={{
-          fontSize: 'var(--fs-body)',
+          fontSize: '15px',
           fontWeight: 600,
           color: 'var(--text-active)',
           lineHeight: 1.4,
@@ -303,17 +299,17 @@ function ContractCard({ doc, active, onClick }: { doc: DocRow; active: boolean; 
         }} />
       </div>
 
-      <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
         <ExtractionBadge status={doc.extraction_status} />
         <EntityBadge entity={doc.entity} />
       </div>
 
       <div>
-        <div style={{ fontSize: 'var(--fs-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-faint)', marginBottom: 'var(--space-1)' }}>Counterparty</div>
-        <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', fontWeight: 500 }}>{parties}</div>
+        <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-faint)', marginBottom: 4 }}>Counterparty</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>{parties}</div>
       </div>
 
-      <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
+      <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: 'var(--text-muted)' }}>
         <span>{doc.category?.replace(/_/g, ' ') ?? 'Document'}</span>
         {doc.expires_at && (
           <span style={{ color: expColor ?? 'var(--text-muted)', fontWeight: expColor ? 600 : 400 }}>
@@ -352,7 +348,7 @@ export default function LegalPage() {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (showArchived) params.set("archived", "true");
-
+    
     // This mapping is an interpretation of the spec
     if (activeTab === 'Agreements') params.set("category", "operating_agreement");
     if (activeTab === 'Contracts') params.set("category", "contract");
@@ -504,68 +500,86 @@ export default function LegalPage() {
         margin: '0 auto',
         padding: '0 var(--page-gutter)',
         paddingTop: '100px',
-        paddingBottom: 'var(--space-9)',
+        paddingBottom: '48px',
       }}>
-        <PageHeader
-          title="legal vault."
-          subtitle={`${total} documents, ${formatBytes(totalSize)} stored`}
-          style={{ marginBottom: 'var(--space-7)' }}
-          actions={
-            <>
-              <input
-                type="file"
-                id="file-upload-input"
-                style={{ display: 'none' }}
-                onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.heic,.webp,.txt,.md"
-              />
-              <button
-                onClick={() => document.getElementById('file-upload-input')?.click()}
-                style={{
-                  background: 'var(--accent-orange)',
-                  color: 'var(--accent-text-on)',
-                  border: 'none',
-                  borderRadius: 'var(--radius-pill)',
-                  padding: `var(--space-3) var(--space-5)`,
-                  fontSize: 'var(--fs-small)',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'background 0.2s',
-                }}
-                onMouseOver={e => e.currentTarget.style.background = 'var(--accent-hover)'}
-                onMouseOut={e => e.currentTarget.style.background = 'var(--accent-orange)'}
-              >
-                Upload Document
-              </button>
-            </>
-          }
-        />
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)', borderBottom: '1px solid var(--line-separator)', marginBottom: 'var(--space-7)' }}>
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <TabButton name="Contracts" activeTab={activeTab} onClick={setActiveTab} />
-            <TabButton name="Agreements" activeTab={activeTab} onClick={setActiveTab} />
-            <TabButton name="Signatures Pending" activeTab={activeTab} onClick={setActiveTab} badgeCount={3} />
+        <header style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '24px',
+          marginBottom: '32px',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
+            <div>
+              <h1 style={{
+                fontSize: '32px',
+                fontWeight: 700,
+                color: 'var(--text-active)',
+                margin: '0 0 8px 0',
+                letterSpacing: '-0.02em',
+              }}>
+                Legal Vault
+              </h1>
+              <p style={{
+                fontSize: '14px',
+                color: 'var(--text-muted)',
+                margin: 0,
+              }}>
+                {total} documents, {formatBytes(totalSize)} stored
+              </p>
+            </div>
+            <input
+              type="file"
+              id="file-upload-input"
+              style={{ display: 'none' }}
+              onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.heic,.webp,.txt,.md"
+            />
+            <button
+              onClick={() => document.getElementById('file-upload-input')?.click()}
+              style={{
+                background: 'var(--accent-orange)',
+                color: 'var(--accent-text-on)',
+                border: 'none',
+                borderRadius: 'var(--radius-pill)',
+                padding: '10px 20px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}
+              onMouseOver={e => e.currentTarget.style.background = 'var(--accent-hover)'}
+              onMouseOut={e => e.currentTarget.style.background = 'var(--accent-orange)'}
+            >
+              Upload Document
+            </button>
           </div>
-          <input
-            type="search"
-            aria-label="Search documents"
-            placeholder="Search..."
-            value={q}
-            onChange={e => setQ(e.target.value)}
-            style={{
-              background: 'var(--glass-t1-bg)',
-              border: '1px solid var(--glass-t1-border)',
-              borderRadius: 'var(--radius-sm)',
-              color: 'var(--text-main)',
-              padding: `var(--space-2) var(--space-3)`,
-              fontSize: 'var(--fs-xs)',
-              width: '240px',
-            }}
-          />
-        </div>
 
-        <div style={{ display: "flex", gap: 'var(--space-6)', alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', borderBottom: '1px solid var(--line-separator)' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <TabButton name="Contracts" activeTab={activeTab} onClick={setActiveTab} />
+              <TabButton name="Agreements" activeTab={activeTab} onClick={setActiveTab} />
+              <TabButton name="Signatures Pending" activeTab={activeTab} onClick={setActiveTab} badgeCount={3} />
+            </div>
+            <input
+              type="search"
+              aria-label="Search documents"
+              placeholder="Search..."
+              value={q}
+              onChange={e => setQ(e.target.value)}
+              style={{
+                background: 'var(--glass-t1-bg)',
+                border: '1px solid var(--glass-t1-border)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--text-main)',
+                padding: '8px 12px',
+                fontSize: '13px',
+                width: '240px',
+              }}
+            />
+          </div>
+        </header>
+
+        <div style={{ display: "flex", gap: '24px', alignItems: 'flex-start' }}>
           <div
             className="legal-list-pane"
             style={{
@@ -573,18 +587,13 @@ export default function LegalPage() {
               minWidth: 0,
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: 'var(--space-4)',
+              gap: '16px',
             }}
           >
             {loading ? (
-              <div style={{ color: "var(--text-muted)", fontSize: 'var(--fs-small)', padding: `var(--space-5) 0` }}>Loading documents…</div>
+              <div style={{ color: "var(--text-muted)", fontSize: 14, padding: '20px 0' }}>Loading documents…</div>
             ) : rows.length === 0 ? (
-              <EmptyState
-                icon="📄"
-                title="no documents found."
-                subtitle="upload a contract or agreement to get started."
-                size="md"
-              />
+              <div style={{ color: "var(--text-muted)", fontSize: 14, padding: '20px 0' }}>No documents found.</div>
             ) : (
               rows.map(doc => (
                 <ContractCard
@@ -598,39 +607,41 @@ export default function LegalPage() {
           </div>
 
           {selectedId && (
-            <GlassPanel
-              as="aside"
-              tier={2}
+            <aside
               className="legal-reading-pane"
               style={{
                 width: '440px',
                 flexShrink: 0,
                 position: 'sticky',
                 top: '100px',
+                background: 'var(--glass-t2-bg)',
+                border: '1px solid var(--glass-t2-border)',
+                borderRadius: 'var(--radius-panel)',
+                boxShadow: 'var(--glass-t2-shadow)',
+                backdropFilter: 'blur(var(--glass-t2-blur))',
                 maxHeight: 'calc(100vh - 120px)',
                 overflowY: 'auto',
-                borderRadius: 'var(--radius-panel)',
               }}
             >
               {loadingDetail ? (
-                <div style={{ padding: 'var(--space-8)', color: "var(--text-muted)", fontSize: 'var(--fs-xs)' }}>Reading document…</div>
+                <div style={{ padding: 40, color: "var(--text-muted)", fontSize: 13 }}>Reading document…</div>
               ) : selected != null ? (
-                <div style={{ padding: "var(--space-6)" }}>
+                <div style={{ padding: "24px" }}>
                   <h2 style={{
-                    fontSize: 'var(--fs-h3)',
+                    fontSize: '20px',
                     fontWeight: 700,
                     color: 'var(--text-active)',
-                    margin: `0 0 var(--space-4)`,
+                    margin: "0 0 16px",
                     letterSpacing: '-0.01em',
                   }}>
                     <InlineEdit
                       value={selected.title ?? selected.file_name ?? "Untitled"}
                       onSave={v => patchField("title", v)}
-                      style={{ fontSize: 'var(--fs-h3)', fontWeight: 700, letterSpacing: "-0.01em" }}
+                      style={{ fontSize: '20px', fontWeight: 700, letterSpacing: "-0.01em" }}
                     />
                   </h2>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: 'var(--space-2)', marginBottom: 'var(--space-6)' }}>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
                     <MetaRow label="Entity" value={<InlineEdit value={selected.entity ?? ""} onSave={v => patchField("entity", v)} mono />} />
                     <MetaRow label="Category" value={<InlineEdit value={selected.category ?? ""} onSave={v => patchField("category", v)} mono />} />
                     <MetaRow label="Effective" value={<InlineEdit value={selected.effective_date ?? ""} onSave={v => patchField("effective_date", v || null)} mono />} />
@@ -645,21 +656,21 @@ export default function LegalPage() {
                   </div>
 
                   {selected.signed_url && (
-                    <div style={{ marginBottom: 'var(--space-6)', borderRadius: 'var(--radius-card)', overflow: 'hidden', border: '1px solid var(--glass-t1-border)' }}>
+                    <div style={{ marginBottom: 24, borderRadius: 'var(--radius-card)', overflow: 'hidden', border: '1px solid var(--glass-t1-border)' }}>
                       {selected.mime_type === "application/pdf" || selected.file_name?.endsWith(".pdf") ? (
-                        <embed src={selected.signed_url} type="application/pdf" style={{ width: "100%", height: 240, background: "var(--bg-surface)" }} />
+                        <embed src={selected.signed_url} type="application/pdf" style={{ width: "100%", height: 240, background: "#fff" }} />
                       ) : selected.mime_type?.startsWith("image/") ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={selected.signed_url} alt={selected.title ?? ""} style={{ width: "100%", height: 'auto', display: 'block' }} />
                       ) : (
-                        <div style={{ padding: 'var(--space-6)', fontSize: 'var(--fs-xs)', color: "var(--text-muted)", textAlign: 'center' }}>
+                        <div style={{ padding: '24px', fontSize: 12, color: "var(--text-muted)", textAlign: 'center' }}>
                           Preview not available.
                         </div>
                       )}
                     </div>
                   )}
 
-                  <div style={{ display: "flex", gap: 'var(--space-2)', flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {selected.signed_url && (
                       <a href={selected.signed_url} download={selected.file_name} className="action-button">Download</a>
                     )}
@@ -668,7 +679,7 @@ export default function LegalPage() {
                   </div>
                 </div>
               ) : null}
-            </GlassPanel>
+            </aside>
           )}
         </div>
       </main>
@@ -722,27 +733,33 @@ function TabButton({ name, activeTab, onClick, badgeCount }: { name: string; act
     <button
       onClick={() => onClick(name)}
       style={{
-        padding: `var(--space-2) var(--space-4)`,
+        padding: '8px 16px',
         border: 'none',
         borderBottom: `2px solid ${isActive ? 'var(--accent-orange)' : 'transparent'}`,
         background: 'none',
         color: isActive ? 'var(--text-active)' : 'var(--text-muted)',
         cursor: 'pointer',
-        fontSize: 'var(--fs-small)',
+        fontSize: '14px',
         fontWeight: 600,
         display: 'flex',
         alignItems: 'center',
-        gap: 'var(--space-2)',
+        gap: '8px',
         transition: 'color 0.2s, border-color 0.2s',
       }}
     >
       {name}
       {badgeCount && (
-        <TokenChip
-          label={String(badgeCount)}
-          color="orange"
-          size="xs"
-        />
+        <span style={{
+          background: 'var(--accent-orange)',
+          color: 'var(--accent-text-on)',
+          borderRadius: 'var(--radius-pill)',
+          fontSize: '11px',
+          fontWeight: 700,
+          padding: '2px 6px',
+          lineHeight: 1,
+        }}>
+          {badgeCount}
+        </span>
       )}
     </button>
   );
@@ -750,7 +767,7 @@ function TabButton({ name, activeTab, onClick, badgeCount }: { name: string; act
 
 function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", gap: 'var(--space-4)', alignItems: "center", fontSize: 'var(--fs-xs)' }}>
+    <div style={{ display: "flex", gap: 16, alignItems: "center", fontSize: '13px' }}>
       <span style={{
         fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
         color: "var(--text-muted)",
