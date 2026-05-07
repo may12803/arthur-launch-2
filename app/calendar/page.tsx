@@ -2,6 +2,10 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { Nav, Footer } from "../_components/Layout";
+import { GlassPanel } from "../_components/GlassPanel";
+import { PageHeader } from "../_components/PageHeader";
+import { TokenChip } from "../_components/TokenChip";
+import { EmptyState } from "../_components/EmptyState";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,13 +39,24 @@ interface TypeConfig {
   icon: string;
 }
 
+// CSS variable references — resolved at runtime so hexToRgb still works for rgba() blending
+// We keep a parallel hex map for the hexToRgb helper (used for rgba(r,g,b,a) blending only)
+const TYPE_HEX: Record<EventType, string> = {
+  gcal:        "#3b82f6",
+  icloud:      "#60a5fa",
+  tracking:    "#f97316",
+  ticket:      "#a855f7",
+  reservation: "#22c55e",
+  approval:    "#ef4444",
+};
+
 const TYPE_CONFIG: Record<EventType, TypeConfig> = {
-  gcal:        { color: "#3b82f6", label: "Google",       icon: "📅" },
-  icloud:      { color: "#60a5fa", label: "iCloud",       icon: "☁️" },
-  tracking:    { color: "#f97316", label: "Tracking",     icon: "📦" },
-  ticket:      { color: "#a855f7", label: "Ticket",       icon: "🎟️" },
-  reservation: { color: "#22c55e", label: "Reservation",  icon: "🏨" },
-  approval:    { color: "#ef4444", label: "Reply needed", icon: "📨" },
+  gcal:        { color: "var(--cal-gcal)",        label: "Google",       icon: "📅" },
+  icloud:      { color: "var(--cal-icloud)",      label: "iCloud",       icon: "☁️" },
+  tracking:    { color: "var(--cal-tracking)",    label: "Tracking",     icon: "📦" },
+  ticket:      { color: "var(--cal-ticket)",      label: "Ticket",       icon: "🎟️" },
+  reservation: { color: "var(--cal-reservation)", label: "Reservation",  icon: "🏨" },
+  approval:    { color: "var(--cal-approval)",    label: "Reply needed", icon: "📨" },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -51,6 +66,10 @@ function hexToRgb(hex: string): string {
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
   return `${r},${g},${b}`;
+}
+// Returns hex for a given event type (used to build rgba() blends — CSS vars can't be used inside rgba())
+function typeRgb(type: EventType): string {
+  return hexToRgb(TYPE_HEX[type] ?? TYPE_HEX.gcal);
 }
 
 function isoToDate(iso: string): Date {
@@ -122,13 +141,24 @@ function formatRelativeTime(date: Date, isAllDay: boolean): string {
 
 // ── Color hash for account emails ─────────────────────────────────────────────
 
+// Account-avatar colours — deliberately NOT calendar source colours; these are hashed per email
 const ACCOUNT_COLORS = [
-  "#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#f97316"
+  "var(--tint-blue)", "var(--tint-violet)", "var(--tint-amber)",
+  "var(--tint-emerald)", "var(--tint-red)", "var(--cal-icloud)", "var(--cal-tracking)",
+];
+// Hex equivalents used only for hexToRgb rgba blending on account avatars
+const ACCOUNT_COLORS_HEX = [
+  "#5b8def", "#a78bfa", "#fbbf24", "#34d399", "#ef4444", "#60a5fa", "#f97316",
 ];
 function accountColor(email: string): string {
   let hash = 0;
   for (let i = 0; i < email.length; i++) hash = (hash * 31 + email.charCodeAt(i)) | 0;
   return ACCOUNT_COLORS[Math.abs(hash) % ACCOUNT_COLORS.length];
+}
+function accountColorHex(email: string): string {
+  let hash = 0;
+  for (let i = 0; i < email.length; i++) hash = (hash * 31 + email.charCodeAt(i)) | 0;
+  return ACCOUNT_COLORS_HEX[Math.abs(hash) % ACCOUNT_COLORS_HEX.length];
 }
 
 // ── Hour grid constants ───────────────────────────────────────────────────────
@@ -380,18 +410,22 @@ export default function CalendarPage() {
   return (
     <>
       <Nav />
-      <div className="cal-outer" style={{ display: "flex", height: "calc(100vh - 108px)", overflow: "hidden", background: "var(--bg)", marginTop: 108 }}>
+      {/* Page-level title — hidden visually on narrow (toolbar h1 takes over) but present for a11y */}
+      <div style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+        <h1>calendar.</h1>
+      </div>
+      <div className="cal-outer" style={{ display: "flex", height: "calc(100vh - 108px)", overflow: "hidden", background: "var(--bg-base)", marginTop: 108 }}>
 
         {/* ── LEFT RAIL ── */}
         <aside style={{
           width: 240,
           flexShrink: 0,
-          borderRight: "1px solid var(--border)",
+          borderRight: "1px solid var(--line-separator)",
           display: "flex",
           flexDirection: "column",
           overflowY: "auto",
-          padding: "20px 16px",
-          gap: 24,
+          padding: "var(--space-5) var(--space-4)",
+          gap: "var(--space-6)",
         }} className="cal-left-rail">
 
           {/* Mini-month */}
@@ -400,13 +434,14 @@ export default function CalendarPage() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 10,
+              marginBottom: "var(--space-2)",
             }}>
               <span style={{
-                fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+                fontFamily: "var(--font-display)",
                 fontWeight: 700,
-                fontSize: 13,
-                letterSpacing: "-0.01em",
+                fontSize: "var(--fs-small)",
+                letterSpacing: "var(--ls-heading)",
+                color: "var(--text-active)",
               }}>
                 {anchor.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
               </span>
@@ -428,11 +463,11 @@ export default function CalendarPage() {
               {["S","M","T","W","T","F","S"].map((d, i) => (
                 <div key={i} style={{
                   textAlign: "center",
-                  fontSize: 9,
+                  fontSize: "var(--fs-mono)",
                   fontWeight: 700,
                   color: "var(--text-faint)",
                   textTransform: "uppercase",
-                  letterSpacing: "0.06em",
+                  letterSpacing: "var(--ls-eyebrow)",
                   padding: "2px 0",
                 }}>{d}</div>
               ))}
@@ -452,7 +487,7 @@ export default function CalendarPage() {
                     style={{
                       width: "100%",
                       aspectRatio: "1",
-                      borderRadius: 4,
+                      borderRadius: "var(--radius-sm)",
                       border: "none",
                       cursor: "pointer",
                       display: "flex",
@@ -463,16 +498,16 @@ export default function CalendarPage() {
                       background: isToday
                         ? "var(--accent)"
                         : isAnchor
-                          ? "rgba(255,71,19,0.15)"
+                          ? "var(--accent-orange-soft)"
                           : "transparent",
                       color: isToday
-                        ? "#fff"
+                        ? "var(--accent-text-on)"
                         : isAnchor
                           ? "var(--accent)"
                           : inMonth
-                            ? "var(--text)"
+                            ? "var(--text-main)"
                             : "var(--text-faint)",
-                      fontSize: 10,
+                      fontSize: "var(--fs-mono)",
                       fontWeight: isToday ? 700 : 400,
                       opacity: inMonth ? 1 : 0.4,
                     }}
@@ -481,7 +516,7 @@ export default function CalendarPage() {
                     {hasEvts && !isToday && (
                       <div style={{
                         width: 3, height: 3, borderRadius: "50%",
-                        background: hasApproval ? "#ef4444" : "var(--accent)",
+                        background: hasApproval ? "var(--cal-approval)" : "var(--accent)",
                       }} />
                     )}
                   </button>
@@ -491,7 +526,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Divider */}
-          <div style={{ height: 1, background: "var(--border)" }} />
+          <div style={{ height: 1, background: "var(--line-separator)" }} />
 
           {/* Event type filters */}
           <div>
@@ -526,7 +561,7 @@ export default function CalendarPage() {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                       <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 11.5, color: checked ? "var(--text)" : "var(--text-faint)" }}>{cfg.label}</span>
+                      <span style={{ fontSize: "var(--fs-xs)", color: checked ? "var(--text-active)" : "var(--text-faint)" }}>{cfg.label}</span>
                     </div>
                   </label>
                 );
@@ -578,7 +613,7 @@ export default function CalendarPage() {
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                         <div style={{ width: 6, height: 6, borderRadius: "50%", background: color, flexShrink: 0 }} />
-                        <span style={{ fontSize: 11.5, color: "var(--text-dim)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)" }}>{short}</span>
+                        <span style={{ fontSize: "var(--fs-xs)", color: "var(--text-main)", fontFamily: "var(--font-mono)" }}>{short}</span>
                       </div>
                     </label>
                   );
@@ -593,13 +628,13 @@ export default function CalendarPage() {
 
           {/* Toolbar */}
           <div className="cal-toolbar" style={{
-            padding: "12px 20px",
-            borderBottom: "1px solid var(--border)",
+            padding: "var(--space-3) var(--space-5)",
+            borderBottom: "1px solid var(--line-separator)",
             display: "flex",
             alignItems: "center",
-            gap: 12,
+            gap: "var(--space-3)",
             flexShrink: 0,
-            background: "var(--bg)",
+            background: "var(--bg-base)",
           }}>
             {/* Mobile filter pill */}
             <button
@@ -607,12 +642,12 @@ export default function CalendarPage() {
               onClick={() => setMobileSheet("filter")}
               style={{
                 display: "none",
-                background: "var(--panel)",
-                border: "1px solid var(--border-strong)",
-                borderRadius: 20,
-                padding: "5px 12px",
-                fontSize: 11,
-                color: "var(--text-dim)",
+                background: "var(--glass-t1-bg)",
+                border: "1px solid var(--glass-t1-border)",
+                borderRadius: "var(--radius-pill)",
+                padding: "5px var(--space-3)",
+                fontSize: "var(--fs-mono)",
+                color: "var(--text-main)",
                 cursor: "pointer",
               }}
             >
@@ -626,27 +661,28 @@ export default function CalendarPage() {
               <button onClick={() => navigate(1)}  style={{ ...toolbarBtn, padding: "6px 10px", minHeight: 44, minWidth: 44 }}>›</button>
             </div>
 
-            {/* Title */}
-            <h1 style={{
+            {/* Title — range label, not semantic page h1 (see visually-hidden h1 above) */}
+            <div aria-hidden style={{
               flex: 1,
               margin: 0,
-              fontSize: 18,
+              fontSize: "var(--fs-h3)",
               fontWeight: 700,
-              letterSpacing: "-0.02em",
-              fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+              letterSpacing: "var(--ls-heading)",
+              fontFamily: "var(--font-display)",
               textAlign: "center",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
+              color: "var(--text-active)",
             }}>
               {rangeLabel}
-            </h1>
+            </div>
 
             {/* View switcher */}
             <div style={{
               display: "flex",
-              border: "1px solid var(--border-strong)",
-              borderRadius: 7,
+              border: "1px solid var(--glass-t1-border)",
+              borderRadius: "var(--radius-sm)",
               overflow: "hidden",
               flexShrink: 0,
             }}>
@@ -656,14 +692,14 @@ export default function CalendarPage() {
                   onClick={() => setView(v)}
                   style={{
                     background: view === v ? "var(--accent)" : "transparent",
-                    color:      view === v ? "#fff" : "var(--text-dim)",
+                    color:      view === v ? "var(--accent-text-on)" : "var(--text-muted)",
                     border: "none",
-                    borderLeft: v !== "day" ? "1px solid var(--border-strong)" : "none",
-                    padding: "6px 12px",
+                    borderLeft: v !== "day" ? "1px solid var(--glass-t1-border)" : "none",
+                    padding: "var(--space-1) var(--space-3)",
                     cursor: "pointer",
-                    fontSize: 12,
+                    fontSize: "var(--fs-xs)",
                     fontWeight: view === v ? 600 : 400,
-                    transition: "background 0.15s, color 0.15s",
+                    transition: "background var(--duration-quick) var(--ease-out-soft), color var(--duration-quick) var(--ease-out-soft)",
                     letterSpacing: "0.01em",
                     minHeight: 44,
                     minWidth: 44,
@@ -677,12 +713,12 @@ export default function CalendarPage() {
 
           {/* Month progress bar */}
           {view === "month" && monthProgress > 0 && (
-            <div style={{ height: 2, background: "var(--border)", flexShrink: 0, position: "relative" }}>
+            <div style={{ height: 2, background: "var(--line-separator)", flexShrink: 0, position: "relative" }}>
               <div style={{
                 position: "absolute",
                 left: 0, top: 0, bottom: 0,
                 width: `${monthProgress}%`,
-                background: "rgba(255,71,19,0.35)",
+                background: "var(--accent-orange-soft)",
                 borderRadius: "0 1px 1px 0",
               }} />
             </div>
@@ -735,20 +771,20 @@ export default function CalendarPage() {
         <aside style={{
           width: 280,
           flexShrink: 0,
-          borderLeft: "1px solid var(--border)",
+          borderLeft: "1px solid var(--line-separator)",
           display: "flex",
           flexDirection: "column",
           overflowY: "auto",
-          padding: "20px 16px",
+          padding: "var(--space-5) var(--space-4)",
           gap: 0,
         }} className="cal-right-rail">
 
           {/* Upcoming */}
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: "var(--space-5)" }}>
             <div style={sectionLabel}>upcoming</div>
-            <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 1 }}>
+            <div style={{ marginTop: "var(--space-2)", display: "flex", flexDirection: "column", gap: 1 }}>
               {upcomingEvents.length === 0 ? (
-                <div style={{ fontSize: 12, color: "var(--text-faint)", padding: "8px 0" }}>nothing upcoming</div>
+                <EmptyState title="nothing upcoming." size="sm" align="left" />
               ) : (
                 upcomingEvents.map(ev => {
                   const cfg      = TYPE_CONFIG[ev.type] ?? TYPE_CONFIG.gcal;
@@ -760,6 +796,7 @@ export default function CalendarPage() {
                     ? ""
                     : ` · ${new Date(ev.start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/Detroit" })} ET`;
                   const isActive = selected?.id === ev.id;
+                  const evRgb    = typeRgb(ev.type);
                   return (
                     <button
                       key={ev.id}
@@ -767,23 +804,23 @@ export default function CalendarPage() {
                       style={{
                         display: "flex",
                         alignItems: "flex-start",
-                        gap: 10,
-                        padding: "8px 10px",
-                        borderRadius: 7,
+                        gap: "var(--space-2)",
+                        padding: "var(--space-2) var(--space-2)",
+                        borderRadius: "var(--radius-sm)",
                         border: "1px solid transparent",
-                        background: isActive ? `rgba(${hexToRgb(cfg.color)},0.08)` : "transparent",
-                        borderColor: isActive ? `${cfg.color}30` : "transparent",
+                        background: isActive ? `rgba(${evRgb},0.08)` : "transparent",
+                        borderColor: isActive ? `rgba(${evRgb},0.19)` : "transparent",
                         cursor: "pointer",
                         textAlign: "left",
                         width: "100%",
                         transition: "background 0.1s",
                       }}
                     >
-                      <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{cfg.icon}</span>
+                      <span style={{ fontSize: "var(--fs-small)", flexShrink: 0, marginTop: 1 }}>{cfg.icon}</span>
                       <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ fontSize: 11.5, fontWeight: 500, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.title}</div>
-                        <div style={{ fontSize: 10.5, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", marginTop: 2 }}>{dateLabel}{timeLabel}</div>
-                        {relTime && <div style={{ fontSize: 9.5, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", marginTop: 1, opacity: 0.7 }}>{relTime}</div>}
+                        <div style={{ fontSize: "var(--fs-xs)", fontWeight: 500, color: "var(--text-active)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.title}</div>
+                        <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-faint)", fontFamily: "var(--font-mono)", marginTop: 2 }}>{dateLabel}{timeLabel}</div>
+                        {relTime && <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-faint)", fontFamily: "var(--font-mono)", marginTop: 1, opacity: 0.7 }}>{relTime}</div>}
                       </div>
                     </button>
                   );
@@ -792,7 +829,7 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          <div style={{ height: 1, background: "var(--border)", marginBottom: 20 }} />
+          <div style={{ height: 1, background: "var(--line-separator)", marginBottom: "var(--space-5)" }} />
 
           {/* Selected event detail */}
           <div style={{ flex: 1 }}>
@@ -800,9 +837,7 @@ export default function CalendarPage() {
             {selected ? (
               <EventDetail event={selected} onClose={() => setSelected(null)} />
             ) : (
-              <div style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 10, lineHeight: 1.6 }}>
-                select an event to see details
-              </div>
+              <EmptyState title="select an event." size="sm" align="left" />
             )}
           </div>
         </aside>
@@ -816,7 +851,7 @@ export default function CalendarPage() {
         <div
           style={{
             position: "fixed", inset: 0, zIndex: 200,
-            background: "rgba(7,8,11,0.7)",
+            background: "rgba(12,14,18,0.70)",
             transition: "background 0.2s",
           }}
           onClick={() => { setMobileSheet(null); if (mobileSheet === "event") setSelected(null); }}
@@ -824,28 +859,31 @@ export default function CalendarPage() {
           <div
             style={{
               position: "absolute", bottom: 0, left: 0, right: 0,
-              background: "var(--panel)",
-              borderTop: "1px solid var(--border-strong)",
-              borderRadius: "16px 16px 0 0",
+              background: "var(--glass-t2-bg)",
+              backdropFilter: "blur(var(--glass-t2-blur))",
+              WebkitBackdropFilter: "blur(var(--glass-t2-blur))",
+              borderTop: "1px solid var(--glass-t2-border)",
+              borderRadius: "var(--radius-panel) var(--radius-panel) 0 0",
               maxHeight: mobileSheet === "event" ? "60vh" : "85vh",
               overflowY: "auto",
-              padding: "20px 20px 40px",
+              padding: "var(--space-5) var(--space-5) var(--space-10)",
               transform: "translateY(0)",
-              transition: "transform 250ms cubic-bezier(0.32, 0.72, 0, 1)",
+              transition: "transform 250ms var(--ease-out-soft)",
             }}
             onClick={e => e.stopPropagation()}
           >
             {/* Sheet handle */}
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: "var(--border-strong)", margin: "0 auto 20px" }} />
+            <div style={{ width: 36, height: 4, borderRadius: "var(--radius-pill)", background: "var(--glass-t2-border)", margin: "0 auto var(--space-5)" }} />
 
             {mobileSheet === "filter" && (
               <>
-                <div style={{ fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)", fontWeight: 700, fontSize: 16, marginBottom: 20 }}>Filters</div>
-                <div style={{ marginBottom: 16 }}>
+                <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "var(--fs-h3)", marginBottom: "var(--space-5)", color: "var(--text-active)" }}>Filters</div>
+                <div style={{ marginBottom: "var(--space-4)" }}>
                   <div style={sectionLabel}>Event types</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
                     {(Object.entries(TYPE_CONFIG) as [EventType, TypeConfig][]).map(([type, cfg]) => {
-                      const checked = filterTypes.has(type);
+                      const checked  = filterTypes.has(type);
+                      const tRgb     = typeRgb(type as EventType);
                       return (
                         <button
                           key={type}
@@ -858,11 +896,11 @@ export default function CalendarPage() {
                           style={{
                             display: "flex", alignItems: "center", gap: 6,
                             padding: "6px 12px",
-                            borderRadius: 20,
-                            border: `1px solid ${cfg.color}${checked ? "" : "40"}`,
-                            background: checked ? `rgba(${hexToRgb(cfg.color)},0.15)` : "transparent",
+                            borderRadius: "var(--radius-pill)",
+                            border: checked ? `1px solid rgba(${tRgb},0.5)` : `1px solid rgba(${tRgb},0.25)`,
+                            background: checked ? `rgba(${tRgb},0.15)` : "transparent",
                             color: checked ? cfg.color : "var(--text-faint)",
-                            fontSize: 12,
+                            fontSize: "var(--fs-xs)",
                             cursor: "pointer",
                           }}
                         >
@@ -877,8 +915,9 @@ export default function CalendarPage() {
                     <div style={sectionLabel}>Accounts</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
                       {accounts.map(email => {
-                        const color   = accountColor(email);
-                        const checked = filterAccounts.has("all") || filterAccounts.has(email);
+                        const color    = accountColor(email);
+                        const colorHex = accountColorHex(email);
+                        const checked  = filterAccounts.has("all") || filterAccounts.has(email);
                         return (
                           <button
                             key={email}
@@ -890,19 +929,19 @@ export default function CalendarPage() {
                               return next;
                             })}
                             style={{
-                              display: "flex", alignItems: "center", gap: 8,
-                              padding: "8px 12px",
-                              borderRadius: 8,
-                              border: `1px solid ${checked ? color : "var(--border-strong)"}`,
-                              background: checked ? `rgba(${hexToRgb(color)},0.1)` : "transparent",
-                              color: "var(--text-dim)",
-                              fontSize: 12,
+                              display: "flex", alignItems: "center", gap: "var(--space-2)",
+                              padding: "var(--space-2) var(--space-3)",
+                              borderRadius: "var(--radius-sm)",
+                              border: checked ? `1px solid rgba(${hexToRgb(colorHex)},0.4)` : "1px solid var(--glass-t1-border)",
+                              background: checked ? `rgba(${hexToRgb(colorHex)},0.1)` : "transparent",
+                              color: "var(--text-main)",
+                              fontSize: "var(--fs-xs)",
                               cursor: "pointer",
                               textAlign: "left",
                             }}
                           >
                             <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
-                            <span style={{ fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", fontSize: 11 }}>{email}</span>
+                            <span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-mono)" }}>{email}</span>
                           </button>
                         );
                       })}
@@ -919,15 +958,15 @@ export default function CalendarPage() {
               <div style={{ color: "var(--text-faint)", fontSize: 13 }}>No event selected</div>
             )}
             {mobileSheet === "fab" && (
-              <div style={{ textAlign: "center", padding: "20px 0 10px" }}>
+              <div style={{ textAlign: "center", padding: "var(--space-5) 0 var(--space-3)" }}>
                 <div style={{
-                  fontSize: 32, marginBottom: 12,
+                  fontSize: "var(--fs-h1)", marginBottom: "var(--space-3)",
                 }}>📅</div>
                 <div style={{
-                  fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-                  fontWeight: 700, fontSize: 18, color: "var(--text)", marginBottom: 8,
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700, fontSize: "var(--fs-h3)", color: "var(--text-active)", marginBottom: "var(--space-2)",
                 }}>Event creation coming soon</div>
-                <div style={{ fontSize: 13, color: "var(--text-faint)", lineHeight: 1.6, marginBottom: 24 }}>
+                <div style={{ fontSize: "var(--fs-small)", color: "var(--text-faint)", lineHeight: 1.6, marginBottom: "var(--space-6)" }}>
                   Natural language event creation is on the roadmap.<br />
                   Use Google Calendar to create events for now.
                 </div>
@@ -937,9 +976,9 @@ export default function CalendarPage() {
                   rel="noopener noreferrer"
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 6,
-                    background: "var(--accent)", color: "#fff",
-                    padding: "10px 20px", borderRadius: 8,
-                    fontSize: 13, fontWeight: 600, textDecoration: "none",
+                    background: "var(--accent)", color: "var(--accent-text-on)",
+                    padding: "10px 20px", borderRadius: "var(--radius-sm)",
+                    fontSize: "var(--fs-small)", fontWeight: 600, textDecoration: "none",
                   }}
                   onClick={() => setMobileSheet(null)}
                 >
@@ -987,20 +1026,6 @@ export default function CalendarPage() {
         .cal-agenda-list::-webkit-scrollbar-track { background: transparent; }
         .cal-agenda-list::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 3px; }
 
-        /* Skeleton shimmer — Deep Midnight white-tone */
-        @keyframes shimmer {
-          0%   { background-position: -400px 0; }
-          100% { background-position: 400px 0; }
-        }
-        .skeleton {
-          background: linear-gradient(90deg,
-            rgba(255,255,255,0.04) 25%,
-            rgba(255,255,255,0.08) 50%,
-            rgba(255,255,255,0.04) 75%);
-          background-size: 800px 100%;
-          animation: shimmer 1.5s infinite;
-          border-radius: 4px;
-        }
 
         /* Deep Midnight glass rails */
         .cal-left-rail {
@@ -1052,15 +1077,15 @@ function MobileFAB({ onTap }: { onTap: () => void }) {
         height: 56,
         borderRadius: "50%",
         background: "var(--accent)",
-        color: "#fff",
+        color: "var(--accent-text-on)",
         border: "none",
         cursor: "pointer",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: 28,
+        fontSize: "var(--fs-h2)",
         fontWeight: 300,
-        boxShadow: "0 4px 16px rgba(255,71,19,0.4), 0 2px 4px rgba(0,0,0,0.3)",
+        boxShadow: "var(--shadow-accent), var(--shadow-sm)",
         zIndex: 150,
         transition: "transform 0.15s, box-shadow 0.15s",
         lineHeight: 1,
@@ -1177,7 +1202,7 @@ function MobileDayTickerView({
           flexShrink: 0,
           scrollSnapType: "x mandatory",
           WebkitOverflowScrolling: "touch",
-          borderBottom: "1px solid var(--border)",
+          borderBottom: "1px solid var(--line-separator)",
           scrollbarWidth: "none",
         }}
         className="cal-ticker-strip"
@@ -1195,10 +1220,10 @@ function MobileDayTickerView({
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 3,
+                gap: "var(--space-1)",
                 minWidth: 48,
-                padding: "8px 4px",
-                borderRadius: 10,
+                padding: "var(--space-2) var(--space-1)",
+                borderRadius: "var(--radius-sm)",
                 border: "none",
                 background: isActive ? "var(--accent)" : "transparent",
                 cursor: "pointer",
@@ -1208,18 +1233,18 @@ function MobileDayTickerView({
               }}
             >
               <span style={{
-                fontSize: 9,
+                fontSize: "var(--fs-mono)",
                 fontWeight: 600,
                 letterSpacing: "0.06em",
                 textTransform: "uppercase",
-                color: isActive ? "rgba(255,255,255,0.8)" : "var(--text-faint)",
+                color: isActive ? "var(--text-active)" : "var(--text-faint)",
               }}>
                 {dateStr}
               </span>
               <span style={{
-                fontSize: 17,
+                fontSize: "var(--fs-body)",
                 fontWeight: isToday || isActive ? 700 : 400,
-                color: isActive ? "#fff" : isToday ? "var(--accent)" : "var(--text)",
+                color: isActive ? "var(--text-active)" : isToday ? "var(--accent)" : "var(--text-main)",
                 lineHeight: 1,
               }}>
                 {day.getDate()}
@@ -1230,7 +1255,7 @@ function MobileDayTickerView({
                 height: 5,
                 borderRadius: "50%",
                 background: hasEvents
-                  ? (isActive ? "rgba(255,255,255,0.8)" : "var(--accent)")
+                  ? (isActive ? "var(--text-active)" : "var(--accent)")
                   : "transparent",
                 transition: "background 0.15s",
               }} />
@@ -1261,12 +1286,12 @@ function MobileDayTickerView({
                 style={{
                   position: "sticky",
                   top: 0,
-                  background: "var(--bg)",
-                  borderBottom: "1px solid var(--border)",
-                  padding: "8px 16px 6px",
+                  background: "var(--bg-base)",
+                  borderBottom: "1px solid var(--line-separator)",
+                  padding: "var(--space-2) var(--space-4) var(--space-1)",
                   display: "flex",
                   alignItems: "center",
-                  gap: 10,
+                  gap: "var(--space-2)",
                   zIndex: 10,
                 }}
               >
@@ -1281,18 +1306,18 @@ function MobileDayTickerView({
                   flexShrink: 0,
                 }}>
                   <span style={{
-                    fontSize: 13,
+                    fontSize: "var(--fs-small)",
                     fontWeight: 700,
-                    color: isToday ? "#fff" : "var(--text-dim)",
+                    color: isToday ? "var(--accent-text-on)" : "var(--text-main)",
                   }}>
                     {day.getDate()}
                   </span>
                 </div>
                 <span style={{
-                  fontSize: 12,
+                  fontSize: "var(--fs-xs)",
                   fontWeight: isToday ? 600 : 400,
-                  color: isToday ? "var(--accent)" : "var(--text-dim)",
-                  fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+                  color: isToday ? "var(--accent)" : "var(--text-main)",
+                  fontFamily: "var(--font-display)",
                 }}>
                   {day.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
                 </span>
@@ -1300,20 +1325,12 @@ function MobileDayTickerView({
 
               {/* Events for this day */}
               {dayEvts.length === 0 ? (
-                <div style={{
-                  padding: "12px 16px",
-                  fontSize: 12,
-                  color: "var(--text-faint)",
-                  fontStyle: "italic",
-                  opacity: 0.5,
-                }}>
-                  No events
-                </div>
+                <EmptyState title="no events." size="sm" />
               ) : (
                 <div style={{ padding: "6px 12px 8px" }}>
                   {dayEvts.map(ev => {
                     const cfg       = TYPE_CONFIG[ev.type] ?? TYPE_CONFIG.gcal;
-                    const rgb       = hexToRgb(cfg.color);
+                    const rgb       = typeRgb(ev.type);
                     const isAllDay  = ev.all_day || /^\d{4}-\d{2}-\d{2}$/.test(ev.start);
                     const timeLabel = isAllDay
                       ? "all day"
@@ -1334,9 +1351,9 @@ function MobileDayTickerView({
                           background: isSelected ? `rgba(${rgb},0.15)` : `rgba(${rgb},0.08)`,
                           border: "none",
                           borderLeft: `3px solid ${cfg.color}`,
-                          borderRadius: "0 8px 8px 0",
-                          marginBottom: 6,
-                          padding: "10px 12px",
+                          borderRadius: "0 var(--radius-sm) var(--radius-sm) 0",
+                          marginBottom: "var(--space-1)",
+                          padding: "var(--space-2) var(--space-3)",
                           cursor: "pointer",
                           textAlign: "left",
                           boxShadow: `inset 0 0 0 1px rgba(${rgb},0.20)`,
@@ -1346,36 +1363,36 @@ function MobileDayTickerView({
                       >
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{
-                            fontSize: 13,
+                            fontSize: "var(--fs-small)",
                             fontWeight: 600,
-                            color: "var(--text)",
+                            color: "var(--text-active)",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
-                            marginBottom: 2,
+                            marginBottom: "var(--space-1)",
                           }}>
                             {ev.title}
                           </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-1)" }}>
                             <span style={{
-                              fontSize: 11,
+                              fontSize: "var(--fs-mono)",
                               color: cfg.color,
-                              fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+                              fontFamily: "var(--font-mono)",
                               fontWeight: 500,
                             }}>
                               {timeLabel}
                             </span>
                             {ev.location && (
                               <>
-                                <span style={{ fontSize: 10, color: "var(--text-faint)" }}>·</span>
-                                <span style={{ fontSize: 11, color: "var(--text-faint)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                <span style={{ fontSize: "var(--fs-mono)", color: "var(--text-faint)" }}>·</span>
+                                <span style={{ fontSize: "var(--fs-mono)", color: "var(--text-faint)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                   📍 {ev.location}
                                 </span>
                               </>
                             )}
                           </div>
                         </div>
-                        <span style={{ fontSize: 16, flexShrink: 0, marginLeft: 8, alignSelf: "center", opacity: 0.5 }}>›</span>
+                        <span style={{ fontSize: "var(--fs-body)", flexShrink: 0, marginLeft: "var(--space-2)", alignSelf: "center", opacity: 0.5 }}>›</span>
                       </button>
                     );
                   })}
@@ -1393,7 +1410,7 @@ function MobileDayTickerView({
 
 function MobileEventDetail({ event, onClose }: { event: CalEvent; onClose: () => void }) {
   const cfg      = TYPE_CONFIG[event.type] ?? TYPE_CONFIG.gcal;
-  const rgb      = hexToRgb(cfg.color);
+  const rgb      = typeRgb(event.type);
   const isAllDay = event.all_day || /^\d{4}-\d{2}-\d{2}$/.test(event.start);
 
   const startDate = isoToDate(event.start);
@@ -1432,15 +1449,15 @@ function MobileEventDetail({ event, onClose }: { event: CalEvent; onClose: () =>
         <div style={{ width: 4, height: 40, borderRadius: 2, background: cfg.color, flexShrink: 0 }} />
         <div>
           <div style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+            fontSize: "var(--fs-mono)", fontWeight: 700, letterSpacing: "var(--ls-eyebrow)", textTransform: "uppercase",
             color: cfg.color, marginBottom: 2,
           }}>
             {cfg.icon} {cfg.label}
           </div>
           <div style={{
-            fontSize: 17, fontWeight: 700, letterSpacing: "-0.02em",
-            color: "var(--text)", lineHeight: 1.2,
-            fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+            fontSize: "var(--fs-h3)", fontWeight: 700, letterSpacing: "var(--ls-heading)",
+            color: "var(--text-active)", lineHeight: "var(--lh-tight)",
+            fontFamily: "var(--font-display)",
           }}>
             {event.title}
           </div>
@@ -1449,15 +1466,15 @@ function MobileEventDetail({ event, onClose }: { event: CalEvent; onClose: () =>
 
       {/* Date + time */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 8, marginBottom: 10,
-        padding: "8px 12px", background: "var(--panel-elev)", borderRadius: 8,
+        display: "flex", alignItems: "center", gap: "var(--space-2)", marginBottom: "var(--space-2)",
+        padding: "var(--space-2) var(--space-3)", background: "var(--glass-t1-bg)", borderRadius: "var(--radius-sm)",
       }}>
-        <span style={{ fontSize: 18 }}>📅</span>
+        <span style={{ fontSize: "var(--fs-h3)" }}>📅</span>
         <div>
-          <div style={{ fontSize: 12, color: "var(--text)", fontWeight: 500 }}>{dateStr}</div>
+          <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-active)", fontWeight: 500 }}>{dateStr}</div>
           <div style={{
-            fontSize: 11, color: cfg.color,
-            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+            fontSize: "var(--fs-mono)", color: cfg.color,
+            fontFamily: "var(--font-mono)",
           }}>{timeRange}</div>
         </div>
       </div>
@@ -1465,11 +1482,11 @@ function MobileEventDetail({ event, onClose }: { event: CalEvent; onClose: () =>
       {/* Location */}
       {event.location && (
         <div style={{
-          display: "flex", alignItems: "center", gap: 8, marginBottom: 10,
-          padding: "8px 12px", background: "var(--panel-elev)", borderRadius: 8,
+          display: "flex", alignItems: "center", gap: "var(--space-2)", marginBottom: "var(--space-2)",
+          padding: "var(--space-2) var(--space-3)", background: "var(--glass-t1-bg)", borderRadius: "var(--radius-sm)",
         }}>
-          <span style={{ fontSize: 18 }}>📍</span>
-          <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.4 }}>{event.location}</div>
+          <span style={{ fontSize: "var(--fs-h3)" }}>📍</span>
+          <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-main)", lineHeight: "var(--lh-body)" }}>{event.location}</div>
         </div>
       )}
 
@@ -1477,7 +1494,7 @@ function MobileEventDetail({ event, onClose }: { event: CalEvent; onClose: () =>
       {event.organizer?.email && (
         <div style={{ marginBottom: 10 }}>
           <div style={{ ...detailLabel, marginBottom: 4 }}>hosted by</div>
-          <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
+          <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-main)" }}>
             {event.organizer.name ?? event.organizer.email}
           </div>
         </div>
@@ -1491,7 +1508,7 @@ function MobileEventDetail({ event, onClose }: { event: CalEvent; onClose: () =>
             {event.attendees.slice(0, 5).map((a, i) => {
               const rs    = a.response_status ?? "needsAction";
               const icon  = RESPONSE_ICONS[rs] ?? "⏳";
-              const color = RESPONSE_COLORS[rs] ?? "#6b7280";
+              const color = RESPONSE_COLORS[rs] ?? "var(--text-muted)";
               return (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{
@@ -1503,12 +1520,12 @@ function MobileEventDetail({ event, onClose }: { event: CalEvent; onClose: () =>
                     {(a.name ?? a.email)[0]?.toUpperCase() ?? "?"}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-active)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {a.name ?? a.email}
                     </div>
-                    {a.name && <div style={{ fontSize: 10, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)" }}>{a.email}</div>}
+                    {a.name && <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-faint)", fontFamily: "var(--font-mono)" }}>{a.email}</div>}
                   </div>
-                  <span style={{ fontSize: 12, color, flexShrink: 0 }}>{icon}</span>
+                  <span style={{ fontSize: "var(--fs-xs)", color, flexShrink: 0 }}>{icon}</span>
                 </div>
               );
             })}
@@ -1528,10 +1545,10 @@ function MobileEventDetail({ event, onClose }: { event: CalEvent; onClose: () =>
             rel="noopener noreferrer"
             style={{
               flex: 1,
-              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5,
-              background: cfg.color, color: "#fff",
-              padding: "10px 16px", borderRadius: 8,
-              fontSize: 13, fontWeight: 600, textDecoration: "none",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "var(--space-1)",
+              background: cfg.color, color: "var(--bg-base)",
+              padding: "var(--space-2) var(--space-4)", borderRadius: "var(--radius-sm)",
+              fontSize: "var(--fs-small)", fontWeight: 600, textDecoration: "none",
               minHeight: 44,
             }}
           >
@@ -1541,9 +1558,9 @@ function MobileEventDetail({ event, onClose }: { event: CalEvent; onClose: () =>
         <button
           onClick={onClose}
           style={{
-            background: "var(--panel-elev)", border: "1px solid var(--border-strong)",
-            borderRadius: 8, padding: "10px 16px",
-            color: "var(--text-faint)", fontSize: 13, cursor: "pointer",
+            background: "var(--glass-t1-bg)", border: "1px solid var(--glass-t1-border)",
+            borderRadius: "var(--radius-sm)", padding: "var(--space-2) var(--space-4)",
+            color: "var(--text-faint)", fontSize: "var(--fs-small)", cursor: "pointer",
             minHeight: 44, minWidth: 80,
           }}
         >
@@ -1559,17 +1576,17 @@ function MobileEventDetail({ event, onClose }: { event: CalEvent; onClose: () =>
 function SkeletonLoader({ view }: { view: ViewMode }) {
   if (view === "month") {
     return (
-      <div style={{ padding: 16, display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 1 }}>
+      <div style={{ padding: "var(--space-4)", display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 1 }}>
         {Array.from({ length: 35 }).map((_, i) => (
-          <div key={i} className="skeleton" style={{ height: 90, borderRadius: 6, opacity: 0.4 + (i % 3) * 0.15 }} />
+          <div key={i} className="arthur-skeleton" style={{ height: 90, borderRadius: "var(--radius-sm)", opacity: 0.4 + (i % 3) * 0.15 }} />
         ))}
       </div>
     );
   }
   return (
-    <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+    <div style={{ padding: "var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="skeleton" style={{ height: 40, width: `${60 + (i * 13) % 35}%`, opacity: 0.3 + (i % 3) * 0.1 }} />
+        <div key={i} className="arthur-skeleton" style={{ height: 40, width: `${60 + (i * 13) % 35}%`, opacity: 0.3 + (i % 3) * 0.1 }} />
       ))}
     </div>
   );
@@ -1597,9 +1614,9 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
       <div style={{
         display: "grid",
         gridTemplateColumns: `48px repeat(${days.length}, 1fr)`,
-        borderBottom: "1px solid var(--border)",
+        borderBottom: "1px solid var(--line-separator)",
         flexShrink: 0,
-        background: "var(--bg)",
+        background: "var(--bg-base)",
       }}>
         <div /> {/* Time gutter spacer */}
         {days.map(day => {
@@ -1609,9 +1626,9 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
             <div
               key={day.toISOString()}
               style={{
-                padding: "8px 6px 4px",
-                borderLeft: "1px solid var(--border)",
-                background: isToday ? "rgba(255,71,19,0.04)" : "transparent",
+                padding: "var(--space-2) var(--space-1) var(--space-1)",
+                borderLeft: "1px solid var(--line-separator)",
+                background: isToday ? "var(--accent-orange-soft)" : "transparent",
               }}
             >
               {/* Day label */}
@@ -1620,9 +1637,9 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", flexShrink: 0 }} />
                 )}
                 <span style={{
-                  fontSize: isWeek ? 10 : 12,
+                  fontSize: isWeek ? "var(--fs-mono)" : "var(--fs-xs)",
                   fontWeight: isToday ? 700 : 400,
-                  color: isToday ? "var(--accent)" : "var(--text-dim)",
+                  color: isToday ? "var(--accent)" : "var(--text-main)",
                   letterSpacing: "0.01em",
                 }}>
                   {isWeek
@@ -1664,16 +1681,16 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
                 gridColumn: `1 / ${days.length + 2}`,
                 display: "grid",
                 gridTemplateColumns: `48px repeat(${days.length}, 1fr)`,
-                borderBottom: "1px solid var(--border)",
+                borderBottom: "1px solid var(--glass-t1-border)",
                 height: 56,
               }}
             >
               <div style={{
                 padding: "2px 8px 0 0",
                 textAlign: "right",
-                fontSize: 10,
+                fontSize: "var(--fs-mono)",
                 color: "var(--text-faint)",
-                fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+                fontFamily: "var(--font-mono)",
                 letterSpacing: "0.02em",
                 lineHeight: 1,
                 userSelect: "none",
@@ -1685,8 +1702,8 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
                 <div
                   key={day.toISOString()}
                   style={{
-                    borderLeft: "1px solid var(--border)",
-                    background: sameDay(day, today) ? "rgba(255,71,19,0.02)" : "transparent",
+                    borderLeft: "1px solid var(--glass-t1-border)",
+                    background: sameDay(day, today) ? "var(--glass-t1-bg)" : "transparent",
                   }}
                 />
               ))}
@@ -1746,7 +1763,7 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
               const topPct   = eventTopPercent(start);
               const heightPct= eventHeightPercent(start, end);
               const cfg      = TYPE_CONFIG[ev.type] ?? TYPE_CONFIG.gcal;
-              const rgb      = hexToRgb(cfg.color);
+              const rgb      = typeRgb(ev.type);
               const isSelected = selectedId === ev.id;
 
               // Skip events outside the visible range
@@ -1786,9 +1803,9 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
                   }}
                 >
                   <div style={{
-                    fontSize: 10,
+                    fontSize: "var(--fs-mono)",
                     color: cfg.color,
-                    fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+                    fontFamily: "var(--font-mono)",
                     lineHeight: 1.2,
                     marginBottom: 1,
                     overflow: "hidden",
@@ -1798,8 +1815,8 @@ const TimelineGrid = forwardRef<HTMLDivElement, {
                     {formatTime(ev.start, false)}
                   </div>
                   <div style={{
-                    fontSize: 10.5,
-                    color: "var(--text)",
+                    fontSize: "var(--fs-mono)",
+                    color: "var(--text-active)",
                     fontWeight: 500,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -1845,8 +1862,8 @@ function CurrentTimeLine({ days, today }: { days: Date[]; today: Date }) {
       display: "flex",
       alignItems: "center",
     }}>
-      <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#ef4444", flexShrink: 0, marginLeft: -5 }} />
-      <div style={{ flex: 1, height: 2, background: "#ef4444" }} />
+      <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--tint-red)", flexShrink: 0, marginLeft: -5 }} />
+      <div style={{ flex: 1, height: 2, background: "var(--tint-red)" }} />
     </div>
   );
 }
@@ -1868,32 +1885,32 @@ function MonthGrid({ days, anchor, today, eventsForDay, onSelect, selectedId }: 
       <div style={{
         display: "grid",
         gridTemplateColumns: "repeat(7, 1fr)",
-        borderBottom: "1px solid var(--border)",
+        borderBottom: "1px solid var(--line-separator)",
         flexShrink: 0,
       }}>
         {HEADERS.map(h => (
           <div key={h} style={{
-            padding: "8px 0",
+            padding: "var(--space-2) 0",
             textAlign: "center",
-            fontSize: 9.5,
+            fontSize: "var(--fs-mono)",
             fontWeight: 700,
             color: "var(--text-faint)",
-            letterSpacing: "0.08em",
+            letterSpacing: "var(--ls-eyebrow)",
           }}>{h}</div>
         ))}
       </div>
       {/* Grid — scrollable */}
       <div style={{ flex: 1, overflowY: "auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 1, background: "var(--border)", padding: 1 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 1, background: "var(--line-separator)", padding: 1 }}>
           {days.map(day => {
             const isToday  = sameDay(day, today);
             const inMonth  = day.getMonth() === anchor.getMonth();
             const dayEvts  = eventsForDay(day);
             return (
               <div key={day.toISOString()} style={{
-                background: "var(--bg)",
+                background: "var(--bg-base)",
                 minHeight: 100,
-                padding: 6,
+                padding: "var(--space-1)",
                 opacity: inMonth ? 1 : 0.35,
                 position: "relative",
               }}>
@@ -1902,7 +1919,7 @@ function MonthGrid({ days, anchor, today, eventsForDay, onSelect, selectedId }: 
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: 4,
+                  marginBottom: "var(--space-1)",
                 }}>
                   <div style={{
                     width: 22,
@@ -1913,14 +1930,14 @@ function MonthGrid({ days, anchor, today, eventsForDay, onSelect, selectedId }: 
                     justifyContent: "center",
                     background: isToday ? "var(--accent)" : "transparent",
                     border: isToday ? "none" : "1px solid transparent",
-                    color: isToday ? "#fff" : "var(--text-dim)",
-                    fontSize: 11,
+                    color: isToday ? "var(--accent-text-on)" : "var(--text-main)",
+                    fontSize: "var(--fs-mono)",
                     fontWeight: isToday ? 700 : 400,
                   }}>
                     {day.getDate()}
                   </div>
                   {dayEvts.length > 3 && (
-                    <div style={{ fontSize: 9, color: "var(--text-faint)" }}>+{dayEvts.length - 3}</div>
+                    <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-faint)" }}>+{dayEvts.length - 3}</div>
                   )}
                 </div>
                 {/* Event chips */}
@@ -1955,7 +1972,7 @@ function EventChipSmall({ event, cfg, onClick, selected }: {
   onClick: () => void;
   selected?: boolean;
 }) {
-  const rgb = hexToRgb(cfg.color);
+  const rgb = typeRgb(event.type);
   const timeStr = formatTime(event.start, event.all_day);
   return (
     <button
@@ -1968,11 +1985,11 @@ function EventChipSmall({ event, cfg, onClick, selected }: {
         background: `rgba(${rgb},0.15)`,
         border: selected ? `1px solid ${cfg.color}50` : "none",
         borderLeft: `3px solid ${cfg.color}`,
-        borderRadius: "0 3px 3px 0",
+        borderRadius: "0 var(--radius-sm) var(--radius-sm) 0",
         padding: "2px 5px",
         cursor: "pointer",
-        color: "var(--text)",
-        fontSize: 10,
+        color: "var(--text-active)",
+        fontSize: "var(--fs-mono)",
         fontWeight: 500,
         overflow: "hidden",
         textOverflow: "ellipsis",
@@ -1981,7 +1998,7 @@ function EventChipSmall({ event, cfg, onClick, selected }: {
       }}
       title={event.title}
     >
-      {timeStr && <span style={{ fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", color: cfg.color, opacity: 0.9, marginRight: 3, fontSize: 9 }}>{timeStr}</span>}
+      {timeStr && <span style={{ fontFamily: "var(--font-mono)", color: cfg.color, opacity: 0.9, marginRight: 3, fontSize: "var(--fs-mono)" }}>{timeStr}</span>}
       {event.title}
     </button>
   );
@@ -1997,15 +2014,15 @@ const RESPONSE_ICONS: Record<string, string> = {
 };
 
 const RESPONSE_COLORS: Record<string, string> = {
-  accepted:    "#22c55e",
-  declined:    "#ef4444",
-  tentative:   "#f59e0b",
-  needsAction: "#6b7280",
+  accepted:    "var(--tint-emerald)",
+  declined:    "var(--tint-red)",
+  tentative:   "var(--tint-amber)",
+  needsAction: "var(--text-muted)",
 };
 
 function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void }) {
   const cfg = TYPE_CONFIG[event.type] ?? TYPE_CONFIG.gcal;
-  const rgb = hexToRgb(cfg.color);
+  const rgb = typeRgb(event.type);
 
   const [addingAttendee,  setAddingAttendee]  = useState(false);
   const [attendeeEmail,   setAttendeeEmail]   = useState("");
@@ -2088,69 +2105,69 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
   const isGcal  = event.source === "google";
 
   return (
-    <div style={{ marginTop: 12 }}>
+    <div style={{ marginTop: "var(--space-3)" }}>
       {/* Type badge */}
       <div style={{
-        display: "inline-flex", alignItems: "center", gap: 5,
-        padding: "3px 10px", borderRadius: 20,
-        background: `rgba(${rgb},0.12)`, border: `1px solid ${cfg.color}30`,
-        fontSize: 10.5, fontWeight: 700, color: cfg.color,
-        marginBottom: 10, letterSpacing: "0.04em", textTransform: "uppercase",
+        display: "inline-flex", alignItems: "center", gap: "var(--space-1)",
+        padding: "3px var(--space-2)", borderRadius: "var(--radius-pill)",
+        background: `rgba(${rgb},0.12)`, border: `1px solid rgba(${rgb},0.19)`,
+        fontSize: "var(--fs-mono)", fontWeight: 700, color: cfg.color,
+        marginBottom: "var(--space-2)", letterSpacing: "var(--ls-eyebrow)", textTransform: "uppercase",
       }}>
         {cfg.icon} {cfg.label}
       </div>
 
       {/* Title */}
       <div style={{
-        fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em",
-        color: "var(--text)", lineHeight: 1.3, marginBottom: 8,
-        fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+        fontSize: "var(--fs-body-lg)", fontWeight: 700, letterSpacing: "var(--ls-heading)",
+        color: "var(--text-active)", lineHeight: "var(--lh-tight)", marginBottom: "var(--space-2)",
+        fontFamily: "var(--font-display)",
       }}>
         {event.title}
       </div>
 
       {/* Date + time */}
-      <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 6, lineHeight: 1.5 }}>
+      <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-main)", marginBottom: "var(--space-1)", lineHeight: "var(--lh-body)" }}>
         {dateStr}
         {timeRange ? (
-          <><br /><span style={{ fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", fontSize: 11 }}>{timeRange}</span></>
+          <><br /><span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-mono)" }}>{timeRange}</span></>
         ) : ""}
       </div>
 
       {/* Location */}
       {event.location && (
-        <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 6, display: "flex", gap: 5, alignItems: "flex-start" }}>
+        <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-main)", marginBottom: "var(--space-1)", display: "flex", gap: "var(--space-1)", alignItems: "flex-start" }}>
           <span>📍</span><span>{event.location}</span>
         </div>
       )}
 
       {/* Account */}
       {event.account_email && (
-        <div style={{ fontSize: 10.5, color: "var(--text-faint)", marginBottom: 8, fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)" }}>
+        <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-faint)", marginBottom: "var(--space-2)", fontFamily: "var(--font-mono)" }}>
           {event.account_email}
         </div>
       )}
 
       {/* Organizer (gcal only) */}
       {isGcal && event.organizer?.email && (
-        <div style={{ marginBottom: 10 }}>
+        <div style={{ marginBottom: "var(--space-2)" }}>
           <div style={detailLabel}>host</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-1)", marginTop: "var(--space-1)" }}>
             <div style={{
               width: 22, height: 22, borderRadius: "50%",
               background: `rgba(${rgb},0.2)`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 10, fontWeight: 700, color: cfg.color, flexShrink: 0,
+              fontSize: "var(--fs-mono)", fontWeight: 700, color: cfg.color, flexShrink: 0,
             }}>
               {(event.organizer.name ?? event.organizer.email)[0].toUpperCase()}
             </div>
             <div style={{ minWidth: 0 }}>
               {event.organizer.name && (
-                <div style={{ fontSize: 11.5, fontWeight: 500, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div style={{ fontSize: "var(--fs-xs)", fontWeight: 500, color: "var(--text-active)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {event.organizer.name}
                 </div>
               )}
-              <div style={{ fontSize: 10.5, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-faint)", fontFamily: "var(--font-mono)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {event.organizer.email}
               </div>
             </div>
@@ -2160,7 +2177,7 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
 
       {/* Attendees (gcal only) */}
       {isGcal && (localAttendees.length > 0 || addingAttendee) && (
-        <div style={{ marginBottom: 10 }}>
+        <div style={{ marginBottom: "var(--space-2)" }}>
           <div style={{ ...detailLabel, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span>attendees ({localAttendees.length})</span>
             {!addingAttendee && (
@@ -2168,39 +2185,39 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
                 onClick={() => setAddingAttendee(true)}
                 style={{
                   background: "transparent", border: "none", cursor: "pointer",
-                  color: "var(--accent)", fontSize: 10, padding: 0, letterSpacing: "0.02em",
+                  color: "var(--accent)", fontSize: "var(--fs-mono)", padding: 0, letterSpacing: "0.02em",
                 }}
               >
                 + add
               </button>
             )}
           </div>
-          <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ marginTop: "var(--space-1)", display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
             {localAttendees.map((a, i) => {
               const rs    = a.response_status ?? "needsAction";
               const icon  = RESPONSE_ICONS[rs] ?? "⏳";
-              const color = RESPONSE_COLORS[rs] ?? "#6b7280";
+              const color = RESPONSE_COLORS[rs] ?? "var(--text-muted)";
               return (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "var(--space-1)" }}>
                   <div style={{
                     width: 20, height: 20, borderRadius: "50%",
-                    background: "var(--panel-elev)",
+                    background: "var(--glass-t1-bg)",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 9, fontWeight: 700, color: "var(--text-dim)", flexShrink: 0,
+                    fontSize: "var(--fs-mono)", fontWeight: 700, color: "var(--text-main)", flexShrink: 0,
                   }}>
                     {(a.name ?? a.email)[0]?.toUpperCase() ?? "?"}
                   </div>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     {a.name && (
-                      <div style={{ fontSize: 11, fontWeight: 500, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <div style={{ fontSize: "var(--fs-mono)", fontWeight: 500, color: "var(--text-active)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {a.name}
                       </div>
                     )}
-                    <div style={{ fontSize: 10, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-faint)", fontFamily: "var(--font-mono)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {a.email}
                     </div>
                   </div>
-                  <span style={{ fontSize: 10, color, flexShrink: 0 }} title={rs}>{icon}</span>
+                  <span style={{ fontSize: "var(--fs-mono)", color, flexShrink: 0 }} title={rs}>{icon}</span>
                 </div>
               );
             })}
@@ -2208,7 +2225,7 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
 
           {/* Add attendee form */}
           {addingAttendee && (
-            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ marginTop: "var(--space-2)", display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
               <input
                 type="email"
                 placeholder="email address"
@@ -2216,9 +2233,9 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
                 onChange={e => setAttendeeEmail(e.target.value)}
                 autoFocus
                 style={{
-                  background: "var(--panel-elev)", border: "1px solid var(--border-strong)",
-                  borderRadius: 6, padding: "6px 10px", color: "var(--text)",
-                  fontSize: 11.5, fontFamily: "inherit", outline: "none",
+                  background: "var(--glass-t1-bg)", border: "1px solid var(--glass-t1-border)",
+                  borderRadius: "var(--radius-sm)", padding: "var(--space-1) var(--space-2)", color: "var(--text-active)",
+                  fontSize: "var(--fs-xs)", fontFamily: "inherit", outline: "none",
                 }}
               />
               <input
@@ -2227,21 +2244,21 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
                 value={attendeeName}
                 onChange={e => setAttendeeName(e.target.value)}
                 style={{
-                  background: "var(--panel-elev)", border: "1px solid var(--border-strong)",
-                  borderRadius: 6, padding: "6px 10px", color: "var(--text)",
-                  fontSize: 11.5, fontFamily: "inherit", outline: "none",
+                  background: "var(--glass-t1-bg)", border: "1px solid var(--glass-t1-border)",
+                  borderRadius: "var(--radius-sm)", padding: "var(--space-1) var(--space-2)", color: "var(--text-active)",
+                  fontSize: "var(--fs-xs)", fontFamily: "inherit", outline: "none",
                 }}
               />
               {attendeeError && (
-                <div style={{ fontSize: 10.5, color: "#ef4444" }}>{attendeeError}</div>
+                <div style={{ fontSize: "var(--fs-xs)", color: "var(--tint-red)" }}>{attendeeError}</div>
               )}
-              <div style={{ display: "flex", gap: 6 }}>
+              <div style={{ display: "flex", gap: "var(--space-1)" }}>
                 <button
                   onClick={sendInvite}
                   disabled={!attendeeEmail.trim() || attendeeSending}
                   style={{
-                    background: "var(--accent)", color: "#fff", border: "none",
-                    borderRadius: 5, padding: "6px 14px", fontSize: 11, fontWeight: 600,
+                    background: "var(--accent)", color: "var(--accent-text-on)", border: "none",
+                    borderRadius: "var(--radius-sm)", padding: "var(--space-1) var(--space-3)", fontSize: "var(--fs-mono)", fontWeight: 600,
                     cursor: "pointer", opacity: attendeeSending ? 0.6 : 1,
                   }}
                 >
@@ -2250,8 +2267,8 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
                 <button
                   onClick={() => { setAddingAttendee(false); setAttendeeError(null); }}
                   style={{
-                    background: "transparent", border: "1px solid var(--border-strong)",
-                    borderRadius: 5, padding: "6px 10px", fontSize: 11,
+                    background: "transparent", border: "1px solid var(--glass-t1-border)",
+                    borderRadius: "var(--radius-sm)", padding: "var(--space-1) var(--space-2)", fontSize: "var(--fs-mono)",
                     color: "var(--text-faint)", cursor: "pointer",
                   }}
                 >
@@ -2268,10 +2285,10 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
         <button
           onClick={() => setAddingAttendee(true)}
           style={{
-            background: "transparent", border: "1px dashed var(--border-strong)",
-            borderRadius: 6, padding: "6px 12px", cursor: "pointer",
-            color: "var(--text-faint)", fontSize: 11, marginBottom: 8,
-            display: "flex", alignItems: "center", gap: 5,
+            background: "transparent", border: "1px dashed var(--glass-t1-border)",
+            borderRadius: "var(--radius-sm)", padding: "var(--space-1) var(--space-3)", cursor: "pointer",
+            color: "var(--text-faint)", fontSize: "var(--fs-mono)", marginBottom: "var(--space-2)",
+            display: "flex", alignItems: "center", gap: "var(--space-1)",
           }}
         >
           + add attendee
@@ -2281,9 +2298,9 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
       {/* Description */}
       {event.description && (
         <div style={{
-          fontSize: 11.5, color: "var(--text-dim)", lineHeight: 1.65,
-          background: "var(--panel-elev)", borderRadius: 6, padding: "8px 10px",
-          marginBottom: 10, borderLeft: `2px solid ${cfg.color}40`,
+          fontSize: "var(--fs-xs)", color: "var(--text-main)", lineHeight: "var(--lh-body)",
+          background: "var(--glass-t1-bg)", borderRadius: "var(--radius-sm)", padding: "var(--space-2) var(--space-2)",
+          marginBottom: "var(--space-2)", borderLeft: `2px solid rgba(${rgb},0.25)`,
           whiteSpace: "pre-wrap", wordBreak: "break-word",
         }}>
           {event.description}
@@ -2292,29 +2309,26 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
 
       {/* Source pill (non-gcal) */}
       {!isGcal && (
-        <div style={{
-          display: "inline-flex", padding: "2px 8px",
-          border: "1px solid var(--border-strong)", borderRadius: 4,
-          fontSize: 9.5, fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-          color: "var(--text-faint)", letterSpacing: "0.08em",
-          textTransform: "uppercase", marginBottom: 12,
-        }}>
-          {event.source}
-        </div>
+        <TokenChip
+          label={event.source}
+          size="xs"
+          color="muted"
+          style={{ marginBottom: "var(--space-3)", textTransform: "uppercase", letterSpacing: "var(--ls-eyebrow)" }}
+        />
       )}
 
       {/* Action buttons */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+      <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap", marginTop: "var(--space-2)" }}>
         {openUrl && (
           <a
             href={openUrl}
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: "inline-flex", alignItems: "center", gap: 5,
-              background: cfg.color, color: "#fff",
-              padding: "7px 14px", borderRadius: 6,
-              fontSize: 11.5, fontWeight: 600, textDecoration: "none",
+              display: "inline-flex", alignItems: "center", gap: "var(--space-1)",
+              background: cfg.color, color: "var(--bg-base)",
+              padding: "var(--space-1) var(--space-3)", borderRadius: "var(--radius-sm)",
+              fontSize: "var(--fs-xs)", fontWeight: 600, textDecoration: "none",
               letterSpacing: "0.01em",
             }}
           >
@@ -2324,9 +2338,9 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
         <button
           onClick={onClose}
           style={{
-            background: "transparent", border: "1px solid var(--border-strong)",
-            borderRadius: 6, padding: "7px 14px",
-            color: "var(--text-faint)", fontSize: 11.5, cursor: "pointer",
+            background: "transparent", border: "1px solid var(--glass-t1-border)",
+            borderRadius: "var(--radius-sm)", padding: "var(--space-1) var(--space-3)",
+            color: "var(--text-faint)", fontSize: "var(--fs-xs)", cursor: "pointer",
           }}
         >
           dismiss
@@ -2336,50 +2350,50 @@ function EventDetail({ event, onClose }: { event: CalEvent; onClose: () => void 
   );
 }
 
-const detailLabel: React.CSSProperties = {
-  fontSize:      9.5,
-  fontWeight:    700,
-  textTransform: "uppercase",
-  letterSpacing: "0.1em",
-  color:         "var(--text-faint)",
-  fontFamily:    "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-};
-
 // ── Shared style objects ───────────────────────────────────────────────────────
 
 const miniNavBtn: React.CSSProperties = {
   background: "transparent",
-  border: "1px solid var(--border)",
-  borderRadius: 4,
+  border: "1px solid var(--glass-t1-border)",
+  borderRadius: "var(--radius-sm)",
   width: 20,
   height: 20,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   cursor: "pointer",
-  color: "var(--text-dim)",
-  fontSize: 12,
+  color: "var(--text-muted)",
+  fontSize: "var(--fs-xs)",
   padding: 0,
   lineHeight: 1,
 };
 
 const toolbarBtn: React.CSSProperties = {
-  background: "var(--panel)",
-  border: "1px solid var(--border-strong)",
-  borderRadius: 6,
-  padding: "6px 12px",
+  background: "var(--glass-t1-bg)",
+  border: "1px solid var(--glass-t1-border)",
+  borderRadius: "var(--radius-sm)",
+  padding: "var(--space-1) var(--space-3)",
   cursor: "pointer",
-  color: "var(--text-dim)",
-  fontSize: 12,
+  color: "var(--text-main)",
+  fontSize: "var(--fs-xs)",
   fontWeight: 500,
   letterSpacing: "0.01em",
 };
 
 const sectionLabel: React.CSSProperties = {
-  fontSize: 9.5,
+  fontSize: "var(--fs-mono)",
   fontWeight: 700,
   textTransform: "uppercase",
-  letterSpacing: "0.1em",
+  letterSpacing: "var(--ls-eyebrow)",
   color: "var(--text-faint)",
-  fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+  fontFamily: "var(--font-mono)",
+};
+
+const detailLabel: React.CSSProperties = {
+  fontSize:      "var(--fs-mono)",
+  fontWeight:    700,
+  textTransform: "uppercase",
+  letterSpacing: "var(--ls-eyebrow)",
+  color:         "var(--text-faint)",
+  fontFamily:    "var(--font-mono)",
 };

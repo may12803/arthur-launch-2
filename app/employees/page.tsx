@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Nav } from "../_components/Layout";
+import { EmptyState } from "../_components/EmptyState";
 
 interface Employee {
   id: string;
@@ -200,7 +201,13 @@ export default function EmployeesPage() {
         </div>
 
         {loading && <div className="empty-state">pulling roster…</div>}
-        {!loading && visibleTeams.length === 0 && <div className="empty-state">no employees match those filters.</div>}
+        {!loading && visibleTeams.length === 0 && (
+          <EmptyState
+            title="no employees match those filters."
+            subtitle="try clearing the search or switching the team filter."
+            size="sm"
+          />
+        )}
 
         {visibleTeams.map(([team, emps]) => {
           const activeCount = emps.filter(e => activityFor(e, team).state === "active").length;

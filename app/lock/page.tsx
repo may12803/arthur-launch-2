@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Nav } from '../_components/Layout';
+import { GlassPanel } from '../_components/GlassPanel';
+import { TokenChip } from '../_components/TokenChip';
 
 function LiveClock() {
   const [now, setNow] = useState<Date | null>(null);
@@ -33,7 +35,7 @@ function LiveClock() {
   const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
 
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)' }}>
       <div style={{
         fontSize: 160,
         fontWeight: 200,
@@ -45,10 +47,10 @@ function LiveClock() {
         {h}:{m}
       </div>
       <div style={{
-        fontSize: 28,
+        fontSize: 'var(--fs-h3)',
         fontWeight: 300,
         color: 'var(--text-muted)',
-        marginTop: 24,
+        marginTop: 'var(--space-6)',
         letterSpacing: '0.04em',
       }}>
         {ampm}
@@ -76,7 +78,7 @@ function LiveDate() {
 
   return (
     <div style={{
-      fontSize: 24,
+      fontSize: 'var(--fs-h2)',
       color: 'var(--text-main)',
       fontWeight: 400,
       letterSpacing: '-0.01em',
@@ -95,17 +97,7 @@ function BriefingCard() {
   };
 
   return (
-    <div style={{
-      width: 500,
-      maxWidth: '100%',
-      background: 'var(--glass-bg)',
-      backdropFilter: 'blur(var(--blur-amount))',
-      WebkitBackdropFilter: 'blur(var(--blur-amount))',
-      border: '1px solid var(--glass-border)',
-      borderRadius: 'var(--radius-panel)',
-      boxShadow: 'var(--glass-shadow)',
-      padding: 'var(--space-lg)',
-    }}>
+    <GlassPanel style={{ width: 500, maxWidth: '100%', padding: 'var(--space-lg)' }}>
       {/* Card header */}
       <div style={{
         display: 'flex',
@@ -123,23 +115,10 @@ function BriefingCard() {
         }}>
           Daily Briefing
         </span>
-        <span style={{
-          background: 'rgba(74,222,128,0.12)',
-          color: '#22c55e',
-          border: '1px solid rgba(74,222,128,0.25)',
-          borderRadius: 20,
-          fontSize: 9,
-          fontFamily: 'var(--font-jetbrains, monospace)',
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          padding: '2px 10px',
-          fontWeight: 600,
-        }}>
-          Active
-        </span>
+        <TokenChip label="Active" color="active" size="xs" />
       </div>
 
-      <div style={{ height: 1, background: 'var(--glass-border)', marginBottom: 'var(--space-md)' }} />
+      <div style={{ height: 1, background: 'var(--glass-t1-border)', marginBottom: 'var(--space-md)' }} />
 
       {/* Briefing body */}
       <p style={{
@@ -169,7 +148,7 @@ function BriefingCard() {
         gap: 'var(--space-md)',
         marginTop: 'var(--space-md)',
         paddingTop: 'var(--space-sm)',
-        borderTop: '1px dashed var(--glass-border)',
+        borderTop: '1px dashed var(--glass-t1-border)',
       }}>
         {[
           { key: 'Meetings', val: `${placeholderContent.meetings}` },
@@ -183,18 +162,18 @@ function BriefingCard() {
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
               color: 'var(--text-muted)',
-              marginBottom: 2,
+              marginBottom: 'var(--space-1)',
             }}>{s.key}</div>
             <div style={{
               fontFamily: 'var(--font-jetbrains, monospace)',
-              fontSize: 13,
+              fontSize: 'var(--fs-small)',
               fontWeight: 600,
               color: 'var(--text-active)',
             }}>{s.val}</div>
           </div>
         ))}
       </div>
-    </div>
+    </GlassPanel>
   );
 }
 
@@ -262,10 +241,10 @@ export default function LockPage() {
         {/* Status bar top-right */}
         <div style={{
           position: 'absolute',
-          top: 24,
-          right: 24,
+          top: 'var(--space-6)',
+          right: 'var(--space-6)',
           fontFamily: 'var(--font-jetbrains, monospace)',
-          fontSize: 11,
+          fontSize: 'var(--fs-mono)',
           color: 'var(--text-muted)',
           letterSpacing: '0.04em',
           zIndex: 10,
@@ -298,13 +277,13 @@ export default function LockPage() {
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',
                 color: 'var(--accent-orange)',
-                marginBottom: 4,
+                marginBottom: 'var(--space-1)',
               }}>
                 ARTHUR OS
               </div>
               <div style={{
                 fontFamily: 'var(--font-jetbrains, monospace)',
-                fontSize: 11,
+                fontSize: 'var(--fs-mono)',
                 letterSpacing: '0.15em',
                 textTransform: 'uppercase',
                 color: 'var(--text-muted)',
@@ -336,12 +315,12 @@ export default function LockPage() {
                 style={{
                   width: 64,
                   height: 64,
-                  borderRadius: '50%',
-                  background: hoveringFP ? 'var(--glass-bg-strong)' : 'var(--glass-bg)',
+                  borderRadius: 'var(--radius-pill)',
+                  background: hoveringFP ? 'var(--glass-t2-bg)' : 'var(--glass-t1-bg)',
                   backdropFilter: 'blur(var(--blur-amount))',
                   WebkitBackdropFilter: 'blur(var(--blur-amount))',
-                  border: hoveringFP ? '1px solid var(--accent-orange)' : '1px solid var(--glass-border)',
-                  boxShadow: hoveringFP ? '0 0 0 3px rgba(212,255,61,0.15), var(--glass-shadow)' : 'var(--glass-shadow)',
+                  border: hoveringFP ? '1px solid var(--accent-orange)' : '1px solid var(--glass-t1-border)',
+                  boxShadow: hoveringFP ? '0 0 0 3px var(--accent-orange-soft), var(--glass-t1-shadow)' : 'var(--glass-t1-shadow)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -361,7 +340,7 @@ export default function LockPage() {
                 fontSize: 'var(--fs-mono)',
                 color: 'var(--text-muted)',
                 letterSpacing: '0.04em',
-                padding: '4px 8px',
+                padding: 'var(--space-1) var(--space-2)',
               }}>
                 Use Passcode Instead
               </button>

@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Nav, Footer } from "../_components/Layout";
+import { GlassPanel } from "../_components/GlassPanel";
+import { PageHeader } from "../_components/PageHeader";
+import { TokenChip } from "../_components/TokenChip";
 
 const TABS = [
   { id: "general", label: "General" },
@@ -12,49 +15,24 @@ const TABS = [
   { id: "api", label: "API" },
 ];
 
-function StatusBadge({ status }: { status: "ok" | "pending" | "error" }) {
-  const config = {
-    ok: {
-      icon: "✓",
-      color: "var(--tint-emerald)",
-      bgColor: "var(--tint-emerald-soft)",
-    },
-    pending: {
-      icon: "⚠",
-      color: "var(--tint-amber)",
-      bgColor: "var(--tint-amber-soft)",
-    },
-    error: {
-      icon: "✗",
-      color: "var(--tint-red)",
-      bgColor: "var(--tint-red-soft)",
-    },
-  };
-  const { icon, color, bgColor } = config[status];
+// Maps integration status → TokenChip color
+const STATUS_COLOR = {
+  ok: "success",
+  pending: "warning",
+  error: "error",
+} as const;
 
-  return (
-    <span style={{
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: 20,
-      height: 20,
-      borderRadius: "50%",
-      backgroundColor: bgColor,
-      color: color,
-      fontSize: 12,
-      fontWeight: 700,
-    }}>
-      {icon}
-    </span>
-  );
-}
+const STATUS_LABEL = {
+  ok: "ok",
+  pending: "pending",
+  error: "error",
+} as const;
 
 function ProfileSection() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
       {/* Profile identity row */}
-      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-5)" }}>
         <div style={{
           width: 80, height: 80, borderRadius: "50%",
           background: "var(--glass-t2-bg)",
@@ -65,15 +43,15 @@ function ProfileSection() {
           letterSpacing: "-0.02em",
         }}>D</div>
         <div style={{ flex: 1 }}>
-          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, color: "var(--text-active)", letterSpacing: "-0.02em" }}>Daniel May</h2>
-          <p style={{ fontSize: "14px", color: "var(--text-muted)", marginTop: "4px", marginBlockEnd: "12px" }}>Owner · Aspen &amp; May</p>
+          <h2 style={{ margin: 0, fontSize: "var(--fs-h3)", fontWeight: 600, color: "var(--text-active)", letterSpacing: "-0.02em" }}>Daniel May</h2>
+          <p style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", marginTop: "var(--space-1)", marginBlockEnd: "var(--space-3)" }}>Owner · Aspen &amp; May</p>
           <button style={{
             background: "var(--glass-t1-bg)",
             border: "1px solid var(--glass-t1-border)",
             borderRadius: "var(--radius-pill)",
             color: "var(--text-main)",
-            fontSize: "13px",
-            padding: "6px 16px",
+            fontSize: "var(--fs-xs)",
+            padding: "var(--space-1) var(--space-4)",
             cursor: "pointer",
             transition: "background 150ms ease, border-color 150ms ease",
           }}
@@ -84,29 +62,29 @@ function ProfileSection() {
       </div>
 
       {/* Setting rows */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
         {[
           { label: "Primary Email", value: "blackmarble.m.g@gmail.com", id: "email" },
           { label: "Timezone", value: "America/Detroit (EDT)", id: "tz" },
         ].map(row => (
           <div key={row.id} style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "12px 16px",
+            padding: "var(--space-3) var(--space-4)",
             background: "var(--bg-mid)",
             border: "1px solid var(--glass-t1-border)",
             borderRadius: "var(--radius-card)",
           }}>
             <div>
-              <div style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>{row.label}</div>
-              <div style={{ fontSize: "14px", color: "var(--text-active)" }}>{row.value}</div>
+              <div style={{ fontSize: "var(--fs-xs)", fontWeight: 500, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "var(--space-1)" }}>{row.label}</div>
+              <div style={{ fontSize: "var(--fs-small)", color: "var(--text-active)" }}>{row.value}</div>
             </div>
             <button style={{
               background: "var(--glass-t1-bg)",
               border: "1px solid var(--glass-t1-border)",
               borderRadius: "var(--radius-pill)",
               color: "var(--text-main)",
-              fontSize: "13px",
-              padding: "6px 16px",
+              fontSize: "var(--fs-xs)",
+              padding: "var(--space-1) var(--space-4)",
               cursor: "pointer",
               transition: "background 150ms ease, border-color 150ms ease",
             }}
@@ -130,7 +108,7 @@ function ProfileSection() {
         defaultValue="GRR"
         helpText="Arthur defaults here for travel research."
       />
-      <div style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6 }}>
+      <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-muted)", lineHeight: 1.6 }}>
         Subscription management lives at{" "}
         <Link href="/subscriptions" style={{ color: "var(--accent-orange)", textDecoration: "none", fontWeight: 500 }}>
           /subscriptions
@@ -145,13 +123,13 @@ function ProfileSection() {
 function PlaceholderSection({ title }: { title: string }) {
   return (
     <div style={{
-      padding: "64px 0",
+      padding: "var(--space-10) 0",
       textAlign: "center",
       border: "1px dashed var(--glass-t1-border)",
       borderRadius: "var(--radius-card)",
       background: "var(--bg-mid)",
     }}>
-      <h3 style={{ color: "var(--text-main)", margin: "0 0 8px 0" }}>{title} Settings</h3>
+      <h3 style={{ color: "var(--text-main)", margin: "0 0 var(--space-2) 0" }}>{title} Settings</h3>
       <p style={{ color: "var(--text-muted)", margin: 0 }}>Configuration for this section is not yet available.</p>
     </div>
   );
@@ -168,31 +146,36 @@ function IntegrationsSection() {
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
       {integrations.map(i => (
         <div key={i.name} style={{
           display: "flex",
           alignItems: "center",
-          gap: "16px",
-          padding: "16px",
+          gap: "var(--space-4)",
+          padding: "var(--space-4)",
           background: "var(--bg-mid)",
           border: "1px solid var(--glass-t1-border)",
           borderRadius: "var(--radius-card)",
         }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "15px", fontWeight: 600, color: "var(--text-active)", marginBottom: "4px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", fontSize: "var(--fs-body)", fontWeight: 600, color: "var(--text-active)", marginBottom: "var(--space-1)" }}>
               {i.name}
-              <StatusBadge status={i.status} />
+              <TokenChip
+                label={STATUS_LABEL[i.status]}
+                variant="status"
+                size="xs"
+                color={STATUS_COLOR[i.status]}
+              />
             </div>
-            <div style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.4 }}>{i.detail}</div>
+            <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-muted)", lineHeight: 1.4 }}>{i.detail}</div>
           </div>
           <button style={{
             background: "var(--glass-t1-bg)",
             border: "1px solid var(--glass-t1-border)",
             borderRadius: "var(--radius-pill)",
             color: "var(--text-main)",
-            fontSize: "13px",
-            padding: "6px 16px",
+            fontSize: "var(--fs-xs)",
+            padding: "var(--space-1) var(--space-4)",
             cursor: "pointer",
             flexShrink: 0,
             transition: "background 150ms ease, border-color 150ms ease",
@@ -210,14 +193,14 @@ function IntegrationsSection() {
 
 function DangerSection({ onDelete }: { onDelete: () => void }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px", marginTop: "48px", paddingTop: "32px", borderTop: "1px solid var(--line-separator)" }}>
-       <div style={{ marginBottom: "-8px" }}>
-          <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600, color: "var(--tint-red)" }}>Danger Zone</h3>
-          <p style={{ fontSize: "14px", color: "var(--text-muted)", marginTop: "4px", lineHeight: 1.6 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)", marginTop: "var(--space-9)", paddingTop: "var(--space-7)", borderTop: "1px solid var(--line-separator)" }}>
+       <div style={{ marginBottom: "calc(-1 * var(--space-2))" }}>
+          <h3 style={{ margin: 0, fontSize: "var(--fs-body)", fontWeight: 600, color: "var(--tint-red)" }}>Danger Zone</h3>
+          <p style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", marginTop: "var(--space-1)", lineHeight: 1.6 }}>
             Destructive actions are irreversible. Most can be performed from the Arthur CLI.
           </p>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
         {[
           { label: "Clear session memory", desc: "Wipes ~/.arthur/data/memory.json. Learning history is lost." },
           { label: "Reset learning loop", desc: "Clears corrections.jsonl and dynamic-rules/. Classifier reverts to base constitution." },
@@ -227,15 +210,15 @@ function DangerSection({ onDelete }: { onDelete: () => void }) {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: "16px",
-            padding: "16px",
+            gap: "var(--space-4)",
+            padding: "var(--space-4)",
             background: "var(--tint-red-soft)",
             border: "1px solid var(--tint-red)",
             borderRadius: "var(--radius-card)",
           }}>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-active)", marginBottom: "4px" }}>{action.label}</div>
-              <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>{action.desc}</div>
+              <div style={{ fontSize: "var(--fs-small)", fontWeight: 600, color: "var(--text-active)", marginBottom: "var(--space-1)" }}>{action.label}</div>
+              <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-muted)" }}>{action.desc}</div>
             </div>
             <button style={{
               flexShrink: 0,
@@ -243,8 +226,8 @@ function DangerSection({ onDelete }: { onDelete: () => void }) {
               border: "1px solid var(--tint-red)",
               borderRadius: "var(--radius-pill)",
               color: "var(--tint-red)",
-              fontSize: "13px",
-              padding: "6px 16px",
+              fontSize: "var(--fs-xs)",
+              padding: "var(--space-1) var(--space-4)",
               cursor: "pointer",
             }}>
               Run
@@ -253,13 +236,13 @@ function DangerSection({ onDelete }: { onDelete: () => void }) {
         ))}
       </div>
       <div style={{
-        padding: "16px",
+        padding: "var(--space-4)",
         background: "var(--tint-red-soft)",
         border: "1px solid var(--tint-red)",
         borderRadius: "var(--radius-card)",
       }}>
-        <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-active)", marginBottom: "8px" }}>Delete account</div>
-        <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6, margin: "0 0 16px" }}>
+        <div style={{ fontSize: "var(--fs-small)", fontWeight: 600, color: "var(--text-active)", marginBottom: "var(--space-2)" }}>Delete account</div>
+        <p style={{ fontSize: "var(--fs-xs)", color: "var(--text-muted)", lineHeight: 1.6, margin: "0 0 var(--space-4)" }}>
           Permanently deletes all Arthur data, sessions, credentials, and integrations. Cannot be undone.
         </p>
         <button
@@ -269,9 +252,9 @@ function DangerSection({ onDelete }: { onDelete: () => void }) {
             border: "none",
             borderRadius: "var(--radius-sm)",
             color: "var(--text-active)",
-            fontSize: "14px",
+            fontSize: "var(--fs-small)",
             fontWeight: 600,
-            padding: "10px 20px",
+            padding: "var(--space-2) var(--space-5)",
             cursor: "pointer",
           }}
         >
@@ -288,9 +271,9 @@ function FormField({
   label: string; id: string; defaultValue?: string; helpText?: string; type?: string;
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
       <label htmlFor={id} style={{
-        fontSize: "12px",
+        fontSize: "var(--fs-xs)",
         fontWeight: 500,
         color: "var(--text-muted)",
         textTransform: "uppercase",
@@ -307,8 +290,8 @@ function FormField({
           border: "1px solid var(--glass-t1-border)",
           borderRadius: "var(--radius-sm)",
           color: "var(--text-main)",
-          fontSize: "14px",
-          padding: "12px 16px",
+          fontSize: "var(--fs-small)",
+          padding: "var(--space-3) var(--space-4)",
           outline: "none",
           transition: "border-color 150ms ease, box-shadow 150ms ease",
           width: "100%",
@@ -323,7 +306,7 @@ function FormField({
         }}
       />
       {helpText && (
-        <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: "var(--fs-xs)", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
           {helpText}
         </p>
       )}
@@ -334,7 +317,7 @@ function FormField({
 function SaveRow() {
   const [saved, setSaved] = useState(false);
   return (
-    <div style={{ display: "flex", gap: "12px", paddingTop: "8px" }}>
+    <div style={{ display: "flex", gap: "var(--space-3)", paddingTop: "var(--space-2)" }}>
       <button
         onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2000); }}
         style={{
@@ -342,14 +325,14 @@ function SaveRow() {
           border: "none",
           borderRadius: "var(--radius-sm)",
           color: saved ? "var(--text-active)" : "var(--accent-text-on)",
-          fontSize: "14px",
+          fontSize: "var(--fs-small)",
           fontWeight: 600,
-          padding: "12px 24px",
+          padding: "var(--space-3) var(--space-6)",
           cursor: "pointer",
           transition: "background 150ms ease",
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: 'var(--space-2)',
         }}
       >
         {saved && '✓'} {saved ? "Saved" : "Save changes"}
@@ -376,29 +359,30 @@ function DeleteModal({ onClose }: { onClose: () => void }) {
       }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--tint-red)",
-        borderRadius: "var(--radius-panel)",
-        padding: "32px",
-        width: "100%",
-        maxWidth: 420,
-        boxShadow: "var(--glass-t3-shadow)",
-      }}>
+      <GlassPanel
+        tier={3}
+        style={{
+          border: "1px solid var(--tint-red)",
+          padding: "var(--space-7)",
+          width: "100%",
+          maxWidth: 420,
+          boxShadow: "var(--glass-t3-shadow)",
+        }}
+      >
         <div style={{
-          fontSize: "12px",
+          fontSize: "var(--fs-xs)",
           letterSpacing: "0.08em",
           textTransform: "uppercase",
           fontWeight: 600,
           color: "var(--tint-red)",
-          marginBottom: "12px",
+          marginBottom: "var(--space-3)",
         }}>
           Danger Zone
         </div>
-        <h2 style={{ fontSize: "20px", fontWeight: 600, color: "var(--text-active)", margin: "0 0 12px" }}>
+        <h2 style={{ fontSize: "var(--fs-h3)", fontWeight: 600, color: "var(--text-active)", margin: "0 0 var(--space-3)" }}>
           Delete account?
         </h2>
-        <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: 1.6, margin: "0 0 24px" }}>
+        <p style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", lineHeight: 1.6, margin: "0 0 var(--space-6)" }}>
           This permanently deletes all Arthur sessions, memory, credentials, and integrations.
           Type <strong style={{ color: "var(--tint-red)", fontWeight: 700 }}>DELETE</strong> to confirm.
         </p>
@@ -413,15 +397,15 @@ function DeleteModal({ onClose }: { onClose: () => void }) {
             border: "1px solid var(--glass-t1-border)",
             borderRadius: "var(--radius-sm)",
             color: "var(--tint-red)",
-            fontSize: "14px",
-            padding: "12px 16px",
+            fontSize: "var(--fs-small)",
+            padding: "var(--space-3) var(--space-4)",
             outline: "none",
-            marginBottom: "16px",
+            marginBottom: "var(--space-4)",
             letterSpacing: "0.1em",
             textAlign: "center",
           }}
         />
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div style={{ display: "flex", gap: "var(--space-3)" }}>
           <button
             disabled={!ready}
             style={{
@@ -430,9 +414,9 @@ function DeleteModal({ onClose }: { onClose: () => void }) {
               border: "none",
               borderRadius: "var(--radius-sm)",
               color: "var(--text-active)",
-              fontSize: "14px",
+              fontSize: "var(--fs-small)",
               fontWeight: 600,
-              padding: "12px 20px",
+              padding: "var(--space-3) var(--space-5)",
               cursor: ready ? "pointer" : "not-allowed",
               opacity: ready ? 1 : 0.5,
             }}
@@ -447,15 +431,15 @@ function DeleteModal({ onClose }: { onClose: () => void }) {
               border: "1px solid var(--glass-t1-border)",
               borderRadius: "var(--radius-sm)",
               color: "var(--text-main)",
-              fontSize: "14px",
-              padding: "12px 20px",
+              fontSize: "var(--fs-small)",
+              padding: "var(--space-3) var(--space-5)",
               cursor: "pointer",
             }}
           >
             Cancel
           </button>
         </div>
-      </div>
+      </GlassPanel>
     </div>
   );
 }
@@ -484,26 +468,17 @@ export default function SettingsPage() {
   return (
     <>
       <Nav />
-      <main style={{ padding: `108px var(--page-gutter) 64px` }}>
+      <main style={{ padding: `108px var(--page-gutter) var(--space-10)` }}>
         <div style={{ maxWidth: "var(--max-w-narrow)", margin: "0 auto" }}>
           {/* Header */}
-          <header style={{ marginBottom: "40px" }}>
-            <h1 style={{
-              fontSize: "36px",
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
-              color: "var(--text-active)",
-              margin: "0 0 8px 0",
-            }}>
-              Settings
-            </h1>
-            <p style={{ fontSize: "16px", color: "var(--text-muted)", maxWidth: "52ch", lineHeight: 1.6, margin: 0 }}>
-              Configure Arthur&apos;s integrations, connected accounts, and system behavior.
-            </p>
-          </header>
+          <PageHeader
+            title="settings."
+            subtitle="Configure Arthur's integrations, connected accounts, and system behavior."
+            style={{ marginBottom: "var(--space-8)" }}
+          />
 
           {/* Tabs */}
-          <div style={{ display: "flex", gap: "8px", marginBottom: "24px", borderBottom: "1px solid var(--line-separator)" }}>
+          <div style={{ display: "flex", gap: "var(--space-2)", marginBottom: "var(--space-6)", borderBottom: "1px solid var(--line-separator)" }}>
             {TABS.map(tab => {
               const isActive = activeTab === tab.id;
               return (
@@ -511,13 +486,13 @@ export default function SettingsPage() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   style={{
-                    padding: "10px 16px",
+                    padding: "var(--space-2) var(--space-4)",
                     background: "none",
                     border: "none",
                     borderBottom: `2px solid ${isActive ? "var(--accent-orange)" : "transparent"}`,
                     color: isActive ? "var(--text-active)" : "var(--text-muted)",
                     cursor: "pointer",
-                    fontSize: "14px",
+                    fontSize: "var(--fs-small)",
                     fontWeight: isActive ? 600 : 500,
                     transition: "color 150ms ease, border-color 150ms ease",
                     marginBottom: "-1px",
@@ -530,17 +505,10 @@ export default function SettingsPage() {
           </div>
 
           {/* Content Panel */}
-          <div style={{
-            background: "var(--glass-t1-bg)",
-            backdropFilter: "blur(var(--glass-t1-blur))",
-            border: "1px solid var(--glass-t1-border)",
-            borderRadius: "var(--radius-panel)",
-            padding: "32px",
-            boxShadow: "var(--glass-t1-shadow)",
-          }}>
+          <GlassPanel tier={1} style={{ padding: "var(--space-7)" }}>
             {renderContent()}
             {activeTab === "general" && <DangerSection onDelete={() => setShowDeleteModal(true)} />}
-          </div>
+          </GlassPanel>
         </div>
       </main>
 

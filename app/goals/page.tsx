@@ -374,7 +374,7 @@ export default function GoalsPage() {
         </header>
 
         {loading ? (
-          <div className="kanban-board"><div className="skeleton-loader" /></div>
+          <div className="kanban-board"><div className="arthur-skeleton" style={{ height: 200 }} /></div>
         ) : (
           <div className="kanban-board">
             {KANBAN_ORDER.map(status => {
@@ -673,8 +673,6 @@ export default function GoalsPage() {
         .btn-delete { color: var(--tint-red); }
         .btn-delete:hover { background: var(--tint-red-soft); border-color: var(--tint-red); }
 
-        .skeleton-loader { width: 100%; height: 200px; background: linear-gradient(90deg, var(--glass-t1-bg) 25%, var(--glass-t2-bg) 50%, var(--glass-t1-bg) 75%); background-size: 800px 100%; animation: shimmer 1.5s infinite; border-radius: var(--radius-panel); }
-        @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
       `}</style>
     </>
   );

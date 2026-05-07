@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { Nav, Footer } from "../../_components/Layout";
+import { EmptyState } from "../../_components/EmptyState";
 
 interface Settings {
   automation_enabled: boolean;
@@ -416,7 +417,12 @@ export default function InboxSettingsPage() {
             {loadingRules ? (
               <div style={{ color: "var(--text-muted)", fontSize: 12 }}>pulling rules…</div>
             ) : rules.length === 0 ? (
-              <div style={{ color: "var(--text-muted)", fontSize: 12, padding: "20px 0" }}>no rules yet. create one to automate your inbox.</div>
+              <EmptyState
+                title="no rules yet."
+                subtitle="create one to automate your inbox."
+                size="sm"
+                align="left"
+              />
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {rules.map(rule => (

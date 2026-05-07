@@ -105,7 +105,7 @@ Daniel runs:
 
 Kristie is Daniel's WIFE, not daughter. P0 priority on all channels.
 
-TOOLS AVAILABLE: query_inbox, query_legal, query_brain_graph, query_memory, list_recent_actions, get_weather, web_search, live_sports_score.
+TOOLS AVAILABLE: query_inbox, query_legal, query_brain_graph, query_memory, list_recent_actions, get_weather, browserbase_search (DEFAULT for web discovery / current events / news), browserbase_fetch (DEFAULT for reading any URL — renders JS-heavy pages → markdown), web_search (Perplexity citations — use ONLY when answer needs cited synthesis: medical/financial/legal/scientific claims), live_sports_score.
 
 TOOL ROUTING RULES — pick the RIGHT tool for the question:
 - query_inbox / query_legal / query_brain_graph / query_memory / list_recent_actions = DANIEL'S DATA only (his emails, his contracts, his notes graph, his memory log, his recent activity). NEVER use these for general world knowledge.
@@ -240,7 +240,7 @@ const TOOL_DEFINITIONS = [
     type: "function",
     function: {
       name: "web_search",
-      description: "Search the live web for current/factual information OUTSIDE Daniel's personal data. Use for: world news, politics, sports, public figures, market prices, company info, anything you would otherwise answer from training data (which is stale). DO NOT use query_brain_graph for these — that's Daniel's notes only. Returns a synthesized answer with citations.",
+      description: "Cited research synthesis via Perplexity — use ONLY when the answer needs source citations the user will judge (medical, financial, legal, scientific claims) or when comparing multiple authoritative sources. For everyday lookups (news, what's happening, today's headlines, current prices, quick facts) prefer browserbase_search (faster, raw URLs) or browserbase_fetch (a specific page). Default DOWN the ladder: browserbase first, web_search only when citations matter.",
       parameters: {
         type: "object",
         properties: {
@@ -407,6 +407,35 @@ const TOOL_DEFINITIONS = [
           payload: { type: "object", description: "JSON payload sent to the workflow. Workflow-specific schema." },
         },
         required: ["workflow"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "browserbase_search",
+      description: "Agent-grade web search via Browserbase Search API — returns clean URL list with titles + snippets, ~1s. Use for: finding sources, 'find me 5 sites about X', discovery before browserbase_fetch. Faster than web_search and gives raw URLs not LLM summaries.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Search query" },
+          num: { type: "number", description: "Max results (default 8, max 20)" },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "browserbase_fetch",
+      description: "Render JS-heavy pages (Reddit, Notion, dashboards, modern SPAs) and extract clean Markdown via Browserbase Fetch API. Use this INSTEAD of scrape_url for content-heavy modern sites — returns markdown not raw HTML, much more token-efficient.",
+      parameters: {
+        type: "object",
+        properties: {
+          url: { type: "string", description: "URL to fetch + render" },
+        },
+        required: ["url"],
       },
     },
   },
@@ -722,6 +751,59 @@ async function toolLiveSportsScore(args: { league?: string; team?: string }): Pr
   }
 }
 
+// Browserbase Search — agent-grade web search via Browserbase's clean URL list
+// API. Faster than Perplexity (~1s) and avoids LLM-summary middleware so the
+// model sees raw URLs to choose from. Use for "find me 5 sites about X" or as
+// a discovery step before browserbase_fetch.
+async function toolBrowserbaseSearch(args: { query?: string; num?: number }): Promise<string> {
+  const query = args.query?.trim();
+  if (!query) return "browserbase_search error: query required";
+  const key = process.env.BROWSERBASE_API_KEY;
+  if (!key) return "browserbase_search error: BROWSERBASE_API_KEY not set on this deployment";
+  try {
+    const r = await fetch("https://api.browserbase.com/v1/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-BB-API-Key": key },
+      body: JSON.stringify({ query, num: Math.min(args.num ?? 8, 20) }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!r.ok) return `browserbase_search error: HTTP ${r.status} — ${(await r.text()).slice(0, 200)}`;
+    const data = await r.json() as { results?: Array<{ url?: string; title?: string; snippet?: string }> };
+    const results = data.results ?? [];
+    if (results.length === 0) return "browserbase_search returned no results";
+    return results.slice(0, args.num ?? 8).map((r, i) =>
+      `[${i+1}] ${r.title ?? "(untitled)"}\n    ${r.url ?? ""}\n    ${(r.snippet ?? "").slice(0, 180)}`
+    ).join("\n\n");
+  } catch (e: unknown) {
+    return `browserbase_search error: ${e instanceof Error ? e.message : String(e)}`;
+  }
+}
+
+// Browserbase Fetch — render JS-heavy pages and extract clean Markdown via
+// Browserbase's Fetch API. Replaces scrape_url for modern SPAs (Reddit, Notion,
+// dashboards). Returns markdown not raw HTML — token-efficient for the LLM.
+async function toolBrowserbaseFetch(args: { url?: string }): Promise<string> {
+  const url = args.url?.trim();
+  if (!url) return "browserbase_fetch error: url required";
+  const key = process.env.BROWSERBASE_API_KEY;
+  if (!key) return "browserbase_fetch error: BROWSERBASE_API_KEY not set on this deployment";
+  try {
+    const r = await fetch("https://api.browserbase.com/v1/fetch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-BB-API-Key": key },
+      body: JSON.stringify({ url, format: "markdown" }),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!r.ok) return `browserbase_fetch error: HTTP ${r.status} — ${(await r.text()).slice(0, 200)}`;
+    const data = await r.json() as { markdown?: string; content?: string };
+    const out = data.markdown ?? data.content ?? "";
+    if (!out) return "browserbase_fetch returned empty content";
+    return out.length > 8000 ? out.slice(0, 8000) + "\n\n[…truncated, " + out.length + " chars total]" : out;
+  } catch (e: unknown) {
+    return `browserbase_fetch error: ${e instanceof Error ? e.message : String(e)}`;
+  }
+}
+
 async function toolWebSearch(args: { query?: string }): Promise<string> {
   const query = args.query?.trim();
   if (!query) return "web_search error: query required";
@@ -887,6 +969,8 @@ async function executeTool(name: string, argsStr: string): Promise<string> {
     case "convert_currency":    return toolConvertCurrency(args as Parameters<typeof toolConvertCurrency>[0]);
     case "composio_execute":    return toolComposio(args as Parameters<typeof toolComposio>[0]);
     case "pipedream_workflow":  return toolPipedream(args as Parameters<typeof toolPipedream>[0]);
+    case "browserbase_search":  return toolBrowserbaseSearch(args as Parameters<typeof toolBrowserbaseSearch>[0]);
+    case "browserbase_fetch":   return toolBrowserbaseFetch(args as Parameters<typeof toolBrowserbaseFetch>[0]);
     default:                  return `Unknown tool: ${name}`;
   }
 }
@@ -1327,19 +1411,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid json" }, { status: 400 });
   }
 
-  const { prompt, session_id: clientSessionId } = (payload || {}) as { prompt?: string; session_id?: string };
-  if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
-    return NextResponse.json({ error: "prompt required" }, { status: 400 });
+  // Two input modes:
+  // - Backplane mode: caller passes `messages: [{role,content}, …]` AND
+  //   `surface: 'telegram' | 'cli' | …`. We use those messages directly,
+  //   skip server-side history load, and skip dashboard-table persistence.
+  //   The surface owns its own conversation log. This is how Telegram + cli
+  //   share the chat brain without duplicating history.
+  // - Prompt mode (legacy/dashboard): caller passes `prompt` + `session_id`.
+  //   We load history from arthur_dashboard_conversations, persist user +
+  //   assistant turns there. Default behavior for the dashboard chat UI.
+  const { prompt, session_id: clientSessionId, messages: clientMessages, surface } =
+    (payload || {}) as {
+      prompt?: string;
+      session_id?: string;
+      messages?: Array<{ role: string; content: string }>;
+      surface?: string;
+    };
+
+  const isBackplaneMode = Array.isArray(clientMessages) && clientMessages.length > 0;
+  if (!isBackplaneMode && (!prompt || typeof prompt !== "string" || !prompt.trim())) {
+    return NextResponse.json({ error: "prompt or messages required" }, { status: 400 });
   }
 
   const sessionId = (clientSessionId && typeof clientSessionId === "string" && clientSessionId.trim())
     ? clientSessionId.trim()
-    : randomUUID();
+    : (surface ? `${surface}-${randomUUID().slice(0, 8)}` : randomUUID());
 
-  // 1. Fetch context digest + history in parallel
+  // 1. Fetch context digest. In prompt mode also load server-side history.
+  // In backplane mode, the caller provides the full message array — skip
+  // history load to avoid duplicating context the surface already supplied.
   const [contextDigest, history] = await Promise.all([
     buildContextDigest(),
-    loadHistory(sessionId, 20),
+    isBackplaneMode ? Promise.resolve([] as Awaited<ReturnType<typeof loadHistory>>) : loadHistory(sessionId, 20),
   ]);
 
   // 1b. Resolve user's current location from their IP (cached 1h)
@@ -1371,35 +1474,54 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Build messages array
-  // Decide once whether this turn needs tools, and build the system prompt
-  // with or without tool definitions. Chat-only providers (Cerebras/Groq)
-  // leak tool-call syntax as text when given tool definitions they can't honor.
-  const turnRequiresTools = promptNeedsTools([{ role: "user", content: prompt }]);
+  // In prompt mode: system + loaded history + new user prompt.
+  // In backplane mode: system (rebuilt fresh) + caller-provided messages
+  //   (with any caller-supplied system stripped — we own the system prompt).
+  const lastUserText = isBackplaneMode
+    ? (clientMessages!.filter(m => m.role === "user").slice(-1)[0]?.content ?? "")
+    : prompt!;
+  const turnRequiresTools = promptNeedsTools([{ role: "user", content: lastUserText }]);
   const systemPrompt = buildSystemPrompt(contextDigest, currentLocation, turnRequiresTools);
-  const messages: OpenAIMessage[] = [
-    { role: "system", content: systemPrompt },
-    ...history.map((h): OpenAIMessage => {
-      if (h.role === "tool") {
-        // Tool results stored as a single message — re-expand as assistant tool call if needed
-        return { role: "assistant", content: h.content };
-      }
-      return {
-        role: h.role as OpenAIMessage["role"],
-        content: h.content,
-        ...(h.tool_calls ? { tool_calls: h.tool_calls as OpenAIToolCall[] } : {}),
-      };
-    }),
-    { role: "user", content: prompt.slice(0, 8000) },
-  ];
+  const messages: OpenAIMessage[] = isBackplaneMode
+    ? [
+        { role: "system", content: systemPrompt },
+        ...clientMessages!
+          .filter(m => m.role !== "system")
+          .map((m): OpenAIMessage => ({
+            role: m.role as OpenAIMessage["role"],
+            content: typeof m.content === "string" ? m.content : JSON.stringify(m.content),
+          })),
+      ]
+    : [
+        { role: "system", content: systemPrompt },
+        ...history.map((h): OpenAIMessage => {
+          if (h.role === "tool") {
+            return { role: "assistant", content: h.content };
+          }
+          return {
+            role: h.role as OpenAIMessage["role"],
+            content: h.content,
+            ...(h.tool_calls ? { tool_calls: h.tool_calls as OpenAIToolCall[] } : {}),
+          };
+        }),
+        { role: "user", content: prompt!.slice(0, 8000) },
+      ];
 
-  // 3. Persist user message
-  await persistMessage(sessionId, "user", prompt);
+  // 3. Persist user message — only in prompt mode. Backplane callers (Telegram,
+  // cli) own their own conversation history table and pass full context per turn.
+  if (!isBackplaneMode) {
+    await persistMessage(sessionId, "user", prompt!);
+  }
 
-  // 3b. Implicit-correction detector — fire before LLM, never blocks chat path
-  try {
-    const { maybeRecordImplicitCorrection } = await import("@/lib/training/implicit-correction-detector");
-    await maybeRecordImplicitCorrection({ sessionId, userTurn: prompt });
-  } catch { /* non-fatal */ }
+  // 3b. Implicit-correction detector — fire before LLM, never blocks chat path.
+  // Skipped in backplane mode (the surface owns history; this detector reads
+  // server-side history that doesn't exist in that mode).
+  if (!isBackplaneMode) {
+    try {
+      const { maybeRecordImplicitCorrection } = await import("@/lib/training/implicit-correction-detector");
+      await maybeRecordImplicitCorrection({ sessionId, userTurn: prompt! });
+    } catch { /* non-fatal */ }
+  }
 
   // 4. Tool-call loop (max 4 rounds)
   const MAX_ROUNDS = 4;
@@ -1463,14 +1585,16 @@ export async function POST(req: NextRequest) {
     // Append tool results to thread
     roundMessages.push(...toolResultMessages);
 
-    // Persist tool round to DB
-    await persistMessage(sessionId, "tool",
-      toolCalls.map(tc => `[${tc.function?.name}] ${tc.function?.arguments?.slice(0, 80)}`).join("\n"),
-      {
-        tool_calls: toolCalls,
-        tool_results: allToolResults.slice(-toolCalls.length),
-      }
-    );
+    // Persist tool round to dashboard table — only in prompt mode.
+    if (!isBackplaneMode) {
+      await persistMessage(sessionId, "tool",
+        toolCalls.map(tc => `[${tc.function?.name}] ${tc.function?.arguments?.slice(0, 80)}`).join("\n"),
+        {
+          tool_calls: toolCalls,
+          tool_results: allToolResults.slice(-toolCalls.length),
+        }
+      );
+    }
 
     // If last round and still in tool loop, synthesize from tool results
     if (round === MAX_ROUNDS - 1) {
@@ -1482,23 +1606,26 @@ export async function POST(req: NextRequest) {
   // hallucinations that some models still emit despite the prompt instructions.
   finalContent = sanitizeAssistantText(finalContent, allToolCalls.length);
 
-  // 5. Persist assistant response
-  await persistMessage(sessionId, "assistant", finalContent, {
-    metadata: { provider: finalProvider, tool_calls_count: allToolCalls.length },
-  });
+  // 5. Persist assistant response — only in prompt mode (the surface owns
+  // history in backplane mode).
+  if (!isBackplaneMode) {
+    await persistMessage(sessionId, "assistant", finalContent, {
+      metadata: { provider: finalProvider, tool_calls_count: allToolCalls.length },
+    });
+  }
 
-  // 5b. Record employee dispatch (recorder layer of the learning-layer mandate).
-  // Best-effort, never blocks the response.
+  // 5b. Record employee dispatch — runs in BOTH modes so the learning loop
+  // sees telegram + cli traffic too. inferEmployee uses the last user turn.
   try {
     const { recordDispatch, inferEmployee } = await import("@/lib/employees/recorder");
-    const emp = inferEmployee(prompt || "");
+    const emp = inferEmployee(lastUserText || "");
     await recordDispatch({
       team: emp.team,
       employee_id: emp.employee_id,
-      task: prompt || "(empty)",
+      task: lastUserText || "(empty)",
       model_used: finalProvider || "unknown",
       state: "active",
-      metadata: { tool_calls: allToolCalls.length, session_id: sessionId },
+      metadata: { tool_calls: allToolCalls.length, session_id: sessionId, surface: surface || "dashboard" },
     });
   } catch { /* recorder is non-critical */ }
 
@@ -1527,8 +1654,8 @@ function sanitizeAssistantText(s: string, toolsActuallyUsed: number): string {
   if (!s) return s;
   let out = s;
 
-  // ALL 17 tool names — keep this list in sync with TOOL_DEFINITIONS.
-  const ALL_TOOL_RE = "web_search|live_sports_score|get_weather|query_inbox|query_legal|query_brain_graph|query_memory|list_recent_actions|send_email|create_calendar_event|query_calendar_events|composio_execute|pipedream_workflow|scrape_url|validate_email|convert_currency|apilayer";
+  // ALL 19 tool names — keep this list in sync with TOOL_DEFINITIONS.
+  const ALL_TOOL_RE = "web_search|live_sports_score|get_weather|query_inbox|query_legal|query_brain_graph|query_memory|list_recent_actions|send_email|create_calendar_event|query_calendar_events|composio_execute|pipedream_workflow|scrape_url|validate_email|convert_currency|apilayer|browserbase_search|browserbase_fetch";
 
   // Pattern 1: `[tool_name] {json}` or `[tool_name](json)` — strip the line.
   out = out.replace(new RegExp(`^\\s*\\[(?:${ALL_TOOL_RE})\\]\\s*[{(\\[][^\\n]*[})\\]]\\s*$`, "gim"), "");

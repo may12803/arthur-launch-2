@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Nav, Footer } from "../_components/Layout";
+import { GlassPanel } from "../_components/GlassPanel";
+import { PageHeader } from "../_components/PageHeader";
+import { TokenChip } from "../_components/TokenChip";
+import { EmptyState } from "../_components/EmptyState";
 
 interface Subscription {
   id: string;
@@ -53,53 +57,46 @@ function SubCard({ sub }: { sub: Subscription }) {
 
   return (
     <>
-      <div style={{
-        background: "var(--glass-t3-bg)",
-        backdropFilter: "blur(var(--glass-t3-blur))",
-        border: "1px solid var(--glass-t3-border)",
-        borderRadius: "var(--radius-panel)",
-        boxShadow: "var(--glass-t3-shadow)",
-        padding: "24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-        transition: "border-color 150ms ease-out, box-shadow 150ms ease-out",
-      }}>
+      <GlassPanel
+        tier={3}
+        style={{
+          padding: "var(--space-6)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--space-3)",
+          transition: "border-color 150ms ease-out, box-shadow 150ms ease-out",
+        }}
+      >
         {/* Header row */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "var(--space-3)" }}>
           <div>
             <h3 style={{
-              fontSize: "1.25rem", // approx --fs-h3
+              fontSize: "var(--fs-h3)",
               fontWeight: 700,
               color: "var(--text-active)",
-              margin: "0 0 4px",
+              margin: "0 0 var(--space-1)",
               lineHeight: 1.2,
             }}>
               {sub.name}
             </h3>
-            <div style={{ fontSize: "0.75rem", color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
               {sub.vendor}
             </div>
           </div>
-          <span style={{
-            fontSize: "0.75rem",
-            letterSpacing: "0.06em",
-            color: sub.status === "active" ? "var(--tint-emerald)" : "var(--tint-amber)",
-            background: sub.status === "active" ? "var(--tint-emerald-soft)" : "var(--tint-amber-soft)",
-            borderRadius: "var(--radius-pill)",
-            padding: "2px 10px",
-            flexShrink: 0,
-            textTransform: "capitalize",
-          }}>
-            {sub.status}
-          </span>
+          <TokenChip
+            label={sub.status}
+            variant="status"
+            color={sub.status === "active" ? "success" : "warning"}
+            size="sm"
+            style={{ textTransform: "capitalize", flexShrink: 0 }}
+          />
         </div>
 
         {/* Price — large mono */}
         <div>
           <div style={{
             fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-            fontSize: "2.25rem", // approx --fs-h2
+            fontSize: "var(--fs-h2)",
             fontWeight: 700,
             color: "var(--text-active)",
             letterSpacing: "-0.02em",
@@ -107,27 +104,27 @@ function SubCard({ sub }: { sub: Subscription }) {
           }}>
             ${monthlyDisplay(sub).toFixed(2)}
             <span style={{
-              fontSize: "0.75rem",
+              fontSize: "var(--fs-xs)",
               fontWeight: 400,
               color: "var(--text-faint)",
-              marginLeft: "4px",
+              marginLeft: "var(--space-1)",
             }}>
               / mo
             </span>
           </div>
           {sub.billing_cycle === "yearly" && (
-            <div style={{ fontSize: "0.75rem", color: "var(--text-faint)", marginTop: "4px" }}>
+            <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-faint)", marginTop: "var(--space-1)" }}>
               ${sub.amount_usd.toFixed(2)} billed annually
             </div>
           )}
         </div>
 
         {/* Next renewal */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "0.75rem", color: "var(--text-faint)", letterSpacing: "0.04em" }}>Next charge</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+          <span style={{ fontSize: "var(--fs-xs)", color: "var(--text-faint)", letterSpacing: "0.04em" }}>Next charge</span>
           <span style={{
             fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-            fontSize: "0.75rem",
+            fontSize: "var(--fs-xs)",
             color: isUrgent ? "var(--tint-amber)" : "var(--text-muted)",
             fontWeight: isUrgent ? 600 : 400,
           }}>
@@ -138,17 +135,13 @@ function SubCard({ sub }: { sub: Subscription }) {
 
         {/* Cancel method badge */}
         {cancelMethod && (
-          <div style={{
-            fontSize: "0.75rem",
-            color: "var(--tint-blue)",
-            background: "var(--tint-blue-soft)",
-            borderRadius: "var(--radius-sm)",
-            padding: "3px 8px",
-            alignSelf: "flex-start",
-            letterSpacing: "0.04em",
-          }}>
-            {cancelMethod}
-          </div>
+          <TokenChip
+            label={cancelMethod}
+            variant="tag"
+            color="blue"
+            size="sm"
+            style={{ alignSelf: "flex-start" }}
+          />
         )}
 
         {/* CTA */}
@@ -160,19 +153,19 @@ function SubCard({ sub }: { sub: Subscription }) {
         >
           Manage in Stripe →
         </a>
-      </div>
+      </GlassPanel>
       <style jsx>{`
         .cta-button {
           display: inline-flex;
           align-items: center;
           justify-content: center;
           margin-top: auto;
-          padding: 9px 16px;
+          padding: 9px var(--space-4);
           background: transparent;
           border: 1px solid var(--accent-orange);
           border-radius: var(--radius-sm);
           color: var(--accent-orange);
-          font-size: 0.875rem;
+          font-size: var(--fs-small);
           font-weight: 600;
           text-decoration: none;
           transition: background-color 150ms ease-out, color 150ms ease-out;
@@ -236,52 +229,34 @@ export default function SubscriptionsPage() {
     <>
       <Nav />
       <main style={{ minHeight: "calc(100vh - 60px)" }}>
-        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto", padding: "108px var(--page-gutter) 96px" }}>
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto", padding: "108px var(--page-gutter) var(--space-12)" }}>
 
           {/* Header */}
-          <div style={{ marginBottom: "48px", maxWidth: "var(--max-w-narrow)" }}>
-            <span style={{
-              fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-              fontSize: "0.75rem",
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "var(--text-muted)",
-            }}>
-              recurring charges
-            </span>
-            <h1 style={{
-              fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-              fontWeight: 800,
-              fontSize: "clamp(2rem, 4vw, 3rem)",
-              letterSpacing: "-0.03em",
-              color: "var(--text-active)",
-              margin: "8px 0 12px",
-              lineHeight: 0.95,
-            }}>
-              Subscriptions
-            </h1>
-            <p style={{ fontSize: "0.875rem", color: "var(--text-muted)", maxWidth: "52ch", lineHeight: 1.65, margin: 0 }}>
-              Track, manage, and cancel recurring charges. Arthur monitors and can cancel on your behalf.
-            </p>
+          <div style={{ marginBottom: "var(--space-9)", maxWidth: "var(--max-w-narrow)" }}>
+            <PageHeader
+              eyebrow="recurring charges"
+              title="Subscriptions"
+              subtitle="Track, manage, and cancel recurring charges. Arthur monitors and can cancel on your behalf."
+            />
           </div>
 
           {/* Actions row */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px", flexWrap: "wrap", gap: "16px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-8)", flexWrap: "wrap", gap: "var(--space-4)" }}>
             {!loading && data && (
-              <div style={{ display: "flex", gap: "24px", alignItems: "baseline" }}>
+              <div style={{ display: "flex", gap: "var(--space-6)", alignItems: "baseline" }}>
                 <div>
                   <span style={{
                     fontFamily: "var(--font-jetbrains, monospace)",
-                    fontSize: "2.25rem",
+                    fontSize: "var(--fs-h2)",
                     fontWeight: 700,
                     color: "var(--text-active)",
                     letterSpacing: "-0.02em",
                   }}>
                     ${monthlyTotal.toFixed(2)}
                   </span>
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-faint)", marginLeft: "4px" }}>/ mo</span>
+                  <span style={{ fontSize: "var(--fs-xs)", color: "var(--text-faint)", marginLeft: "var(--space-1)" }}>/ mo</span>
                 </div>
-                <div style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>
+                <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-faint)" }}>
                   {activeSubs.length} active · ${(monthlyTotal * 12).toFixed(0)}/yr
                 </div>
               </div>
@@ -297,34 +272,24 @@ export default function SubscriptionsPage() {
           </div>
 
           {scanResult && (
-            <div style={{
-              background: "var(--glass-t1-bg)",
-              border: "1px solid var(--glass-t1-border)",
-              boxShadow: "var(--glass-t1-shadow)",
-              backdropFilter: "blur(var(--glass-t1-blur))",
-              borderRadius: "var(--radius-sm)",
-              padding: "12px 16px",
-              marginBottom: "40px",
-              fontSize: "0.875rem",
-              color: "var(--text-muted)",
-            }}>
+            <GlassPanel
+              tier={1}
+              style={{
+                borderRadius: "var(--radius-sm)",
+                padding: "var(--space-3) var(--space-4)",
+                marginBottom: "var(--space-8)",
+                fontSize: "var(--fs-small)",
+                color: "var(--text-muted)",
+              }}
+            >
               {scanResult}
-            </div>
+            </GlassPanel>
           )}
 
           {loading ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "var(--space-4)" }}>
               {[1, 2, 3].map(i => (
-                <div key={i} style={{
-                  height: 240,
-                  background: "var(--glass-t1-bg)",
-                  border: "1px solid var(--glass-t1-border)",
-                  borderRadius: "var(--radius-panel)",
-                  opacity: 0.4,
-                  animation: "sub-shimmer 1.5s ease-in-out infinite",
-                  backgroundImage: "linear-gradient(90deg, var(--glass-t1-bg) 25%, var(--glass-t2-bg) 50%, var(--glass-t1-bg) 75%)",
-                  backgroundSize: "600px 100%",
-                }} />
+                <div key={i} className="arthur-skeleton" style={{ height: 240, opacity: 0.4 }} />
               ))}
             </div>
           ) : (
@@ -333,15 +298,15 @@ export default function SubscriptionsPage() {
                 <div style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-                  gap: "20px",
-                  marginBottom: "48px",
+                  gap: "var(--space-5)",
+                  marginBottom: "var(--space-9)",
                 }}>
                   {activeSubs.map(sub => <SubCard key={sub.id} sub={sub} />)}
                 </div>
               )}
 
               {canceledSubs.length > 0 && (
-                <details style={{ marginTop: "8px" }}>
+                <details style={{ marginTop: "var(--space-2)" }}>
                   <summary className="details-summary">
                     <span className="arrow">▶</span>
                     Cancelled ({canceledSubs.length})
@@ -349,9 +314,9 @@ export default function SubscriptionsPage() {
                   <div style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "8px",
-                    marginTop: "12px",
-                    padding: "16px",
+                    gap: "var(--space-2)",
+                    marginTop: "var(--space-3)",
+                    padding: "var(--space-4)",
                     background: "var(--bg-surface)",
                     border: "1px solid var(--line-separator)",
                     borderRadius: "var(--radius-card)",
@@ -361,30 +326,26 @@ export default function SubscriptionsPage() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        padding: "12px 16px",
+                        padding: "var(--space-3) var(--space-4)",
                         background: "var(--bg-mid)",
                         borderRadius: "var(--radius-sm)",
                         opacity: 0.6,
-                        gap: "16px",
+                        gap: "var(--space-4)",
                       }}>
                         <div>
-                          <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-muted)" }}>{sub.name}</div>
-                          <div style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>{sub.vendor}</div>
+                          <div style={{ fontSize: "var(--fs-small)", fontWeight: 600, color: "var(--text-muted)" }}>{sub.name}</div>
+                          <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-faint)" }}>{sub.vendor}</div>
                         </div>
-                        <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "0.875rem", color: "var(--text-faint)", textDecoration: "line-through" }}>
+                        <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "var(--fs-small)", color: "var(--text-faint)", textDecoration: "line-through" }}>
                           ${monthlyDisplay(sub).toFixed(2)}/mo
                         </div>
-                        <span style={{
-                          fontSize: "0.75rem",
-                          color: "var(--text-faint)",
-                          background: "var(--bg-surface)",
-                          border: "1px solid var(--line-separator)",
-                          borderRadius: "var(--radius-pill)",
-                          padding: "2px 8px",
-                          textTransform: "capitalize",
-                        }}>
-                          {sub.status}
-                        </span>
+                        <TokenChip
+                          label={sub.status}
+                          variant="status"
+                          color="muted"
+                          size="xs"
+                          style={{ textTransform: "capitalize" }}
+                        />
                       </div>
                     ))}
                   </div>
@@ -392,38 +353,28 @@ export default function SubscriptionsPage() {
               )}
 
               {activeSubs.length === 0 && canceledSubs.length === 0 && (
-                <div style={{
-                  background: "var(--glass-t1-bg)",
-                  border: "1px solid var(--glass-t1-border)",
-                  borderRadius: "var(--radius-panel)",
-                  backdropFilter: "blur(var(--glass-t1-blur))",
-                  boxShadow: "var(--glass-t1-shadow)",
-                  padding: "48px 40px",
-                  maxWidth: 560,
-                  margin: "40px auto 0",
-                  textAlign: "center",
-                }}>
-                  <h2 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "12px", color: "var(--text-active)" }}>
-                    No subscriptions tracked yet
-                  </h2>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginBottom: "24px", lineHeight: 1.6 }}>
-                    Connect Plaid to auto-detect recurring charges, or add Privacy.com virtual cards going forward.
-                  </p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
-                    {[
-                      { label: "Privacy.com", url: "https://privacy.com", cost: "$5/mo", desc: "Virtual debit cards per vendor — close card = subscription dead" },
-                      { label: "Plaid (dev tier)", url: "https://dashboard.plaid.com", cost: "Free", desc: "Connect bank accounts to auto-detect recurring charges" },
-                    ].map(s => (
-                      <a key={s.url} href={s.url} target="_blank" rel="noreferrer" className="empty-state-link">
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>{s.label}</div>
-                          <div style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>{s.desc}</div>
-                        </div>
-                        <div style={{ fontSize: "0.75rem", color: "var(--tint-emerald)", fontWeight: 600, flexShrink: 0 }}>{s.cost}</div>
-                      </a>
-                    ))}
-                  </div>
-                </div>
+                <EmptyState
+                  icon="💳"
+                  title="no subscriptions tracked yet."
+                  subtitle="connect Plaid to auto-detect recurring charges, or add Privacy.com virtual cards going forward."
+                  size="md"
+                  cta={
+                    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)", textAlign: "left", width: "100%", maxWidth: 400 }}>
+                      {[
+                        { label: "Privacy.com", url: "https://privacy.com", cost: "$5/mo", desc: "Virtual debit cards per vendor — close card = subscription dead" },
+                        { label: "Plaid (dev tier)", url: "https://dashboard.plaid.com", cost: "Free", desc: "Connect bank accounts to auto-detect recurring charges" },
+                      ].map(s => (
+                        <a key={s.url} href={s.url} target="_blank" rel="noreferrer" className="empty-state-link">
+                          <div>
+                            <div style={{ fontWeight: 600, fontSize: "var(--fs-small)" }}>{s.label}</div>
+                            <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-faint)" }}>{s.desc}</div>
+                          </div>
+                          <div style={{ fontSize: "var(--fs-xs)", color: "var(--tint-emerald)", fontWeight: 600, flexShrink: 0 }}>{s.cost}</div>
+                        </a>
+                      ))}
+                    </div>
+                  }
+                />
               )}
             </>
           )}
@@ -435,10 +386,10 @@ export default function SubscriptionsPage() {
           background: var(--glass-t2-bg);
           border: 1px solid var(--glass-t2-border);
           border-radius: var(--radius-sm);
-          padding: 9px 16px;
+          padding: 9px var(--space-4);
           color: var(--text-active);
           cursor: pointer;
-          font-size: 0.875rem;
+          font-size: var(--fs-small);
           font-weight: 500;
           transition: background-color 150ms ease-out, border-color 150ms ease-out;
         }
@@ -453,15 +404,15 @@ export default function SubscriptionsPage() {
         .details-summary {
           cursor: pointer;
           font-family: var(--font-jetbrains, 'JetBrains Mono', monospace);
-          font-size: 0.75rem;
+          font-size: var(--fs-xs);
           letter-spacing: 0.06em;
           color: var(--text-faint);
-          padding: 12px 0;
+          padding: var(--space-3) 0;
           user-select: none;
           list-style: none;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: var(--space-2);
           transition: color 150ms ease-out;
         }
         .details-summary:hover {
@@ -479,22 +430,18 @@ export default function SubscriptionsPage() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 12px 16px;
+          padding: var(--space-3) var(--space-4);
           background: var(--glass-t1-bg);
           border: 1px solid var(--glass-t1-border);
           border-radius: var(--radius-sm);
           text-decoration: none;
           color: var(--text-active);
-          gap: 16px;
+          gap: var(--space-4);
           transition: background-color 150ms ease-out, border-color 150ms ease-out;
         }
         .empty-state-link:hover {
           background-color: var(--glass-t2-bg);
           border-color: var(--glass-t2-border);
-        }
-        @keyframes sub-shimmer { 
-          0% { background-position: -600px 0; } 
-          100% { background-position: 600px 0; } 
         }
       `}</style>
     </>

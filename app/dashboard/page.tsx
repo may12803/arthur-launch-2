@@ -343,7 +343,7 @@ export default function Dashboard() {
           padding-left: var(--space-lg);
           padding-right: var(--space-lg);
           padding-bottom: var(--space-md);
-          max-width: 1320px;
+          max-width: var(--max-w-wide);
           margin: 0 auto;
           height: calc(100vh - 8px);
           display: flex;

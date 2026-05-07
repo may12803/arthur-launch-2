@@ -1,6 +1,10 @@
 "use client";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Nav, Footer } from "../_components/Layout";
+import { GlassPanel } from "../_components/GlassPanel";
+import { PageHeader } from "../_components/PageHeader";
+import { TokenChip } from "../_components/TokenChip";
+import { EmptyState } from "../_components/EmptyState";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -486,70 +490,39 @@ export default function InboxPage() {
       }}>
         {/* ── Page header ── */}
         <div style={{
-          padding: "24px var(--page-gutter) 20px",
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "space-between",
-          gap: 16,
+          padding: "var(--space-6) var(--page-gutter) var(--space-5)",
           borderBottom: "1px solid var(--line-separator)",
           flexShrink: 0,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <h1 style={{
-              margin: 0,
-              fontWeight: 300,
-              fontSize: "clamp(2rem, 4vw, 2.8rem)",
-              letterSpacing: "-0.03em",
-              color: "var(--text-active)",
-              lineHeight: 1,
-            }}>
-              inbox.
-            </h1>
-            {unreadCount > 0 && (
-              <span style={{
-                background: "var(--accent-orange)",
-                color: "var(--accent-text-on)",
-                borderRadius: "var(--radius-pill)",
-                fontSize: 10,
-                fontWeight: 700,
-                padding: "3px 10px",
-                fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
-                letterSpacing: "0.06em",
-              }}>
-                {unreadCount} unread
-              </span>
-            )}
-            {newCount > 0 && (
-              <span style={{
-                background: "var(--accent-orange)",
-                color: "var(--accent-text-on)",
-                borderRadius: "var(--radius-pill)",
-                fontSize: 10,
-                fontWeight: 700,
-                padding: "3px 10px",
-                fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
-              }}>
-                +{newCount} new
-              </span>
-            )}
-          </div>
-          <div style={{
-            fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
-            fontSize: 11,
-            color: "var(--text-muted)",
-            letterSpacing: "0.04em",
-            paddingBottom: 4,
-          }}>
-            {dateStr}
-          </div>
+          <PageHeader
+            title="inbox."
+            actions={
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+                {unreadCount > 0 && (
+                  <TokenChip label={`${unreadCount} unread`} color="orange" size="sm" />
+                )}
+                {newCount > 0 && (
+                  <TokenChip label={`+${newCount} new`} color="orange" size="sm" />
+                )}
+                <span style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "var(--fs-xs)",
+                  color: "var(--text-muted)",
+                  letterSpacing: "0.04em",
+                }}>
+                  {dateStr}
+                </span>
+              </div>
+            }
+          />
         </div>
 
         {/* ── Filter bar ── */}
         <div style={{
-          padding: "10px var(--page-gutter)",
+          padding: "var(--space-2) var(--page-gutter)",
           display: "flex",
           alignItems: "center",
-          gap: 10,
+          gap: "var(--space-2)",
           flexWrap: "wrap",
           borderBottom: "1px solid var(--line-separator)",
           background: "var(--bg-mid)",
@@ -564,8 +537,8 @@ export default function InboxPage() {
             style={{
               flex: "1 1 200px",
               maxWidth: 300,
-              padding: "7px 12px",
-              fontSize: 12,
+              padding: "var(--space-1) var(--space-3)",
+              fontSize: "var(--fs-xs)",
               height: 32,
               minHeight: "unset",
               background: "var(--glass-t1-bg)",
@@ -584,8 +557,8 @@ export default function InboxPage() {
               border: "1px solid var(--glass-t1-border)",
               borderRadius: "var(--radius-sm)",
               color: "var(--text-main)",
-              fontSize: 12,
-              padding: "6px 10px",
+              fontSize: "var(--fs-xs)",
+              padding: "var(--space-1) var(--space-2)",
               height: 32,
               cursor: "pointer",
               fontFamily: "inherit",
@@ -599,7 +572,7 @@ export default function InboxPage() {
               <option key={d} value={d}>{d}</option>
             ))}
           </select>
-          <div className="inbox-filter-chips" style={{ display: "flex", gap: 6 }}>
+          <div className="inbox-filter-chips" style={{ display: "flex", gap: "var(--space-1)" }}>
             {folder === "inbox" && (
               <>
                 <FilterChip label="needs attention" active={smart === "needs_attention"} onToggle={() => setSmart(p => p === "needs_attention" ? "" : "needs_attention")} />
@@ -610,19 +583,19 @@ export default function InboxPage() {
               <FilterChip label="awaiting reply" active={smart === "awaiting_reply"} onToggle={() => setSmart(p => p === "awaiting_reply" ? "" : "awaiting_reply")} />
             )}
           </div>
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
             <button
               onClick={toggleAutomation}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 5,
+                gap: "var(--space-1)",
                 background: automationOn ? "var(--accent-orange-soft)" : "var(--glass-t1-bg)",
                 border: `1px solid ${automationOn ? "var(--accent-orange)" : "var(--glass-t1-border)"}`,
                 borderRadius: "var(--radius-sm)",
-                padding: "4px 10px",
-                fontSize: 10,
-                fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+                padding: "var(--space-1) var(--space-2)",
+                fontSize: "var(--fs-mono)",
+                fontFamily: "var(--font-mono)",
                 letterSpacing: "0.06em",
                 color: automationOn ? "var(--accent-orange)" : "var(--text-muted)",
                 cursor: "pointer",
@@ -631,36 +604,32 @@ export default function InboxPage() {
               <span>⚙</span>
               <span>automation: {automationOn === null ? "…" : automationOn ? "on" : "off"}</span>
             </button>
-            <a href="/inbox/settings" style={{ fontSize: 10, fontFamily: "ui-monospace, 'JetBrains Mono', monospace", color: "var(--text-muted)", textDecoration: "none", letterSpacing: "0.04em" }}>
+            <a href="/inbox/settings" style={{ fontSize: "var(--fs-mono)", fontFamily: "var(--font-mono)", color: "var(--text-muted)", textDecoration: "none", letterSpacing: "0.04em" }}>
               settings →
             </a>
           </div>
         </div>
 
         {/* ── Three-pane body ── */}
-        <div className="inbox-layout" style={{ flex: 1, display: "flex", overflow: "hidden", padding: "16px var(--page-gutter)", gap: 16 }}>
+        <div className="inbox-layout" style={{ flex: 1, display: "flex", overflow: "hidden", padding: "var(--space-4) var(--page-gutter)", gap: "var(--space-4)" }}>
 
           {/* ── Folder rail (220px glass card) ── */}
-          <div className="inbox-folder-rail" style={{
+          <GlassPanel tier={1} as="nav" aria-label="Mail folders" className="inbox-folder-rail" style={{
             width: 220,
             flexShrink: 0,
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
-            padding: 12,
-            gap: 2,
-            background: "var(--glass-t1-bg)",
-            border: "1px solid var(--glass-t1-border)",
-            borderRadius: "var(--radius-panel)",
-            backdropFilter: "blur(var(--glass-t1-blur))",
+            padding: "var(--space-3)",
+            gap: "var(--space-1)",
           }}>
             <div style={{
-              fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
-              fontSize: 9,
+              fontFamily: "var(--font-mono)",
+              fontSize: "var(--fs-mono)",
               letterSpacing: "0.14em",
               textTransform: "uppercase",
               color: "var(--text-muted)",
-              padding: "4px 8px 8px",
+              padding: "var(--space-1) var(--space-2) var(--space-2)",
             }}>
               folders
             </div>
@@ -722,9 +691,7 @@ export default function InboxPage() {
                       <span style={{ width: 14, textAlign: "center", opacity: 0.6 }}>{FOLDER_ICONS[f]}</span>
                       <span style={{ flex: 1 }}>{f}</span>
                       {counts[f] > 0 && (
-                        <span style={{ fontSize: 10, background: "var(--glass-t1-bg)", borderRadius: 8, padding: "1px 6px", color: "var(--text-muted)" }}>
-                          {counts[f]}
-                        </span>
+                        <TokenChip label={String(counts[f])} size="xs" color="muted" />
                       )}
                     </button>
                   ))}
@@ -732,30 +699,26 @@ export default function InboxPage() {
               )}
             </div>
             {/* Desktop folder list */}
-            <div className="folder-list-desktop" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div className="folder-list-desktop" style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
               {(["inbox", "sent", "archived", "deleted", "drafts", "flagged"] as Folder[]).map(f => (
                 <FolderButton key={f} label={f} count={counts[f]} active={folder === f} onClick={() => switchFolder(f)} />
               ))}
             </div>
-          </div>
+          </GlassPanel>
 
           {/* ── Thread list (flex 1) ── */}
-          <div className="inbox-list-pane" style={{
+          <GlassPanel tier={1} className="inbox-list-pane" style={{
             flex: "1 1 320px",
             minWidth: 0,
             overflow: "hidden",
             display: "flex",
             flexDirection: "column",
-            background: "var(--glass-t1-bg)",
-            border: "1px solid var(--glass-t1-border)",
-            borderRadius: "var(--radius-panel)",
-            backdropFilter: "blur(var(--glass-t1-blur))",
           }}>
             <div className="inbox-list-toolbar" style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 8,
-              padding: '8px 12px',
+              gap: "var(--space-2)",
+              padding: "var(--space-2) var(--space-3)",
               borderBottom: '1px solid var(--line-separator)',
               flexShrink: 0,
               height: 45,
@@ -764,69 +727,61 @@ export default function InboxPage() {
                 checked={rows.length > 0 && selectedIds.size === rows.length}
                 onChange={toggleSelectAll}
                 aria-label="Select all"
-                style={{ marginRight: 8 }}
+                style={{ marginRight: "var(--space-2)" }}
               />
               {selectedIds.size > 0 ? (
                 <>
-                  <span style={{ fontSize: 11, fontFamily: "ui-monospace, monospace", color: "var(--text-muted)" }}>{selectedIds.size} selected</span>
-                  <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                  <span style={{ fontSize: "var(--fs-small)", fontFamily: "var(--font-mono)", color: "var(--text-muted)" }}>{selectedIds.size} selected</span>
+                  <div style={{ marginLeft: 'auto', display: 'flex', gap: "var(--space-1)" }}>
                     <button onClick={() => handleBulkAction('archive')} style={ghostBtn}>Archive</button>
                     <button onClick={() => handleBulkAction('delete')} style={ghostBtn}>Delete</button>
                     <button onClick={() => handleBulkAction('read')} style={ghostBtn}>Mark Read</button>
                   </div>
                 </>
               ) : (
-                <span style={{ fontSize: 11, fontFamily: "ui-monospace, monospace", color: "var(--text-faint)" }}>select items for bulk actions</span>
+                <span style={{ fontSize: "var(--fs-small)", fontFamily: "var(--font-mono)", color: "var(--text-faint)" }}>select items for bulk actions</span>
               )}
             </div>
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {loading ? (
-                <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ padding: "var(--space-3) var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
                   {[1,2,3,4,5].map(i => (
-                    <div key={i} className="inbox-skeleton" style={{ height: 70, borderRadius: 8, opacity: 0.15 + i * 0.05 }} />
+                    <div key={i} className="arthur-skeleton" style={{ height: 70, borderRadius: "var(--radius-sm)", opacity: 0.15 + i * 0.05 }} />
                   ))}
                 </div>
               ) : rows.length === 0 ? (
-                <div style={{ padding: "32px 20px" }}>
-                  <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 8 }}>
-                    {q || domain ? "no messages match this filter." : folder === "inbox" ? "inbox is clear." : `${folder} is empty.`}
-                  </div>
-                  {!q && !domain && folder === "inbox" && (
-                    <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6, opacity: 0.7 }}>
-                      arthur monitors connected inboxes and routes messages here.
-                    </div>
-                  )}
-                </div>
+                <EmptyState
+                  icon="📭"
+                  title={q || domain ? "no messages match this filter." : folder === "inbox" ? "inbox is clear." : `${folder} is empty.`}
+                  subtitle={!q && !domain && folder === "inbox" ? "arthur monitors connected inboxes and routes messages here." : undefined}
+                  size="md"
+                />
               ) : (
                 rows.map(row => (
                   <EmailCell key={row.id} row={row} active={row.id === selectedId} isSelected={selectedIds.has(row.id)} onToggleSelect={toggleSelection} onClick={() => openEmail(row.id)} />
                 ))
               )}
               {!loading && rows.length > 0 && (
-                <div style={{ padding: "12px 16px", color: "var(--text-muted)", fontSize: 10, textAlign: "center", fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>
+                <div style={{ padding: "var(--space-3) var(--space-4)", color: "var(--text-muted)", fontSize: "var(--fs-mono)", textAlign: "center", fontFamily: "var(--font-mono)" }}>
                   {total} total
                 </div>
               )}
             </div>
-          </div>
+          </GlassPanel>
 
           {/* ── Reading pane (flex 2, glass-bg-strong) ── */}
-          <div className="inbox-reading-pane" style={{
+          <GlassPanel tier={2} className="inbox-reading-pane" style={{
             flex: "2 1 500px",
             overflowY: "auto",
             minWidth: 0,
-            background: "var(--glass-t2-bg)",
-            border: "1px solid var(--glass-t2-border)",
-            borderRadius: "var(--radius-panel)",
-            backdropFilter: "blur(var(--glass-t2-blur))",
           }}>
             <button
               className="inbox-back-btn"
               onClick={() => { setMobilePane("list"); setSelectedId(null); }}
               style={{
-                margin: "12px 16px",
-                fontSize: 11,
-                padding: "6px 12px",
+                margin: "var(--space-3) var(--space-4)",
+                fontSize: "var(--fs-small)",
+                padding: "var(--space-1) var(--space-3)",
                 background: "var(--glass-t1-bg)",
                 border: "1px solid var(--glass-t1-border)",
                 borderRadius: "var(--radius-sm)",
@@ -838,13 +793,13 @@ export default function InboxPage() {
             </button>
 
             {!selectedId && (
-              <div style={{ padding: "32px 32px" }}>
-                <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 24 }}>
+              <div style={{ padding: "var(--space-8)" }}>
+                <div style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", marginBottom: "var(--space-6)" }}>
                   select a message to read it.
                 </div>
                 {snapshot && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 420 }}>
-                    <div style={{ fontSize: 9, fontFamily: "ui-monospace, 'JetBrains Mono', monospace", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 4 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)", maxWidth: 420 }}>
+                    <div style={{ fontSize: "var(--fs-mono)", fontFamily: "var(--font-mono)", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "var(--space-1)" }}>
                       today&apos;s snapshot
                     </div>
                     <SnapshotCard label="pending approvals" count={snapshot.pendingApprovals} href="/inbox?smart=needs_attention" />
@@ -856,33 +811,18 @@ export default function InboxPage() {
             )}
 
             {selectedId && loadingDetail && (
-              <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 12, maxWidth: 800 }}>
-                <div className="inbox-skeleton" style={{ height: 24, width: "60%", borderRadius: 4, opacity: 0.2 }} />
-                <div className="inbox-skeleton" style={{ height: 14, width: "40%", borderRadius: 4, opacity: 0.15 }} />
-                <div className="inbox-skeleton" style={{ height: 200, borderRadius: 8, opacity: 0.10, marginTop: 16 }} />
+              <div style={{ padding: "var(--space-6) var(--space-7)", display: "flex", flexDirection: "column", gap: "var(--space-3)", maxWidth: 800 }}>
+                <div className="arthur-skeleton" style={{ height: 24, width: "60%", borderRadius: "var(--radius-sm)", opacity: 0.2 }} />
+                <div className="arthur-skeleton" style={{ height: 14, width: "40%", borderRadius: "var(--radius-sm)", opacity: 0.15 }} />
+                <div className="arthur-skeleton" style={{ height: 200, borderRadius: "var(--radius-card)", opacity: 0.10, marginTop: "var(--space-4)" }} />
               </div>
             )}
 
             {selected && !loadingDetail && (
-              <div style={{ padding: "24px 28px", maxWidth: 800 }}>
+              <div style={{ padding: "var(--space-6) var(--space-7)", maxWidth: 800 }}>
                 {selected.direction === "outbound" && (
-                  <div style={{ marginBottom: 12 }}>
-                    <span style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                      background: "var(--glass-t1-bg)",
-                      border: "1px solid var(--glass-t1-border)",
-                      borderRadius: "var(--radius-sm)",
-                      padding: "2px 8px",
-                      fontSize: 9,
-                      fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
-                      letterSpacing: "0.06em",
-                      color: "var(--text-muted)",
-                      textTransform: "uppercase",
-                    }}>
-                      ↗ sent
-                    </span>
+                  <div style={{ marginBottom: "var(--space-3)" }}>
+                    <TokenChip label="↗ sent" size="xs" color="muted" />
                   </div>
                 )}
 
@@ -890,15 +830,15 @@ export default function InboxPage() {
                   <div style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 10,
+                    gap: "var(--space-2)",
                     background: "var(--accent-orange-soft)",
                     border: "1px solid var(--accent-orange)",
                     borderRadius: "var(--radius-card)",
-                    padding: "8px 14px",
-                    marginBottom: 16,
-                    fontSize: 11,
+                    padding: "var(--space-2) var(--space-3)",
+                    marginBottom: "var(--space-4)",
+                    fontSize: "var(--fs-small)",
                     color: "var(--text-main)",
-                    fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+                    fontFamily: "var(--font-mono)",
                   }}>
                     <span style={{ flex: 1 }}>
                       ⚙ arthur {AUTO_ACTION_LABELS[selected.auto_action] ?? selected.auto_action}
@@ -906,7 +846,7 @@ export default function InboxPage() {
                       {selected.classification?.reasoning ? ` — ${selected.classification.reasoning}` : ""}
                     </span>
                     <button
-                      style={{ fontSize: 10, padding: "4px 10px", background: "var(--glass-t1-bg)", border: "1px solid var(--glass-t1-border)", borderRadius: "var(--radius-sm)", color: "var(--text-main)", cursor: "pointer" }}
+                      style={{ fontSize: "var(--fs-mono)", padding: "var(--space-1) var(--space-2)", background: "var(--glass-t1-bg)", border: "1px solid var(--glass-t1-border)", borderRadius: "var(--radius-sm)", color: "var(--text-main)", cursor: "pointer" }}
                       onClick={revertAutoAction}
                       disabled={reverting}
                     >
@@ -917,11 +857,11 @@ export default function InboxPage() {
 
                 <h2 style={{
                   fontWeight: 400,
-                  fontSize: 20,
-                  letterSpacing: "-0.02em",
+                  fontSize: "var(--fs-h3)",
+                  letterSpacing: "var(--ls-heading)",
                   color: "var(--text-active)",
-                  margin: "0 0 16px",
-                  lineHeight: 1.3,
+                  margin: "0 0 var(--space-4)",
+                  lineHeight: "var(--lh-tight)",
                 }}>
                   {selected.subject ?? "(no subject)"}
                 </h2>
@@ -941,12 +881,12 @@ export default function InboxPage() {
                 {selected.replied_at && <MetaRow label="replied" value={relativeTime(selected.replied_at)} accent />}
                 {selected.label && <MetaRow label="label" value={selected.label} />}
                 {selected.classification && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                    <span style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em", minWidth: 48 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", marginBottom: "var(--space-1)" }}>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-mono)", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em", minWidth: 48 }}>
                       intent
                     </span>
                     <IntentBadge intent={selected.classification.intent} />
-                    <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>
+                    <span style={{ fontSize: "var(--fs-mono)", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
                       {Math.round(selected.classification.confidence * 100)}% · {selected.classification.urgency}
                     </span>
                   </div>
@@ -956,29 +896,29 @@ export default function InboxPage() {
                   <div style={{
                     border: "1px solid var(--accent-orange)",
                     borderRadius: "var(--radius-card)",
-                    padding: 16,
-                    marginBottom: 20,
+                    padding: "var(--space-4)",
+                    marginBottom: "var(--space-5)",
                     background: "var(--accent-orange-soft)",
                   }}>
-                    <div style={{ fontSize: 9, color: "var(--accent-orange)", fontFamily: "ui-monospace, 'JetBrains Mono', monospace", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>
+                    <div style={{ fontSize: "var(--fs-mono)", color: "var(--accent-orange)", fontFamily: "var(--font-mono)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "var(--space-2)" }}>
                       ⚙ arthur&apos;s proposed reply — review before sending
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
                       <input value={draftTo} onChange={e => setDraftTo(e.target.value)} placeholder="to" style={inputSt} />
                       <input value={draftSubject} onChange={e => setDraftSubject(e.target.value)} placeholder="subject" style={inputSt} />
                       <textarea value={draftBody} onChange={e => setDraftBody(e.target.value)} rows={6} style={{ ...inputSt, resize: "vertical" }} />
-                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "center" }}>
                         <button onClick={approveDraftAndSend} disabled={draftSending} style={accentBtn}>
                           {draftSending ? "sending…" : "approve & send →"}
                         </button>
                         <button onClick={discardDraft} style={ghostBtn}>discard</button>
-                        {draftStatus && <span style={{ fontSize: 11, color: draftStatus.startsWith("error") ? "var(--tint-red)" : "var(--accent-orange)", fontFamily: "ui-monospace, monospace" }}>{draftStatus}</span>}
+                        {draftStatus && <span style={{ fontSize: "var(--fs-small)", color: draftStatus.startsWith("error") ? "var(--tint-red)" : "var(--accent-orange)", fontFamily: "var(--font-mono)" }}>{draftStatus}</span>}
                       </div>
                     </div>
                   </div>
                 )}
 
-                <div style={{ display: "flex", gap: 8, margin: "16px 0", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "var(--space-2)", margin: "var(--space-4) 0", flexWrap: "wrap" }}>
                   {selected.direction === "inbound" && !selected.is_deleted && (
                     <button onClick={() => setReplyOpen(o => !o)} style={ghostBtn}>{replyOpen ? "cancel reply" : "reply"}</button>
                   )}
@@ -1004,28 +944,28 @@ export default function InboxPage() {
                 </div>
 
                 {replyOpen && (
-                  <div style={{ border: "1px solid var(--glass-t1-border)", borderRadius: "var(--radius-card)", padding: 16, marginBottom: 20, background: "var(--glass-t1-bg)" }}>
-                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 10, fontFamily: "ui-monospace, monospace" }}>
+                  <div style={{ border: "1px solid var(--glass-t1-border)", borderRadius: "var(--radius-card)", padding: "var(--space-4)", marginBottom: "var(--space-5)", background: "var(--glass-t1-bg)" }}>
+                    <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-muted)", marginBottom: "var(--space-2)", fontFamily: "var(--font-mono)" }}>
                       from: {selected.to_email}
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
                       <input value={replyTo} onChange={e => setReplyTo(e.target.value)} placeholder="to" style={inputSt} />
                       <input value={replySubject} onChange={e => setReplySubject(e.target.value)} placeholder="subject" style={inputSt} />
                       <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="write your reply…" rows={5} style={{ ...inputSt, resize: "vertical" }} />
-                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "center" }}>
                         <button onClick={sendReply} disabled={replying} style={accentBtn}>{replying ? "sending…" : "send →"}</button>
-                        {replyStatus && <span style={{ fontSize: 11, color: replyStatus.startsWith("error") ? "var(--tint-red)" : "var(--accent-orange)", fontFamily: "ui-monospace, monospace" }}>{replyStatus}</span>}
+                        {replyStatus && <span style={{ fontSize: "var(--fs-small)", color: replyStatus.startsWith("error") ? "var(--tint-red)" : "var(--accent-orange)", fontFamily: "var(--font-mono)" }}>{replyStatus}</span>}
                       </div>
                     </div>
                   </div>
                 )}
 
-                <div style={{ borderTop: "1px solid var(--line-separator)", paddingTop: 20, marginTop: 4 }}>
+                <div style={{ borderTop: "1px solid var(--line-separator)", paddingTop: "var(--space-5)", marginTop: "var(--space-1)" }}>
                   {selected.body_html ? (
                     <iframe
                       srcDoc={selected.body_html}
                       sandbox="allow-popups allow-popups-to-escape-sandbox"
-                      style={{ width: "100%", minHeight: 320, border: "none", borderRadius: "var(--radius-card)", background: "#fff", colorScheme: "light" }}
+                      style={{ width: "100%", minHeight: 320, border: "none", borderRadius: "var(--radius-card)", background: "#ffffff", colorScheme: "light" }}
                       onLoad={(e) => {
                         const iframe = e.currentTarget;
                         try {
@@ -1035,15 +975,15 @@ export default function InboxPage() {
                       }}
                     />
                   ) : (
-                    <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 13, color: "var(--text-main)", lineHeight: 1.65, fontFamily: "inherit", margin: 0 }}>
+                    <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: "var(--fs-small)", color: "var(--text-main)", lineHeight: 1.65, fontFamily: "inherit", margin: 0 }}>
                       {selected.body_text ?? "(no body)"}
                     </pre>
                   )}
                 </div>
 
                 {selected.direction === "inbound" && (
-                  <div style={{ marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--line-separator)" }}>
-                    <div style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: "ui-monospace, 'JetBrains Mono', monospace", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>
+                  <div style={{ marginTop: "var(--space-6)", paddingTop: "var(--space-5)", borderTop: "1px solid var(--line-separator)" }}>
+                    <div style={{ fontSize: "var(--fs-mono)", color: "var(--text-muted)", fontFamily: "var(--font-mono)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "var(--space-1)" }}>
                       arthur&apos;s note
                     </div>
                     <textarea
@@ -1058,7 +998,7 @@ export default function InboxPage() {
                 )}
               </div>
             )}
-          </div>
+          </GlassPanel>
         </div>
       </div>
 
@@ -1095,18 +1035,6 @@ export default function InboxPage() {
           .inbox-back-btn { display: none !important; }
           .folder-dropdown-mobile { display: none !important; }
           .folder-list-desktop { display: flex !important; }
-        }
-        @keyframes inbox-shimmer {
-          0%   { background-position: -600px 0; }
-          100% { background-position: 600px 0; }
-        }
-        .inbox-skeleton {
-          background: linear-gradient(90deg,
-            rgba(255,255,255,0.04) 25%,
-            rgba(255,255,255,0.08) 50%,
-            rgba(255,255,255,0.04) 75%);
-          background-size: 1200px 100%;
-          animation: inbox-shimmer 1.6s infinite;
         }
       `}</style>
 
@@ -1182,24 +1110,14 @@ function FolderButton({ label, count, active, onClick }: { label: Folder; count:
         color: active ? "var(--accent-orange)" : "var(--text-main)",
       }}
     >
-      <span style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 11, width: 14, textAlign: "center", flexShrink: 0, opacity: 0.6 }}>
+      <span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-small)", width: 14, textAlign: "center", flexShrink: 0, opacity: 0.6 }}>
         {FOLDER_ICONS[label]}
       </span>
-      <span style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 11, fontWeight: active ? 600 : 400, letterSpacing: "0.04em", flex: 1 }}>
+      <span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-small)", fontWeight: active ? 600 : 400, letterSpacing: "0.04em", flex: 1 }}>
         {label}
       </span>
       {count > 0 && (
-        <span style={{
-          fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
-          fontSize: 9,
-          color: active ? "var(--accent-orange)" : "var(--text-muted)",
-          background: active ? "rgba(212,255,61,0.12)" : "var(--glass-t2-bg)",
-          borderRadius: "var(--radius-pill)",
-          padding: "1px 6px",
-          flexShrink: 0,
-        }}>
-          {count}
-        </span>
+        <TokenChip label={String(count)} size="xs" color={active ? "orange" : "muted"} />
       )}
     </button>
   );
@@ -1216,22 +1134,22 @@ function EmailCell({ row, active, isSelected, onToggleSelect, onClick }: { row: 
         background: active ? "var(--accent-orange-soft)" : isSelected ? "var(--glass-t2-bg)" : "transparent",
         borderBottom: "1px solid var(--line-separator)",
         borderLeft: active ? "2px solid var(--accent-orange)" : "2px solid transparent",
-        padding: "12px 0 12px 14px",
+        padding: "var(--space-3) 0 var(--space-3) var(--space-3)",
         cursor: "pointer",
-        transition: "background 0.12s",
+        transition: "background var(--duration-instant) var(--ease-out-soft)",
         opacity: row.is_deleted ? 0.5 : 1,
       }}
     >
-      <input type="checkbox" checked={isSelected} onChange={() => onToggleSelect(row.id)} onClick={e => e.stopPropagation()} style={{ marginTop: 4, marginRight: 12, flexShrink: 0 }} />
+      <input type="checkbox" checked={isSelected} onChange={() => onToggleSelect(row.id)} onClick={e => e.stopPropagation()} style={{ marginTop: "var(--space-1)", marginRight: "var(--space-3)", flexShrink: 0 }} />
       <div onClick={onClick} style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-1)", marginBottom: "var(--space-1)" }}>
           {!row.is_read && !isSent && (
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-orange)", flexShrink: 0 }} />
           )}
-          {isSent && <span style={{ fontSize: 9, color: "var(--text-muted)", fontFamily: "ui-monospace, monospace", flexShrink: 0 }}>↗</span>}
+          {isSent && <span style={{ fontSize: "var(--fs-mono)", color: "var(--text-muted)", fontFamily: "var(--font-mono)", flexShrink: 0 }}>↗</span>}
           <span style={{
             fontWeight: row.is_read || isSent ? 400 : 600,
-            fontSize: 12,
+            fontSize: "var(--fs-xs)",
             color: "var(--text-active)",
             flex: 1,
             overflow: "hidden",
@@ -1240,27 +1158,23 @@ function EmailCell({ row, active, isSelected, onToggleSelect, onClick }: { row: 
           }}>
             {displayName}
           </span>
-          <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, color: "var(--text-muted)", flexShrink: 0, paddingRight: 14 }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-xs)", color: "var(--text-muted)", flexShrink: 0, paddingRight: "var(--space-3)" }}>
             {relativeTime(row.received_at)}
           </span>
         </div>
-        <div style={{ fontSize: 11.5, color: row.is_read || isSent ? "var(--text-main)" : "var(--text-active)", fontWeight: row.is_read || isSent ? 400 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 2 }}>
+        <div style={{ fontSize: "var(--fs-small)", color: row.is_read || isSent ? "var(--text-main)" : "var(--text-active)", fontWeight: row.is_read || isSent ? 400 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: "var(--space-1)" }}>
           {row.subject ?? "(no subject)"}
         </div>
-        <div style={{ fontSize: 11, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div style={{ fontSize: "var(--fs-small)", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {snippet(row.body_text, 80)}
         </div>
-        <div style={{ display: "flex", gap: 6, marginTop: 5, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "var(--space-1)", marginTop: "var(--space-1)", flexWrap: "wrap" }}>
           {row.label && (
-            <span style={{ display: "inline-block", padding: "1px 6px", borderRadius: "var(--radius-sm)", fontSize: 9, fontFamily: "ui-monospace, monospace", letterSpacing: "0.06em", background: "var(--glass-t2-bg)", border: "1px solid var(--glass-t1-border)", color: "var(--text-muted)", textTransform: "uppercase" }}>
-              {row.label}
-            </span>
+            <TokenChip label={row.label} size="xs" color="muted" />
           )}
           {row.classification?.intent && <IntentBadge intent={row.classification.intent} />}
           {row.actor === "arthur" && row.auto_action && row.auto_action !== "none" && (
-            <span style={{ display: "inline-block", padding: "1px 6px", borderRadius: "var(--radius-sm)", fontSize: 9, fontFamily: "ui-monospace, monospace", background: "var(--accent-orange-soft)", color: "var(--accent-orange)", border: "1px solid var(--accent-orange)" }}>
-              ⚙ {row.auto_action}
-            </span>
+            <TokenChip label={`⚙ ${row.auto_action}`} size="xs" color="orange" />
           )}
         </div>
       </div>
@@ -1270,11 +1184,11 @@ function EmailCell({ row, active, isSelected, onToggleSelect, onClick }: { row: 
 
 function MetaRow({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div style={{ display: "flex", gap: 12, marginBottom: 6, alignItems: "baseline", borderBottom: "1px dashed var(--line-separator)", paddingBottom: 5 }}>
-      <span style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em", minWidth: 48, flexShrink: 0 }}>
+    <div style={{ display: "flex", gap: "var(--space-3)", marginBottom: "var(--space-1)", alignItems: "baseline", borderBottom: "1px dashed var(--line-separator)", paddingBottom: "var(--space-1)" }}>
+      <span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-mono)", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em", minWidth: 48, flexShrink: 0 }}>
         {label}
       </span>
-      <span style={{ fontSize: 12, color: accent ? "var(--accent-orange)" : "var(--text-main)", fontFamily: "ui-monospace, monospace" }}>
+      <span style={{ fontSize: "var(--fs-xs)", color: accent ? "var(--accent-orange)" : "var(--text-main)", fontFamily: "var(--font-mono)" }}>
         {value}
       </span>
     </div>
@@ -1283,26 +1197,14 @@ function MetaRow({ label, value, accent }: { label: string; value: string; accen
 
 function FilterChip({ label, active, onToggle }: { label: string; active: boolean; onToggle: () => void }) {
   return (
-    <button
+    <TokenChip
+      label={label}
+      variant="filter"
+      size="sm"
+      color={active ? "orange" : "muted"}
+      selected={active}
       onClick={onToggle}
-      style={{
-        background: active ? "var(--accent-orange-soft)" : "transparent",
-        border: `1px solid ${active ? "var(--accent-orange)" : "var(--glass-t1-border)"}`,
-        borderRadius: "var(--radius-sm)",
-        color: active ? "var(--accent-orange)" : "var(--text-muted)",
-        fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
-        fontSize: 9,
-        letterSpacing: "0.06em",
-        textTransform: "uppercase",
-        padding: "4px 10px",
-        cursor: "pointer",
-        transition: "all 0.15s",
-        height: 28,
-        whiteSpace: "nowrap",
-      }}
-    >
-      {label}
-    </button>
+    />
   );
 }
 
@@ -1369,18 +1271,18 @@ function SnapshotCard({ label, count, href }: { label: string; count: number; hr
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "12px 16px",
+        padding: "var(--space-3) var(--space-4)",
         background: "var(--glass-t1-bg)",
         border: "1px solid var(--glass-t1-border)",
         borderRadius: "var(--radius-card)",
         textDecoration: "none",
-        transition: "transform 0.15s, box-shadow 0.15s",
+        transition: "transform var(--duration-quick) var(--ease-out-soft), box-shadow var(--duration-quick) var(--ease-out-soft)",
       }}
     >
-      <span style={{ fontSize: 11, color: "var(--text-main)", fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>
+      <span style={{ fontSize: "var(--fs-small)", color: "var(--text-main)", fontFamily: "var(--font-mono)" }}>
         {label}
       </span>
-      <span style={{ fontSize: 20, fontWeight: 300, color: "var(--accent-orange)", fontFamily: "ui-monospace, monospace", letterSpacing: "-0.02em" }}>
+      <span style={{ fontSize: "var(--fs-h3)", fontWeight: 300, color: "var(--accent-orange)", fontFamily: "var(--font-mono)", letterSpacing: "-0.02em" }}>
         {count}
       </span>
     </a>

@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import Link from "next/link";
 import { Nav, Footer } from "../_components/Layout";
+import { PageHeader } from "../_components/PageHeader";
+import { GlassPanel } from "../_components/GlassPanel";
 import SkillsLayout from "./_components/SkillsLayout";
 
 function loadSkills(): { name: string; description: string }[] {
@@ -35,38 +37,12 @@ export default function SkillsPage() {
       <Nav />
       <div className="wrap" style={{ paddingTop: 108, paddingBottom: "var(--space-xl)" }}>
 
-        {/* ── Header ── */}
-        <div style={{
-          marginBottom: "var(--space-lg)",
-        }}>
-          <span style={{
-            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-            fontSize: "var(--fs-mono)",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "var(--text-muted)",
-          }}>
-            {skills.length} skills installed · ~/.claude/skills/
-          </span>
-          <h1 style={{
-            fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-            fontWeight: 800,
-            fontSize: "var(--fs-h1)",
-            letterSpacing: "-0.03em",
-            color: "var(--text-active)",
-            margin: "8px 0 12px",
-            lineHeight: 0.95,
-          }}>skills.</h1>
-          <p style={{
-            fontSize: "var(--fs-body)",
-            color: "var(--text-muted)",
-            maxWidth: "58ch",
-            lineHeight: 1.65,
-            margin: 0,
-          }}>
-            Packaged workflows Arthur invokes autonomously when context fits. Filter by category or search inside.
-          </p>
-        </div>
+        <PageHeader
+          title="skills."
+          eyebrow={`${skills.length} skills installed · ~/.claude/skills/`}
+          subtitle="Packaged workflows Arthur invokes autonomously when context fits. Filter by category or search inside."
+          style={{ marginBottom: "var(--space-lg)" }}
+        />
 
         {/* ── Skill count stat strip ── */}
         <div style={{
@@ -81,14 +57,7 @@ export default function SkillsPage() {
             { value: String(skills.filter(s => ["seo","content","marketing"].some(k => s.name.toLowerCase().includes(k))).length), label: "marketing" },
             { value: String(skills.filter(s => ["finance","legal","ai","data"].some(k => s.name.toLowerCase().includes(k))).length), label: "ops + intel" },
           ].map(({ value, label }) => (
-            <div key={label} style={{
-              background: "var(--glass-bg)",
-              border: "1px solid var(--glass-border)",
-              backdropFilter: "blur(var(--blur-amount))",
-              borderRadius: "var(--radius-panel)",
-              padding: "var(--space-md)",
-              textAlign: "center",
-            }}>
+            <GlassPanel key={label} style={{ padding: "var(--space-md)", textAlign: "center" }}>
               <div style={{
                 fontFamily: "var(--font-jetbrains, monospace)",
                 fontSize: "var(--fs-h2)",
@@ -105,7 +74,7 @@ export default function SkillsPage() {
                 color: "var(--text-muted)",
                 marginTop: "var(--space-xs)",
               }}>{label}</div>
-            </div>
+            </GlassPanel>
           ))}
         </div>
 

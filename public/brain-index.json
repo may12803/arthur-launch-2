@@ -1,9 +1,9 @@
 {
   "totals": {
-    "files": 585,
-    "sizeBytes": 14802817
+    "files": 586,
+    "sizeBytes": 14803001
   },
-  "generated_at": "2026-05-05T23:09:22.487Z",
+  "generated_at": "2026-05-07T04:54:02.048Z",
   "roots": [
     {
       "name": "external-skills",
@@ -661,6 +661,11 @@
               "sizeBytes": 184
             },
             {
+              "name": "retrieval-daily-2026-05-06.md",
+              "relativePath": "meta/retrieval-daily-2026-05-06.md",
+              "sizeBytes": 184
+            },
+            {
               "name": "retrieval-weekly.md",
               "relativePath": "meta/retrieval-weekly.md",
               "sizeBytes": 2058
@@ -823,8 +828,8 @@
           ]
         }
       ],
-      "files": 65,
-      "sizeBytes": 916002
+      "files": 66,
+      "sizeBytes": 916186
     },
     {
       "name": "business",
