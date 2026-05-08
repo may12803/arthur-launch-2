@@ -1,35 +1,9 @@
-import fs from "fs";
-import path from "path";
+import skills from "../../data/skills.json";
 import Link from "next/link";
 import { Nav, Footer } from "../_components/Layout";
 import SkillsLayout from "./_components/SkillsLayout";
 
-function loadSkills(): { name: string; description: string }[] {
-  for (const file of ["/data/skills.json", path.join(process.cwd(), "public", "skills.json")]) {
-    try {
-      if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, "utf8"));
-    } catch {}
-  }
-  try {
-    const lib = "/data/skill-library.jsonl";
-    if (fs.existsSync(lib)) {
-      const seen = new Map();
-      for (const line of fs.readFileSync(lib, "utf8").trim().split("\n").filter(Boolean)) {
-        try {
-          const r = JSON.parse(line);
-          const key = `${r.domain}::${r.name}`;
-          seen.set(key, { name: `${r.name} (${r.domain})`, description: (r.prompt || "").slice(0, 200) });
-        } catch {}
-      }
-      return [...seen.values()];
-    }
-  } catch {}
-  return [];
-}
-
 export default function SkillsPage() {
-  const skills = loadSkills();
-
   return (
     <>
       <Nav />
