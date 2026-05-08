@@ -26,10 +26,10 @@ export async function GET(req: NextRequest) {
   ]);
 
   if (g.status === 'fulfilled' && Array.isArray(g.value)) events.push(...g.value);
-  else if (g.status === 'rejected') errors.google = String(g.reason).slice(0, 100);
+  else if (g.status === 'rejected') errors.google = 'Failed to fetch';
 
   if (i.status === 'fulfilled' && Array.isArray(i.value)) events.push(...i.value);
-  else if (i.status === 'rejected') errors.icloud = String(i.reason).slice(0, 100);
+  else if (i.status === 'rejected') errors.icloud = 'Failed to fetch';
 
   return NextResponse.json({
     events,
