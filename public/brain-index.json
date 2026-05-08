@@ -1,9 +1,9 @@
 {
   "totals": {
-    "files": 585,
-    "sizeBytes": 14802817
+    "files": 597,
+    "sizeBytes": 14868166
   },
-  "generated_at": "2026-05-05T23:09:22.487Z",
+  "generated_at": "2026-05-08T08:44:04.041Z",
   "roots": [
     {
       "name": "external-skills",
@@ -661,6 +661,16 @@
               "sizeBytes": 184
             },
             {
+              "name": "retrieval-daily-2026-05-06.md",
+              "relativePath": "meta/retrieval-daily-2026-05-06.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-08.md",
+              "relativePath": "meta/retrieval-daily-2026-05-08.md",
+              "sizeBytes": 184
+            },
+            {
               "name": "retrieval-weekly.md",
               "relativePath": "meta/retrieval-weekly.md",
               "sizeBytes": 2058
@@ -823,8 +833,8 @@
           ]
         }
       ],
-      "files": 65,
-      "sizeBytes": 916002
+      "files": 67,
+      "sizeBytes": 916370
     },
     {
       "name": "business",
@@ -2769,6 +2779,69 @@
       ],
       "files": 10,
       "sizeBytes": 40926
+    },
+    {
+      "name": "image-generation",
+      "label": "image-generation",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "flux-1.1-pro-prompting.md",
+              "relativePath": "image-generation/flux-1.1-pro-prompting.md",
+              "sizeBytes": 5146
+            },
+            {
+              "name": "flux-1.1-pro-ultra-prompting.md",
+              "relativePath": "image-generation/flux-1.1-pro-ultra-prompting.md",
+              "sizeBytes": 5856
+            },
+            {
+              "name": "flux-schnell-prompting.md",
+              "relativePath": "image-generation/flux-schnell-prompting.md",
+              "sizeBytes": 5106
+            },
+            {
+              "name": "gpt-image-1-prompting.md",
+              "relativePath": "image-generation/gpt-image-1-prompting.md",
+              "sizeBytes": 7669
+            },
+            {
+              "name": "imagen-4-prompting.md",
+              "relativePath": "image-generation/imagen-4-prompting.md",
+              "sizeBytes": 4711
+            },
+            {
+              "name": "imagen-4-ultra-prompting.md",
+              "relativePath": "image-generation/imagen-4-ultra-prompting.md",
+              "sizeBytes": 6377
+            },
+            {
+              "name": "master-prompting-strategy.md",
+              "relativePath": "image-generation/master-prompting-strategy.md",
+              "sizeBytes": 8351
+            },
+            {
+              "name": "nano-banana-prompting.md",
+              "relativePath": "image-generation/nano-banana-prompting.md",
+              "sizeBytes": 7625
+            },
+            {
+              "name": "recraft-v3-prompting.md",
+              "relativePath": "image-generation/recraft-v3-prompting.md",
+              "sizeBytes": 7335
+            },
+            {
+              "name": "seedream-4-prompting.md",
+              "relativePath": "image-generation/seedream-4-prompting.md",
+              "sizeBytes": 6805
+            }
+          ]
+        }
+      ],
+      "files": 10,
+      "sizeBytes": 64981
     },
     {
       "name": "platforms",

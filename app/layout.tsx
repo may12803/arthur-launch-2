@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { CommandBarProvider } from "./_components/CommandBar";
+import Footer from "./_components/Footer";
 import "./globals.css";
 
 const inter = Inter({
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div id="main-content">
             {children}
           </div>
+          <Footer />
         </CommandBarProvider>
       </body>
     </html>

@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { authGate, rateLimit } from "@/lib/_auth";
 import { buildPersona } from "@/lib/persona/arthur-system-prompt";
+import { sanitizeArthurReply } from "@/lib/sanitizer";
 
 export const runtime = "nodejs";
 
@@ -407,6 +408,26 @@ const TOOL_DEFINITIONS = [
           payload: { type: "object", description: "JSON payload sent to the workflow. Workflow-specific schema." },
         },
         required: ["workflow"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "search_flights",
+      description: "Search live flight offers via Duffel — returns up to 5 cheapest fares with carrier, total price, slice details, and stops. Use whenever Daniel asks 'find flights from X to Y on date Z'. Phase 1 research-only — Arthur returns offers, Daniel books manually. Auto-resolves common city names (Grand Rapids, Chicago, NYC, etc.) to IATA codes; otherwise pass 3-letter IATA. Date format: YYYY-MM-DD.",
+      parameters: {
+        type: "object",
+        properties: {
+          origin: { type: "string", description: "Origin: IATA code (GRR, ORD) OR city name (Grand Rapids, Chicago)." },
+          destination: { type: "string", description: "Destination: IATA code or city name." },
+          depart_date: { type: "string", description: "Departure date YYYY-MM-DD" },
+          return_date: { type: "string", description: "Return date YYYY-MM-DD (omit for one-way)" },
+          passengers: { type: "number", description: "Number of adult passengers (default 1)" },
+          cabin: { type: "string", enum: ["economy", "premium_economy", "business", "first"], description: "Cabin class — default economy" },
+          max_connections: { type: "number", description: "Max connections per slice (default 1)" },
+        },
+        required: ["origin", "destination", "depart_date"],
       },
     },
   },
@@ -887,8 +908,74 @@ async function executeTool(name: string, argsStr: string): Promise<string> {
     case "convert_currency":    return toolConvertCurrency(args as Parameters<typeof toolConvertCurrency>[0]);
     case "composio_execute":    return toolComposio(args as Parameters<typeof toolComposio>[0]);
     case "pipedream_workflow":  return toolPipedream(args as Parameters<typeof toolPipedream>[0]);
+    case "search_flights":      return toolSearchFlights(args as Parameters<typeof toolSearchFlights>[0]);
     default:                  return `Unknown tool: ${name}`;
   }
+}
+
+async function toolSearchFlights(args: { origin?: string; destination?: string; depart_date?: string; return_date?: string; passengers?: number; cabin?: "economy" | "premium_economy" | "business" | "first"; max_connections?: number }): Promise<string> {
+  if (!args.origin || !args.destination || !args.depart_date) {
+    return "search_flights error: origin, destination, and depart_date (YYYY-MM-DD) all required";
+  }
+  const { searchFlights, isTestToken, normalizeIATA } = await import("@/lib/travel/duffel");
+
+  // Helper: build deep links for the user to click. Used when in test mode
+  // (no real data) OR as a fallback when Duffel returns no offers / errors.
+  const orig = normalizeIATA(args.origin) || args.origin.toUpperCase();
+  const dest = normalizeIATA(args.destination) || args.destination.toUpperCase();
+  const dd = args.depart_date;
+  const rd = args.return_date;
+  const tripType = rd ? "roundtrip" : "oneway";
+  const googleFlightsUrl = rd
+    ? `https://www.google.com/travel/flights?q=Flights%20from%20${orig}%20to%20${dest}%20on%20${dd}%20returning%20${rd}`
+    : `https://www.google.com/travel/flights?q=Flights%20from%20${orig}%20to%20${dest}%20on%20${dd}`;
+  const kayakUrl = `https://www.kayak.com/flights/${orig}-${dest}/${dd}${rd ? `/${rd}` : ""}`;
+  const skyscannerUrl = `https://www.skyscanner.com/transport/flights/${orig.toLowerCase()}/${dest.toLowerCase()}/${dd.replace(/-/g, "").slice(2)}/${rd ? rd.replace(/-/g, "").slice(2) : ""}`;
+  const deepLinks = [
+    `Google Flights: ${googleFlightsUrl}`,
+    `Kayak: ${kayakUrl}`,
+    `Skyscanner: ${skyscannerUrl}`,
+  ].join("\n");
+
+  // GUARD: Duffel TEST tokens return fictional mock offers. NEVER present
+  // those as real flights — that's hallucination dressed in JSON. Caught
+  // 2026-05-07: Telegram showed "British Airways $37.70 GRR→ORD" — that
+  // route doesn't exist. Daniel called this out. Now: in test mode, fall
+  // back to a REAL Perplexity-backed web search for current fares instead
+  // of just deep links. Better path than mock data.
+  if (isTestToken()) {
+    const query = `cheapest flights from ${orig} to ${dest} on ${dd}${rd ? ` returning ${rd}` : ""} 2026 ${args.cabin || "economy"}`;
+    let webResearch = "";
+    try {
+      const wr = await toolWebSearch({ query });
+      if (typeof wr === "string" && wr.length > 50 && !wr.startsWith("web_search error")) {
+        webResearch = `\n\nLive fare research (via web_search):\n${wr.slice(0, 1500)}`;
+      }
+    } catch { /* fall through to just deep links */ }
+    return `⚠️ Duffel sandbox token in use — sandbox returns fictional offers, so I'm not quoting Duffel prices. Apply for a Duffel live token at dashboard.duffel.com → Developers → Live access (or sign up at developers.amadeus.com for free 10K-call/mo Amadeus access — Daniel can paste the API key into the vault).${webResearch}\n\nDirect aggregator links for ${orig}→${dest} (${tripType}, depart ${dd}${rd ? `, return ${rd}` : ""}):\n${deepLinks}\n\nClick one to see and book real fares — Phase 1 research only.`;
+  }
+
+  const r = await searchFlights({
+    origin: args.origin,
+    destination: args.destination,
+    depart_date: args.depart_date,
+    return_date: args.return_date,
+    passengers: args.passengers,
+    cabin: args.cabin,
+    max_connections: args.max_connections,
+  });
+  if (!r.ok) {
+    // Hard fallback to deep links on any Duffel error
+    return `search_flights error: ${r.error}\n\nUse these aggregators instead:\n${deepLinks}`;
+  }
+  if (r.offers.length === 0) {
+    return `search_flights: no offers found for ${orig}→${dest} on ${dd} via Duffel.\n\nTry these aggregators:\n${deepLinks}`;
+  }
+  // Compact summary the LLM can format for the user (LIVE token only)
+  const lines = r.offers.map((o, i) =>
+    `${i + 1}. ${o.total} on ${o.airline} — ${o.slices.map((s: { from: string; to: string; stops: number; depart: string; flights: string[] }) => `${s.from}→${s.to} (${s.stops} stop${s.stops === 1 ? "" : "s"}, ${s.depart?.slice(0, 16) || "?"})`).join(" / ")}`
+  );
+  return `search_flights returned ${r.offers.length} live Duffel offers:\n${lines.join("\n")}\n\nDeep links to verify and book:\n${deepLinks}\n\nPhase 1 research only — Daniel books manually after reviewing.`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1291,6 +1378,21 @@ function promptNeedsTools(messages: OpenAIMessage[]): boolean {
   return toolKeywords.some(kw => text.includes(kw));
 }
 
+// Current-events detector — force web_search before answering. Caught
+// 2026-05-07 in Telegram audit: Arthur fabricated specific Super Bowl
+// score+date+teams from training data instead of searching. Rule 17
+// (hallucination defense) requires tool-call before any factual claim
+// about live/current state. This regex triggers a system-level "you MUST
+// web_search first" nudge that makes the model actually call the tool.
+const CURRENT_EVENTS_RE = /\b(latest|current|currently|right now|today|tonight|this (week|month|year|morning|evening)|recent|news|headlines|won the|score|stock( price)?|share price|market cap|valuation|election|president|ceo|prime minister|champion|world cup|super bowl|world series|stanley cup|nba finals|olympics|world record|stock|crypto|bitcoin|ethereum)\b/i;
+
+function isCurrentEventsQuery(messages: OpenAIMessage[]): boolean {
+  const lastUser = [...messages].reverse().find((m) => m.role === "user");
+  const text = (typeof lastUser?.content === "string" ? lastUser.content : "").toLowerCase();
+  if (!text) return false;
+  return CURRENT_EVENTS_RE.test(text);
+}
+
 async function callLLM(messages: OpenAIMessage[], withTools: boolean): Promise<{ response: LLMResponse; provider: string } | null> {
   // Delegates to lib/router.ts which walks the canonical 18-tier ladder with
   // tool-capable filter. This file no longer hardcodes the chain — adding a new
@@ -1298,7 +1400,29 @@ async function callLLM(messages: OpenAIMessage[], withTools: boolean): Promise<{
   const { routeToLLM, TIERS: _TIERS } = await import("@/lib/router");
   void _TIERS; // referenced for type clarity
   const requiresTools = withTools && promptNeedsTools(messages);
-  const result = await routeToLLM(messages as Parameters<typeof routeToLLM>[0], {
+
+  // Hallucination defense: if the prompt asks about live/current world facts
+  // (sports scores, stock prices, news, current officials, etc.), inject a
+  // system message ordering web_search BEFORE answering. Without this nudge
+  // the model frequently answers from stale training data and invents
+  // specific scores/dates/people. Verified live 2026-05-07 (Super Bowl).
+  let nudgedMessages = messages;
+  if (requiresTools && isCurrentEventsQuery(messages)) {
+    nudgedMessages = [
+      {
+        role: "system",
+        content:
+          "CURRENT-EVENTS QUERY DETECTED. You MUST call the web_search tool BEFORE answering. " +
+          "Your training data is months/years old and unreliable for live facts (sports scores, " +
+          "current officials, prices, news, recent winners). Do NOT answer from memory. " +
+          "If you have already searched and the result is in this conversation, you may answer; " +
+          "otherwise call web_search now with a focused query.",
+      },
+      ...messages,
+    ];
+  }
+
+  const result = await routeToLLM(nudgedMessages as Parameters<typeof routeToLLM>[0], {
     requiresTools,
     toolDefs: requiresTools ? (TOOL_DEFINITIONS as Parameters<typeof routeToLLM>[1]["toolDefs"]) : [],
   });
@@ -1327,9 +1451,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid json" }, { status: 400 });
   }
 
-  const { prompt, session_id: clientSessionId } = (payload || {}) as { prompt?: string; session_id?: string };
+  // Back-compat: accept either { prompt: string } OR { messages: [{role, content}, ...] }.
+  // The Telegram bot (arthur-telegram.js callBackplane) sends `messages`. The
+  // dashboard chat sends `prompt`. Without this fallback Telegram breaks with
+  // 400 "prompt required" — verified live in browser at 2026-05-07.
+  const body = (payload || {}) as { prompt?: string; messages?: Array<{ role?: string; content?: unknown }>; session_id?: string };
+  let prompt: string | undefined = body.prompt;
+  const clientSessionId = body.session_id;
+  if ((!prompt || typeof prompt !== "string" || !prompt.trim()) && Array.isArray(body.messages) && body.messages.length > 0) {
+    // Pull the last user message text as the prompt
+    for (let i = body.messages.length - 1; i >= 0; i--) {
+      const m = body.messages[i];
+      if (m?.role === "user" && typeof m.content === "string" && m.content.trim()) {
+        prompt = m.content;
+        break;
+      }
+      if (m?.role === "user" && Array.isArray(m.content)) {
+        const txt = (m.content as Array<{ type?: string; text?: string }>)
+          .filter((p) => p.type === "text" && typeof p.text === "string")
+          .map((p) => p.text)
+          .join("\n");
+        if (txt.trim()) { prompt = txt; break; }
+      }
+    }
+  }
   if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
-    return NextResponse.json({ error: "prompt required" }, { status: 400 });
+    return NextResponse.json({ error: "prompt required (or messages[] with a user message)" }, { status: 400 });
   }
 
   const sessionId = (clientSessionId && typeof clientSessionId === "string" && clientSessionId.trim())
@@ -1370,12 +1517,36 @@ export async function POST(req: NextRequest) {
     currentLocation = geo ? `${geo.city}${geo.region ? ", " + geo.region : ""}` : null;
   }
 
+  // 1c. Semantic memory retrieval — top-3 similar past turns from the corpus.
+  // Uses Supabase backend (arthur_corpus_embeddings table, pgvector similarity).
+  // Embeds via Ollama nomic-embed-text if OLLAMA_EMBED_URL is set, otherwise
+  // skips gracefully (empty hits, no crash). Non-blocking — fires in parallel
+  // with location resolution above but awaited before system prompt is built.
+  let memoryContext = "";
+  try {
+    const { retrieveSimilar: retrieveMemory } = await import("@/lib/memory");
+    const memHits = await retrieveMemory(prompt, 3, {
+      embeddingsSource: "supabase",
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
+      supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      embedUrl: process.env.OLLAMA_EMBED_URL || undefined,
+    });
+    if (memHits.length > 0) {
+      memoryContext = "\n\nRELEVANT PAST CONTEXT (semantic memory, ranked by similarity):\n" +
+        memHits.map((h, i) =>
+          `[${i + 1}] (score ${h.score}${h.timestamp ? `, ${h.timestamp.slice(0, 10)}` : ""})\n` +
+          `Q: ${h.input.slice(0, 200)}\n` +
+          `A: ${h.output_preview.slice(0, 300)}`
+        ).join("\n\n");
+    }
+  } catch { /* memory retrieval is non-critical — never block chat */ }
+
   // 2. Build messages array
   // Decide once whether this turn needs tools, and build the system prompt
   // with or without tool definitions. Chat-only providers (Cerebras/Groq)
   // leak tool-call syntax as text when given tool definitions they can't honor.
   const turnRequiresTools = promptNeedsTools([{ role: "user", content: prompt }]);
-  const systemPrompt = buildSystemPrompt(contextDigest, currentLocation, turnRequiresTools);
+  const systemPrompt = buildSystemPrompt(contextDigest + memoryContext, currentLocation, turnRequiresTools);
   const messages: OpenAIMessage[] = [
     { role: "system", content: systemPrompt },
     ...history.map((h): OpenAIMessage => {
@@ -1480,7 +1651,7 @@ export async function POST(req: NextRequest) {
 
   // 4b. Anti-leak post-process — strip text-as-tool-call leaks and "I'm waiting on async results"
   // hallucinations that some models still emit despite the prompt instructions.
-  finalContent = sanitizeAssistantText(finalContent, allToolCalls.length);
+  finalContent = sanitizeArthurReply(finalContent, allToolCalls.length);
 
   // 5. Persist assistant response
   await persistMessage(sessionId, "assistant", finalContent, {
@@ -1523,58 +1694,8 @@ export async function POST(req: NextRequest) {
 // Strip text-as-tool-call leaks and async-pretend hallucinations from a
 // just-generated assistant turn. Models occasionally emit `[web_search] {...}`
 // as plain text or claim they're "waiting for results" when turns are sync.
-function sanitizeAssistantText(s: string, toolsActuallyUsed: number): string {
-  if (!s) return s;
-  let out = s;
-
-  // ALL 17 tool names — keep this list in sync with TOOL_DEFINITIONS.
-  const ALL_TOOL_RE = "web_search|live_sports_score|get_weather|query_inbox|query_legal|query_brain_graph|query_memory|list_recent_actions|send_email|create_calendar_event|query_calendar_events|composio_execute|pipedream_workflow|scrape_url|validate_email|convert_currency|apilayer";
-
-  // Pattern 1: `[tool_name] {json}` or `[tool_name](json)` — strip the line.
-  out = out.replace(new RegExp(`^\\s*\\[(?:${ALL_TOOL_RE})\\]\\s*[{(\\[][^\\n]*[})\\]]\\s*$`, "gim"), "");
-
-  // Pattern 2: bare tool-call syntax mid-text — `web_search('foo')` etc.
-  out = out.replace(new RegExp(`\\b(?:${ALL_TOOL_RE})\\s*\\(['"][^'"]*['"]\\)`, "g"), "");
-
-  // Pattern 3: italicized action text — narrowed to tool-mimicking only (don't strip
-  // legitimate Arthur voice like "*Checking the inbox for Daniel's recent emails*").
-  // Only fires when the verb is followed by an actual tool name OR a generic
-  // "the X tool" phrasing.
-  out = out.replace(new RegExp(`\\*+\\s*(?:performs?|calling|invoking|running|fetching)\\s+(?:${ALL_TOOL_RE}|the\\s+\\w+\\s+tool)[^*\\n]*\\*+`, "gi"), "");
-
-  // Pattern 4: "Let me check tool_name..." / "Let me run tool_name..."
-  out = out.replace(new RegExp(`^.*\\b(?:Let me|I'?ll|I will)\\s+(?:check|run|invoke|call|use)\\s+(?:${ALL_TOOL_RE}|the\\s+\\w+\\s+tool)\\b[^\\n]*\\n?`, "gmi"), "");
-
-  // Pattern 5: async-pretend — model claims it's "waiting for results to come back".
-  // These are dishonest because the turn is synchronous; either tools were called or not.
-  if (toolsActuallyUsed === 0) {
-    out = out.replace(/^.*\b(?:I(?:'?m| am)?\s+(?:waiting|need to wait|still waiting)\s+(?:on|for)\s+(?:the\s+)?(?:web\s*search|search|tool)\s+(?:result|call|response)|once\s+(?:that|it|the search|the result)\s+comes? back|i'?ll\s+(?:detail|get back to you)\s+(?:once|when)\s+(?:that|the|it)\s+(?:returns|comes back|finishes))\b[^\n]*\n?/gmi, "");
-  }
-
-  // Pattern 6: trailing "Want me to ___?" / "Should I ___?" offers — strip the
-  // last sentence/paragraph if it's just a permission ask. Persona rule says
-  // never ask permission, but Haiku still tacks them on as closing offers.
-  // Only strips at end-of-message; mid-message permission asks (rare) stay.
-  out = out.replace(/(?:\n+|\s+)?(?:Want me to|Should I|Would you like me to|Do you want me to)\s+[^?]*\?\s*$/i, "");
-  out = out.replace(/(?:\n+|\s+)?(?:Let me know if you'?d like me to|Just say the word and I'?ll)\s+[^.!?]*[.!?]?\s*$/i, "");
-
-  // Pattern 7: strip markdown asterisk emphasis (`**bold**`, `*italic*`) — they
-  // render literally in most chat surfaces and read robotic. Preserve content,
-  // drop the markers. Don't touch code-fence backticks or list bullets.
-  out = out.replace(/\*\*([^*\n]+?)\*\*/g, "$1");           // **bold** → bold
-  out = out.replace(/(?<!\w)\*([^*\n]+?)\*(?!\w)/g, "$1");  // *italic* → italic (avoid 5*5)
-  out = out.replace(/(?<!\w)_([^_\n]+?)_(?!\w)/g, "$1");    // _underline_ → underline
-
-  // Collapse multiple blank lines from removals.
-  out = out.replace(/\n{3,}/g, "\n\n").trim();
-
-  // If sanitization gutted the response entirely AND tools weren't called,
-  // surface an honest failure rather than an empty bubble.
-  if (!out && toolsActuallyUsed === 0) {
-    return "I tried to answer that but ended up writing the tool call as text instead of invoking it. Ask again — I'll route through the tool properly this time.";
-  }
-  return out;
-}
+// sanitizeArthurReply is now imported from @/lib/sanitizer (canonical: ~/arthur-core/src/sanitizer.ts)
+// The inline function was removed in Sprint 3 (2026-05-07). See lib/sanitizer.ts.
 
 // Coarse tier label — canonical 18-tier ladder from CLAUDE.md / model-router.js.
 // T0=Script T1=GLiNER T2=MSA T3=Gemma T4=Arthur-tuned T5=Groq T6=Cerebras T7=Pioneer

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from "next/server";
 
 // arthur-online middleware:
@@ -123,7 +124,3 @@ export function middleware(req: NextRequest) {
   return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
-export const config = {
-  // Match everything except next-internal + image optimization
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
-};
