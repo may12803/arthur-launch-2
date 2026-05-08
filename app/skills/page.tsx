@@ -1,5 +1,11 @@
-import skills from "../../data/skills.json";
+import skillsData from "../../data/skills.json";
 import Link from "next/link";
+
+const skills = skillsData || [];
+
+if (!skillsData) {
+  console.warn("Warning: skills.json not found. Displaying empty skills list.");
+}
 import { Nav, Footer } from "../_components/Layout";
 import SkillsLayout from "./_components/SkillsLayout";
 
