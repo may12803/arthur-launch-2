@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   // This is a placeholder endpoint for demonstrating the StatusIndicator component.
-  // It does not require authentication for now, as it only returns mock data.
+  // It is intentionally public for this demonstration and does not require authentication.
   // In a production environment, this endpoint would be protected.
   // verify_jwt: false
   try {
@@ -12,7 +12,6 @@ export async function GET() {
 
     return NextResponse.json({ status: randomStatus });
   } catch (error) {
-    console.error("Error fetching status:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
