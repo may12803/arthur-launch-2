@@ -9,6 +9,9 @@ const StatusIndicator = () => {
     const fetchStatus = async () => {
       try {
         const response = await fetch("/api/status");
+        if (!response.ok) {
+          throw new Error("Failed to fetch status");
+        }
         const data = await response.json();
         setStatus(data.status);
       } catch (error) {
