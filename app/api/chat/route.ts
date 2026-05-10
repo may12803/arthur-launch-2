@@ -76,7 +76,7 @@ function buildSystemPrompt(contextDigest: string, currentLocation?: string | nul
     // (which lack native tool_use protocol) from hallucinating tool-call syntax
     // when given tool definitions in their system prompt.
     tools: toolsEnabled
-      ? ["query_inbox", "send_email", "query_calendar_events", "create_calendar_event", "query_legal", "query_brain_graph", "query_memory", "list_recent_actions", "get_weather", "web_search", "live_sports_score", "scrape_url", "validate_email", "convert_currency", "apilayer", "composio_execute", "pipedream_workflow"]
+      ? ["query_inbox", "send_email", "query_calendar_events", "create_calendar_event", "query_legal", "query_brain_graph", "query_memory", "list_recent_actions", "get_weather", "web_search", "live_sports_score", "scrape_url", "validate_email", "convert_currency", "apilayer", "composio_execute", "pipedream_workflow", "propose_project_concepts", "build_new_project", "audit_and_rebuild_site", "get_build_status"]
       : [],
   });
 }
@@ -428,6 +428,71 @@ const TOOL_DEFINITIONS = [
           max_connections: { type: "number", description: "Max connections per slice (default 1)" },
         },
         required: ["origin", "destination", "depart_date"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "propose_project_concepts",
+      description: "When Daniel describes a vague project idea (\"build me software for X\", \"I want a SaaS for Y\", \"redesign drinkswithdabney.com\"), use this BEFORE build_new_project. Generates 3-5 distinct named concept directions (each with name, tagline, positioning, brand vibe, hero archetype suggestion) AND 3-5 follow-up questions to narrow the scope. ALWAYS use this first when a brief is non-trivially ambiguous; only skip when Daniel has already provided a fully-specified brief (slug + description + category + audience + concrete positioning).",
+      parameters: {
+        type: "object",
+        properties: {
+          rough_brief: { type: "string", description: "Daniel's raw brief verbatim — e.g. 'software for restaurant reservations' or 'something for indie game devs'" },
+          known_constraints: { type: "string", description: "Any constraints already mentioned (audience, region, pricing model, existing brand) — empty string if none" },
+        },
+        required: ["rough_brief"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "build_new_project",
+      description: "Kicks off a full-pipeline build for a concrete project brief. Returns a build_id immediately and runs the build asynchronously in the background (~25 min total). Use this AFTER propose_project_concepts when Daniel has picked a concept, OR directly when the brief is fully-specified (slug + description + category + audience). Spawns arthur-build and writes events to ~/.arthur/builds/<id>/events.jsonl. Daniel can ask 'how is the build going' later (use get_build_status) and the deploy URL will auto-open in the browser when the build completes.",
+      parameters: {
+        type: "object",
+        properties: {
+          slug: { type: "string", description: "kebab-case-lower project identifier — e.g. 'embers' or 'plate-table'" },
+          name: { type: "string", description: "Display name — defaults to capitalized slug" },
+          description: { type: "string", description: "One-paragraph project description that will drive the entire pipeline. Be specific about audience, value prop, key features. This is the primary input the build pipeline reads." },
+          domain: { type: "string", description: "Domain name (e.g. embers.coffee). Defaults to <slug>.com." },
+          category: { type: "string", enum: ["SaaS", "marketplace", "content", "fintech", "devtool", "consumer", "services", "ecommerce"], description: "Project category — used by stage 0.45 design DNA picker" },
+          audience: { type: "string", description: "Primary audience description — e.g. 'solo + small-firm attorneys' or 'home cooks who watch Bon Appétit'" },
+          tier: { type: "string", enum: ["500", "1000", "2000"], description: "Build tier (cost cap) — 500 default, 2000 for white-glove" },
+          budget_cap_usd: { type: "number", description: "Max LLM spend for this build in USD (default 5)" },
+        },
+        required: ["slug", "description"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "audit_and_rebuild_site",
+      description: "Kicks off the audit-and-rebuild pipeline against an existing live site (e.g. 'review and rebuild arthur-online.fly.dev', 'redesign drinkswithdabney.com'). Returns a job_id immediately and runs phases 1-4 asynchronously (audit via Playwright + multi-persona Sonnet review → mockup gate → rebuild → deploy). Skeleton-only as of 2026-05-09 — the entry point runs but full pipeline is multi-day. Use this for redesign requests on existing sites; use build_new_project for greenfield.",
+      parameters: {
+        type: "object",
+        properties: {
+          target_url: { type: "string", description: "Live site URL to audit + rebuild (e.g. https://arthur-online.fly.dev)" },
+          routes: { type: "string", description: "Optional comma-separated route list to focus on (e.g. '/,/pricing,/about'). Omit to auto-discover via sitemap." },
+          phase: { type: "string", enum: ["1", "2", "3", "4", "all"], description: "Run a specific phase only (1=audit, 2=mockup, 3=rebuild, 4=deploy) or all phases. Default 'all'." },
+        },
+        required: ["target_url"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_build_status",
+      description: "Read the live status of a running or completed build (kicked off via build_new_project or audit_and_rebuild_site). Returns current stage, total cost, completed stage count, deploy URL if ready, last failure reason if failed. Use when Daniel asks 'how is the build', 'is X deployed yet', 'what stage is the embers build on'.",
+      parameters: {
+        type: "object",
+        properties: {
+          build_id: { type: "string", description: "The build_id returned by build_new_project. Omit to get the most-recent build status." },
+        },
       },
     },
   },
@@ -883,6 +948,205 @@ async function toolGetWeather(args: { location?: string }): Promise<string> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Build pipeline tools — propose, build, audit, status
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function toolProposeProjectConcepts(args: { rough_brief?: string; known_constraints?: string }): Promise<string> {
+  const brief = (args.rough_brief || '').trim();
+  if (!brief) return "propose_project_concepts: rough_brief is required";
+  const constraints = (args.known_constraints || '').trim();
+  const Anthropic = (await import('@anthropic-ai/sdk')).default;
+  // Lazy-load the domain checker (lives in ~/arthur, not in arthur-launch's node_modules)
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = await import('node:path');
+  const os = await import('node:os');
+  const domainModulePath = path.join(os.homedir(), 'arthur/lib/domain-availability.js');
+  // @ts-expect-error - dynamic require of CommonJS module from sibling dir
+  const { checkDomains, summarize, brandCollisionCheck } = require(domainModulePath);
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  // Generate 8 candidates (we filter to 5 that have usable domains)
+  const sys = `You are a senior brand strategist and product designer working with Daniel May (Aspen & May / LOVELEEDAY Studios). Daniel just gave you a vague project brief. Propose 8 distinct named concept directions AND 3-5 clarifying questions.
+
+Output ONLY valid JSON, no preamble:
+{
+  "questions": ["...", "..."],
+  "concepts": [
+    { "name": "<distinctive product name>", "slug": "<kebab-lowercase, no .tld>", "tagline": "<one-line positioning>", "audience": "<who it's for>", "vibe": "<3-4 brand-vibe adjectives>", "hero_archetype": "split-image-right|split-image-left|centered-bold-stamp|fullbleed-image-overlay|stacked-narrative|asymmetric-grid-collage", "differentiator": "<why this version is novel — what's the wedge>" }
+  ]
+}
+
+Rules:
+- Names MUST be distinctive (think Linear, Notion, Hum, Foundry, Quartz, Coda — not "ResMate" or "BookEasy"). Bias toward 1-2 syllable names that have a chance of being available across .com/.io/.ai/.co. Avoid common single-dictionary-word names alone (e.g. "Plate" is almost certainly taken; "Slate" / "Plateroom" / coined twist is more findable).
+- Each concept MEANINGFULLY DIFFERENT (different audience OR vertical OR positioning angle).
+- Hero archetype must match brand vibe (luxury → fullbleed-image-overlay, dev tool → centered-bold-stamp, B2B SaaS → split-image-right, etc.).`;
+  const user = `Brief: "${brief}"${constraints ? `\nKnown constraints: ${constraints}` : ''}`;
+  try {
+    const resp = await client.messages.create({ model: 'claude-sonnet-4-6', max_tokens: 2500, system: sys, messages: [{ role: 'user', content: user }] });
+    const text = (resp.content[0] as { type: string; text?: string })?.text || '';
+    const cleaned = text.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+    let parsed: { questions?: string[]; concepts?: Array<{ name: string; slug?: string; tagline: string; audience: string; vibe: string; hero_archetype: string; differentiator: string }> } = {};
+    try { parsed = JSON.parse(cleaned); } catch { return `propose_project_concepts: parse failed — raw output:\n${text.slice(0, 800)}`; }
+    const candidates = parsed.concepts || [];
+
+    // Domain + brand-collision checks in parallel for all candidates
+    const enriched = await Promise.all(candidates.map(async (c) => {
+      const slug = (c.slug || c.name || '').toLowerCase().replace(/[^a-z0-9-]+/g, '');
+      const dmap = slug ? await checkDomains(slug) : {};
+      const sum = summarize(dmap);
+      const collision = await brandCollisionCheck(c.name, c.audience).catch(() => null);
+      return { ...c, _slug: slug, _domains: dmap, _domain_summary: sum, _brand_collision: collision };
+    }));
+
+    // Filter: prefer concepts with at least one available domain + no obvious brand collision; top 5
+    const filtered = enriched
+      .filter((c) => c._domain_summary.anyAvailable && !/COLLISION/i.test(c._brand_collision || ''))
+      .slice(0, 5);
+    const final = filtered.length >= 3 ? filtered : enriched.slice(0, 5);
+
+    const out: string[] = [];
+    out.push(`PROPOSED CONCEPTS for "${brief.slice(0, 80)}" — names verified available:`);
+    out.push('');
+    final.forEach((c, i) => {
+      out.push(`${i + 1}. **${c.name}** — ${c.tagline}`);
+      out.push(`   Audience: ${c.audience}`);
+      out.push(`   Vibe: ${c.vibe} · Hero: ${c.hero_archetype}`);
+      out.push(`   Differentiator: ${c.differentiator}`);
+      out.push(`   Domains: ${c._domain_summary.summary}`);
+      if (c._domain_summary.vercel_links?.length) out.push(`   Buy via Vercel: ${c._domain_summary.vercel_links[0]}`);
+      if (c._brand_collision) out.push(`   Brand check: ${c._brand_collision.slice(0, 140)}`);
+      out.push('');
+    });
+    if (Array.isArray(parsed.questions) && parsed.questions.length) {
+      out.push('FOLLOW-UP QUESTIONS to narrow scope:');
+      parsed.questions.forEach((q, i) => out.push(`  ${i + 1}. ${q}`));
+      out.push('');
+    }
+    out.push("Pick a concept by name to proceed (e.g. 'go with Quartz') OR answer the questions to refine, OR say 'propose more' for fresh directions.");
+    return out.join('\n');
+  } catch (e: unknown) {
+    return `propose_project_concepts error: ${e instanceof Error ? e.message : String(e)}`;
+  }
+}
+
+async function toolBuildNewProject(args: { slug?: string; name?: string; description?: string; domain?: string; category?: string; audience?: string; tier?: string; budget_cap_usd?: number }): Promise<string> {
+  const slug = (args.slug || '').trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-');
+  const description = (args.description || '').trim();
+  if (!slug || !description) return "build_new_project: slug + description required";
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const os = await import('node:os');
+  const child = await import('node:child_process');
+  const buildId = `build-${Date.now()}-${slug}`;
+  const briefPath = path.join(os.homedir(), '.arthur', 'briefs', `${buildId}.json`);
+  fs.mkdirSync(path.dirname(briefPath), { recursive: true });
+  const brief = {
+    version: '1', id: buildId, created_at: new Date().toISOString(),
+    tier: args.tier || '500',
+    project: {
+      name: args.name || slug.charAt(0).toUpperCase() + slug.slice(1),
+      slug, domain: args.domain || `${slug}.com`, description,
+      category: args.category, audience: args.audience,
+    },
+    brand: { voice: { formality: 5, warmth: 7, wit: 6, urgency: 4 } },
+    deploy: { host: 'vercel', github_repo: `LOVELEEDAY-Studios/${slug}` },
+    budget: { build_cap_usd: args.budget_cap_usd ?? 5 },
+  };
+  fs.writeFileSync(briefPath, JSON.stringify(brief, null, 2));
+  // Spawn arthur-build in background, detached, redirect output to log
+  const logPath = path.join(os.homedir(), '.arthur', 'builds', buildId, 'spawn.log');
+  fs.mkdirSync(path.dirname(logPath), { recursive: true });
+  const out = fs.openSync(logPath, 'a');
+  const proc = child.spawn('/opt/homebrew/bin/arthur-build', ['--brief', briefPath], {
+    detached: true, stdio: ['ignore', out, out],
+  });
+  proc.unref();
+  return [
+    `BUILD STARTED — ${slug}`,
+    ``,
+    `build_id: ${buildId}`,
+    `brief: ${briefPath}`,
+    `events: ~/.arthur/builds/${buildId}/events.jsonl`,
+    `pid: ${proc.pid}`,
+    ``,
+    `Pipeline runs ~25 min. The deploy URL will auto-open in your browser when stage 14 completes.`,
+    `Ask "how is the ${slug} build going" to check status.`,
+  ].join('\n');
+}
+
+async function toolAuditAndRebuildSite(args: { target_url?: string; routes?: string; phase?: string }): Promise<string> {
+  const url = (args.target_url || '').trim();
+  if (!url) return "audit_and_rebuild_site: target_url required";
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const os = await import('node:os');
+  const child = await import('node:child_process');
+  const jobId = `audit-${Date.now()}-${url.replace(/^https?:\/\//, '').replace(/[^a-z0-9]+/gi, '-').slice(0, 40)}`;
+  const logPath = path.join(os.homedir(), '.arthur', 'audit', jobId, 'spawn.log');
+  fs.mkdirSync(path.dirname(logPath), { recursive: true });
+  const out = fs.openSync(logPath, 'a');
+  const cliArgs = [path.join(os.homedir(), 'arthur', 'scripts', 'audit-and-rebuild.mjs'), url];
+  if (args.routes) cliArgs.push(`--routes=${args.routes}`);
+  if (args.phase) cliArgs.push(`--phase=${args.phase}`);
+  const proc = child.spawn('bun', cliArgs, { detached: true, stdio: ['ignore', out, out] });
+  proc.unref();
+  return [
+    `AUDIT JOB STARTED — ${url}`,
+    ``,
+    `job_id: ${jobId}`,
+    `log: ${logPath}`,
+    `pid: ${proc.pid}`,
+    ``,
+    `NOTE: audit-and-rebuild pipeline is SKELETON-only as of 2026-05-09. The entry point runs and prints a phase plan but full implementation is multi-day. For now this returns the plan; for actual rebuild work, drive via Claude Code session.`,
+  ].join('\n');
+}
+
+async function toolGetBuildStatus(args: { build_id?: string }): Promise<string> {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const os = await import('node:os');
+  const buildsDir = path.join(os.homedir(), '.arthur', 'builds');
+  if (!fs.existsSync(buildsDir)) return "no builds found";
+  let buildId = args.build_id;
+  if (!buildId) {
+    // Pick the most-recently-modified build dir
+    const dirs = fs.readdirSync(buildsDir).filter(d => d.startsWith('build-'));
+    if (!dirs.length) return "no builds found";
+    dirs.sort((a, b) => fs.statSync(path.join(buildsDir, b)).mtimeMs - fs.statSync(path.join(buildsDir, a)).mtimeMs);
+    buildId = dirs[0];
+  }
+  const buildDir = path.join(buildsDir, buildId);
+  if (!fs.existsSync(buildDir)) return `build_id ${buildId} not found at ${buildDir}`;
+  const eventsPath = path.join(buildDir, 'events.jsonl');
+  let lastStage = '—', stagesDone = 0, totalCost = 0, terminalStatus: 'in_flight' | 'done' | 'failed' = 'in_flight', failReason = '';
+  if (fs.existsSync(eventsPath)) {
+    const lines = fs.readFileSync(eventsPath, 'utf8').trim().split('\n');
+    for (const line of lines) {
+      try {
+        const e = JSON.parse(line);
+        if (e.type === 'stage_start') lastStage = e.stage;
+        if (e.type === 'stage_complete') { stagesDone++; totalCost += e.cost_usd || 0; }
+        if (e.type === 'build_done') terminalStatus = 'done';
+        if (e.type === 'build_fail') { terminalStatus = 'failed'; failReason = e.reason || ''; }
+      } catch {}
+    }
+  }
+  // Check for deploy URL
+  let liveUrl = '';
+  const probePath = path.join(buildDir, 'deploy', 'probe.json');
+  if (fs.existsSync(probePath)) {
+    try { liveUrl = JSON.parse(fs.readFileSync(probePath, 'utf8')).liveUrl || ''; } catch {}
+  }
+  return [
+    `Build: ${buildId}`,
+    `Status: ${terminalStatus}`,
+    `Last stage: ${lastStage} · Stages complete: ${stagesDone}`,
+    `Cost so far: $${totalCost.toFixed(3)}`,
+    failReason ? `Reason: ${failReason}` : '',
+    liveUrl ? `🚀 Live: ${liveUrl}` : '',
+  ].filter(Boolean).join('\n');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Tool dispatch
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -908,6 +1172,10 @@ async function executeTool(name: string, argsStr: string): Promise<string> {
     case "convert_currency":    return toolConvertCurrency(args as Parameters<typeof toolConvertCurrency>[0]);
     case "composio_execute":    return toolComposio(args as Parameters<typeof toolComposio>[0]);
     case "pipedream_workflow":  return toolPipedream(args as Parameters<typeof toolPipedream>[0]);
+    case "propose_project_concepts":  return toolProposeProjectConcepts(args as Parameters<typeof toolProposeProjectConcepts>[0]);
+    case "build_new_project":         return toolBuildNewProject(args as Parameters<typeof toolBuildNewProject>[0]);
+    case "audit_and_rebuild_site":    return toolAuditAndRebuildSite(args as Parameters<typeof toolAuditAndRebuildSite>[0]);
+    case "get_build_status":          return toolGetBuildStatus(args as Parameters<typeof toolGetBuildStatus>[0]);
     case "search_flights":      return toolSearchFlights(args as Parameters<typeof toolSearchFlights>[0]);
     default:                  return `Unknown tool: ${name}`;
   }
