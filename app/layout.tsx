@@ -1,3 +1,4 @@
+import StatusIndicator from "./_components/StatusIndicator";
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { CommandBarProvider } from "./_components/CommandBar";
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div id="main-content">
             {children}
           </div>
+          <StatusIndicator />
           <Footer />
         </CommandBarProvider>
       </body>
