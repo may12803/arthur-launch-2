@@ -15,6 +15,7 @@ const StatusIndicator = () => {
         const data = await response.json();
         setStatus(data.status);
       } catch (error) {
+        // TODO: Implement client-side error reporting (e.g., Sentry)
         setStatus("error");
       }
     };
