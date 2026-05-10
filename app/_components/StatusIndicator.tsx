@@ -6,12 +6,19 @@ const StatusIndicator = () => {
   const [status, setStatus] = useState("pending");
 
   useEffect(() => {
-    // In a real application, you would fetch the status from an API
-    const interval = setInterval(() => {
-      const statuses = ["pending", "in-progress", "complete", "error"];
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-      setStatus(randomStatus);
-    }, 5000);
+    const fetchStatus = async () => {
+      try {
+        const response = await fetch("/api/status");
+        const data = await response.json();
+        setStatus(data.status);
+      } catch (error) {
+        console.error("Error fetching status:", error);
+        setStatus("error");
+      }
+    };
+
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 5000);
 
     return () => clearInterval(interval);
   }, []);
