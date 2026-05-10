@@ -15,7 +15,6 @@ const StatusIndicator = () => {
         const data = await response.json();
         setStatus(data.status);
       } catch (error) {
-        console.error("Error fetching status:", error);
         setStatus("error");
       }
     };
