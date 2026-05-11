@@ -4,27 +4,17 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { Search, Loader2 } from 'lucide-react';
-import CommunicationDetail from './CommunicationDetail';
+import EmailDetail from './EmailDetail';
 
 // Types
-interface CommRow {
+interface EmailRow {
   id: string;
-  ts: string;
-  channel: 'sms' | 'voice' | 'fax' | 'email';
-  direction: 'inbound' | 'outbound';
-  from_address: string;
-  to_address: string;
+  from_email: string;
+  from_name: string | null;
   subject: string | null;
-  body: string | null;
-  attachment_url: string | null;
-  status: string;
-  external_id: string | null;
-  cost_cents: number | null;
-  metadata: Record<string, unknown>;
-  entity: string | null;
-  category: string | null;
-  related_to: string | null;
-  created_at: string;
+  body_text: string | null;
+  received_at: string;
+  is_read: boolean;
 }
 
 // Helpers
@@ -36,33 +26,33 @@ function relTime(iso: string): string {
   if (m < 60) return `${m}m ago`;
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}h ago`;
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function preview(text: string | null, len = 60): string {
   if (!text) return '';
-  const clean = text.replace(/\\n/g, ' ').trim();
+  const clean = text.replace(/\\s+/g, ' ').trim();
   return clean.length > len ? clean.slice(0, len) + '…' : clean;
 }
 
 // Main Component
-export default function CommunicationsList() {
-  const [rows, setRows] = useState<CommRow[]>([]);
+export default function EmailList() {
+  const [emails, setEmails] = useState<EmailRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedComm, setSelectedComm] = useState<CommRow | null>(null);
+  const [selectedEmail, setSelectedEmail] = useState<EmailRow | null>(null);
 
-  const fetchComms = useCallback(async () => {
+  const fetchEmails = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('arthur_communications')
-        .select('*')
-        .order('ts', { ascending: false })
-        .limit(200);
+        .from('arthur_emails')
+        .select('id, from_email, from_name, subject, body_text, received_at, is_read')
+        .order('received_at', { ascending: false })
+        .limit(100);
 
       if (error) throw error;
-      setRows(data || []);
+      setEmails(data as EmailRow[] || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -71,14 +61,14 @@ export default function CommunicationsList() {
   }, []);
 
   useEffect(() => {
-    fetchComms();
-  }, [fetchComms]);
+    fetchEmails();
+  }, [fetchEmails]);
 
   useEffect(() => {
-    if (rows.length > 0 && !selectedComm) {
-      setSelectedComm(rows[0]);
+    if (emails.length > 0 && !selectedEmail) {
+      setSelectedEmail(emails[0]);
     }
-  }, [rows, selectedComm]);
+  }, [emails, selectedEmail]);
 
   if (loading) {
     return (
@@ -108,38 +98,42 @@ export default function CommunicationsList() {
           />
         </div>
         <div className="flex-grow overflow-y-auto">
-          {rows.map((row) => (
-            <CommListItem
-              key={row.id}
-              comm={row}
-              isSelected={selectedComm?.id === row.id}
-              onClick={() => setSelectedComm(row)}
+          {emails.map((email) => (
+            <EmailListItem
+              key={email.id}
+              email={email}
+              isSelected={selectedEmail?.id === email.id}
+              onClick={() => setSelectedEmail(email)}
             />
           ))}
         </div>
       </div>
       <div className="col-span-1 md:col-span-2 xl:col-span-3">
-        {selectedComm && <CommunicationDetail comm={selectedComm} />}
+        {selectedEmail && <EmailDetail emailId={selectedEmail.id} />}
       </div>
     </div>
   );
 }
 
 // List Item Component
-function CommListItem({ comm, isSelected, onClick }: { comm: CommRow; isSelected: boolean; onClick: () => void }) {
+function EmailListItem({ email, isSelected, onClick }: { email: EmailRow; isSelected: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
       className={cn(
         'w-full text-left p-3 rounded-lg mb-2 transition-colors',
-        isSelected ? 'bg-glass-border' : 'hover:bg-glass-border/50'
+        isSelected ? 'bg-glass-border' : 'hover:bg-glass-border/50',
+        !email.is_read && 'font-semibold'
       )}
     >
       <div className="flex justify-between items-center mb-1">
-        <span className="font-medium text-sm text-text-active">{comm.from_address}</span>
-        <span className="text-xs text-text-muted">{relTime(comm.ts)}</span>
+        <span className="text-sm text-text-active truncate">{email.from_name || email.from_email}</span>
+        <span className="text-xs text-text-muted flex-shrink-0 ml-2">{relTime(email.received_at)}</span>
       </div>
-      <p className="text-sm text-text-muted truncate">{preview(comm.body, 100)}</p>
+      <p className={cn('text-sm truncate', !email.is_read ? 'text-text-active' : 'text-text-muted')}>
+        {email.subject}
+      </p>
+      <p className="text-xs text-text-muted truncate">{preview(email.body_text, 100)}</p>
     </button>
   );
 }
