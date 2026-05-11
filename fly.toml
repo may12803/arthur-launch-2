@@ -3,7 +3,7 @@ primary_region = 'ord'
 
 [build]
 [build.vm]
-  memory = "1024mb"
+  memory = "2048mb"
 
 [http_service]
   internal_port = 3000
