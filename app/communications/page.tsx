@@ -1,4 +1,4 @@
-import { Nav, Footer } from "../_components/Layout";
+import { Nav, Footer } from "@/app/_components/Layout";
 import CommunicationsList from "./CommunicationsList";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { Nav, Footer } from "../_components/Layout";
+import { Nav, Footer } from "@/app/_components/Layout";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

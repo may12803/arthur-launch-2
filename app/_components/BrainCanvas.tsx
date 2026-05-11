@@ -385,7 +385,7 @@ export default function BrainCanvas({ source, fullscreen = false }: Props) {
           tip.style.top = (ev.clientY - rect.top + 8) + 'px';
           const kb = found.sizeBytes ? (found.sizeBytes / 1024).toFixed(1) + ' KB' : '';
           const col = gsRef.current?.lobeColors[found.lobe] || '#8892a4';
-          tip.innerHTML = `<b style="color:${col}">${found.label}</b><div class="bc-tip-meta">${found.lobe}</div><div class="bc-tip-meta">in ${found.inDegree} · out ${found.outDegree}${found.crossLobeDegree ? ' · cross ' + found.crossLobeDegree : ''}${kb ? ' · ' + kb : ''}</div>`;
+          tip.innerHTML = `<b style="color:${col}">${found.label}</b><div className="bc-tip-meta">${found.lobe}</div><div className="bc-tip-meta">in ${found.inDegree} · out ${found.outDegree}${found.crossLobeDegree ? ' · cross ' + found.crossLobeDegree : ''}${kb ? ' · ' + kb : ''}</div>`;
         }
       } else {
         st.hoveredId = null;

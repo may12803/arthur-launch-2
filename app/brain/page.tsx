@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import fs from "fs";
 import path from "path";
-import { Nav, Footer } from "../_components/Layout";
+import { Nav, Footer } from "@/app/_components/Layout";
 import BrainIndex from "./BrainIndex";
 import CapabilityManifest from "./CapabilityManifest";
-import BrainCanvas from "../_components/BrainCanvas";
+import BrainCanvas from "@/app/_components/BrainCanvas";
 import ModelLadder from "./_components/ModelLadder";
 import PrinciplesCondensed from "./_components/PrinciplesCondensed";
 

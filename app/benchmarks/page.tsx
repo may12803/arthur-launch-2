@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import Link from "next/link";
-import { Nav, Footer } from "../_components/Layout";
+import { Nav, Footer } from "@/app/_components/Layout";
 import BenchChart from "./BenchChart";
 
 // ─── Types ──────────────────────────────────────────────────────────────────

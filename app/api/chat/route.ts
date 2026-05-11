@@ -963,10 +963,13 @@ async function toolProposeProjectConcepts(args: { rough_brief?: string; known_co
   const domainModulePath = path.join(os.homedir(), 'arthur/lib/domain-availability.js');
   let checkDomains: any, summarize: any, brandCollisionCheck: any;
   try {
-    // eval('require') bypasses Turbopack's static analyzer — the module lives
+    // eval('require') bypasses Turbopack's static analyzer. The module lives
     // OUTSIDE the project tree at ~/arthur/lib/, only resolvable at runtime
-    // (and only on Daniel's Mac; in the Fly container it returns the catch
-    // branch's fallback). Plain require(var) makes Turbopack fail the build.
+    // (and only on Daniel's Mac; in the Fly container the require throws and
+    // we catch into the fallback below). Using `await import(variable)` would
+    // ALSO break Turbopack — it emits <dynamic> for non-literal import args,
+    // which broke 3 unrelated pages (settings/email, superlearner, brain) on
+    // deploy 2026-05-11 even though those pages don't touch this module.
     const dynamicRequire = eval('require');
     ({ checkDomains, summarize, brandCollisionCheck } = dynamicRequire(domainModulePath));
   } catch {

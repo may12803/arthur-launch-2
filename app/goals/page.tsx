@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, Fragment } from "react";
-import { Nav } from "../_components/Layout";
+import { Nav } from "@/app/_components/Layout";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 

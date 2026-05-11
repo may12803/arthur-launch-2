@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Nav } from "../_components/Layout";
+import { Nav } from "@/app/_components/Layout";
 
 interface Employee {
   id: string;

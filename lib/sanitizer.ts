@@ -65,6 +65,14 @@ export const TRAILING_READY_RE =
 export const TRAILING_BULLET_QUESTIONS_RE =
   /\n+(?:[\s]*[•·\-*]\s*[^\n]+\?\s*\n?){2,}\s*$/;
 
+// Pattern 6f: "I'm ready to <verb>..." followed by a question — Cerebras pattern.
+export const READY_PLUS_QUESTION_RE =
+  /(?:\n+|\s+)I(?:'?m| am)\s+(?:ready|standing by|here|available|happy)(?:\s+(?:to|for|when|whenever))?[^.!?\n]*[.!?]\s+(?:What|Where|Which|How|When|Why|Who|Can|Could|Would|Should|Shall|May|Do|Did|Are|Is|Will|Have|Has)[^?\n]*\?\s*$/i;
+
+// Pattern 6g: Trailing open-ended question back to user.
+export const TRAILING_OPEN_QUESTION_RE =
+  /(?:\n+|\s+)(?:What (?:would you like|can I (?:help|do for|assist))|What's the move|What's next|How can I (?:help|assist)|Where (?:would you|to))[^?\n]*\?\s*$/i;
+
 // Pattern 7: markdown emphasis markers — strip markers, keep content.
 export const BOLD_RE    = /\*\*([^*\n]+?)\*\*/g;           // **bold** → bold
 export const ITALIC_RE  = /(?<!\w)\*([^*\n]+?)\*(?!\w)/g;  // *italic* → italic (avoid 5*5)
@@ -92,9 +100,11 @@ export function sanitizeArthurReply(text: string, toolsActuallyUsed = 0): string
 
   for (let i = 0; i < 4; i++) {
     const before = out;
+    out = out.replace(READY_PLUS_QUESTION_RE, '');
     out = out.replace(TRAILING_READY_RE, '');
     out = out.replace(TRAILING_OFFER_BLOCK_RE, '');
     out = out.replace(TRAILING_BULLET_QUESTIONS_RE, '');
+    out = out.replace(TRAILING_OPEN_QUESTION_RE, '');
     out = out.replace(TRAILING_PERMISSION_ASK_RE, '');
     out = out.replace(TRAILING_OFFER_RE, '');
     out = out.trimEnd();
