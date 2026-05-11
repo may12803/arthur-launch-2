@@ -2,6 +2,8 @@ app = 'arthur-online'
 primary_region = 'ord'
 
 [build]
+[build.vm]
+  memory = "4096mb"
 
 [http_service]
   internal_port = 3000
