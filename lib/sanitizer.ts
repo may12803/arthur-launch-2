@@ -47,11 +47,23 @@ export const ASYNC_PRETEND_RE =
 
 // Pattern 6a: trailing permission asks at end-of-message.
 export const TRAILING_PERMISSION_ASK_RE =
-  /(?:\n+|\s+)?(?:Want me to|Should I|Would you like me to|Do you want me to)\s+[^?]*\?\s*$/i;
+  /(?:\n+|\s+)?(?:Want me to|Should I|Would you like me to|Do you want me to|Shall I|May I)\s+[^?]*\?\s*$/i;
 
-// Pattern 6b: "Let me know if you'd like me to..." / "Just say the word and I'll..."
+// Pattern 6b: "Let me know if you'd like me to..." / "Just say the word and I'll..." / "Happy to..."
 export const TRAILING_OFFER_RE =
-  /(?:\n+|\s+)?(?:Let me know if you'?d like me to|Just say the word and I'?ll)\s+[^.!?]*[.!?]?\s*$/i;
+  /(?:\n+|\s+)?(?:Let me know if you'?d like me to|Just say the word and I'?ll|Happy to (?:help|do|run|deploy|run that|tackle that)|Feel free to ask|Ping me (?:if|when))\s+[^.!?]*[.!?]?\s*$/i;
+
+// Pattern 6c: Multi-line bulleted offer block — "Would you like me to:\n• X?\n• Y?\n• Z?"
+export const TRAILING_OFFER_BLOCK_RE =
+  /\n+\s*(?:Would you like me to|Want me to|Should I|Do you want me to|Shall I|Let me know if you'?d like)\s*:?\s*(?:\n[^\n]*[?.!]\s*){1,8}\s*$/i;
+
+// Pattern 6d: Trailing "ready to act" / "standing by" / "at your service" meta-status.
+export const TRAILING_READY_RE =
+  /(?:\n+|\s+)(?:I(?:'?m| am)\s+(?:ready|standing by|here|available)(?:\s+(?:to|for|when|whenever))?[^.!?\n]*[.!?]?|Ready (?:when|whenever) you (?:are|need)[^.!?\n]*[.!?]?|Standing by[^.!?\n]*[.!?]?|At your service[^.!?\n]*[.!?]?|Just (?:say the word|let me know)[^.!?\n]*[.!?]?|Awaiting (?:your )?(?:input|instructions|command)[^.!?\n]*[.!?]?)\s*$/i;
+
+// Pattern 6e: Trailing bare-bullet list of question-offers (no "Would you like" lead).
+export const TRAILING_BULLET_QUESTIONS_RE =
+  /\n+(?:[\s]*[•·\-*]\s*[^\n]+\?\s*\n?){2,}\s*$/;
 
 // Pattern 7: markdown emphasis markers — strip markers, keep content.
 export const BOLD_RE    = /\*\*([^*\n]+?)\*\*/g;           // **bold** → bold
@@ -78,8 +90,16 @@ export function sanitizeArthurReply(text: string, toolsActuallyUsed = 0): string
     out = out.replace(ASYNC_PRETEND_RE, '');
   }
 
-  out = out.replace(TRAILING_PERMISSION_ASK_RE, '');
-  out = out.replace(TRAILING_OFFER_RE, '');
+  for (let i = 0; i < 4; i++) {
+    const before = out;
+    out = out.replace(TRAILING_READY_RE, '');
+    out = out.replace(TRAILING_OFFER_BLOCK_RE, '');
+    out = out.replace(TRAILING_BULLET_QUESTIONS_RE, '');
+    out = out.replace(TRAILING_PERMISSION_ASK_RE, '');
+    out = out.replace(TRAILING_OFFER_RE, '');
+    out = out.trimEnd();
+    if (out === before) break;
+  }
 
   out = out.replace(BOLD_RE, '$1');
   out = out.replace(ITALIC_RE, '$1');

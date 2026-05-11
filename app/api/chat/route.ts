@@ -961,8 +961,17 @@ async function toolProposeProjectConcepts(args: { rough_brief?: string; known_co
   const path = await import('node:path');
   const os = await import('node:os');
   const domainModulePath = path.join(os.homedir(), 'arthur/lib/domain-availability.js');
-  // @ts-expect-error - dynamic require of CommonJS module from sibling dir
-  const { checkDomains, summarize, brandCollisionCheck } = require(domainModulePath);
+  let checkDomains: any, summarize: any, brandCollisionCheck: any;
+  try {
+    // eval('require') bypasses Turbopack's static analyzer — the module lives
+    // OUTSIDE the project tree at ~/arthur/lib/, only resolvable at runtime
+    // (and only on Daniel's Mac; in the Fly container it returns the catch
+    // branch's fallback). Plain require(var) makes Turbopack fail the build.
+    const dynamicRequire = eval('require');
+    ({ checkDomains, summarize, brandCollisionCheck } = dynamicRequire(domainModulePath));
+  } catch {
+    return "propose_project_concepts is only available when running locally on Daniel's Mac (the brand-strategy + domain-check module lives in ~/arthur/, not in the dashboard's deployment). Use the Arthur TUI for this command, or ask Daniel to run it.";
+  }
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   // Generate 8 candidates (we filter to 5 that have usable domains)
   const sys = `You are a senior brand strategist and product designer working with Daniel May (Aspen & May / LOVELEEDAY Studios). Daniel just gave you a vague project brief. Propose 8 distinct named concept directions AND 3-5 clarifying questions.
