@@ -1799,6 +1799,7 @@ async function callLLM(messages: OpenAIMessage[], withTools: boolean): Promise<{
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  const _requestStart = Date.now();
   const deny = authGate(req, { allowReadFromBrowser: false });
   if (deny) return deny;
 
@@ -2059,6 +2060,12 @@ export async function POST(req: NextRequest) {
     });
   } catch { /* recorder is non-critical */ }
 
+  // Track latency for UI telemetry badge
+  const latencyMs = Date.now() - _requestStart;
+
+  // Rough token count for the badge (characters / 4 is good enough for display)
+  const approxTokens = Math.round(finalContent.length / 4);
+
   // 6. Return — preserving { response, model, routing } shape the UI expects + new fields
   return NextResponse.json({
     response: finalContent,
@@ -2066,6 +2073,8 @@ export async function POST(req: NextRequest) {
     model: finalProvider || "unknown",
     model_used: finalProvider || "unknown",
     tier_used: tierForProvider(finalProvider || ""),
+    latency_ms: latencyMs,
+    tokens: approxTokens,
     routing: {
       model: finalProvider || "unknown",
       cost: finalProvider.startsWith("pioneer") ? 0 : finalProvider.startsWith("groq") ? 0.0003 : 0,

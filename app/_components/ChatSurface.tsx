@@ -11,6 +11,30 @@ function uid(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
+// Pseudo-stream a full response string into a message state field.
+// Reveals ~30 chars every 60ms so the user sees text "typing in"
+// rather than the full wall of text appearing after a long pause.
+async function pseudoStream(
+  fullText: string,
+  onChunk: (partial: string) => void,
+  onDone: () => void,
+) {
+  const CHUNK = 30;
+  const INTERVAL = 60;
+  let pos = 0;
+  return new Promise<void>(resolve => {
+    const tick = setInterval(() => {
+      pos = Math.min(pos + CHUNK, fullText.length);
+      onChunk(fullText.slice(0, pos));
+      if (pos >= fullText.length) {
+        clearInterval(tick);
+        onDone();
+        resolve();
+      }
+    }, INTERVAL);
+  });
+}
+
 interface UploadResult {
   url: string;
   signedUrl: string;
@@ -44,6 +68,7 @@ interface ChatSurfaceProps {
 export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
+  const [prefillText, setPrefillText] = useState<string | undefined>(undefined);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Stable per-session client id. If parent supplies sessionId (from URL),
@@ -119,6 +144,7 @@ export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurface
     }
 
     // 4. POST to /api/chat
+    const assistantMsgId = uid();
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -147,17 +173,41 @@ export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurface
         response?: string;
         model_used?: string;
         tier_used?: string;
+        latency_ms?: number;
+        tokens?: number;
       };
 
-      const assistantMsg: Message = {
-        id: uid(),
+      const fullText = data.response ?? '(no response)';
+
+      // 4a. Insert streaming placeholder immediately (zero-content, streaming=true)
+      setLoading(false);
+      setMessages(prev => [...prev, {
+        id: assistantMsgId,
         role: 'assistant',
-        content: data.response ?? '(no response)',
+        content: '',
         model: data.model_used,
         tier: data.tier_used,
+        latency_ms: data.latency_ms,
+        tokens: data.tokens,
         ts: Date.now(),
-      };
-      setMessages(prev => [...prev, assistantMsg]);
+        streaming: true,
+      }]);
+
+      // 4b. Pseudo-stream the full response into the placeholder
+      await pseudoStream(
+        fullText,
+        (partial) => {
+          setMessages(prev => prev.map(m =>
+            m.id === assistantMsgId ? { ...m, content: partial } : m
+          ));
+        },
+        () => {
+          setMessages(prev => prev.map(m =>
+            m.id === assistantMsgId ? { ...m, streaming: false } : m
+          ));
+        },
+      );
+
       // Tell the sidebar to refresh its session list (title/recency may have changed)
       window.dispatchEvent(new CustomEvent('arthur:chat-saved'));
     } catch (e: unknown) {
@@ -173,6 +223,44 @@ export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurface
       setLoading(false);
     }
   }, [loading, currentSessionId]);
+
+  // Regenerate: remove the assistant message, re-send the preceding user prompt
+  const handleRegenerate = useCallback((msgId: string) => {
+    setMessages(prev => {
+      const idx = prev.findIndex(m => m.id === msgId);
+      if (idx < 0) return prev;
+      // Find the user message immediately before this assistant message
+      let userPrompt = '';
+      for (let i = idx - 1; i >= 0; i--) {
+        if (prev[i].role === 'user') { userPrompt = prev[i].content; break; }
+      }
+      // Remove the assistant message
+      const next = prev.filter((_, i) => i !== idx);
+      // Kick off a new send after state settles
+      if (userPrompt) {
+        setTimeout(() => sendMessage(userPrompt, []), 0);
+      }
+      return next;
+    });
+  }, [sendMessage]);
+
+  // Edit prompt: put the preceding user message back in the input
+  const handleEditPrompt = useCallback((msgId: string) => {
+    setMessages(prev => {
+      const idx = prev.findIndex(m => m.id === msgId);
+      if (idx < 0) return prev;
+      let userPrompt = '';
+      for (let i = idx - 1; i >= 0; i--) {
+        if (prev[i].role === 'user') { userPrompt = prev[i].content; break; }
+      }
+      // Remove the assistant message so user can re-send a fresh one
+      const next = prev.filter((_, i) => i !== idx);
+      if (userPrompt) {
+        setPrefillText(userPrompt);
+      }
+      return next;
+    });
+  }, []);
 
   // Listen for quick-prompt chip clicks (EmptyState dispatches these via a
   // window event because QuickPromptButton lives outside this component's
@@ -214,7 +302,12 @@ export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurface
         {isEmpty ? (
           <EmptyState />
         ) : (
-          <MessageList messages={messages} loading={loading} />
+          <MessageList
+            messages={messages}
+            loading={loading}
+            onRegenerate={handleRegenerate}
+            onEditPrompt={handleEditPrompt}
+          />
         )}
       </div>
 
@@ -224,6 +317,8 @@ export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurface
         disabled={loading}
         onVoiceClick={onOpenVoice}
         voiceActive={voiceActive}
+        prefillText={prefillText}
+        onPrefillConsumed={() => setPrefillText(undefined)}
       />
     </div>
   );

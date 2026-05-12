@@ -15,6 +15,8 @@ interface ChatInputProps {
   onVoiceClick?: () => void;
   voiceActive?: boolean;
   placeholder?: string;
+  prefillText?: string;
+  onPrefillConsumed?: () => void;
 }
 
 function formatSize(bytes: number): string {
@@ -34,12 +36,29 @@ export function ChatInput({
   onVoiceClick,
   voiceActive,
   placeholder = 'Ask Arthur anything…',
+  prefillText,
+  onPrefillConsumed,
 }: ChatInputProps) {
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
   const [dragging, setDragging] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // When parent prefills a prompt (edit-prompt flow), populate and focus
+  useEffect(() => {
+    if (prefillText != null) {
+      setText(prefillText);
+      setTimeout(() => {
+        const ta = textareaRef.current;
+        if (ta) {
+          ta.focus();
+          ta.setSelectionRange(ta.value.length, ta.value.length);
+        }
+      }, 0);
+      onPrefillConsumed?.();
+    }
+  }, [prefillText, onPrefillConsumed]);
 
   // Auto-grow textarea
   useEffect(() => {
