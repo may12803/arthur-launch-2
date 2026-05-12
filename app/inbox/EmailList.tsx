@@ -46,8 +46,11 @@ export default function EmailList() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('arthur_emails')
+        .from('arthur_inbox_emails')
         .select('id, from_email, from_name, subject, body_text, received_at, is_read')
+        .eq('direction', 'inbound')
+        .eq('is_deleted', false)
+        .eq('is_archived', false)
         .order('received_at', { ascending: false })
         .limit(100);
 

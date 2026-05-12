@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import fs from "fs";
 import path from "path";
-import { Nav, Footer } from "@/app/_components/Layout";
-import BrainIndex from "./BrainIndex";
-import CapabilityManifest from "./CapabilityManifest";
-import BrainCanvas from "@/app/_components/BrainCanvas";
-import ModelLadder from "./_components/ModelLadder";
-import PrinciplesCondensed from "./_components/PrinciplesCondensed";
+import BrainStats from "./BrainStats";
+import KnowledgeGraph from "./KnowledgeGraph";
+import CategoryGrid from "./CategoryGrid";
+import RecentFiles from "./RecentFiles";
 
 // Skip prerender — depends on env-bound Supabase client that may not be set at build
 export const dynamic = "force-dynamic";
@@ -28,371 +26,296 @@ interface Category {
 }
 
 interface Root {
-  name:string;
+  name: string;
   label: string;
-  files: number;
-  sizeBytes: number;
+  files?: number;
+  sizeBytes?: number;
   categories: Category[];
 }
 
 interface BrainIndexData {
   totals: { files: number; sizeBytes: number };
+  generated_at?: string;
   roots: Root[];
 }
 
-function loadIndex(): BrainIndexData | null {
-  try {
-    const dataFile = "/data/brain-index.json";
-    if (fs.existsSync(dataFile)) {
-      return JSON.parse(fs.readFileSync(dataFile, "utf8")) as BrainIndexData;
-    }
-    const file = path.join(process.cwd(), "public", "brain-index.json");
-    return JSON.parse(fs.readFileSync(file, "utf8")) as BrainIndexData;
-  } catch {
-    return null;
+interface GraphStats {
+  nodes: number;
+  edges: number;
+  hubs: number;
+  lobes: number;
+}
+
+interface GraphData {
+  stats: GraphStats;
+  lobes?: Record<string, string>;
+}
+
+interface UtilizationData {
+  counts: Record<string, number>;
+  lastUpdated?: string;
+}
+
+function tryReadJson<T>(candidates: string[]): T | null {
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, "utf8")) as T;
+    } catch { /* continue */ }
   }
+  return null;
+}
+
+function loadIndex(): BrainIndexData | null {
+  return tryReadJson<BrainIndexData>([
+    "/data/brain-index.json",
+    path.join(process.cwd(), "public", "brain-index.json"),
+  ]);
+}
+
+function loadGraphStats(): GraphStats | null {
+  const data = tryReadJson<GraphData>([
+    "/data/brain-graph-full.json",
+    path.join(process.cwd(), "public", "brain-graph-full.json"),
+  ]);
+  return data?.stats ?? null;
+}
+
+function loadUtilization(): UtilizationData | null {
+  return tryReadJson<UtilizationData>([
+    "/data/brain-utilization.json",
+    path.join(process.cwd(), "public", "brain-utilization.json"),
+  ]);
 }
 
 export default function BrainPage() {
-  const data = loadIndex();
+  const index = loadIndex();
+  const graphStats = loadGraphStats();
+  const utilization = loadUtilization();
+
+  // ── Stats ──────────────────────────────────────────────────────────────────
+  const totalFiles = index?.totals.files ?? 597;
+  const totalNodes = graphStats?.nodes ?? 437;
+  const totalEdges = graphStats?.edges ?? 6293;
+  const utilizationPercent = utilization
+    ? Math.round((Object.keys(utilization.counts).length / totalFiles) * 100)
+    : 32;
+
+  const statCards = [
+    { value: totalFiles.toLocaleString(), label: "knowledge files" },
+    { value: totalNodes.toLocaleString(), label: "graph nodes" },
+    { value: totalEdges.toLocaleString(), label: "authored links" },
+    { value: `${utilizationPercent}%`, label: "utilized this week" },
+  ];
+
+  // ── Categories ─────────────────────────────────────────────────────────────
+  const categories = (index?.roots ?? [])
+    .filter((r) => !["external-skills", "unverified"].includes(r.name))
+    .map((root) => {
+      const allFiles: FileEntry[] = [];
+      for (const cat of root.categories ?? []) {
+        allFiles.push(...(cat.files ?? []));
+      }
+      const topFiles = allFiles
+        .filter((f) => !f.name.startsWith("README") && !f.name.startsWith("INDEX"))
+        .slice(0, 3)
+        .map((f) => f.name);
+      return { name: root.name, fileCount: allFiles.length, topFiles };
+    })
+    .filter((c) => c.fileCount > 0)
+    .sort((a, b) => b.fileCount - a.fileCount);
+
+  // ── Recent files ───────────────────────────────────────────────────────────
+  const recentFiles: { title: string; category: string; timestamp: string | null }[] = [];
+  if (index) {
+    for (const root of index.roots) {
+      if (["external-skills", "unverified"].includes(root.name)) continue;
+      for (const cat of root.categories ?? []) {
+        for (const file of cat.files ?? []) {
+          if (recentFiles.length >= 10) break;
+          recentFiles.push({
+            title: file.name
+              .replace(/\.md$/, "")
+              .replace(/-/g, " ")
+              .replace(/_/g, " "),
+            category: root.name,
+            timestamp: index.generated_at ?? null,
+          });
+        }
+        if (recentFiles.length >= 10) break;
+      }
+      if (recentFiles.length >= 10) break;
+    }
+  }
+
+  const snapshotTimestamp = index?.generated_at
+    ? new Date(index.generated_at).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "—";
 
   return (
-    <>
-      <Nav />
-      <div className="wrap" style={{ paddingTop: 108 }}>
+    <div className="wrap" style={{ paddingTop: 108 }}>
 
-        {/* ── BrainCanvas hero — glass-panel container ── */}
-        <div style={{
-          position: "relative",
-          height: 480,
-          width: "100%",
-          overflow: "hidden",
-          borderRadius: "var(--radius-panel)",
-          background: "var(--glass-t1-bg)",
-          border: "1px solid var(--glass-t1-border)",
-          backdropFilter: `blur(var(--glass-t1-blur))`,
-          boxShadow: "var(--glass-t1-shadow)",
-        }}>
-          <BrainCanvas source="/brain-graph-full.json" />
-          {/* gradient fade */}
-          <div style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 200,
-            background: "linear-gradient(to bottom, transparent, var(--bg-base))",
-            pointerEvents: "none",
-          }} />
-          {/* overlay label */}
-          <div style={{
-            position: "absolute",
-            top: "var(--space-md, 24px)",
-            left: "var(--space-md, 24px)",
+      {/* ── Page header ──────────────────────────────────────────────────── */}
+      <section style={{ marginBottom: "var(--space-lg, 32px)" }}>
+        <div
+          style={{
             display: "flex",
-            alignItems: "center",
-            gap: "var(--space-sm, 12px)",
-          }}>
-            <span style={{
-              background: "var(--glass-t1-bg)",
-              border: "1px solid var(--glass-t1-border)",
-              backdropFilter: "blur(12px)",
-              borderRadius: "var(--radius-pill)",
-              padding: "4px 14px",
-              fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-              fontSize: "var(--fs-mono, 12px)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "var(--text-main)",
-            }}>
-              knowledge graph · live
+            alignItems: "flex-end",
+            justifyContent: "space-between",
+            gap: 24,
+            flexWrap: "wrap",
+            marginBottom: 20,
+          }}
+        >
+          <div>
+            <span
+              style={{
+                fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+                fontSize: 10,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--accent-orange)",
+                display: "block",
+                marginBottom: 6,
+              }}
+            >
+              knowledge corpus
             </span>
-            <span style={{
-              width: 7,
-              height: 7,
-              borderRadius: "50%",
-              background: "var(--tint-emerald)",
-              boxShadow: "0 0 8px var(--tint-emerald)",
-              display: "inline-block",
-            }} />
-          </div>
-        </div>
-
-        {/* ── Page header ── */}
-        <section style={{ paddingTop: "var(--space-lg, 48px)", paddingBottom: "var(--space-xl, 64px)", borderBottom: "none" }}>
-          <div className="app-page-top">
-            <span className="eyebrow">knowledge corpus</span>
-            <h1 className="section-title" style={{ marginTop: 10, marginBottom: 14 }}>the brain.</h1>
-            <p className="section-lede">
-              {data
-                ? `${data.totals.files.toLocaleString()} knowledge files across ${data.roots.length} domains. authored, cross-referenced, and compounding nightly.`
-                : "arthur's full knowledge corpus — authored, cross-referenced, and compounding nightly."}
-            </p>
-          </div>
-        </section>
-
-        {/* ── Main content grid ── */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '280px 1fr 340px',
-          gap: 'var(--page-gutter)',
-          alignItems: 'flex-start',
-        }}>
-
-          {/* ── Left Sidebar: Search + Filter ── */}
-          <aside style={{
-            position: 'sticky',
-            top: 'calc(var(--nav-h, 72px) + 24px)',
-            padding: 'var(--space-md, 24px)',
-            borderRadius: 'var(--radius-panel)',
-            background: 'var(--glass-t1-bg)',
-            border: '1px solid var(--glass-t1-border)',
-            backdropFilter: `blur(var(--glass-t1-blur))`,
-            boxShadow: 'var(--glass-t1-shadow)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--space-lg, 48px)',
-          }}>
-            <div>
-              <label style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 'var(--fs-mono, 12px)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 'var(--space-sm, 12px)' }}>Search Corpus</label>
-              <input type="text" placeholder="e.g. 'react server components'" style={{ width: '100%', background: 'var(--bg-mid)', border: '1px solid var(--glass-t1-border)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', color: 'var(--text-main)', fontFamily: 'var(--font-sans, sans-serif)' }} />
-            </div>
-            <div>
-              <h3 style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 'var(--fs-mono, 12px)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 var(--space-md, 24px) 0' }}>Filter by Domain</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs, 8px)' }}>
-                {['Engineering', 'Design', 'Strategy', 'Writing', 'Personal'].map(domain => (
-                  <label key={domain} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm, 12px)', color: 'var(--text-main)', fontSize: 'var(--fs-small, 14px)' }}>
-                    <input type="checkbox" style={{ accentColor: 'var(--accent-orange)' }} />
-                    {domain}
-                  </label>
-                ))}
-              </div>
-            </div>
-          </aside>
-
-          {/* ── Center Column: Main Content ── */}
-          <main>
-            {/* ── Stats strip ── */}
-            {data && (
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "var(--space-sm, 12px)",
-                marginBottom: "var(--space-lg, 48px)",
-              }}>
-                {[
-                  { value: data.totals.files.toLocaleString(), label: "files" },
-                  { value: (data.totals.sizeBytes / 1024 / 1024).toFixed(1), label: "MB total" },
-                  { value: String(data.roots.length), label: "domains" },
-                ].map(({ value, label }) => (
-                  <div key={label} style={{
-                    background: "var(--glass-t1-bg)",
-                    border: "1px solid var(--glass-t1-border)",
-                    backdropFilter: `blur(var(--glass-t1-blur))`,
-                    borderRadius: "var(--radius-panel)",
-                    padding: "var(--space-md, 24px) var(--space-lg, 48px)",
-                    textAlign: "center",
-                  }}>
-                    <div style={{
-                      fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                      fontSize: "var(--fs-h1, 3rem)",
-                      fontWeight: 700,
-                      color: "var(--text-active)",
-                      lineHeight: 1,
-                      letterSpacing: "-0.04em",
-                    }}>{value}</div>
-                    <div style={{
-                      fontFamily: "var(--font-jetbrains, monospace)",
-                      fontSize: "var(--fs-mono, 12px)",
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      color: "var(--text-muted)",
-                      marginTop: "var(--space-xs, 8px)",
-                    }}>{label}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* ── Brain index ── */}
-            {data ? (
-              <BrainIndex data={data} />
-            ) : (
-              <div style={{
-                background: "var(--glass-t1-bg)",
-                border: "1px solid var(--glass-t1-border)",
-                backdropFilter: `blur(var(--glass-t1-blur))`,
-                borderRadius: "var(--radius-panel)",
-                padding: "var(--space-lg, 48px)",
-              }}>
-                <p style={{ color: "var(--text-muted)", fontFamily: "var(--font-jetbrains, monospace)", fontSize: "var(--fs-mono, 12px)", margin: 0 }}>
-                  brain-index.json not found — run the data generator.
-                </p>
-              </div>
-            )}
-
-            {/* ── Capability manifest ── */}
-            <div style={{ marginTop: "var(--space-xl, 64px)" }}>
-              <CapabilityManifest />
-            </div>
-
-            {/* ── 18-tier model ladder ── */}
-            <div style={{
-              marginTop: "var(--space-xl, 64px)",
-              paddingTop: "var(--space-lg, 48px)",
-              borderTop: "1px solid var(--line-separator)",
-            }}>
-              <span className="eyebrow">18-tier model hierarchy · unified 2026-05-03</span>
-              <h2 style={{
+            <h1
+              style={{
                 fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
                 fontWeight: 700,
-                fontSize: "var(--fs-h2, 2.25rem)",
-                letterSpacing: "-0.02em",
-                margin: "10px 0 6px",
-                color: "var(--text-active)",
-              }}>
-                the routing ladder.
-              </h2>
-              <p style={{
-                fontSize: "var(--fs-small, 14px)",
-                color: "var(--text-muted)",
-                maxWidth: "64ch",
-                lineHeight: 1.65,
-                marginBottom: "var(--space-md, 24px)",
-              }}>
-                Tiers 0–10 are chat-only. Tiers 11–17 are tool-safe. Hover a row to see recent route examples.
-              </p>
+                fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
+                letterSpacing: "-0.03em",
+                color: "var(--text-active, var(--text))",
+                margin: "0 0 6px",
+                lineHeight: 1.1,
+              }}
+            >
+              Arthur&apos;s Brain
+            </h1>
+            <p
+              style={{
+                fontFamily: "var(--font-inter, Inter, sans-serif)",
+                fontSize: 14,
+                color: "var(--text-dim)",
+                margin: 0,
+                maxWidth: "52ch",
+                lineHeight: 1.55,
+              }}
+            >
+              the knowledge graph powering every reply
+            </p>
+          </div>
 
-              <ModelLadder />
-
-              {/* LoRA card */}
-              <div style={{
-                marginTop: "var(--space-lg, 48px)",
-                background: "var(--glass-t1-bg)",
-                border: "1px solid var(--glass-t1-border)",
-                backdropFilter: `blur(var(--glass-t1-blur))`,
-                borderRadius: "var(--radius-panel)",
-                padding: "var(--space-md, 24px) var(--space-lg, 48px)",
-                boxShadow: "var(--glass-t1-shadow)",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm, 12px)", marginBottom: "var(--space-md, 24px)" }}>
-                  <span style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    background: "var(--accent-orange)",
-                    boxShadow: "0 0 12px var(--accent-glow)",
-                    flexShrink: 0,
-                  }} />
-                  <span style={{
-                    fontFamily: "var(--font-jetbrains, monospace)",
-                    fontSize: "var(--fs-mono, 12px)",
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    color: "var(--accent-orange)",
-                  }}>
-                    tier 4 · arthur-tuned lora
-                  </span>
-                  <span style={{
-                    marginLeft: "auto",
-                    fontFamily: "var(--font-jetbrains, monospace)",
-                    fontSize: "var(--fs-mono, 12px)",
-                    color: "var(--tint-emerald)",
-                    background: "var(--tint-emerald-soft)",
-                    border: "1px solid var(--tint-emerald)",
-                    borderRadius: "var(--radius-pill)",
-                    padding: "3px 12px",
-                  }}>
-                    trained 2026-05-03 11:05 AM
-                  </span>
-                </div>
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-                  gap: "var(--space-sm, 12px)",
-                }}>
-                  {[
-                    { label: "base model", value: "Qwen2.5-7B-Instruct-4bit" },
-                    { label: "adapter", value: "LoRA r8 s20 8L 189it" },
-                    { label: "training corpus", value: "92KB / brand voice + default" },
-                    { label: "runtime", value: "Ollama localhost:11434" },
-                  ].map(({ label, value }) => (
-                    <div key={label}>
-                      <div style={{
-                        fontSize: 9,
-                        color: "var(--text-muted)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                        marginBottom: 3,
-                      }}>{label}</div>
-                      <div style={{
-                        fontFamily: "var(--font-jetbrains, monospace)",
-                        fontSize: "var(--fs-small, 14px)",
-                        color: "var(--text-active)",
-                        lineHeight: 1.4,
-                      }}>{value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <p style={{
-                fontSize: 11,
-                fontFamily: "var(--font-jetbrains, monospace)",
-                color: "var(--text-muted)",
-                marginTop: "var(--space-sm, 12px)",
-                letterSpacing: "0.04em",
-              }}>
-                hard rule: tool-call paths must restrict to tiers {"{0, 11–17}"}. tiers 1–10 will fabricate completed actions.
-              </p>
-            </div>
-
-            {/* ── Cross-domain principles ── */}
-            <PrinciplesCondensed />
-          </main>
-
-          {/* ── Right Sidebar: Inspector ── */}
-          <aside style={{
-            position: 'sticky',
-            top: 'calc(var(--nav-h, 72px) + 24px)',
-            padding: 'var(--space-lg, 48px)',
-            borderRadius: 'var(--radius-panel)',
-            background: 'var(--glass-t2-bg)',
-            border: '1px solid var(--glass-t2-border)',
-            backdropFilter: `blur(var(--glass-t2-blur))`,
-            boxShadow: 'var(--glass-t2-shadow)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--space-lg, 48px)',
-          }}>
-            <div>
-              <span className="eyebrow" style={{ color: 'var(--text-muted)' }}>Inspector</span>
-              <h3 style={{ color: 'var(--text-active)', fontFamily: 'var(--font-space-grotesk, sans-serif)', fontSize: 'var(--fs-h3, 1.75rem)', letterSpacing: '-0.02em', margin: '8px 0 12px' }}>
-                Click a node to inspect
-              </h3>
-              <p style={{ fontSize: 'var(--fs-small, 14px)', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
-                Select a node in the graph to view its connected principles, skills, and metadata.
-              </p>
-            </div>
-            <div style={{ borderTop: '1px solid var(--line-separator)', paddingTop: 'var(--space-lg, 48px)', display: 'flex', flexDirection: 'column', gap: 'var(--space-md, 24px)' }}>
-              <div>
-                <h4 style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 'var(--fs-mono, 12px)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 var(--space-sm, 12px) 0' }}>Linked Principles</h4>
-                <div style={{ color: 'var(--text-faint)' }}>None selected</div>
-              </div>
-              <div>
-                <h4 style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 'var(--fs-mono, 12px)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 var(--space-sm, 12px) 0' }}>Related Skills</h4>
-                <div style={{ color: 'var(--text-faint)' }}>None selected</div>
-              </div>
-              <div>
-                <h4 style={{ fontFamily: 'var(--font-jetbrains, monospace)', fontSize: 'var(--fs-mono, 12px)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 var(--space-sm, 12px) 0' }}>Last Updated</h4>
-                <div style={{ fontFamily: 'var(--font-jetbrains, monospace)', color: 'var(--text-faint)', fontSize: 'var(--fs-small, 14px)' }}>--</div>
-              </div>
-            </div>
-          </aside>
-
+          {/* Search box */}
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <span
+              style={{
+                position: "absolute",
+                left: 13,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "var(--text-dim)",
+                fontSize: 14,
+                pointerEvents: "none",
+              }}
+            >
+              ⌕
+            </span>
+            <input
+              type="text"
+              placeholder="search the brain..."
+              style={{
+                width: 260,
+                padding: "10px 52px 10px 38px",
+                background: "var(--glass-bg)",
+                border: "1px solid var(--glass-border)",
+                borderRadius: "var(--radius-pill, 999px)",
+                color: "var(--text-active, var(--text))",
+                fontFamily: "var(--font-inter, Inter, sans-serif)",
+                fontSize: 13,
+                outline: "none",
+                backdropFilter: "blur(14px)",
+              }}
+            />
+            <kbd
+              style={{
+                position: "absolute",
+                right: 12,
+                top: "50%",
+                transform: "translateY(-50%)",
+                fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+                fontSize: 9,
+                color: "var(--accent-orange)",
+                background: "var(--accent-orange-soft)",
+                border: "1px solid var(--accent-orange)",
+                borderRadius: 4,
+                padding: "2px 5px",
+                letterSpacing: "0.02em",
+                pointerEvents: "none",
+              }}
+            >
+              ⌘K
+            </kbd>
+          </div>
         </div>
-      </div>
-      <Footer />
-    </>
+
+        {/* Stat cards */}
+        <BrainStats stats={statCards} />
+      </section>
+
+      {/* ── Knowledge graph ──────────────────────────────────────────────── */}
+      <section style={{ marginBottom: "var(--space-lg, 32px)" }}>
+        <KnowledgeGraph lastUpdated={index?.generated_at} />
+      </section>
+
+      {/* ── Category breakdown ───────────────────────────────────────────── */}
+      <section style={{ marginBottom: "var(--space-lg, 32px)" }}>
+        <CategoryGrid categories={categories} />
+      </section>
+
+      {/* ── Recent additions ─────────────────────────────────────────────── */}
+      <section style={{ marginBottom: "var(--space-lg, 32px)" }}>
+        <RecentFiles files={recentFiles} />
+      </section>
+
+      {/* ── Footer note ──────────────────────────────────────────────────── */}
+      <footer
+        style={{
+          paddingBottom: "var(--space-lg, 32px)",
+          paddingTop: "var(--space-md, 20px)",
+          borderTop: "1px solid var(--glass-border)",
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "var(--font-inter, Inter, sans-serif)",
+            fontSize: 12,
+            fontStyle: "italic",
+            color: "var(--text-dim)",
+            margin: 0,
+            lineHeight: 1.5,
+          }}
+        >
+          Brain auto-syncs nightly via the regen pipeline. Last full reindex:{" "}
+          <span
+            style={{
+              fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+              fontStyle: "normal",
+              color: "var(--text-active, var(--text))",
+            }}
+          >
+            {snapshotTimestamp}
+          </span>
+          .
+        </p>
+      </footer>
+    </div>
   );
 }

@@ -3,6 +3,11 @@ primary_region = 'ord'
 
 [build]
   vm_size = "performance-4x"
+  # NEXT_PUBLIC_* must be baked into the client bundle at build time.
+  # Fly runtime secrets are NOT available during `bun run build`.
+  [build.args]
+    NEXT_PUBLIC_SUPABASE_URL = "https://ycqhiysewapmuuywdlyi.supabase.co"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljcWhpeXNld2FwbXV1eXdkbHlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjkyNTQsImV4cCI6MjA5MDMwNTI1NH0.YihgU6_ZJLK4-jPX9NzrgZMAdxmA7FLPM1a0ePqR3YY"
 
 [http_service]
   internal_port = 3000

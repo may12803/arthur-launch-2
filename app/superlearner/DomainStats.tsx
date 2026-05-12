@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
 import { Loader2, AlertTriangle, ChevronDown } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
@@ -41,9 +40,14 @@ export default function DomainStats() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const { data, error } = await supabase.rpc('get_superlearner_stats');
-        if (error) throw error;
-        setStats(data);
+        // RPC get_superlearner_stats doesn't exist — use the server-side
+        // /api/superlearner/stats endpoint which aggregates the same data
+        // via the service-role admin client.
+        const res = await fetch('/api/superlearner/stats', { credentials: 'include' });
+        if (!res.ok) throw new Error(`stats API ${res.status}`);
+        const json = await res.json();
+        const list = Array.isArray(json) ? json : (json.stats ?? json.domains ?? []);
+        setStats(list as DomainStatsData[]);
       } catch (err: any) {
         setError(err.message);
       } finally {

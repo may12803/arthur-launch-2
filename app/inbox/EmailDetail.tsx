@@ -24,7 +24,7 @@ export default function EmailDetail({ emailId }: { emailId: string }) {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('arthur_emails')
+        .from('arthur_inbox_emails')
         .select('*')
         .eq('id', id)
         .single();
