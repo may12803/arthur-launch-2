@@ -1681,6 +1681,18 @@ function promptNeedsTools(messages: OpenAIMessage[]): boolean {
     "patriots", "steelers", "cowboys", "yankees", "dodgers", "blackhawks",
     "xero", "p&l", "balance sheet", "accounts payable", "accounts receivable", "cash flow",
     "burn rate", "runway", "monthly recurring", "mrr",
+    // Date arithmetic — must call get_current_datetime, never compute from training memory.
+    // Caught 2026-05-12 stress: "days until June 30" → 474 (wrong), "day of week Jan 1 2024" → Monday (wrong).
+    "days until", "weeks until", "months until", "days since", "weeks since",
+    "day of the week", "day of week", "what day was", "what day is",
+    "expire", "expires", "expiration", "deadline", "due date", "anniversary",
+    "how long until", "how long ago", "how many days", "how many weeks",
+    // Specific live markets / macro — same pattern, no training-data lookups.
+    "s&p", "s and p", "spx", "nasdaq", "dow jones", "djia", "russell",
+    "treasury yield", "10-year", "10 year yield", "fed rate", "fed funds",
+    "cpi", "ppi", "gdp", "unemployment rate", "jobs report", "payrolls",
+    "inflation", "interest rate",
+    "ethereum", "eth", "btc", "solana", "doge", "altcoin",
   ];
   return toolKeywords.some(kw => text.includes(kw));
 }
