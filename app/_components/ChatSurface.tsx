@@ -11,10 +11,6 @@ function uid(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
-const SESSION_ID = uid(); // stable for the browser session
-
 interface UploadResult {
   url: string;
   signedUrl: string;
@@ -42,12 +38,50 @@ async function uploadAttachment(file: File): Promise<UploadResult | null> {
 interface ChatSurfaceProps {
   voiceActive?: boolean;
   onOpenVoice?: () => void;
+  sessionId?: string;  // when present, load this session's history on mount
 }
 
-export function ChatSurface({ voiceActive, onOpenVoice }: ChatSurfaceProps) {
+export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Stable per-session client id. If parent supplies sessionId (from URL),
+  // use it. Otherwise mint a fresh uuid that becomes the new session on
+  // first message.
+  const [currentSessionId, setCurrentSessionId] = useState<string>(sessionId ?? uid());
+
+  // When the URL session id changes (user clicks a different chat in the
+  // sidebar), reset state and load that session's history.
+  useEffect(() => {
+    if (sessionId && sessionId !== currentSessionId) {
+      setCurrentSessionId(sessionId);
+      setMessages([]);
+      setLoading(true);
+      fetch(`/api/chat/sessions/${sessionId}`, { credentials: 'include' })
+        .then(r => r.ok ? r.json() : { messages: [] })
+        .then(json => {
+          const rows = (json.messages ?? []) as Array<{ role: string; content: string; metadata?: { tool_calls?: unknown; tier?: string; model?: string }; created_at: string }>;
+          const loaded: Message[] = rows
+            .filter(r => r.role === 'user' || r.role === 'assistant')
+            .map(r => ({
+              id: uid(),
+              role: r.role as 'user' | 'assistant',
+              content: r.content,
+              model: r.metadata?.model,
+              tier: r.metadata?.tier,
+              ts: new Date(r.created_at).getTime(),
+            }));
+          setMessages(loaded);
+        })
+        .finally(() => setLoading(false));
+    } else if (!sessionId && messages.length > 0) {
+      // URL dropped the chat param → user clicked "+ New chat"
+      setMessages([]);
+      setCurrentSessionId(uid());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -92,7 +126,7 @@ export function ChatSurface({ voiceActive, onOpenVoice }: ChatSurfaceProps) {
         credentials: 'include',
         body: JSON.stringify({
           prompt,
-          session_id: SESSION_ID,
+          session_id: currentSessionId,
           attachments: attachments.length > 0 ? attachments : undefined,
         }),
       });
@@ -124,6 +158,8 @@ export function ChatSurface({ voiceActive, onOpenVoice }: ChatSurfaceProps) {
         ts: Date.now(),
       };
       setMessages(prev => [...prev, assistantMsg]);
+      // Tell the sidebar to refresh its session list (title/recency may have changed)
+      window.dispatchEvent(new CustomEvent('arthur:chat-saved'));
     } catch (e: unknown) {
       const err = e as { message?: string };
       const errMsg: Message = {
@@ -136,7 +172,7 @@ export function ChatSurface({ voiceActive, onOpenVoice }: ChatSurfaceProps) {
     } finally {
       setLoading(false);
     }
-  }, [loading]);
+  }, [loading, currentSessionId]);
 
   // Listen for quick-prompt chip clicks (EmptyState dispatches these via a
   // window event because QuickPromptButton lives outside this component's

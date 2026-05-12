@@ -1585,6 +1585,32 @@ async function persistMessage(sessionId: string, role: string, content: string, 
       tool_results: extra.tool_results ?? null,
       metadata: extra.metadata ?? {},
     });
+    // Upsert sessions metadata so the sidebar list stays fresh. Title is
+    // the first user message we see for this session; later messages just
+    // bump last_message_at and don't overwrite the title.
+    if (role === "user") {
+      const title = content.replace(/\s+/g, " ").trim().slice(0, 60);
+      const { data: existing } = await db
+        .from("arthur_chat_sessions")
+        .select("id, title")
+        .eq("id", sessionId)
+        .maybeSingle();
+      if (existing) {
+        await db.from("arthur_chat_sessions")
+          .update({ last_message_at: new Date().toISOString() })
+          .eq("id", sessionId);
+      } else {
+        await db.from("arthur_chat_sessions").insert({
+          id: sessionId,
+          title,
+          last_message_at: new Date().toISOString(),
+        });
+      }
+    } else {
+      await db.from("arthur_chat_sessions")
+        .update({ last_message_at: new Date().toISOString() })
+        .eq("id", sessionId);
+    }
   } catch { /* non-fatal */ }
 }
 

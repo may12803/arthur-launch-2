@@ -17,6 +17,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
+import { ChatsList } from './ChatsList';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Nav items — icons only in collapsed sidebar, expand on hover
@@ -274,6 +275,12 @@ export function AppShell({ children, onOpenVoice, voiceActive }: AppShellProps) 
           className="desktop-sidebar"
         >
           <SidebarNav items={NAV_ITEMS} pathname={pathname} expanded={expanded} />
+          {/* Chat sessions list — shown only on the chat home, expanded only when sidebar is expanded */}
+          {isChatHome && (
+            <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '4px' }}>
+              <ChatsList expanded={expanded} />
+            </div>
+          )}
         </nav>
 
         {/* ── Mobile drawer ────────────────────────────────────────────────── */}
@@ -305,6 +312,11 @@ export function AppShell({ children, onOpenVoice, voiceActive }: AppShellProps) 
               onClick={e => e.stopPropagation()}
             >
               <SidebarNav items={NAV_ITEMS} pathname={pathname} expanded={true} onNav={() => setSidebarOpen(false)} />
+              {isChatHome && (
+                <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '4px' }}>
+                  <ChatsList expanded={true} />
+                </div>
+              )}
             </nav>
           </div>
         )}
