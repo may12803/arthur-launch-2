@@ -138,6 +138,20 @@ export function ChatSurface({ voiceActive, onOpenVoice }: ChatSurfaceProps) {
     }
   }, [loading]);
 
+  // Listen for quick-prompt chip clicks (EmptyState dispatches these via a
+  // window event because QuickPromptButton lives outside this component's
+  // direct props chain). Wire the listener here so chips actually send.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      if (typeof detail === 'string' && detail.length > 0) {
+        sendMessage(detail, []);
+      }
+    };
+    window.addEventListener('arthur:quick-prompt', handler);
+    return () => window.removeEventListener('arthur:quick-prompt', handler);
+  }, [sendMessage]);
+
   const isEmpty = messages.length === 0;
 
   return (
