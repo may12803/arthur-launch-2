@@ -1,8 +1,9 @@
+import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
-import Header from "./_components/Header";
-import Footer from "./_components/Footer";
+import { Header } from "./_components/Header";
+import { Footer } from "./_components/Footer";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),

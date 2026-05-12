@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { authGate, rateLimit } from "@/lib/_auth";
 import { buildPersona } from "@/lib/persona/arthur-system-prompt";
 import { sanitizeArthurReply } from "@/lib/sanitizer";
+import { fetchLivePersona as livePullerFetch } from "@/lib/persona/live-puller";
 
 export const runtime = "nodejs";
 
@@ -1826,7 +1827,33 @@ export async function POST(req: NextRequest) {
   // with or without tool definitions. Chat-only providers (Cerebras/Groq)
   // leak tool-call syntax as text when given tool definitions they can't honor.
   const turnRequiresTools = promptNeedsTools([{ role: "user", content: prompt }]);
-  const systemPrompt = buildSystemPrompt(contextDigest + memoryContext, currentLocation, turnRequiresTools);
+
+  // ── LIVE PERSONA PULL — fetch latest persona from Supabase arthur_persona_live
+  //    table (pushed by ~/arthur/lib/integration/persona-pusher.js on Daniel's
+  //    Mac on every persona.ts mtime change). 60s in-memory cache.
+  //    Falls back to bundled persona if Supabase row missing or stale > 24h.
+  //    NO REDEPLOY NEEDED for persona edits.
+  let systemPrompt: string = buildSystemPrompt(contextDigest + memoryContext, currentLocation, turnRequiresTools);
+  try {
+    const livePersona = await livePullerFetch();
+    if (livePersona) systemPrompt = livePersona;
+  } catch { /* fallback to bundled */ }
+
+  // ── COMMITMENT AUTO-SURFACE — cross-surface parity with TUI + Telegram.
+  // If any commitment is due in the next hour (queried from local Arthur
+  // data file, which exists when dashboard runs against the same DB), prepend
+  // a reminder. In cloud Fly container the file doesn't exist; silent no-op.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const dynamicRequire = eval('require');
+    const pm = dynamicRequire('os').homedir() + '/arthur/lib/agentic/project-memory';
+    const projectMemory = dynamicRequire(pm);
+    const due = projectMemory.dueSoon(3_600_000);
+    if (due && due.length > 0) {
+      systemPrompt += `\n\n[arthur reminder — ${due.length} commitment(s) due in next hour: ${due.map((c: any) => c.what.slice(0, 80)).join('; ')}]`;
+    }
+  } catch { /* dashboard running in cloud container — file unreachable, OK */ }
+
   const messages: OpenAIMessage[] = [
     { role: "system", content: systemPrompt },
     ...history.map((h): OpenAIMessage => {

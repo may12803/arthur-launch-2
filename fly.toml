@@ -2,6 +2,7 @@ app = 'arthur-online'
 primary_region = 'ord'
 
 [build]
+  vm_size = "performance-4x"
 
 [http_service]
   internal_port = 3000
@@ -12,7 +13,7 @@ primary_region = 'ord'
   processes = ['app']
 
 [[vm]]
-  memory = '4096mb'
+  memory = '2048mb'
   cpu_kind = 'shared'
   cpus = 1
 

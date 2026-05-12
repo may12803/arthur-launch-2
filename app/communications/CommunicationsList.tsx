@@ -7,7 +7,7 @@ import { Search, Loader2 } from 'lucide-react';
 import CommunicationDetail from './CommunicationDetail';
 
 // Types
-interface CommRow {
+export interface CommRow {
   id: string;
   ts: string;
   channel: 'sms' | 'voice' | 'fax' | 'email';
