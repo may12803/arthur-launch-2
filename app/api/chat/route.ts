@@ -1703,7 +1703,7 @@ function promptNeedsTools(messages: OpenAIMessage[]): boolean {
 // (hallucination defense) requires tool-call before any factual claim
 // about live/current state. This regex triggers a system-level "you MUST
 // web_search first" nudge that makes the model actually call the tool.
-const CURRENT_EVENTS_RE = /\b(latest|current|currently|right now|today|tonight|this (week|month|year|morning|evening)|recent|news|headlines|won the|score|stock( price)?|share price|market cap|valuation|election|president|ceo|prime minister|champion|world cup|super bowl|world series|stanley cup|nba finals|olympics|world record|stock|crypto|bitcoin|ethereum)\b/i;
+const CURRENT_EVENTS_RE = /\b(latest|current|currently|right now|today|tonight|this (week|month|year|morning|evening)|recent|news|headlines|won the|score|stock( price)?|share price|market cap|valuation|election|president|ceo|prime minister|champion|world cup|super bowl|world series|stanley cup|nba finals|olympics|world record|stock|crypto|bitcoin|ethereum|btc|eth|s&p|spx|nasdaq|dow|treasury|cpi|ppi|gdp|inflation|interest rate|fed funds|fed rate|jobs report|unemployment rate|weather|temperature|forecast|humidity|wind speed|precipitation)\b/i;
 
 function isCurrentEventsQuery(messages: OpenAIMessage[]): boolean {
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
@@ -1731,11 +1731,14 @@ async function callLLM(messages: OpenAIMessage[], withTools: boolean): Promise<{
       {
         role: "system",
         content:
-          "CURRENT-EVENTS QUERY DETECTED. You MUST call the web_search tool BEFORE answering. " +
-          "Your training data is months/years old and unreliable for live facts (sports scores, " +
-          "current officials, prices, news, recent winners). Do NOT answer from memory. " +
-          "If you have already searched and the result is in this conversation, you may answer; " +
-          "otherwise call web_search now with a focused query.",
+          "LIVE-DATA QUERY DETECTED — strict rules apply.\n\n" +
+          "Step 1: Try web_search FIRST. If you have a tool result this turn, you may quote it.\n\n" +
+          "Step 2: If web_search returns nothing useful, or you cannot call it, you MUST refuse — DO NOT fall back to training memory. " +
+          "Training data is months old and you WILL fabricate a specific number that looks confident but is fictional.\n\n" +
+          "ZERO TOLERANCE for these fabricated specifics: any temperature (°F or °C), any stock price, any crypto price, " +
+          "any CPI/PPI/GDP/inflation/unemployment percent, any sports score, any weather condition string ('overcast', 'partly cloudy', '13 mph wind'), any 'feels like' value, any humidity percent.\n\n" +
+          "If you don't have a live tool result, respond with ONE short sentence: \"I'd need a live data tool for that — none wired right now.\" Then stop. Do not pad. Do not estimate. Do not give a range.\n\n" +
+          "The user's eval harness flags any specific live number without a same-turn tool result as a fabrication failure.",
       },
       ...messages,
     ];
