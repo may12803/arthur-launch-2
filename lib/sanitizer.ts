@@ -23,6 +23,13 @@ export const FAKE_TOOL_BLOCK_RE = new RegExp(
   'gim',
 );
 
+// Pattern 1b: catch-all for ANY `[Word] {json}` block — Cerebras / Groq emit
+// fake tool syntax for internal pseudo-tools we don't list (ChainOfThought,
+// DependencyMap, SelfAudit, etc.) plus anything we add later.
+// Matches `[Capitalized_or_camelCase_or_snake_case] {anything-balanced}`.
+export const FAKE_TOOL_BLOCK_LOOSE_RE =
+  /^\s*\[[A-Za-z][A-Za-z0-9_]*\]\s*[{(\[][\s\S]*?[})\]]\s*$/gim;
+
 // Pattern 2: bare tool-call syntax mid-text — `web_search('foo')` etc.
 export const BARE_TOOL_CALL_RE = new RegExp(
   `\\b(?:${ALL_TOOL_RE})\\s*\\(['"][^'"]*['"]\\)`,
@@ -90,6 +97,7 @@ export function sanitizeArthurReply(text: string, toolsActuallyUsed = 0): string
   let out = text;
 
   out = out.replace(FAKE_TOOL_BLOCK_RE, '');
+  out = out.replace(FAKE_TOOL_BLOCK_LOOSE_RE, '');
   out = out.replace(BARE_TOOL_CALL_RE, '');
   out = out.replace(ITALIC_TOOL_ACTION_RE, '');
   out = out.replace(LET_ME_CHECK_RE, '');
@@ -118,7 +126,7 @@ export function sanitizeArthurReply(text: string, toolsActuallyUsed = 0): string
   out = out.replace(/\n{3,}/g, '\n\n').trim();
 
   if (!out && toolsActuallyUsed === 0) {
-    return "I tried to answer that but ended up writing the tool call as text instead of invoking it. Ask again — I'll route through the tool properly this time.";
+    return "Need to route that through a tool. Ask again and I'll hit the real endpoint.";
   }
 
   return out;
