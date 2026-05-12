@@ -1705,6 +1705,22 @@ function promptNeedsTools(messages: OpenAIMessage[]): boolean {
 // web_search first" nudge that makes the model actually call the tool.
 const CURRENT_EVENTS_RE = /\b(latest|current|currently|right now|today|tonight|this (week|month|year|morning|evening)|recent|news|headlines|won the|score|stock( price)?|share price|market cap|valuation|election|president|ceo|prime minister|champion|world cup|super bowl|world series|stanley cup|nba finals|olympics|world record|stock|crypto|bitcoin|ethereum|btc|eth|s&p|spx|nasdaq|dow|treasury|cpi|ppi|gdp|inflation|interest rate|fed funds|fed rate|jobs report|unemployment rate|weather|temperature|forecast|humidity|wind speed|precipitation)\b/i;
 
+// Multi-variable analytics detector — when a prompt asks for math with
+// multiple inputs (labor + cost + revenue + capacity), Arthur tends to
+// silently invent missing variables instead of stating assumptions. The
+// 2026-05-12 deep-analytics stress caught this pattern on 5/25 prompts —
+// all 5 in operations / queueing / scheduling categories where the prompt
+// has missing-variable structure ("3 bartenders, 4 servers... labor cost
+// for the night?" — missing shift length, missing tips, missing benefits).
+const COMPLEX_ANALYTICS_RE = /\b(calculate|compute|how much|how many|breakeven|break even|model|scenario|sensitivity|what would|what's the|what is the)\b.{0,200}\b(if|when|given|assume|with|at|per|holding|while|but|and)\b/i;
+
+function isComplexAnalytics(messages: OpenAIMessage[]): boolean {
+  const lastUser = [...messages].reverse().find((m) => m.role === "user");
+  const text = (typeof lastUser?.content === "string" ? lastUser.content : "");
+  if (!text || text.length < 80) return false;  // short prompts are usually trivial
+  return COMPLEX_ANALYTICS_RE.test(text);
+}
+
 function isCurrentEventsQuery(messages: OpenAIMessage[]): boolean {
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
   const text = (typeof lastUser?.content === "string" ? lastUser.content : "").toLowerCase();
@@ -1726,6 +1742,28 @@ async function callLLM(messages: OpenAIMessage[], withTools: boolean): Promise<{
   // the model frequently answers from stale training data and invents
   // specific scores/dates/people. Verified live 2026-05-07 (Super Bowl).
   let nudgedMessages = messages;
+
+  // Analytics-complexity nudge — fires when prompt looks quantitative with
+  // conditional structure ("if X then Y"). Forces Arthur to state assumptions
+  // explicitly BEFORE doing math, instead of silently inventing missing
+  // variables (the 2026-05-12 deep-analytics stress failure mode).
+  if (isComplexAnalytics(messages)) {
+    nudgedMessages = [
+      {
+        role: "system",
+        content:
+          "QUANTITATIVE ANALYSIS PROMPT. Before doing any math:\n\n" +
+          "1. State explicitly what variables the user gave you and what variables are MISSING.\n" +
+          "2. For each missing variable, EITHER ask the user, OR state your assumption in one sentence (\"assuming a 7-hour shift\", \"assuming tips are excluded\").\n" +
+          "3. Then show the math step by step. Use Geist Mono notation: 12 × $14 = $168.\n" +
+          "4. End with the single number answer.\n\n" +
+          "Forbidden: inventing values silently (e.g. assuming 1 server when the prompt said 3, or assuming a shift length when none was given). If the prompt is genuinely under-specified, refuse with a one-sentence \"need [variable] to compute\" and stop.\n\n" +
+          "This is a quantitative problem, not a chat question — treat numbers as load-bearing.",
+      },
+      ...nudgedMessages,
+    ];
+  }
+
   if (requiresTools && isCurrentEventsQuery(messages)) {
     nudgedMessages = [
       {
