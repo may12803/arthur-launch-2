@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
-import { Header } from "./_components/Header";
-import { Footer } from "./_components/Footer";
+import { AppShellWrapper } from "./_components/AppShellWrapper";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
@@ -29,11 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`dark ${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="bg-bg-base text-text-main">
-        <Header />
-        <main id="main-content" className="p-page-margin">
-          {children}
-        </main>
-        <Footer />
+        <AppShellWrapper>{children}</AppShellWrapper>
       </body>
     </html>
   );
