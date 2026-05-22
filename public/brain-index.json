@@ -1,9 +1,9 @@
 {
   "totals": {
-    "files": 597,
-    "sizeBytes": 14868166
+    "files": 606,
+    "sizeBytes": 14872900
   },
-  "generated_at": "2026-05-08T08:44:04.041Z",
+  "generated_at": "2026-05-22T01:51:44.503Z",
   "roots": [
     {
       "name": "external-skills",
@@ -671,6 +671,46 @@
               "sizeBytes": 184
             },
             {
+              "name": "retrieval-daily-2026-05-13.md",
+              "relativePath": "meta/retrieval-daily-2026-05-13.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-14.md",
+              "relativePath": "meta/retrieval-daily-2026-05-14.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-15.md",
+              "relativePath": "meta/retrieval-daily-2026-05-15.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-17.md",
+              "relativePath": "meta/retrieval-daily-2026-05-17.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-18.md",
+              "relativePath": "meta/retrieval-daily-2026-05-18.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-19.md",
+              "relativePath": "meta/retrieval-daily-2026-05-19.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-20.md",
+              "relativePath": "meta/retrieval-daily-2026-05-20.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-21.md",
+              "relativePath": "meta/retrieval-daily-2026-05-21.md",
+              "sizeBytes": 184
+            },
+            {
               "name": "retrieval-weekly.md",
               "relativePath": "meta/retrieval-weekly.md",
               "sizeBytes": 2058
@@ -833,8 +873,8 @@
           ]
         }
       ],
-      "files": 67,
-      "sizeBytes": 916370
+      "files": 75,
+      "sizeBytes": 917842
     },
     {
       "name": "business",
@@ -2396,6 +2436,99 @@
       "sizeBytes": 450862
     },
     {
+      "name": "restaurant",
+      "label": "restaurant",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "bartender-operations-service-mastery.md",
+              "relativePath": "restaurant/bartender-operations-service-mastery.md",
+              "sizeBytes": 46014
+            },
+            {
+              "name": "catering-event-sales.md",
+              "relativePath": "restaurant/catering-event-sales.md",
+              "sizeBytes": 15304
+            },
+            {
+              "name": "event-marketing-mastery.md",
+              "relativePath": "restaurant/event-marketing-mastery.md",
+              "sizeBytes": 9616
+            },
+            {
+              "name": "event-planning-production-mastery.md",
+              "relativePath": "restaurant/event-planning-production-mastery.md",
+              "sizeBytes": 45606
+            },
+            {
+              "name": "financial-optimization.md",
+              "relativePath": "restaurant/financial-optimization.md",
+              "sizeBytes": 28580
+            },
+            {
+              "name": "food-science-culinary-mastery.md",
+              "relativePath": "restaurant/food-science-culinary-mastery.md",
+              "sizeBytes": 72887
+            },
+            {
+              "name": "honeybook-private-events.md",
+              "relativePath": "restaurant/honeybook-private-events.md",
+              "sizeBytes": 11088
+            },
+            {
+              "name": "inventory-management.md",
+              "relativePath": "restaurant/inventory-management.md",
+              "sizeBytes": 5621
+            },
+            {
+              "name": "local-marketing-mastery.md",
+              "relativePath": "restaurant/local-marketing-mastery.md",
+              "sizeBytes": 38918
+            },
+            {
+              "name": "music-entertainment-booking-mastery.md",
+              "relativePath": "restaurant/music-entertainment-booking-mastery.md",
+              "sizeBytes": 54192
+            },
+            {
+              "name": "README.md",
+              "relativePath": "restaurant/README.md",
+              "sizeBytes": 2475
+            },
+            {
+              "name": "restaurant-bar-finance-mastery.md",
+              "relativePath": "restaurant/restaurant-bar-finance-mastery.md",
+              "sizeBytes": 11807
+            },
+            {
+              "name": "restaurant-operations.md",
+              "relativePath": "restaurant/restaurant-operations.md",
+              "sizeBytes": 49066
+            },
+            {
+              "name": "staff-management.md",
+              "relativePath": "restaurant/staff-management.md",
+              "sizeBytes": 5801
+            },
+            {
+              "name": "toast-menu-editing.md",
+              "relativePath": "restaurant/toast-menu-editing.md",
+              "sizeBytes": 3262
+            },
+            {
+              "name": "wine-spirits-mastery.md",
+              "relativePath": "restaurant/wine-spirits-mastery.md",
+              "sizeBytes": 47664
+            }
+          ]
+        }
+      ],
+      "files": 16,
+      "sizeBytes": 447901
+    },
+    {
       "name": "legal",
       "label": "legal",
       "categories": [
@@ -2482,94 +2615,6 @@
       ],
       "files": 15,
       "sizeBytes": 674874
-    },
-    {
-      "name": "restaurant",
-      "label": "restaurant",
-      "categories": [
-        {
-          "name": "_loose",
-          "files": [
-            {
-              "name": "bartender-operations-service-mastery.md",
-              "relativePath": "restaurant/bartender-operations-service-mastery.md",
-              "sizeBytes": 46014
-            },
-            {
-              "name": "catering-event-sales.md",
-              "relativePath": "restaurant/catering-event-sales.md",
-              "sizeBytes": 15304
-            },
-            {
-              "name": "event-marketing-mastery.md",
-              "relativePath": "restaurant/event-marketing-mastery.md",
-              "sizeBytes": 9616
-            },
-            {
-              "name": "event-planning-production-mastery.md",
-              "relativePath": "restaurant/event-planning-production-mastery.md",
-              "sizeBytes": 45606
-            },
-            {
-              "name": "financial-optimization.md",
-              "relativePath": "restaurant/financial-optimization.md",
-              "sizeBytes": 28580
-            },
-            {
-              "name": "food-science-culinary-mastery.md",
-              "relativePath": "restaurant/food-science-culinary-mastery.md",
-              "sizeBytes": 72887
-            },
-            {
-              "name": "honeybook-private-events.md",
-              "relativePath": "restaurant/honeybook-private-events.md",
-              "sizeBytes": 11088
-            },
-            {
-              "name": "inventory-management.md",
-              "relativePath": "restaurant/inventory-management.md",
-              "sizeBytes": 5621
-            },
-            {
-              "name": "local-marketing-mastery.md",
-              "relativePath": "restaurant/local-marketing-mastery.md",
-              "sizeBytes": 38918
-            },
-            {
-              "name": "music-entertainment-booking-mastery.md",
-              "relativePath": "restaurant/music-entertainment-booking-mastery.md",
-              "sizeBytes": 54192
-            },
-            {
-              "name": "README.md",
-              "relativePath": "restaurant/README.md",
-              "sizeBytes": 2475
-            },
-            {
-              "name": "restaurant-bar-finance-mastery.md",
-              "relativePath": "restaurant/restaurant-bar-finance-mastery.md",
-              "sizeBytes": 11807
-            },
-            {
-              "name": "restaurant-operations.md",
-              "relativePath": "restaurant/restaurant-operations.md",
-              "sizeBytes": 49066
-            },
-            {
-              "name": "staff-management.md",
-              "relativePath": "restaurant/staff-management.md",
-              "sizeBytes": 5801
-            },
-            {
-              "name": "wine-spirits-mastery.md",
-              "relativePath": "restaurant/wine-spirits-mastery.md",
-              "sizeBytes": 47664
-            }
-          ]
-        }
-      ],
-      "files": 15,
-      "sizeBytes": 444639
     },
     {
       "name": "languages",
