@@ -213,6 +213,22 @@ const TOOL_DEFINITIONS = [
   {
     type: "function",
     function: {
+      name: "MemorySearch",
+      description: "SEMANTIC vector search across ALL of Arthur's banked knowledge — 34 design mastery files (typography, motion, dark-mode, color, accessibility, awwwards-patterns, refactoring-ui), ~700 brain files, learned patterns, feedback rules. Returns the most semantically similar chunks by cosine similarity (NOT keyword match — use this, not query_memory, for 'how should this look', design intent, 'what did I learn about X', 'what's the rule for Y'). REQUIRED before any UI/UX/visual output per persona design directive.",
+      parameters: {
+        type: "object",
+        properties: {
+          query:     { type: "string", description: "Natural-language search query (e.g. 'dark-mode dashboard typography scale')." },
+          top_k:     { type: "number", description: "Max results (default 6)." },
+          threshold: { type: "number", description: "Cosine-similarity floor 0–1 (default 0.3)." },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "list_recent_actions",
       description: "Show what Arthur has done recently — inbox automation actions, recent Telegram conversations, and dashboard chat. Use for: 'what have you done today', 'recent activity', etc.",
       parameters: {
@@ -429,6 +445,25 @@ const TOOL_DEFINITIONS = [
           max_connections: { type: "number", description: "Max connections per slice (default 1)" },
         },
         required: ["origin", "destination", "depart_date"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "find_hotels",
+      description: "Search live hotel offers via Duffel Stays — returns up to 8 hotels with specific per-night + total price, address, rating, cancellation policy, and a clickable booking URL. Use whenever Daniel asks 'find me a hotel in X for date Y', 'book a place in Z', or any lodging search. ALWAYS surface specific total price (not a range), and include the clickable URL inline. After offers, ask Daniel which one to book + offer Stripe Link payment OR Klarna sign-off.",
+      parameters: {
+        type: "object",
+        properties: {
+          location: { type: "string", description: "City name (Savannah, New Orleans), neighborhood ('downtown New Orleans'), or 'lat,lng'." },
+          check_in: { type: "string", description: "Check-in date YYYY-MM-DD" },
+          check_out: { type: "string", description: "Check-out date YYYY-MM-DD" },
+          guests: { type: "number", description: "Number of adult guests (default 2)" },
+          rooms: { type: "number", description: "Number of rooms (default 1)" },
+          max_price_per_night_usd: { type: "number", description: "Optional ceiling — drops offers above this per-night price" },
+        },
+        required: ["location", "check_in", "check_out"],
       },
     },
   },
@@ -700,6 +735,45 @@ async function toolQueryMemory(args: { q?: string }): Promise<string> {
     return lines.join("\n");
   } catch (e: unknown) {
     return `query_memory error: ${e instanceof Error ? e.message : String(e)}`;
+  }
+}
+
+// MemorySearch — SEMANTIC vector search over pgvector (match_arthur_memories),
+// the same store the TUI + Telegram use. Embeds the query with OpenAI
+// text-embedding-3-small (1536 dim, matches the index), then cosine-matches.
+// This is how design knowledge (source='knowledge-design') + all brain files
+// become reachable from the dashboard. query_memory above is keyword-only.
+async function toolMemorySearch(args: { query?: string; top_k?: number; threshold?: number }): Promise<string> {
+  const query = args.query?.trim();
+  if (!query) return "MemorySearch error: query required";
+  try {
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey) return "MemorySearch error: OPENAI_API_KEY not configured";
+    const embRes = await fetch("https://api.openai.com/v1/embeddings", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "text-embedding-3-small", input: query }),
+    });
+    if (!embRes.ok) return `MemorySearch error: embed ${embRes.status}: ${(await embRes.text()).slice(0, 150)}`;
+    const embJson = await embRes.json();
+    const queryEmbedding = embJson?.data?.[0]?.embedding;
+    if (!queryEmbedding) return "MemorySearch error: no embedding returned";
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.rpc("match_arthur_memories", {
+      query_embedding: queryEmbedding,
+      match_threshold: args.threshold ?? 0.3,
+      match_count: args.top_k ?? 6,
+    });
+    if (error) return `MemorySearch error: ${error.message}`;
+    if (!data || data.length === 0) return `No memory matches "${query}".`;
+    const lines: string[] = [`MemorySearch: ${data.length} semantic matches for "${query}".\n`];
+    for (const r of data as Array<{ source?: string; content?: string; similarity?: number }>) {
+      const sim = typeof r.similarity === "number" ? r.similarity.toFixed(3) : "?";
+      lines.push(`[sim ${sim}] ${r.source ?? "memory"}\n${(r.content ?? "").slice(0, 400)}\n`);
+    }
+    return lines.join("\n");
+  } catch (e: unknown) {
+    return `MemorySearch error: ${e instanceof Error ? e.message : String(e)}`;
   }
 }
 
@@ -1172,6 +1246,7 @@ async function executeTool(name: string, argsStr: string): Promise<string> {
     case "query_legal":       return toolQueryLegal(args as Parameters<typeof toolQueryLegal>[0]);
     case "query_brain_graph": return toolQueryBrainGraph(args as Parameters<typeof toolQueryBrainGraph>[0]);
     case "query_memory":      return toolQueryMemory(args as Parameters<typeof toolQueryMemory>[0]);
+    case "MemorySearch":      return toolMemorySearch(args as Parameters<typeof toolMemorySearch>[0]);
     case "list_recent_actions": return toolListRecentActions(args as Parameters<typeof toolListRecentActions>[0]);
     case "get_weather":         return toolGetWeather(args as Parameters<typeof toolGetWeather>[0]);
     case "web_search":          return toolWebSearch(args as Parameters<typeof toolWebSearch>[0]);
@@ -1190,8 +1265,65 @@ async function executeTool(name: string, argsStr: string): Promise<string> {
     case "audit_and_rebuild_site":    return toolAuditAndRebuildSite(args as Parameters<typeof toolAuditAndRebuildSite>[0]);
     case "get_build_status":          return toolGetBuildStatus(args as Parameters<typeof toolGetBuildStatus>[0]);
     case "search_flights":      return toolSearchFlights(args as Parameters<typeof toolSearchFlights>[0]);
+    case "find_hotels":         return toolFindHotels(args as Parameters<typeof toolFindHotels>[0]);
     default:                  return `Unknown tool: ${name}`;
   }
+}
+
+async function toolFindHotels(args: { location?: string; check_in?: string; check_out?: string; guests?: number; rooms?: number; max_price_per_night_usd?: number }): Promise<string> {
+  if (!args.location || !args.check_in || !args.check_out) {
+    return "find_hotels error: location, check_in (YYYY-MM-DD), check_out (YYYY-MM-DD) all required";
+  }
+  // Per kernel Rule 24 (API-first): try Hotelbeds (autonomous B2B API) BEFORE
+  // Duffel Stays (invitation-only) and aggregator deep links (fragile).
+  const { searchHotelbeds } = await import("@/lib/travel/hotelbeds");
+  const hb = await searchHotelbeds({
+    location: args.location,
+    check_in: args.check_in,
+    check_out: args.check_out,
+    guests: args.guests,
+    rooms: args.rooms,
+    max_price_per_night_usd: args.max_price_per_night_usd,
+  });
+  if (hb.ok && hb.offers.length > 0) {
+    const nights = hb.offers[0].nights;
+    const lines = hb.offers.map((o, i) =>
+      (i + 1) + ". " + o.name + (o.rating ? " (" + o.rating + "*)" : "") + (o.category ? " [" + o.category + "]" : "") + "\n   " + (o.address || o.city || "") + "\n   $" + o.per_night_amount + "/night * " + nights + " = **$" + o.total_amount + " total** " + o.total_currency + "\n   " + (o.refundable ? "Free cancellation" : (o.cancellation_policy || "Non-refundable")) + "\n   Rate key: " + (o.hotelbeds_rate_key || "n/a") + "\n   Book: " + o.booking_url
+    ).join("\n\n");
+    const banner = hb.sandbox ? "\n\n*Hotelbeds sandbox token - sandbox prices are TEST data; switch HOTELBEDS_ENV=production once your live key is approved.*" : "";
+    return "Found " + hb.offers.length + " hotels in " + args.location + " (" + args.check_in + " -> " + args.check_out + ", " + nights + " night" + (nights > 1 ? "s" : "") + ") via Hotelbeds:" + banner + "\n\n" + lines + "\n\nTo book: tell me the number. I will create a Stripe Link spend-request for the total and route push approval to your phone. Klarna option also available - say the word.";
+  }
+  // Hotelbeds failed (e.g. no keys yet) -> try Duffel Stays (invitation-only)
+  const hbError = hb.ok ? "(no offers)" : hb.error;
+  const { searchHotels, isTestToken } = await import("@/lib/travel/duffel");
+
+  if (isTestToken()) {
+    const googleHotels = "https://www.google.com/travel/hotels?q=" + encodeURIComponent(args.location) + "&checkin=" + args.check_in + "&checkout=" + args.check_out + "&guests=" + (args.guests || 2);
+    const bookingCom = "https://www.booking.com/searchresults.html?ss=" + encodeURIComponent(args.location) + "&checkin=" + args.check_in + "&checkout=" + args.check_out + "&group_adults=" + (args.guests || 2) + "&no_rooms=" + (args.rooms || 1);
+    const expedia = "https://www.expedia.com/Hotel-Search?destination=" + encodeURIComponent(args.location) + "&startDate=" + args.check_in + "&endDate=" + args.check_out + "&adults=" + (args.guests || 2) + "&rooms=" + (args.rooms || 1);
+    return "⚠️ Duffel sandbox token in use — sandbox returns fictional hotel offers. Upgrade at dashboard.duffel.com → Developers → Live access.\n\nDirect aggregator links for " + args.location + " (" + args.check_in + " → " + args.check_out + ", " + (args.guests || 2) + " guests):\nGoogle Hotels: " + googleHotels + "\nBooking.com: " + bookingCom + "\nExpedia: " + expedia + "\n\nClick one to see real rates — Phase 1 research only.";
+  }
+
+  const r = await searchHotels({
+    location: args.location,
+    check_in: args.check_in,
+    check_out: args.check_out,
+    guests: args.guests,
+    rooms: args.rooms,
+    max_price_per_night_usd: args.max_price_per_night_usd,
+  });
+  if (!r.ok) {
+    const googleHotels = "https://www.google.com/travel/hotels?q=" + encodeURIComponent(args.location) + "&checkin=" + args.check_in + "&checkout=" + args.check_out;
+    return "find_hotels error: " + r.error + "\n\nFallback: " + googleHotels;
+  }
+  if (r.offers.length === 0) {
+    return "find_hotels: no offers found for " + args.location + " " + args.check_in + "→" + args.check_out + ".";
+  }
+  const nights = r.offers[0].nights;
+  const lines = r.offers.map((o, i) =>
+    (i + 1) + ". " + o.name + (o.rating ? " (" + o.rating + "★)" : "") + "\n   " + (o.address || "") + "\n   $" + o.per_night_amount + "/night × " + nights + " = **$" + o.total_amount + " total** " + o.total_currency + "\n   " + (o.cancellation_policy ? "Cancellation: " + o.cancellation_policy : "") + "\n   Book: " + o.booking_url
+  ).join("\n\n");
+  return "Found " + r.offers.length + " hotels in " + args.location + " (" + args.check_in + " → " + args.check_out + ", " + nights + " night" + (nights > 1 ? "s" : "") + "):\n\n" + lines + "\n\nWhich one should I book? I can issue a Stripe Link virtual card for the total OR drive merchant checkout to Klarna for sign-off.";
 }
 
 async function toolSearchFlights(args: { origin?: string; destination?: string; depart_date?: string; return_date?: string; passengers?: number; cabin?: "economy" | "premium_economy" | "business" | "first"; max_connections?: number }): Promise<string> {
@@ -1693,8 +1825,23 @@ function promptNeedsTools(messages: OpenAIMessage[]): boolean {
     "cpi", "ppi", "gdp", "unemployment rate", "jobs report", "payrolls",
     "inflation", "interest rate",
     "ethereum", "eth", "btc", "solana", "doge", "altcoin",
+    // 2026-05-25 — common MUTATE verbs missed by existing list
+    "post on", "post to", "tweet", "share on", "share with", "publish to",
+    "book a", "book the", "reserve", "make a reservation",
+    "add to ", "add the ", "include in", "append to",
+    "update the", "modify the", "change the", "edit the", "rename",
+    "delete", "remove from", "unsubscribe",
+    "transfer", "wire ", "pay ", "send money", "venmo ", "zelle ",
+    "set a", "set up", "set the ", "configure", "wire", "deploy",
   ];
-  return toolKeywords.some(kw => text.includes(kw));
+  if (toolKeywords.some(kw => text.includes(kw))) return true;
+
+  // 2026-05-25 final safety net — verb+entity regex catches novel mutate prompts
+  // not on the keyword list (e.g. "ping Mike about the catering quote",
+  // "draft a tweet for Friday's event", "delete the test playlist").
+  // Mirrors chat-fallback.js TOOL_REQUIRED_RE — keep in sync.
+  const TOOL_VERB_ENTITY_RE = /\b(send|email|text|sms|message|ping|notify|post|tweet|share|publish|schedule|book|reserve|create|add|update|modify|change|edit|rename|delete|remove|cancel|reschedule|invoice|charge|refund|pay|transfer|draft|write|reply|forward|fetch|search|find|look ?up|check|query|pull|get|list|show|set|configure|deploy|push|sync|backup|export|import)\b.{0,40}\b(email|message|reservation|booking|invoice|appointment|calendar|inbox|task|order|payment|customer|guest|event|account|status|balance|playlist|playlist|file|folder|tweet|post|listing|profile|page|website|domain|user|contact|note|reminder|todo|password|api|key|secret|env|setting|config|webhook|cron|deployment|build|repo|branch|commit|pr|issue|ticket)\b/i;
+  return TOOL_VERB_ENTITY_RE.test(text);
 }
 
 // Current-events detector — force web_search before answering. Caught
@@ -1816,7 +1963,98 @@ export async function POST(req: NextRequest) {
   // The Telegram bot (arthur-telegram.js callBackplane) sends `messages`. The
   // dashboard chat sends `prompt`. Without this fallback Telegram breaks with
   // 400 "prompt required" — verified live in browser at 2026-05-07.
-  const body = (payload || {}) as { prompt?: string; messages?: Array<{ role?: string; content?: unknown }>; session_id?: string };
+  type ChatAttachment = { name?: string; mime_type?: string; size?: number; storage_path?: string; url?: string };
+  const body = (payload || {}) as { prompt?: string; messages?: Array<{ role?: string; content?: unknown }>; session_id?: string; attachments?: ChatAttachment[] };
+
+  // ─── MULTIMODAL FAST PATH (2026-05-28) ──────────────────────────────────
+  // If attachments are present, build a multimodal Anthropic request directly.
+  // PDFs → type:document, images → type:image, text-like → type:text (utf-8).
+  // Office/audio/video docs require pandoc/ffmpeg/whisper which only the
+  // Telegram surface has installed; we surface a graceful "use Telegram for X"
+  // note in attachment_notes.
+  if (Array.isArray(body.attachments) && body.attachments.length > 0) {
+    try {
+      const sessionId = (typeof body.session_id === "string" && body.session_id.trim()) ? body.session_id.trim() : randomUUID();
+      const userText: string = typeof body.prompt === "string" ? body.prompt : "";
+      const sb = getSupabaseAdmin();
+      const BUCKET = "arthur-chat-uploads";
+
+      type AnthropicBlock =
+        | { type: "text"; text: string }
+        | { type: "image"; source: { type: "base64"; media_type: string; data: string } }
+        | { type: "document"; source: { type: "base64"; media_type: "application/pdf"; data: string } };
+
+      const blocks: AnthropicBlock[] = [];
+      const notes: string[] = [];
+
+      for (const att of body.attachments) {
+        if (!att?.storage_path && !att?.url) continue;
+        let buf: Buffer | null = null;
+        try {
+          if (att.storage_path) {
+            const { data, error } = await sb.storage.from(BUCKET).download(att.storage_path);
+            if (error || !data) throw new Error(error?.message || "download failed");
+            buf = Buffer.from(await data.arrayBuffer());
+          } else if (att.url) {
+            const r = await fetch(att.url);
+            if (!r.ok) throw new Error(`fetch ${r.status}`);
+            buf = Buffer.from(await r.arrayBuffer());
+          }
+        } catch (e) {
+          notes.push(`skip ${att.name || "(no name)"}: ${(e as Error).message}`);
+          continue;
+        }
+        if (!buf) continue;
+        if (buf.length > 32 * 1024 * 1024) { notes.push(`skip ${att.name}: >32MB`); continue; }
+        const mt = (att.mime_type || "").toLowerCase();
+        const name = att.name || "file";
+        try {
+          const { convertToAnthropicContent } = await import("@/lib/document/universal-converter");
+          const r = await convertToAnthropicContent(buf, name, mt);
+          for (const b of r.blocks) blocks.push(b);
+          for (const n of r.notes) notes.push(name + ": " + n);
+        } catch (e) {
+          notes.push("skip " + name + ": " + (e as Error).message);
+        }
+      }
+
+      blocks.push({ type: "text", text: userText || "Read the attached file(s) and tell me what's in them. Be specific — surface anything Daniel would want flagged (pricing, signatures, action items, deadlines, things that look off). Keep it tight." });
+
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      if (!apiKey) return NextResponse.json({ error: "ANTHROPIC_API_KEY not set" }, { status: 500 });
+
+      const Anthropic = (await import("@anthropic-ai/sdk")).default;
+      const client = new Anthropic({ apiKey });
+      const sys = await buildPersona({ surface: "dashboard" });
+      const resp = await client.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 3000,
+        system: sys,
+        // @ts-expect-error multimodal content array — Anthropic SDK accepts it
+        messages: [{ role: "user", content: blocks }],
+      });
+      const text = (resp.content || []).filter((b: { type: string }) => b.type === "text").map((b: { type: string; text?: string }) => b.text || "").join("").trim();
+
+      try {
+        const tag = `[attachments=${body.attachments.length}: ${body.attachments.map(a => a.name || "?").join(", ")}]`;
+        await persistMessage(sessionId, "user", userText ? `${userText} ${tag}` : tag, { metadata: { attachments: body.attachments } });
+        await persistMessage(sessionId, "assistant", text, { metadata: { multimodal: true, blocks: blocks.length } });
+      } catch { /* persistence non-fatal */ }
+
+      return NextResponse.json({
+        response: text || "Got the file(s) but couldn't generate a useful response.",
+        session_id: sessionId,
+        multimodal: true,
+        attachment_notes: notes,
+      });
+    } catch (e) {
+      const msg = (e as Error).message || "multimodal handler failed";
+      console.error("[chat/route] multimodal fast path err:", msg);
+      return NextResponse.json({ error: `multimodal error: ${msg}` }, { status: 500 });
+    }
+  }
+  // ─── END MULTIMODAL FAST PATH ───────────────────────────────────────────
+
   let prompt: string | undefined = body.prompt;
   const clientSessionId = body.session_id;
   if ((!prompt || typeof prompt !== "string" || !prompt.trim()) && Array.isArray(body.messages) && body.messages.length > 0) {
@@ -1958,6 +2196,37 @@ export async function POST(req: NextRequest) {
     const { maybeRecordImplicitCorrection } = await import("@/lib/training/implicit-correction-detector");
     await maybeRecordImplicitCorrection({ sessionId, userTurn: prompt });
   } catch { /* non-fatal */ }
+
+  // 3c. Orchestrator pre-enrichment — when query matches multi-specialist heuristic,
+  //     pull specialist context + live-API data and inject into system prompt.
+  //     Backward-compatible: any error falls through silently.
+  try {
+    // Dynamic require so Next.js doesn't bundle the Node-only orchestrator client
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const dynamicRequire = eval('require');
+    const orchClientPath = (dynamicRequire('os').homedir()) + '/arthur/lib/orchestrator-client';
+    const orchClient = dynamicRequire(orchClientPath);
+    if (orchClient.shouldUseOrchestrator(prompt)) {
+      const orchResult = await orchClient.orchestrate(prompt, {
+        tenant_id: "dabney",
+        max_specialists: 3,
+        allow_live_apis: true,
+        allow_actions: false,
+        session_id: sessionId,
+      });
+      if (orchResult && orchResult.response && !orchResult.fallback_used) {
+        const specIds = (orchResult.specialists_consulted || []).map((s: { id: string }) => s.id).join(", ");
+        const apisUsed = (orchResult.apis_called || []).join(", ");
+        const enrichment = [
+          `\n\n[Orchestrator pre-fetch — specialists: ${specIds || "none"}${apisUsed ? "; live APIs: " + apisUsed : ""}]`,
+          orchResult.response.slice(0, 800),
+        ].join("\n");
+        // Append to system prompt (already built above). messages[0] is the system message.
+        systemPrompt += enrichment;
+        if (messages[0]?.role === "system") messages[0].content = systemPrompt;
+      }
+    }
+  } catch { /* orchestrator enrichment is non-fatal — chat proceeds normally */ }
 
   // 4. Tool-call loop (max 4 rounds)
   const MAX_ROUNDS = 4;
