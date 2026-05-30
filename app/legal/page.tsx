@@ -47,7 +47,7 @@ export default function LegalPage() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/legal/documents');
+      const res = await fetch('/api/legal');
       if (res.ok) {
         const data = await res.json();
         setDocs(Array.isArray(data) ? data : (data.documents ?? []));
