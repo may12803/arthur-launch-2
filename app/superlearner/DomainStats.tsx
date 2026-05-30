@@ -1,11 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2, AlertTriangle, ChevronDown } from 'lucide-react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 
-// Types
 interface HardCase {
   id: string;
   from?: string | null;
@@ -23,15 +19,128 @@ interface DomainStatsData {
   hard_cases: HardCase[];
 }
 
-const DOMAIN_LABELS: Record<string, string> = {
-  inbox:          "Inbox Triage",
-  invoice:        "Invoice Detection",
-  unsubscribe:    "Unsubscribe Classifier",
-  calendar_invite:"Calendar Invites",
-  reply_draft:    "Reply Drafts",
+// v2 dark tokens
+const D = {
+  bg: '#0c0e12',
+  glass: 'rgba(255,255,255,0.04)',
+  glassBorder: 'rgba(255,255,255,0.08)',
+  text: '#f5f6f8',
+  textMuted: 'rgba(245,246,248,0.50)',
+  textFaint: 'rgba(245,246,248,0.30)',
+  accent: '#d4ff3d',
+  accentSoft: 'rgba(212,255,61,0.14)',
+  sep: 'rgba(255,255,255,0.08)',
+  mono: "'JetBrains Mono','GeistMono',monospace",
+  serif: "var(--font-lora, 'Lora', Georgia, serif)",
 };
 
-// Main Component
+const DOMAIN_LABELS: Record<string, string> = {
+  inbox:           "Inbox Triage",
+  invoice:         "Invoice Detection",
+  unsubscribe:     "Unsubscribe Classifier",
+  calendar_invite: "Calendar Invites",
+  reply_draft:     "Reply Drafts",
+};
+
+function accuracyColor(pct: number): string {
+  if (pct >= 95) return "rgba(52,211,153,0.85)";
+  if (pct >= 85) return "rgba(251,191,36,0.85)";
+  return "rgba(239,68,68,0.85)";
+}
+
+function accuracyBg(pct: number): string {
+  if (pct >= 95) return "rgba(52,211,153,0.12)";
+  if (pct >= 85) return "rgba(251,191,36,0.12)";
+  return "rgba(239,68,68,0.12)";
+}
+
+function AccuracyStat({ label, value }: { label: string; value: number | null }) {
+  if (value === null) return null;
+  const pct = Math.round(value * 100);
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontFamily: D.mono, fontSize: 9, fontWeight: 700, color: D.textFaint, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>{label}</div>
+      <div style={{
+        fontFamily: D.mono, fontSize: 20, fontWeight: 700, fontVariantNumeric: "tabular-nums",
+        color: accuracyColor(pct), background: accuracyBg(pct),
+        padding: "2px 10px", borderRadius: 8,
+      }}>{pct}%</div>
+    </div>
+  );
+}
+
+function StatBox({ label, value }: { label: string; value: number }) {
+  return (
+    <div style={{ background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: 10, padding: "14px 16px" }}>
+      <div style={{ fontFamily: D.mono, fontSize: 9, fontWeight: 700, color: D.textFaint, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>{label}</div>
+      <div style={{ fontFamily: D.mono, fontSize: 22, fontWeight: 700, color: D.accent, fontVariantNumeric: "tabular-nums" }}>
+        {value.toLocaleString()}
+      </div>
+    </div>
+  );
+}
+
+function HardCaseItem({ hardCase }: { hardCase: HardCase }) {
+  return (
+    <div style={{ background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: 8, padding: "10px 13px", fontSize: 12.5 }}>
+      <div style={{ fontWeight: 600, color: D.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {hardCase.subject || "No Subject"}
+      </div>
+      <div style={{ fontSize: 11.5, color: D.textMuted, marginBottom: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {hardCase.from || "Unknown Sender"}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontFamily: D.mono, background: "rgba(239,68,68,0.12)", color: "rgba(239,68,68,0.85)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 4, padding: "1px 7px", fontSize: 10, fontWeight: 700, letterSpacing: "0.06em" }}>
+          {hardCase.predicted || "N/A"}
+        </span>
+        <span style={{ color: D.textFaint, fontSize: 12 }}>→</span>
+        <span style={{ fontFamily: D.mono, background: "rgba(52,211,153,0.12)", color: "rgba(52,211,153,0.85)", border: "1px solid rgba(52,211,153,0.2)", borderRadius: 4, padding: "1px 7px", fontSize: 10, fontWeight: 700, letterSpacing: "0.06em" }}>
+          {hardCase.correct}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function DomainCard({ domain }: { domain: DomainStatsData }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div style={{ background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: 16, padding: "20px 24px", backdropFilter: "blur(16px)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ fontFamily: D.serif, fontSize: 17, fontWeight: 500, color: D.text, margin: 0, letterSpacing: "-.015em" }}>
+          {DOMAIN_LABELS[domain.domain] || domain.domain}
+        </h2>
+        <div style={{ display: "flex", gap: 16 }}>
+          <AccuracyStat label="7d" value={domain.accuracy_7d} />
+          <AccuracyStat label="30d" value={domain.accuracy_30d} />
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: domain.hard_cases?.length ? 14 : 0 }}>
+        <StatBox label="Total Decisions" value={domain.total_decisions} />
+        <StatBox label="Total Corrections" value={domain.total_corrections} />
+      </div>
+
+      {domain.hard_cases && domain.hard_cases.length > 0 && (
+        <div>
+          <button
+            onClick={() => setExpanded(v => !v)}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 0", fontFamily: D.mono, fontSize: 11, color: D.textMuted, display: "flex", alignItems: "center", gap: 6, letterSpacing: "0.06em" }}
+          >
+            <span style={{ fontSize: 9 }}>{expanded ? "▾" : "▸"}</span>
+            {domain.hard_cases.length} hard cases
+          </button>
+          {expanded && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+              {domain.hard_cases.map(hc => <HardCaseItem key={hc.id} hardCase={hc} />)}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DomainStats() {
   const [stats, setStats] = useState<DomainStatsData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,16 +149,13 @@ export default function DomainStats() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        // RPC get_superlearner_stats doesn't exist — use the server-side
-        // /api/superlearner/stats endpoint which aggregates the same data
-        // via the service-role admin client.
         const res = await fetch('/api/superlearner/stats', { credentials: 'include' });
         if (!res.ok) throw new Error(`stats API ${res.status}`);
         const json = await res.json();
         const list = Array.isArray(json) ? json : (json.stats ?? json.domains ?? []);
         setStats(list as DomainStatsData[]);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
@@ -59,99 +165,41 @@ export default function DomainStats() {
 
   if (loading) {
     return (
-      <div className="flex-grow flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-text-muted" />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flex: 1, padding: 80 }}>
+        <div style={{ fontFamily: D.mono, fontSize: 11, color: D.textMuted, letterSpacing: "0.06em" }}>Loading…</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex-grow flex items-center justify-center text-red-500">
-        <AlertTriangle className="mr-2 h-5 w-5" />
-        <p>Error loading stats: {error}</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flex: 1, padding: 80, color: "rgba(239,68,68,0.85)", fontSize: 13.5 }}>
+        Error loading stats: {error}
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6 text-text-active">Superlearner Stats</h1>
-      <div className="space-y-4">
-        {stats.map(domain => (
-          <DomainCard key={domain.domain} domain={domain} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Domain Card Component
-function DomainCard({ domain }: { domain: DomainStatsData }) {
-  return (
-    <div className="bg-glass-bg border border-glass-border rounded-lg p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-text-active">{DOMAIN_LABELS[domain.domain] || domain.domain}</h2>
-        <div className="flex items-center space-x-4">
-          <AccuracyStat label="7d" value={domain.accuracy_7d} />
-          <AccuracyStat label="30d" value={domain.accuracy_30d} />
+    <div style={{ minHeight: "100vh", background: D.bg, padding: "32px 40px", fontFamily: "var(--font-inter, Inter, system-ui, sans-serif)" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto" }}>
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ fontFamily: D.mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: D.textMuted, marginBottom: 8 }}>
+            correction loop
+          </div>
+          <h1 style={{ fontFamily: D.serif, fontSize: 28, fontWeight: 500, color: D.text, letterSpacing: "-.025em", lineHeight: 1.2, margin: "0 0 6px" }}>
+            Superlearner
+          </h1>
+          <p style={{ fontSize: 13.5, color: D.textMuted, margin: 0 }}>Domain-level learning stats from Arthur&apos;s correction loop.</p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {stats.map(domain => <DomainCard key={domain.domain} domain={domain} />)}
+          {stats.length === 0 && (
+            <div style={{ background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: 16, padding: "40px 24px", textAlign: "center", color: D.textMuted, fontSize: 13.5 }}>
+              No stats yet. Corrections accumulate as Arthur makes and learns from mistakes.
+            </div>
+          )}
         </div>
       </div>
-
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <StatBox label="Total Decisions" value={domain.total_decisions} />
-        <StatBox label="Total Corrections" value={domain.total_corrections} />
-      </div>
-      
-      {domain.hard_cases && domain.hard_cases.length > 0 && (
-        <Accordion type="single" collapsible>
-          <AccordionItem value="hard-cases" className="border-none">
-            <AccordionTrigger className="text-sm text-text-muted hover:no-underline">
-              {domain.hard_cases.length} Hard Cases
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-2">
-                {domain.hard_cases.map(hc => <HardCaseItem key={hc.id} hardCase={hc} />)}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      )}
     </div>
   );
-}
-
-function AccuracyStat({ label, value }: { label: string; value: number | null }) {
-  if (value === null) return null;
-  const pct = Math.round(value * 100);
-  const color = pct >= 95 ? 'text-green-400' : pct >= 85 ? 'text-yellow-400' : 'text-red-400';
-  return (
-    <div className="text-center">
-      <p className="text-xs text-text-muted uppercase">{label}</p>
-      <p className={`text-2xl font-mono font-semibold ${color}`}>{pct}%</p>
-    </div>
-  );
-}
-
-function StatBox({ label, value }: { label: string, value: number }) {
-  return (
-    <div className="bg-glass-border/50 p-4 rounded-md">
-      <p className="text-xs text-text-muted uppercase tracking-wider">{label}</p>
-      <p className="text-2xl font-semibold font-mono text-text-active">{value.toLocaleString()}</p>
-    </div>
-  )
-}
-
-function HardCaseItem({ hardCase }: { hardCase: HardCase }) {
-  return (
-    <div className="bg-glass-border/50 p-3 rounded-md text-sm">
-      <p className="font-semibold text-text-active truncate">{hardCase.subject || 'No Subject'}</p>
-      <p className="text-xs text-text-muted mb-2 truncate">{hardCase.from || 'Unknown Sender'}</p>
-      <div className="flex items-center space-x-2">
-        <Badge variant="destructive" className="font-mono">{hardCase.predicted || 'N/A'}</Badge>
-        <span className="text-text-muted">→</span>
-        <Badge variant="secondary" className="font-mono bg-green-500/20 text-green-300">{hardCase.correct}</Badge>
-      </div>
-    </div>
-  )
 }

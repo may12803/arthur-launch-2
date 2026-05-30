@@ -1,103 +1,81 @@
 import skillsData from "../../data/skills.json";
-import Link from "next/link";
+import SkillsLayout from "./_components/SkillsLayout";
 
 const skills = skillsData || [];
 
-if (!skillsData) {
-  console.warn("Warning: skills.json not found. Displaying empty skills list.");
-}
-import { Nav, Footer } from "@/app/_components/Layout";
-import SkillsLayout from "./_components/SkillsLayout";
+const statItems = [
+  { value: String(skills.length), label: "total skills" },
+  {
+    value: String(
+      skills.filter((s: { name: string }) =>
+        ["design","engineering","frontend","next","react","web"].some(k => s.name.toLowerCase().includes(k))
+      ).length
+    ),
+    label: "engineering",
+  },
+  {
+    value: String(
+      skills.filter((s: { name: string }) =>
+        ["seo","content","marketing","ad","brand"].some(k => s.name.toLowerCase().includes(k))
+      ).length
+    ),
+    label: "marketing",
+  },
+  {
+    value: String(
+      skills.filter((s: { name: string }) =>
+        ["finance","legal","ai","data","research"].some(k => s.name.toLowerCase().includes(k))
+      ).length
+    ),
+    label: "ops + intel",
+  },
+];
 
 export default function SkillsPage() {
   return (
-    <>
-      <Nav />
-      <div className="wrap" style={{ paddingTop: 108, paddingBottom: "var(--space-xl)" }}>
+    <div style={{ minHeight: "100vh", background: "#0c0e12", padding: "32px 40px", fontFamily: "var(--font-inter, Inter, system-ui, sans-serif)" }}>
+      <div style={{ maxWidth: 1120, margin: "0 auto" }}>
 
-        {/* ── Header ── */}
-        <div style={{
-          marginBottom: "var(--space-lg)",
-        }}>
-          <span style={{
-            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-            fontSize: "var(--fs-mono)",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "var(--text-muted)",
+        {/* Header */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{
+            fontFamily: "'JetBrains Mono','GeistMono',monospace",
+            fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+            color: "rgba(245,246,248,0.50)", marginBottom: 8,
           }}>
-            {skills.length} skills installed · ~/.claude/skills/
-          </span>
+            {skills.length} skills · ~/.claude/skills/
+          </div>
           <h1 style={{
-            fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-            fontWeight: 800,
-            fontSize: "var(--fs-h1)",
-            letterSpacing: "-0.03em",
-            color: "var(--text-active)",
-            margin: "8px 0 12px",
-            lineHeight: 0.95,
-          }}>skills.</h1>
-          <p style={{
-            fontSize: "var(--fs-body)",
-            color: "var(--text-muted)",
-            maxWidth: "58ch",
-            lineHeight: 1.65,
-            margin: 0,
-          }}>
-            Packaged workflows Arthur invokes autonomously when context fits. Filter by category or search inside.
+            fontFamily: "var(--font-lora, Lora, Georgia, serif)", fontWeight: 500, fontSize: 28,
+            letterSpacing: "-0.025em", color: "#f5f6f8", margin: "0 0 6px", lineHeight: 1.2,
+          }}>Skills</h1>
+          <p style={{ fontSize: 13.5, color: "rgba(245,246,248,0.50)", maxWidth: "58ch", lineHeight: 1.6, margin: 0 }}>
+            Packaged workflows Arthur invokes autonomously when context fits.
           </p>
         </div>
 
-        {/* ── Skill count stat strip ── */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-          gap: "var(--space-sm)",
-          marginBottom: "var(--space-lg)",
-        }}>
-          {[
-            { value: String(skills.length), label: "total skills" },
-            { value: String(skills.filter(s => ["design","engineering","frontend"].some(k => s.name.toLowerCase().includes(k))).length), label: "engineering" },
-            { value: String(skills.filter(s => ["seo","content","marketing"].some(k => s.name.toLowerCase().includes(k))).length), label: "marketing" },
-            { value: String(skills.filter(s => ["finance","legal","ai","data"].some(k => s.name.toLowerCase().includes(k))).length), label: "ops + intel" },
-          ].map(({ value, label }) => (
+        {/* Stat strip */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12, marginBottom: 32 }}>
+          {statItems.map(({ value, label }) => (
             <div key={label} style={{
-              background: "var(--glass-bg)",
-              border: "1px solid var(--glass-border)",
-              backdropFilter: "blur(var(--blur-amount))",
-              borderRadius: "var(--radius-panel)",
-              padding: "var(--space-md)",
-              textAlign: "center",
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 16, padding: "20px 16px", textAlign: "center",
             }}>
               <div style={{
-                fontFamily: "var(--font-jetbrains, monospace)",
-                fontSize: "var(--fs-h2)",
-                fontWeight: 700,
-                color: "var(--text-active)",
-                lineHeight: 1,
-                letterSpacing: "-0.03em",
+                fontFamily: "'JetBrains Mono','GeistMono',monospace", fontSize: 28, fontWeight: 700,
+                color: "#d4ff3d", lineHeight: 1, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums",
               }}>{value}</div>
               <div style={{
-                fontFamily: "var(--font-jetbrains, monospace)",
-                fontSize: "var(--fs-mono)",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                color: "var(--text-muted)",
-                marginTop: "var(--space-xs)",
+                fontFamily: "'JetBrains Mono','GeistMono',monospace", fontSize: 9, fontWeight: 700,
+                textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(245,246,248,0.30)", marginTop: 8,
               }}>{label}</div>
             </div>
           ))}
         </div>
 
-        {/* ── Category rail + skill grid ── */}
+        {/* Skills grid */}
         <SkillsLayout skills={skills} />
-
-        <div style={{ display: "flex", gap: "var(--space-sm)", marginTop: "var(--space-lg)" }}>
-          <Link href="/dashboard" className="cta-btn">try Arthur →</Link>
-          <Link href="/" className="btn-ghost">← home</Link>
-        </div>
       </div>
-      <Footer />
-    </>
+    </div>
   );
 }

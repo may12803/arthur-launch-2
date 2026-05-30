@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Nav, Footer } from "../_components/Layout";
 
 interface MetaPage {
   id: string;
@@ -187,18 +186,17 @@ export default function MessengerPage() {
 
   return (
     <>
-      <Nav />
-      <div style={{ minHeight: "calc(100vh - 108px)", paddingTop: 108, background: "var(--bg-base)" }}>
+      <div style={{ minHeight: "calc(100vh - 60px)", paddingTop: 32, background: "var(--bg-base)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
 
           {/* Header */}
           <div style={{ paddingTop: 24, paddingBottom: 28, borderBottom: "1px solid var(--line-separator)", marginBottom: 28, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
             <div>
-              <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>
-                meta business messaging
+              <div style={{ fontSize: "10.5px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#BAB5AE", marginBottom: 8 }}>
+                Meta Business Messaging
               </div>
-              <h1 style={{ margin: 0, fontWeight: 300, fontSize: "clamp(2rem, 4vw, 2.8rem)", letterSpacing: "-0.03em", color: "var(--text-active)", lineHeight: 1 }}>
-                messenger.
+              <h1 style={{ fontFamily: "var(--font-lora, Lora, Georgia, serif)", margin: 0, fontWeight: 500, fontSize: "28px", letterSpacing: "-0.025em", color: "var(--text-active)", lineHeight: 1.2 }}>
+                Messenger
               </h1>
             </div>
             <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 10, color: "var(--text-muted)", paddingBottom: 4 }}>
@@ -217,10 +215,10 @@ export default function MessengerPage() {
               maxWidth: 640,
               marginBottom: 28,
             }}>
-              <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 4 }}>
-                setup required
+              <div style={{ fontSize: "10.5px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#BAB5AE", marginBottom: 8 }}>
+                Setup Required
               </div>
-              <h2 style={{ margin: "0 0 12px", fontWeight: 400, fontSize: 20, color: "var(--text-active)" }}>no pages connected.</h2>
+              <h2 style={{ fontFamily: "var(--font-lora, Lora, Georgia, serif)", margin: "0 0 12px", fontWeight: 500, fontSize: 20, letterSpacing: "-0.02em", color: "var(--text-active)" }}>No pages connected.</h2>
               <p style={{ color: "var(--text-main)", fontSize: 13, marginBottom: 20, lineHeight: 1.6 }}>
                 follow these steps to enable auto-responses.
               </p>
@@ -254,10 +252,10 @@ export default function MessengerPage() {
             maxWidth: 480,
             marginBottom: 28,
           }}>
-            <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 4 }}>
-              connect page
+            <div style={{ fontSize: "10.5px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#BAB5AE", marginBottom: 8 }}>
+              Connect Page
             </div>
-            <h3 style={{ margin: "0 0 16px", fontWeight: 400, fontSize: 18, color: "var(--text-active)" }}>add a page.</h3>
+            <h3 style={{ fontFamily: "var(--font-lora, Lora, Georgia, serif)", margin: "0 0 16px", fontWeight: 500, fontSize: 16, letterSpacing: "-0.02em", color: "var(--text-active)" }}>Add a page.</h3>
             <form onSubmit={handleConnectPage} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <input
                 aria-label="Facebook Page ID"
@@ -341,16 +339,17 @@ export default function MessengerPage() {
                   alignItems: "center",
                   gap: 8,
                 }}>
-                  <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-                    conversations
+                  <div style={{ fontSize: "10.5px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#BAB5AE" }}>
+                    Conversations
                   </div>
                   <span style={{
-                    fontFamily: "ui-monospace, monospace",
                     fontSize: 10,
-                    color: "var(--accent-orange)",
-                    background: "rgba(212,255,61,0.10)",
-                    borderRadius: 8,
+                    fontWeight: 600,
+                    color: "#0B504F",
+                    background: "#E5F0EF",
+                    borderRadius: 6,
                     padding: "1px 6px",
+                    fontVariantNumeric: "tabular-nums",
                   }}>
                     {threads.length}
                   </span>
@@ -359,7 +358,7 @@ export default function MessengerPage() {
                   {loading && (
                     <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
                       {[1,2,3].map(i => (
-                        <div key={i} style={{ height: 64, borderRadius: 8, background: "linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.04) 75%)", backgroundSize: "600px 100%", animation: "shimmer 1.5s infinite" }} />
+                        <div key={i} style={{ height: 64, borderRadius: 8, background: "rgba(255,255,255,0.04)", backgroundImage: "linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%)", backgroundSize: "600px 100%", animation: "shimmer 1.5s infinite" }} />
                       ))}
                     </div>
                   )}
@@ -373,11 +372,11 @@ export default function MessengerPage() {
                       style={{
                         width: "100%",
                         textAlign: "left",
-                        padding: "14px 16px",
-                        background: active?.sender_id === t.sender_id ? "rgba(212,255,61,0.08)" : "transparent",
+                        padding: "13px 16px",
+                        background: active?.sender_id === t.sender_id ? "#E5F0EF" : "transparent",
                         border: "none",
-                        borderBottom: "1px solid var(--line-separator)",
-                        borderLeft: active?.sender_id === t.sender_id ? "2px solid var(--accent-orange)" : "2px solid transparent",
+                        borderBottom: "1px solid #F3F0EA",
+                        borderLeft: active?.sender_id === t.sender_id ? "2px solid #0B504F" : "2px solid transparent",
                         cursor: "pointer",
                         transition: "background 0.12s",
                       }}
@@ -464,9 +463,10 @@ export default function MessengerPage() {
                               </div>
                               <div style={{
                                 fontSize: 10,
-                                color: m.direction === "outbound" ? "rgba(26,36,0,0.6)" : "var(--text-muted)",
+                                color: m.direction === "outbound" ? "rgba(250,248,245,0.75)" : "#BAB5AE",
                                 marginTop: 5,
                                 fontFamily: "ui-monospace, monospace",
+                                fontVariantNumeric: "tabular-nums",
                               }}>
                                 {m.direction === "outbound" ? "arthur → sent" : "customer"} · {new Date(m.created_at).toLocaleTimeString()}
                                 {m.requires_review && <span style={{ color: "#ef4444", marginLeft: 8 }}>⚠ needs review</span>}
@@ -551,7 +551,6 @@ export default function MessengerPage() {
           100% { background-position: 600px 0; }
         }
       `}</style>
-      <Footer />
     </>
   );
 }

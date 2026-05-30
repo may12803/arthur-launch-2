@@ -176,25 +176,26 @@ export default function BrainPage() {
             <span
               style={{
                 fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-                fontSize: 10,
+                fontSize: 9,
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                color: "var(--accent-orange)",
+                color: "var(--text-muted, rgba(245,246,248,0.50))",
                 display: "block",
                 marginBottom: 6,
+                fontWeight: 700,
               }}
             >
               knowledge corpus
             </span>
             <h1
               style={{
-                fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-                fontWeight: 700,
+                fontFamily: "var(--font-lora, 'Lora', Georgia, serif)",
+                fontWeight: 500,
                 fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
-                letterSpacing: "-0.03em",
-                color: "var(--text-active, var(--text))",
+                letterSpacing: "-0.02em",
+                color: "var(--text-active)",
                 margin: "0 0 6px",
-                lineHeight: 1.1,
+                lineHeight: 1.2,
               }}
             >
               Arthur&apos;s Brain

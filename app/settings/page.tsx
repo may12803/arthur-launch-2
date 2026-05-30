@@ -1,332 +1,86 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Nav, Footer } from "../_components/Layout";
+
+// v2 Design System — dark, chartreuse accent (#d4ff3d), glass morphism
+const D = {
+  bg: "#0c0e12",
+  surface: "#14161e",
+  glass: "rgba(255,255,255,0.04)",
+  glassBorder: "rgba(255,255,255,0.08)",
+  glassMid: "rgba(255,255,255,0.08)",
+  glassMidBorder: "rgba(255,255,255,0.15)",
+  accent: "#d4ff3d",
+  accentSoft: "rgba(212,255,61,0.14)",
+  accentOn: "#1a2400",
+  textActive: "#f5f6f8",
+  textMain: "rgba(245,246,248,0.85)",
+  textMuted: "rgba(245,246,248,0.50)",
+  textFaint: "rgba(245,246,248,0.30)",
+  sep: "rgba(255,255,255,0.10)",
+  tintBlue: "rgba(91,141,239,0.12)",
+  tintBlueFg: "rgba(91,141,239,0.90)",
+  tintEmerald: "rgba(52,211,153,0.12)",
+  tintEmeraldFg: "rgba(52,211,153,0.85)",
+  tintRed: "rgba(239,68,68,0.12)",
+  tintRedFg: "rgba(239,68,68,0.85)",
+  tintAmber: "rgba(251,191,36,0.12)",
+  tintAmberFg: "rgba(251,191,36,0.85)",
+  radius: "16px",
+  radiusSm: "10px",
+  radiusPill: "100px",
+  mono: "'JetBrains Mono','GeistMono',monospace",
+  sans: "var(--font-inter,Inter,system-ui,sans-serif)",
+  serif: "var(--font-lora,Lora,Georgia,serif)",
+};
 
 const TABS = [
-  { id: "general", label: "General" },
-  { id: "email", label: "Email Accounts" },
+  { id: "general",       label: "General" },
+  { id: "email",         label: "Email" },
   { id: "notifications", label: "Notifications" },
-  { id: "integrations", label: "Integrations" },
-  { id: "api", label: "API" },
+  { id: "integrations",  label: "Integrations" },
+  { id: "api",           label: "API" },
 ];
 
-function StatusBadge({ status }: { status: "ok" | "pending" | "error" }) {
-  const config = {
-    ok: {
-      icon: "✓",
-      color: "var(--tint-emerald)",
-      bgColor: "var(--tint-emerald-soft)",
-    },
-    pending: {
-      icon: "⚠",
-      color: "var(--tint-amber)",
-      bgColor: "var(--tint-amber-soft)",
-    },
-    error: {
-      icon: "✗",
-      color: "var(--tint-red)",
-      bgColor: "var(--tint-red-soft)",
-    },
+function StatusDot({ status }: { status: "ok" | "pending" | "error" }) {
+  const map = {
+    ok:      { color: D.tintEmeraldFg, bg: D.tintEmerald },
+    pending: { color: D.tintAmberFg,   bg: D.tintAmber },
+    error:   { color: D.tintRedFg,     bg: D.tintRed },
   };
-  const { icon, color, bgColor } = config[status];
-
+  const { color, bg } = map[status];
   return (
-    <span style={{
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: 20,
-      height: 20,
-      borderRadius: "50%",
-      backgroundColor: bgColor,
-      color: color,
-      fontSize: 12,
-      fontWeight: 700,
-    }}>
-      {icon}
+    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%", background: bg, color, fontSize: 10, fontWeight: 700 }}>
+      {status === "ok" ? "✓" : status === "pending" ? "⚠" : "✗"}
     </span>
   );
 }
 
-function ProfileSection() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {/* Profile identity row */}
-      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-        <div style={{
-          width: 80, height: 80, borderRadius: "50%",
-          background: "var(--glass-t2-bg)",
-          border: "1px solid var(--glass-t2-border)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0,
-          fontSize: 32, color: "var(--text-active)", fontWeight: 700,
-          letterSpacing: "-0.02em",
-        }}>D</div>
-        <div style={{ flex: 1 }}>
-          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600, color: "var(--text-active)", letterSpacing: "-0.02em" }}>Daniel May</h2>
-          <p style={{ fontSize: "14px", color: "var(--text-muted)", marginTop: "4px", marginBlockEnd: "12px" }}>Owner · Aspen &amp; May</p>
-          <button style={{
-            background: "var(--glass-t1-bg)",
-            border: "1px solid var(--glass-t1-border)",
-            borderRadius: "var(--radius-pill)",
-            color: "var(--text-main)",
-            fontSize: "13px",
-            padding: "6px 16px",
-            cursor: "pointer",
-            transition: "background 150ms ease, border-color 150ms ease",
-          }}
-            onMouseOver={e => { e.currentTarget.style.background = 'var(--glass-t2-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t2-border)'; }}
-            onMouseOut={e => { e.currentTarget.style.background = 'var(--glass-t1-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t1-border)'; }}
-          >Edit Profile</button>
-        </div>
-      </div>
-
-      {/* Setting rows */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {[
-          { label: "Primary Email", value: "blackmarble.m.g@gmail.com", id: "email" },
-          { label: "Timezone", value: "America/Detroit (EDT)", id: "tz" },
-        ].map(row => (
-          <div key={row.id} style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "12px 16px",
-            background: "var(--bg-mid)",
-            border: "1px solid var(--glass-t1-border)",
-            borderRadius: "var(--radius-card)",
-          }}>
-            <div>
-              <div style={{ fontSize: "12px", fontWeight: 500, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>{row.label}</div>
-              <div style={{ fontSize: "14px", color: "var(--text-active)" }}>{row.value}</div>
-            </div>
-            <button style={{
-              background: "var(--glass-t1-bg)",
-              border: "1px solid var(--glass-t1-border)",
-              borderRadius: "var(--radius-pill)",
-              color: "var(--text-main)",
-              fontSize: "13px",
-              padding: "6px 16px",
-              cursor: "pointer",
-              transition: "background 150ms ease, border-color 150ms ease",
-            }}
-              onMouseOver={e => { e.currentTarget.style.background = 'var(--glass-t2-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t2-border)'; }}
-              onMouseOut={e => { e.currentTarget.style.background = 'var(--glass-t1-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t1-border)'; }}
-            >Change</button>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ height: 1, background: "var(--line-separator)" }} />
-      <FormField
-        label="Cell"
-        id="cell"
-        defaultValue="+1 216 347 0213"
-        helpText="Backup contact for SMS alerts when Push is down."
-      />
-      <FormField
-        label="Home airport"
-        id="airport"
-        defaultValue="GRR"
-        helpText="Arthur defaults here for travel research."
-      />
-      <div style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6 }}>
-        Subscription management lives at{" "}
-        <Link href="/subscriptions" style={{ color: "var(--accent-orange)", textDecoration: "none", fontWeight: 500 }}>
-          /subscriptions
-        </Link>
-        .
-      </div>
-      <SaveRow />
-    </div>
-  );
-}
-
-function PlaceholderSection({ title }: { title: string }) {
-  return (
-    <div style={{
-      padding: "64px 0",
-      textAlign: "center",
-      border: "1px dashed var(--glass-t1-border)",
-      borderRadius: "var(--radius-card)",
-      background: "var(--bg-mid)",
-    }}>
-      <h3 style={{ color: "var(--text-main)", margin: "0 0 8px 0" }}>{title} Settings</h3>
-      <p style={{ color: "var(--text-muted)", margin: 0 }}>Configuration for this section is not yet available.</p>
-    </div>
-  );
-}
-
-function IntegrationsSection() {
-  const integrations: { name: string; status: 'ok' | 'pending' | 'error'; detail: string }[] = [
-    { name: "Google Mail", status: "ok", detail: "3 inboxes active — blackmarble, yahoo, drinkswithdabney" },
-    { name: "Google Calendar", status: "ok", detail: "Multi-account sync via iCloud CalDAV push" },
-    { name: "Xero", status: "ok", detail: "Dabney & Co — last sync 2h ago" },
-    { name: "DocuSign", status: "error", detail: "Token expired. Please re-authenticate." },
-    { name: "Stripe", status: "pending", detail: "Financial Connections — link bank accounts" },
-    { name: "Plaid", status: "pending", detail: "Detect recurring charges from transactions" },
-  ];
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      {integrations.map(i => (
-        <div key={i.name} style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-          padding: "16px",
-          background: "var(--bg-mid)",
-          border: "1px solid var(--glass-t1-border)",
-          borderRadius: "var(--radius-card)",
-        }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "15px", fontWeight: 600, color: "var(--text-active)", marginBottom: "4px" }}>
-              {i.name}
-              <StatusBadge status={i.status} />
-            </div>
-            <div style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.4 }}>{i.detail}</div>
-          </div>
-          <button style={{
-            background: "var(--glass-t1-bg)",
-            border: "1px solid var(--glass-t1-border)",
-            borderRadius: "var(--radius-pill)",
-            color: "var(--text-main)",
-            fontSize: "13px",
-            padding: "6px 16px",
-            cursor: "pointer",
-            flexShrink: 0,
-            transition: "background 150ms ease, border-color 150ms ease",
-          }}
-            onMouseOver={e => { e.currentTarget.style.background = 'var(--glass-t2-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t2-border)'; }}
-            onMouseOut={e => { e.currentTarget.style.background = 'var(--glass-t1-bg)'; e.currentTarget.style.borderColor = 'var(--glass-t1-border)'; }}
-          >
-            {i.status === 'ok' ? 'Manage' : 'Connect'}
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function DangerSection({ onDelete }: { onDelete: () => void }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px", marginTop: "48px", paddingTop: "32px", borderTop: "1px solid var(--line-separator)" }}>
-       <div style={{ marginBottom: "-8px" }}>
-          <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600, color: "var(--tint-red)" }}>Danger Zone</h3>
-          <p style={{ fontSize: "14px", color: "var(--text-muted)", marginTop: "4px", lineHeight: 1.6 }}>
-            Destructive actions are irreversible. Most can be performed from the Arthur CLI.
-          </p>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {[
-          { label: "Clear session memory", desc: "Wipes ~/.arthur/data/memory.json. Learning history is lost." },
-          { label: "Reset learning loop", desc: "Clears corrections.jsonl and dynamic-rules/. Classifier reverts to base constitution." },
-          { label: "Purge all sessions", desc: "Drops the FTS5 session store. Full history gone." },
-        ].map(action => (
-          <div key={action.label} style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "16px",
-            padding: "16px",
-            background: "var(--tint-red-soft)",
-            border: "1px solid var(--tint-red)",
-            borderRadius: "var(--radius-card)",
-          }}>
-            <div>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-active)", marginBottom: "4px" }}>{action.label}</div>
-              <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>{action.desc}</div>
-            </div>
-            <button style={{
-              flexShrink: 0,
-              background: "transparent",
-              border: "1px solid var(--tint-red)",
-              borderRadius: "var(--radius-pill)",
-              color: "var(--tint-red)",
-              fontSize: "13px",
-              padding: "6px 16px",
-              cursor: "pointer",
-            }}>
-              Run
-            </button>
-          </div>
-        ))}
-      </div>
-      <div style={{
-        padding: "16px",
-        background: "var(--tint-red-soft)",
-        border: "1px solid var(--tint-red)",
-        borderRadius: "var(--radius-card)",
-      }}>
-        <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-active)", marginBottom: "8px" }}>Delete account</div>
-        <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6, margin: "0 0 16px" }}>
-          Permanently deletes all Arthur data, sessions, credentials, and integrations. Cannot be undone.
-        </p>
-        <button
-          onClick={onDelete}
-          style={{
-            background: "var(--tint-red)",
-            border: "none",
-            borderRadius: "var(--radius-sm)",
-            color: "var(--text-active)",
-            fontSize: "14px",
-            fontWeight: 600,
-            padding: "10px 20px",
-            cursor: "pointer",
-          }}
-        >
-          Delete account...
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function FormField({
-  label, id, defaultValue, helpText, type = "text",
-}: {
+function Field({ label, id, defaultValue, helpText, type = "text" }: {
   label: string; id: string; defaultValue?: string; helpText?: string; type?: string;
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-      <label htmlFor={id} style={{
-        fontSize: "12px",
-        fontWeight: 500,
-        color: "var(--text-muted)",
-        textTransform: "uppercase",
-        letterSpacing: "0.05em",
-      }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label htmlFor={id} style={{ fontFamily: D.mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: D.textMuted }}>
         {label}
       </label>
       <input
-        id={id}
-        type={type}
-        defaultValue={defaultValue}
+        id={id} type={type} defaultValue={defaultValue}
         style={{
-          background: "var(--bg-mid)",
-          border: "1px solid var(--glass-t1-border)",
-          borderRadius: "var(--radius-sm)",
-          color: "var(--text-main)",
-          fontSize: "14px",
-          padding: "12px 16px",
-          outline: "none",
-          transition: "border-color 150ms ease, box-shadow 150ms ease",
-          width: "100%",
+          background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: D.radiusSm,
+          color: D.textActive, fontSize: 13.5, padding: "10px 14px", outline: "none",
+          width: "100%", fontFamily: D.sans, transition: "border-color 150ms, box-shadow 150ms",
         }}
         onFocus={e => {
-          e.currentTarget.style.borderColor = "var(--accent-orange)";
-          e.currentTarget.style.boxShadow = `0 0 0 3px var(--accent-glow)`;
+          e.currentTarget.style.borderColor = D.accent;
+          e.currentTarget.style.boxShadow = `0 0 0 3px rgba(212,255,61,0.15)`;
         }}
         onBlur={e => {
-          e.currentTarget.style.borderColor = "var(--glass-t1-border)";
+          e.currentTarget.style.borderColor = D.glassBorder;
           e.currentTarget.style.boxShadow = "none";
         }}
       />
-      {helpText && (
-        <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
-          {helpText}
-        </p>
-      )}
+      {helpText && <p style={{ fontSize: 12, color: D.textMuted, margin: 0, lineHeight: 1.5 }}>{helpText}</p>}
     </div>
   );
 }
@@ -334,26 +88,147 @@ function FormField({
 function SaveRow() {
   const [saved, setSaved] = useState(false);
   return (
-    <div style={{ display: "flex", gap: "12px", paddingTop: "8px" }}>
+    <div style={{ paddingTop: 8 }}>
       <button
         onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2000); }}
         style={{
-          background: saved ? "var(--tint-emerald)" : "var(--accent-orange)",
-          border: "none",
-          borderRadius: "var(--radius-sm)",
-          color: saved ? "var(--text-active)" : "var(--accent-text-on)",
-          fontSize: "14px",
-          fontWeight: 600,
-          padding: "12px 24px",
-          cursor: "pointer",
-          transition: "background 150ms ease",
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
+          background: saved ? D.accentSoft : D.accent, border: "none", borderRadius: D.radiusSm,
+          color: saved ? D.accent : D.accentOn, fontSize: 13.5, fontWeight: 700, padding: "10px 22px",
+          cursor: "pointer", transition: "all 150ms", fontFamily: D.sans,
         }}
       >
-        {saved && '✓'} {saved ? "Saved" : "Save changes"}
+        {saved ? "✓ Saved" : "Save changes"}
       </button>
+    </div>
+  );
+}
+
+function ProfileSection() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+        <div style={{
+          width: 72, height: 72, borderRadius: "50%",
+          background: D.accentSoft, border: `1px solid ${D.accent}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 28, color: D.accent, fontWeight: 700, flexShrink: 0,
+          fontFamily: D.serif,
+        }}>D</div>
+        <div style={{ flex: 1 }}>
+          <h2 style={{ margin: "0 0 2px", fontSize: 18, fontWeight: 500, color: D.textActive, letterSpacing: "-0.02em", fontFamily: D.serif }}>Daniel May</h2>
+          <p style={{ fontSize: 13, color: D.textMuted, margin: "0 0 10px" }}>Owner · Aspen &amp; May</p>
+          <button style={{ background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: D.radiusPill, color: D.textMain, fontSize: 12.5, padding: "5px 14px", cursor: "pointer", fontFamily: D.sans }}>
+            Edit Photo
+          </button>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {[
+          { label: "Primary Email", value: "blackmarble.m.g@gmail.com" },
+          { label: "Timezone", value: "America/Detroit (EDT)" },
+        ].map(row => (
+          <div key={row.label} style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "12px 16px", background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: D.radiusSm,
+          }}>
+            <div>
+              <div style={{ fontFamily: D.mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: D.textMuted, marginBottom: 3 }}>{row.label}</div>
+              <div style={{ fontSize: 13.5, color: D.textActive, fontFamily: D.sans }}>{row.value}</div>
+            </div>
+            <button style={{ background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: D.radiusPill, color: D.textMain, fontSize: 12.5, padding: "5px 14px", cursor: "pointer", fontFamily: D.sans }}>Change</button>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ height: 1, background: D.sep }} />
+      <Field label="Cell" id="cell" defaultValue="+1 216 347 0213" helpText="Backup contact for SMS alerts when Push is down." />
+      <Field label="Home Airport" id="airport" defaultValue="GRR" helpText="Arthur defaults here for travel research." />
+      <SaveRow />
+    </div>
+  );
+}
+
+function IntegrationsSection() {
+  const integrations: { name: string; status: "ok" | "pending" | "error"; detail: string }[] = [
+    { name: "Google Mail",      status: "ok",      detail: "3 inboxes active — blackmarble, yahoo, drinkswithdabney" },
+    { name: "Google Calendar",  status: "ok",      detail: "Multi-account sync via iCloud CalDAV push" },
+    { name: "Xero",             status: "ok",      detail: "Dabney & Co — last sync 2h ago" },
+    { name: "DocuSign",         status: "error",   detail: "Token expired. Please re-authenticate." },
+    { name: "Stripe",           status: "pending", detail: "Financial Connections — link bank accounts" },
+    { name: "Plaid",            status: "pending", detail: "Detect recurring charges from transactions" },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {integrations.map(i => (
+        <div key={i.name} style={{
+          display: "flex", alignItems: "center", gap: 14, padding: "14px 16px",
+          background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: D.radiusSm,
+        }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 500, color: D.textActive, marginBottom: 3, fontFamily: D.sans }}>
+              {i.name}
+              <StatusDot status={i.status} />
+            </div>
+            <div style={{ fontSize: 12.5, color: D.textMuted, lineHeight: 1.4, fontFamily: D.sans }}>{i.detail}</div>
+          </div>
+          <button style={{ background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: D.radiusPill, color: D.textMain, fontSize: 12.5, padding: "5px 14px", cursor: "pointer", flexShrink: 0, fontFamily: D.sans }}>
+            {i.status === "ok" ? "Manage" : "Connect"}
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PlaceholderSection({ title }: { title: string }) {
+  return (
+    <div style={{ padding: "48px 0", textAlign: "center", border: `1px dashed ${D.glassBorder}`, borderRadius: D.radiusSm, background: D.glass }}>
+      <h3 style={{ color: D.textMain, margin: "0 0 6px", fontFamily: D.serif, fontWeight: 500 }}>{title}</h3>
+      <p style={{ color: D.textMuted, margin: 0, fontSize: 13, fontFamily: D.sans }}>Configuration for this section is not yet available.</p>
+    </div>
+  );
+}
+
+function DangerSection({ onDelete }: { onDelete: () => void }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20, marginTop: 40, paddingTop: 28, borderTop: `1px solid ${D.sep}` }}>
+      <div>
+        <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 600, color: D.tintRedFg, fontFamily: D.sans }}>Danger Zone</h3>
+        <p style={{ fontSize: 13, color: D.textMuted, margin: 0, lineHeight: 1.6, fontFamily: D.sans }}>
+          Destructive actions are irreversible. Most can be performed from the Arthur CLI.
+        </p>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {[
+          { label: "Clear session memory",   desc: "Wipes ~/.arthur/data/memory.json. Learning history is lost." },
+          { label: "Reset learning loop",     desc: "Clears corrections.jsonl and dynamic-rules/. Classifier reverts to base." },
+          { label: "Purge all sessions",      desc: "Drops the FTS5 session store. Full history gone." },
+        ].map(action => (
+          <div key={action.label} style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, padding: "14px 16px",
+            background: D.tintRed, border: `1px solid rgba(239,68,68,0.2)`, borderRadius: D.radiusSm,
+          }}>
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: D.textActive, marginBottom: 3, fontFamily: D.sans }}>{action.label}</div>
+              <div style={{ fontSize: 12.5, color: D.textMuted, fontFamily: D.sans }}>{action.desc}</div>
+            </div>
+            <button style={{ flexShrink: 0, background: "transparent", border: `1px solid rgba(239,68,68,0.4)`, borderRadius: D.radiusPill, color: D.tintRedFg, fontSize: 12.5, padding: "5px 14px", cursor: "pointer", fontFamily: D.sans }}>
+              Run
+            </button>
+          </div>
+        ))}
+      </div>
+      <div style={{ padding: 16, background: D.tintRed, border: `1px solid rgba(239,68,68,0.2)`, borderRadius: D.radiusSm }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: D.textActive, marginBottom: 6, fontFamily: D.sans }}>Delete account</div>
+        <p style={{ fontSize: 13, color: D.textMuted, lineHeight: 1.6, margin: "0 0 14px", fontFamily: D.sans }}>
+          Permanently deletes all Arthur data, sessions, credentials, and integrations. Cannot be undone.
+        </p>
+        <button onClick={onDelete} style={{ background: D.tintRedFg, border: "none", borderRadius: D.radiusSm, color: "#fff", fontSize: 13.5, fontWeight: 600, padding: "9px 18px", cursor: "pointer", fontFamily: D.sans }}>
+          Delete account…
+        </button>
+      </div>
     </div>
   );
 }
@@ -361,97 +236,27 @@ function SaveRow() {
 function DeleteModal({ onClose }: { onClose: () => void }) {
   const [confirm, setConfirm] = useState("");
   const ready = confirm === "DELETE";
-
   return (
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 100,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "rgba(0,0,0,0.7)",
-        backdropFilter: "blur(var(--glass-t3-blur))",
-      }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
     >
-      <div style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--tint-red)",
-        borderRadius: "var(--radius-panel)",
-        padding: "32px",
-        width: "100%",
-        maxWidth: 420,
-        boxShadow: "var(--glass-t3-shadow)",
-      }}>
-        <div style={{
-          fontSize: "12px",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          fontWeight: 600,
-          color: "var(--tint-red)",
-          marginBottom: "12px",
-        }}>
-          Danger Zone
-        </div>
-        <h2 style={{ fontSize: "20px", fontWeight: 600, color: "var(--text-active)", margin: "0 0 12px" }}>
-          Delete account?
-        </h2>
-        <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: 1.6, margin: "0 0 24px" }}>
+      <div style={{ background: "#14161e", border: `1px solid rgba(239,68,68,0.3)`, borderRadius: D.radius, padding: 28, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+        <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase", color: D.tintRedFg, marginBottom: 10 }}>Danger Zone</div>
+        <h2 style={{ fontFamily: D.serif, fontSize: 20, fontWeight: 500, color: D.textActive, margin: "0 0 10px" }}>Delete account?</h2>
+        <p style={{ fontSize: 13.5, color: D.textMuted, lineHeight: 1.6, margin: "0 0 20px", fontFamily: D.sans }}>
           This permanently deletes all Arthur sessions, memory, credentials, and integrations.
-          Type <strong style={{ color: "var(--tint-red)", fontWeight: 700 }}>DELETE</strong> to confirm.
+          Type <strong style={{ color: D.tintRedFg }}>DELETE</strong> to confirm.
         </p>
         <input
-          type="text"
-          value={confirm}
-          onChange={e => setConfirm(e.target.value)}
-          placeholder="DELETE"
-          style={{
-            width: "100%",
-            background: "var(--bg-mid)",
-            border: "1px solid var(--glass-t1-border)",
-            borderRadius: "var(--radius-sm)",
-            color: "var(--tint-red)",
-            fontSize: "14px",
-            padding: "12px 16px",
-            outline: "none",
-            marginBottom: "16px",
-            letterSpacing: "0.1em",
-            textAlign: "center",
-          }}
+          type="text" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="DELETE"
+          style={{ width: "100%", background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: D.radiusSm, color: D.tintRedFg, fontSize: 14, padding: "10px 14px", outline: "none", marginBottom: 14, letterSpacing: "0.1em", textAlign: "center", fontFamily: D.mono, boxSizing: "border-box" }}
         />
-        <div style={{ display: "flex", gap: "12px" }}>
-          <button
-            disabled={!ready}
-            style={{
-              flex: 1,
-              background: "var(--tint-red)",
-              border: "none",
-              borderRadius: "var(--radius-sm)",
-              color: "var(--text-active)",
-              fontSize: "14px",
-              fontWeight: 600,
-              padding: "12px 20px",
-              cursor: ready ? "pointer" : "not-allowed",
-              opacity: ready ? 1 : 0.5,
-            }}
-          >
+        <div style={{ display: "flex", gap: 10 }}>
+          <button disabled={!ready} style={{ flex: 1, background: ready ? D.tintRedFg : "transparent", border: `1px solid rgba(239,68,68,0.4)`, borderRadius: D.radiusSm, color: ready ? "#fff" : D.tintRedFg, fontSize: 13.5, fontWeight: 600, padding: "10px 18px", cursor: ready ? "pointer" : "not-allowed", opacity: ready ? 1 : 0.5, fontFamily: D.sans }}>
             Delete permanently
           </button>
-          <button
-            onClick={onClose}
-            style={{
-              flex: 1,
-              background: "var(--glass-t1-bg)",
-              border: "1px solid var(--glass-t1-border)",
-              borderRadius: "var(--radius-sm)",
-              color: "var(--text-main)",
-              fontSize: "14px",
-              padding: "12px 20px",
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={onClose} style={{ flex: 1, background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: D.radiusSm, color: D.textMain, fontSize: 13.5, padding: "10px 18px", cursor: "pointer", fontFamily: D.sans }}>
             Cancel
           </button>
         </div>
@@ -466,87 +271,62 @@ export default function SettingsPage() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "general":
-        return <ProfileSection />;
-      case "email":
-        return <PlaceholderSection title="Email Accounts" />;
-      case "notifications":
-        return <PlaceholderSection title="Notifications" />;
-      case "integrations":
-        return <IntegrationsSection />;
-      case "api":
-        return <PlaceholderSection title="API" />;
-      default:
-        return null;
+      case "general":       return <ProfileSection />;
+      case "email":         return <PlaceholderSection title="Email Accounts" />;
+      case "notifications": return <PlaceholderSection title="Notifications" />;
+      case "integrations":  return <IntegrationsSection />;
+      case "api":           return <PlaceholderSection title="API Keys" />;
+      default:              return null;
     }
   };
 
   return (
-    <>
-      <Nav />
-      <main style={{ padding: `108px var(--page-gutter) 64px` }}>
-        <div style={{ maxWidth: "var(--max-w-narrow)", margin: "0 auto" }}>
-          {/* Header */}
-          <header style={{ marginBottom: "40px" }}>
-            <h1 style={{
-              fontSize: "36px",
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
-              color: "var(--text-active)",
-              margin: "0 0 8px 0",
-            }}>
-              Settings
-            </h1>
-            <p style={{ fontSize: "16px", color: "var(--text-muted)", maxWidth: "52ch", lineHeight: 1.6, margin: 0 }}>
-              Configure Arthur&apos;s integrations, connected accounts, and system behavior.
-            </p>
-          </header>
+    <div style={{ minHeight: "100vh", background: D.bg, padding: "32px 40px", fontFamily: D.sans }}>
+      <div style={{ maxWidth: 800, margin: "0 auto" }}>
 
-          {/* Tabs */}
-          <div style={{ display: "flex", gap: "8px", marginBottom: "24px", borderBottom: "1px solid var(--line-separator)" }}>
-            {TABS.map(tab => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    padding: "10px 16px",
-                    background: "none",
-                    border: "none",
-                    borderBottom: `2px solid ${isActive ? "var(--accent-orange)" : "transparent"}`,
-                    color: isActive ? "var(--text-active)" : "var(--text-muted)",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: isActive ? 600 : 500,
-                    transition: "color 150ms ease, border-color 150ms ease",
-                    marginBottom: "-1px",
-                  }}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
+        {/* Header */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontFamily: D.mono, fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: D.textMuted, marginBottom: 8 }}>
+            preferences
           </div>
-
-          {/* Content Panel */}
-          <div style={{
-            background: "var(--glass-t1-bg)",
-            backdropFilter: "blur(var(--glass-t1-blur))",
-            border: "1px solid var(--glass-t1-border)",
-            borderRadius: "var(--radius-panel)",
-            padding: "32px",
-            boxShadow: "var(--glass-t1-shadow)",
-          }}>
-            {renderContent()}
-            {activeTab === "general" && <DangerSection onDelete={() => setShowDeleteModal(true)} />}
-          </div>
+          <h1 style={{ fontFamily: D.serif, fontSize: 28, fontWeight: 500, color: D.textActive, letterSpacing: "-.025em", lineHeight: 1.2, margin: "0 0 6px" }}>
+            Settings
+          </h1>
+          <p style={{ fontSize: 13.5, color: D.textMuted, maxWidth: "52ch", lineHeight: 1.6, margin: 0 }}>
+            Configure integrations, connected accounts, and system behavior.
+          </p>
         </div>
-      </main>
 
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 2, marginBottom: 24, borderBottom: `1px solid ${D.sep}` }}>
+          {TABS.map(tab => {
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id} onClick={() => setActiveTab(tab.id)}
+                style={{
+                  padding: "9px 14px", background: "none", border: "none",
+                  borderBottom: `2px solid ${active ? D.accent : "transparent"}`,
+                  color: active ? D.accent : D.textMuted,
+                  cursor: "pointer", fontSize: 13.5, fontWeight: active ? 600 : 500,
+                  transition: "color 150ms, border-color 150ms", marginBottom: -1,
+                  fontFamily: D.sans,
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Content panel */}
+        <div style={{ background: D.glass, border: `1px solid ${D.glassBorder}`, borderRadius: D.radius, padding: 28, backdropFilter: "blur(16px)" }}>
+          {renderContent()}
+          {activeTab === "general" && <DangerSection onDelete={() => setShowDeleteModal(true)} />}
+        </div>
+
+      </div>
       {showDeleteModal && <DeleteModal onClose={() => setShowDeleteModal(false)} />}
-
-      <Footer />
-    </>
+    </div>
   );
 }

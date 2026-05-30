@@ -36,12 +36,13 @@ export default function BrainStats({ stats }: BrainStatsProps) {
         >
           <div
             style={{
-              fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
+              fontFamily: "var(--font-lora, 'Lora', Georgia, serif)",
               fontSize: "2.25rem",
-              fontWeight: 700,
-              color: "var(--accent-orange)",
+              fontWeight: 500,
+              color: "var(--text-active, #f5f6f8)",
               lineHeight: 1,
-              letterSpacing: "-0.03em",
+              letterSpacing: "-0.02em",
+              fontVariantNumeric: "tabular-nums",
             }}
           >
             {value}

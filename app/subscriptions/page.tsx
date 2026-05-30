@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Nav, Footer } from "../_components/Layout";
 
 interface Subscription {
   id: string;
@@ -44,6 +43,25 @@ function daysUntil(iso: string | null): number | null {
   return Math.ceil((new Date(iso).getTime() - Date.now()) / 864e5);
 }
 
+// v2 dark tokens
+const D2 = {
+  bg: '#0c0e12',
+  glass: 'rgba(255,255,255,0.04)',
+  glassBorder: 'rgba(255,255,255,0.08)',
+  glassMid: 'rgba(255,255,255,0.07)',
+  text: '#f5f6f8',
+  textActive: '#f5f6f8',
+  textMuted: 'rgba(245,246,248,0.50)',
+  textFaint: 'rgba(245,246,248,0.30)',
+  accent: '#d4ff3d',
+  accentSoft: 'rgba(212,255,61,0.14)',
+  accentOn: '#1a2400',
+  sep: 'rgba(255,255,255,0.08)',
+  mono: "'JetBrains Mono','GeistMono',monospace",
+  radius: '16px',
+  radiusPill: '100px',
+};
+
 // ── Active subscription card ──────────────────────────────────────────────────
 
 function SubCard({ sub }: { sub: Subscription }) {
@@ -52,138 +70,98 @@ function SubCard({ sub }: { sub: Subscription }) {
   const cancelMethod = sub.virtual_card_id ? "Privacy card" : sub.credentials_op_ref ? "1Password + Stagehand" : null;
 
   return (
-    <>
-      <div style={{
-        background: "var(--glass-t3-bg)",
-        backdropFilter: "blur(var(--glass-t3-blur))",
-        border: "1px solid var(--glass-t3-border)",
-        borderRadius: "var(--radius-panel)",
-        boxShadow: "var(--glass-t3-shadow)",
-        padding: "24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-        transition: "border-color 150ms ease-out, box-shadow 150ms ease-out",
-      }}>
-        {/* Header row */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
-          <div>
-            <h3 style={{
-              fontSize: "1.25rem", // approx --fs-h3
-              fontWeight: 700,
-              color: "var(--text-active)",
-              margin: "0 0 4px",
-              lineHeight: 1.2,
-            }}>
-              {sub.name}
-            </h3>
-            <div style={{ fontSize: "0.75rem", color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              {sub.vendor}
-            </div>
-          </div>
-          <span style={{
-            fontSize: "0.75rem",
-            letterSpacing: "0.06em",
-            color: sub.status === "active" ? "var(--tint-emerald)" : "var(--tint-amber)",
-            background: sub.status === "active" ? "var(--tint-emerald-soft)" : "var(--tint-amber-soft)",
-            borderRadius: "var(--radius-pill)",
-            padding: "2px 10px",
-            flexShrink: 0,
-            textTransform: "capitalize",
-          }}>
-            {sub.status}
-          </span>
-        </div>
-
-        {/* Price — large mono */}
+    <div style={{
+      background: D2.glass,
+      border: `1px solid ${D2.glassBorder}`,
+      borderRadius: D2.radius,
+      padding: "24px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "12px",
+      backdropFilter: "blur(16px)",
+    }}>
+      {/* Header row */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
         <div>
-          <div style={{
-            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-            fontSize: "2.25rem", // approx --fs-h2
-            fontWeight: 700,
-            color: "var(--text-active)",
-            letterSpacing: "-0.02em",
-            lineHeight: 1,
+          <h3 style={{
+            fontFamily: "var(--font-lora, Lora, Georgia, serif)",
+            fontSize: "16px", fontWeight: 500, color: D2.text,
+            margin: "0 0 4px", lineHeight: 1.2, letterSpacing: "-0.02em",
           }}>
-            ${monthlyDisplay(sub).toFixed(2)}
-            <span style={{
-              fontSize: "0.75rem",
-              fontWeight: 400,
-              color: "var(--text-faint)",
-              marginLeft: "4px",
-            }}>
-              / mo
-            </span>
+            {sub.name}
+          </h3>
+          <div style={{ fontFamily: D2.mono, fontSize: "0.6875rem", color: D2.textFaint, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            {sub.vendor}
           </div>
-          {sub.billing_cycle === "yearly" && (
-            <div style={{ fontSize: "0.75rem", color: "var(--text-faint)", marginTop: "4px" }}>
-              ${sub.amount_usd.toFixed(2)} billed annually
-            </div>
-          )}
         </div>
+        <span style={{
+          fontFamily: D2.mono, fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em",
+          color: sub.status === "active" ? D2.accent : "rgba(251,191,36,0.85)",
+          background: sub.status === "active" ? D2.accentSoft : "rgba(251,191,36,0.12)",
+          borderRadius: D2.radiusPill, padding: "2px 10px", flexShrink: 0, textTransform: "uppercase",
+        }}>
+          {sub.status}
+        </span>
+      </div>
 
-        {/* Next renewal */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "0.75rem", color: "var(--text-faint)", letterSpacing: "0.04em" }}>Next charge</span>
-          <span style={{
-            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-            fontSize: "0.75rem",
-            color: isUrgent ? "var(--tint-amber)" : "var(--text-muted)",
-            fontWeight: isUrgent ? 600 : 400,
-          }}>
-            {fmtDate(sub.next_charge_iso)}
-            {days !== null && ` (${days}d)`}
+      {/* Price */}
+      <div>
+        <div style={{
+          fontFamily: D2.mono, fontSize: "2.25rem", fontWeight: 700,
+          color: D2.text, letterSpacing: "-0.03em", lineHeight: 1,
+        }}>
+          ${monthlyDisplay(sub).toFixed(2)}
+          <span style={{ fontFamily: D2.mono, fontSize: "0.75rem", fontWeight: 400, color: D2.textFaint, marginLeft: "4px" }}>
+            / mo
           </span>
         </div>
-
-        {/* Cancel method badge */}
-        {cancelMethod && (
-          <div style={{
-            fontSize: "0.75rem",
-            color: "var(--tint-blue)",
-            background: "var(--tint-blue-soft)",
-            borderRadius: "var(--radius-sm)",
-            padding: "3px 8px",
-            alignSelf: "flex-start",
-            letterSpacing: "0.04em",
-          }}>
-            {cancelMethod}
+        {sub.billing_cycle === "yearly" && (
+          <div style={{ fontSize: "0.75rem", color: D2.textFaint, marginTop: "4px" }}>
+            ${sub.amount_usd.toFixed(2)} billed annually
           </div>
         )}
-
-        {/* CTA */}
-        <a
-          href="https://billing.stripe.com/p/login/test_28o17k2MH1YC9AY000"
-          target="_blank"
-          rel="noreferrer"
-          className="cta-button"
-        >
-          Manage in Stripe →
-        </a>
       </div>
-      <style jsx>{`
-        .cta-button {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          margin-top: auto;
-          padding: 9px 16px;
-          background: transparent;
-          border: 1px solid var(--accent-orange);
-          border-radius: var(--radius-sm);
-          color: var(--accent-orange);
-          font-size: 0.875rem;
-          font-weight: 600;
-          text-decoration: none;
-          transition: background-color 150ms ease-out, color 150ms ease-out;
-          letter-spacing: 0.01em;
-        }
-        .cta-button:hover {
-          background-color: var(--accent-orange);
-          color: var(--accent-text-on);
-        }
-      `}</style>
-    </>
+
+      {/* Next renewal */}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span style={{ fontFamily: D2.mono, fontSize: "0.6875rem", color: D2.textFaint, letterSpacing: "0.06em", textTransform: "uppercase" }}>Next charge</span>
+        <span style={{
+          fontFamily: D2.mono, fontSize: "0.75rem",
+          color: isUrgent ? "rgba(251,191,36,0.85)" : D2.textMuted,
+          fontWeight: isUrgent ? 600 : 400,
+        }}>
+          {fmtDate(sub.next_charge_iso)}
+          {days !== null && ` (${days}d)`}
+        </span>
+      </div>
+
+      {cancelMethod && (
+        <div style={{
+          fontFamily: D2.mono, fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em",
+          color: "rgba(91,141,239,0.90)",
+          background: "rgba(91,141,239,0.12)",
+          borderRadius: "6px", padding: "3px 8px",
+          alignSelf: "flex-start", textTransform: "uppercase",
+        }}>
+          {cancelMethod}
+        </div>
+      )}
+
+      <a
+        href="https://billing.stripe.com/p/login/test_28o17k2MH1YC9AY000"
+        target="_blank" rel="noreferrer"
+        style={{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          marginTop: "auto", padding: "9px 16px",
+          background: "transparent", border: `1px solid ${D2.accent}`,
+          borderRadius: "8px", color: D2.accent,
+          fontSize: "0.875rem", fontWeight: 700, textDecoration: "none",
+          letterSpacing: "0.01em", fontFamily: "inherit",
+        }}
+      >
+        Manage in Stripe →
+      </a>
+    </div>
   );
 }
 
@@ -234,33 +212,25 @@ export default function SubscriptionsPage() {
 
   return (
     <>
-      <Nav />
-      <main style={{ minHeight: "calc(100vh - 60px)" }}>
-        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto", padding: "108px var(--page-gutter) 96px" }}>
+      <main style={{ minHeight: "100vh", background: D2.bg }}>
+        <div style={{ maxWidth: "1120px", margin: "0 auto", padding: "32px 40px 96px" }}>
 
           {/* Header */}
-          <div style={{ marginBottom: "48px", maxWidth: "var(--max-w-narrow)" }}>
-            <span style={{
-              fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-              fontSize: "0.75rem",
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "var(--text-muted)",
+          <div style={{ marginBottom: "48px", maxWidth: "680px" }}>
+            <div style={{
+              fontFamily: D2.mono, fontSize: "9px", fontWeight: 700,
+              letterSpacing: "0.14em", textTransform: "uppercase", color: D2.textMuted, marginBottom: 8,
             }}>
               recurring charges
-            </span>
+            </div>
             <h1 style={{
-              fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-              fontWeight: 800,
-              fontSize: "clamp(2rem, 4vw, 3rem)",
-              letterSpacing: "-0.03em",
-              color: "var(--text-active)",
-              margin: "8px 0 12px",
-              lineHeight: 0.95,
+              fontFamily: "var(--font-lora, Lora, Georgia, serif)",
+              fontWeight: 500, fontSize: "28px", letterSpacing: "-0.025em",
+              color: D2.text, margin: "8px 0 12px", lineHeight: 1.2,
             }}>
               Subscriptions
             </h1>
-            <p style={{ fontSize: "0.875rem", color: "var(--text-muted)", maxWidth: "52ch", lineHeight: 1.65, margin: 0 }}>
+            <p style={{ fontSize: "0.875rem", color: D2.textMuted, maxWidth: "52ch", lineHeight: 1.65, margin: 0 }}>
               Track, manage, and cancel recurring charges. Arthur monitors and can cancel on your behalf.
             </p>
           </div>
@@ -270,18 +240,12 @@ export default function SubscriptionsPage() {
             {!loading && data && (
               <div style={{ display: "flex", gap: "24px", alignItems: "baseline" }}>
                 <div>
-                  <span style={{
-                    fontFamily: "var(--font-jetbrains, monospace)",
-                    fontSize: "2.25rem",
-                    fontWeight: 700,
-                    color: "var(--text-active)",
-                    letterSpacing: "-0.02em",
-                  }}>
+                  <span style={{ fontFamily: D2.mono, fontSize: "2.25rem", fontWeight: 700, color: D2.accent, letterSpacing: "-0.03em" }}>
                     ${monthlyTotal.toFixed(2)}
                   </span>
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-faint)", marginLeft: "4px" }}>/ mo</span>
+                  <span style={{ fontFamily: D2.mono, fontSize: "0.75rem", color: D2.textFaint, marginLeft: "4px" }}>/ mo</span>
                 </div>
-                <div style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>
+                <div style={{ fontFamily: D2.mono, fontSize: "0.75rem", color: D2.textFaint }}>
                   {activeSubs.length} active · ${(monthlyTotal * 12).toFixed(0)}/yr
                 </div>
               </div>
@@ -298,14 +262,13 @@ export default function SubscriptionsPage() {
 
           {scanResult && (
             <div style={{
-              background: "var(--glass-t1-bg)",
-              border: "1px solid var(--glass-t1-border)",
-              boxShadow: "var(--glass-t1-shadow)",
-              backdropFilter: "blur(var(--glass-t1-blur))",
-              borderRadius: "var(--radius-sm)",
+              background: "#FFFFFF",
+              border: "1px solid #E8E4DB",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+              borderRadius: "6px",
               padding: "12px 16px",
               marginBottom: "40px",
-              fontSize: "0.875rem",
+              fontSize: "13.5px",
               color: "var(--text-muted)",
             }}>
               {scanResult}
@@ -316,13 +279,9 @@ export default function SubscriptionsPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
               {[1, 2, 3].map(i => (
                 <div key={i} style={{
-                  height: 240,
-                  background: "var(--glass-t1-bg)",
-                  border: "1px solid var(--glass-t1-border)",
-                  borderRadius: "var(--radius-panel)",
-                  opacity: 0.4,
-                  animation: "sub-shimmer 1.5s ease-in-out infinite",
-                  backgroundImage: "linear-gradient(90deg, var(--glass-t1-bg) 25%, var(--glass-t2-bg) 50%, var(--glass-t1-bg) 75%)",
+                  height: 240, background: D2.glass, border: `1px solid ${D2.glassBorder}`,
+                  borderRadius: D2.radius, animation: "sub-shimmer 1.5s ease-in-out infinite",
+                  backgroundImage: `linear-gradient(90deg, ${D2.glass} 25%, rgba(255,255,255,0.08) 50%, ${D2.glass} 75%)`,
                   backgroundSize: "600px 100%",
                 }} />
               ))}
@@ -330,12 +289,7 @@ export default function SubscriptionsPage() {
           ) : (
             <>
               {activeSubs.length > 0 && (
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-                  gap: "20px",
-                  marginBottom: "48px",
-                }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px", marginBottom: "48px" }}>
                   {activeSubs.map(sub => <SubCard key={sub.id} sub={sub} />)}
                 </div>
               )}
@@ -347,41 +301,26 @@ export default function SubscriptionsPage() {
                     Cancelled ({canceledSubs.length})
                   </summary>
                   <div style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                    marginTop: "12px",
-                    padding: "16px",
-                    background: "var(--bg-surface)",
-                    border: "1px solid var(--line-separator)",
-                    borderRadius: "var(--radius-card)",
+                    display: "flex", flexDirection: "column", gap: "8px", marginTop: "12px",
+                    padding: "16px", background: D2.glass, border: `1px solid ${D2.glassBorder}`, borderRadius: "10px",
                   }}>
                     {canceledSubs.map(sub => (
                       <div key={sub.id} style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "12px 16px",
-                        background: "var(--bg-mid)",
-                        borderRadius: "var(--radius-sm)",
-                        opacity: 0.6,
-                        gap: "16px",
+                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                        padding: "12px 16px", background: "rgba(255,255,255,0.03)",
+                        borderRadius: "6px", opacity: 0.5, gap: "16px",
                       }}>
                         <div>
-                          <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-muted)" }}>{sub.name}</div>
-                          <div style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>{sub.vendor}</div>
+                          <div style={{ fontSize: "0.875rem", fontWeight: 600, color: D2.textMuted }}>{sub.name}</div>
+                          <div style={{ fontFamily: D2.mono, fontSize: "0.75rem", color: D2.textFaint }}>{sub.vendor}</div>
                         </div>
-                        <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: "0.875rem", color: "var(--text-faint)", textDecoration: "line-through" }}>
+                        <div style={{ fontFamily: D2.mono, fontSize: "0.875rem", color: D2.textFaint, textDecoration: "line-through" }}>
                           ${monthlyDisplay(sub).toFixed(2)}/mo
                         </div>
                         <span style={{
-                          fontSize: "0.75rem",
-                          color: "var(--text-faint)",
-                          background: "var(--bg-surface)",
-                          border: "1px solid var(--line-separator)",
-                          borderRadius: "var(--radius-pill)",
-                          padding: "2px 8px",
-                          textTransform: "capitalize",
+                          fontFamily: D2.mono, fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em",
+                          color: D2.textFaint, background: D2.glass, border: `1px solid ${D2.glassBorder}`,
+                          borderRadius: D2.radiusPill, padding: "2px 8px", textTransform: "capitalize",
                         }}>
                           {sub.status}
                         </span>
@@ -393,20 +332,14 @@ export default function SubscriptionsPage() {
 
               {activeSubs.length === 0 && canceledSubs.length === 0 && (
                 <div style={{
-                  background: "var(--glass-t1-bg)",
-                  border: "1px solid var(--glass-t1-border)",
-                  borderRadius: "var(--radius-panel)",
-                  backdropFilter: "blur(var(--glass-t1-blur))",
-                  boxShadow: "var(--glass-t1-shadow)",
-                  padding: "48px 40px",
-                  maxWidth: 560,
-                  margin: "40px auto 0",
-                  textAlign: "center",
+                  background: D2.glass, border: `1px solid ${D2.glassBorder}`,
+                  borderRadius: D2.radius, padding: "48px 40px",
+                  maxWidth: 560, margin: "40px auto 0", textAlign: "center",
                 }}>
-                  <h2 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "12px", color: "var(--text-active)" }}>
+                  <h2 style={{ fontFamily: "var(--font-lora, Lora, Georgia, serif)", fontSize: "18px", fontWeight: 500, letterSpacing: "-0.02em", marginBottom: "12px", color: D2.text }}>
                     No subscriptions tracked yet
                   </h2>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginBottom: "24px", lineHeight: 1.6 }}>
+                  <p style={{ color: D2.textMuted, fontSize: "0.875rem", marginBottom: "24px", lineHeight: 1.6 }}>
                     Connect Plaid to auto-detect recurring charges, or add Privacy.com virtual cards going forward.
                   </p>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
@@ -416,10 +349,10 @@ export default function SubscriptionsPage() {
                     ].map(s => (
                       <a key={s.url} href={s.url} target="_blank" rel="noreferrer" className="empty-state-link">
                         <div>
-                          <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>{s.label}</div>
-                          <div style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>{s.desc}</div>
+                          <div style={{ fontWeight: 600, fontSize: "0.875rem", color: D2.textActive }}>{s.label}</div>
+                          <div style={{ fontSize: "0.75rem", color: D2.textFaint }}>{s.desc}</div>
                         </div>
-                        <div style={{ fontSize: "0.75rem", color: "var(--tint-emerald)", fontWeight: 600, flexShrink: 0 }}>{s.cost}</div>
+                        <div style={{ fontFamily: D2.mono, fontSize: "9px", fontWeight: 700, color: D2.accent, flexShrink: 0, letterSpacing: "0.06em" }}>{s.cost}</div>
                       </a>
                     ))}
                   </div>
@@ -429,73 +362,49 @@ export default function SubscriptionsPage() {
           )}
         </div>
       </main>
-      <Footer />
       <style jsx>{`
         .action-button {
-          background: var(--glass-t2-bg);
-          border: 1px solid var(--glass-t2-border);
-          border-radius: var(--radius-sm);
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 8px;
           padding: 9px 16px;
-          color: var(--text-active);
+          color: #f5f6f8;
           cursor: pointer;
-          font-size: 0.875rem;
+          font-size: 13px;
           font-weight: 500;
-          transition: background-color 150ms ease-out, border-color 150ms ease-out;
+          transition: background-color 150ms, border-color 150ms;
         }
         .action-button:hover:not(:disabled) {
-          background: var(--glass-t3-bg);
-          border-color: var(--glass-t3-border);
+          background: rgba(255,255,255,0.10);
+          border-color: rgba(255,255,255,0.20);
         }
-        .action-button:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
+        .action-button:disabled { opacity: 0.5; cursor: not-allowed; }
         .details-summary {
           cursor: pointer;
-          font-family: var(--font-jetbrains, 'JetBrains Mono', monospace);
-          font-size: 0.75rem;
-          letter-spacing: 0.06em;
-          color: var(--text-faint);
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.6875rem;
+          letter-spacing: 0.1em;
+          color: rgba(245,246,248,0.30);
           padding: 12px 0;
           user-select: none;
           list-style: none;
           display: flex;
           align-items: center;
           gap: 8px;
-          transition: color 150ms ease-out;
+          transition: color 150ms;
+          text-transform: uppercase;
         }
-        .details-summary:hover {
-          color: var(--text-main);
-        }
-        .details-summary .arrow {
-          opacity: 0.5;
-          font-size: 10px;
-          transition: transform 200ms ease-out;
-        }
-        details[open] > summary .arrow {
-          transform: rotate(90deg);
-        }
+        .details-summary:hover { color: rgba(245,246,248,0.60); }
+        .details-summary .arrow { opacity: 0.5; font-size: 10px; transition: transform 200ms; }
+        details[open] > summary .arrow { transform: rotate(90deg); }
         .empty-state-link {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px 16px;
-          background: var(--glass-t1-bg);
-          border: 1px solid var(--glass-t1-border);
-          border-radius: var(--radius-sm);
-          text-decoration: none;
-          color: var(--text-active);
-          gap: 16px;
-          transition: background-color 150ms ease-out, border-color 150ms ease-out;
+          display: flex; justify-content: space-between; align-items: center;
+          padding: 12px 16px; background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+          text-decoration: none; color: #f5f6f8; gap: 16px; transition: background 150ms;
         }
-        .empty-state-link:hover {
-          background-color: var(--glass-t2-bg);
-          border-color: var(--glass-t2-border);
-        }
-        @keyframes sub-shimmer { 
-          0% { background-position: -600px 0; } 
-          100% { background-position: 600px 0; } 
-        }
+        .empty-state-link:hover { background: rgba(255,255,255,0.07); }
+        @keyframes sub-shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
       `}</style>
     </>
   );
