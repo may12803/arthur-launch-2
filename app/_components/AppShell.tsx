@@ -4,152 +4,60 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-type NavItem = { href: string; label: string; badge?: number; icon: React.ReactNode };
+type NavItem = { href: string; label: string; badge?: number; badgeType?: 'hot' | 'warn'; icon: string };
 
-const WORKSPACE: NavItem[] = [
-  {
-    href: '/',
-    label: 'Dashboard',
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/>
-        <rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/>
-        <rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/>
-        <rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/tasks',
-    label: 'Tasks',
-    badge: 7,
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <circle cx="4" cy="4" r="1.5" fill="currentColor"/>
-        <rect x="7" y="3" width="7" height="2" rx="1" fill="currentColor" opacity=".6"/>
-        <circle cx="4" cy="8" r="1.5" fill="currentColor"/>
-        <rect x="7" y="7" width="7" height="2" rx="1" fill="currentColor" opacity=".6"/>
-        <circle cx="4" cy="12" r="1.5" fill="currentColor"/>
-        <rect x="7" y="11" width="5" height="2" rx="1" fill="currentColor" opacity=".6"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/goals',
-    label: 'Goals',
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <path d="M8 1.5L10.2 6.2 15.5 6.8 11.5 10.5 12.7 15.8 8 12.8 3.3 15.8 4.5 10.5.5 6.8 5.8 6.2Z"
-          stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" fill="none"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/inbox',
-    label: 'Inbox',
-    badge: 9,
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <rect x="2" y="2" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M5 14H11M8 11V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/calendar',
-    label: 'Calendar',
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <rect x="1" y="3" width="14" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M1 6.5H15M5 1.5V4.5M11 1.5V4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
+const NAV_COMMAND: NavItem[] = [
+  { href: '/chat', label: 'Chat', icon: '◉' },
+  { href: '/', label: 'Dashboard', badge: 4, badgeType: 'warn', icon: '⬛' },
+  { href: '/finance', label: 'Finance', badge: 1, badgeType: 'hot', icon: '$' },
 ];
 
-const BUSINESS: NavItem[] = [
-  {
-    href: '/legal',
-    label: 'Legal',
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M5 6H11M5 9H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/employees',
-    label: 'Employees',
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <circle cx="6" cy="5" r="3" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M1 13.5C1 11.2 3.2 9.5 6 9.5C8.8 9.5 11 11.2 11 13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <circle cx="11.5" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M11.5 9.5C13 9.5 15 10.5 15 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/stack',
-    label: 'Stack',
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <rect x="1" y="2" width="14" height="4" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
-        <rect x="1" y="8" width="14" height="4" rx="1.5" stroke="currentColor" strokeWidth="1.5" opacity=".6"/>
-      </svg>
-    ),
-  },
+const NAV_PORTFOLIO: NavItem[] = [
+  { href: '/goals', label: 'Goals', badge: 6, icon: '◎' },
+  { href: '/tasks', label: 'Tasks', badge: 4, badgeType: 'warn', icon: '☑' },
+  { href: '/inbox', label: 'Inbox', badge: 7, badgeType: 'hot', icon: '✉' },
+  { href: '/calendar', label: 'Calendar', badge: 12, icon: '⊞' },
 ];
 
-const ARTHUR_SECTION: NavItem[] = [
-  {
-    href: '/brain',
-    label: 'Brain',
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <path d="M3 8C3 5.24 5.24 3 8 3C10.76 3 13 5.24 13 8C13 10.76 10.76 13 8 13C5.24 13 3 10.76 3 8Z" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M8 5.5V8L9.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M8 1V2M8 14V15M1 8H2M14 8H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/skills',
-    label: 'Skills',
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/settings',
-    label: 'Settings',
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M8 1V3M8 13V15M1 8H3M13 8H15M2.93 2.93L4.34 4.34M11.66 11.66L13.07 13.07M2.93 13.07L4.34 11.66M11.66 4.34L13.07 2.93" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    href: '/telemetry',
-    label: 'Telemetry',
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <polyline points="1,12 5,8 8,10 11,5 14,7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-        <circle cx="14" cy="3.5" r="1.5" fill="currentColor"/>
-        <line x1="14" y1="5" x2="14" y2="7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
+const NAV_OPERATIONS: NavItem[] = [
+  { href: '/employees', label: 'Employees', badge: 9, icon: '◈' },
+  { href: '/legal', label: 'Legal', badge: 2, badgeType: 'warn', icon: '◧' },
+  { href: '/subscriptions', label: 'Subscriptions', icon: '▣' },
 ];
+
+const NAV_ARTHUR: NavItem[] = [
+  { href: '/brain', label: 'Brain', icon: '◍' },
+  { href: '/principles', label: 'Principles', icon: '◐' },
+  { href: '/benchmarks', label: 'Benchmarks', icon: '◑' },
+  { href: '/skills', label: 'Skills', icon: '⚡' },
+  { href: '/stack', label: 'Stack', icon: '▤' },
+  { href: '/graph', label: 'Graph', icon: '◈' },
+  { href: '/settings', label: 'Settings', icon: '⚙' },
+];
+
+const S = {
+  bg: '#0a0a0a',
+  bg2: '#111111',
+  bg3: '#181818',
+  bg4: '#1f1f1f',
+  border: '#1f1f1f',
+  border2: '#2a2a2a',
+  textPrimary: '#e8e8e8',
+  textSecondary: '#8a8a8a',
+  textMuted: '#4a4a4a',
+  accent: '#f0a500',
+  green: '#22c55e',
+  red: '#ef4444',
+  orange: '#f97316',
+  blue: '#60a5fa',
+  mono: "'JetBrains Mono', 'GeistMono', monospace",
+  sans: "'Inter', sans-serif",
+} as const;
 
 function NavSection({ label, items, pathname }: { label: string; items: NavItem[]; pathname: string }) {
   return (
     <div>
-      <div style={{ fontSize:'10.5px', fontWeight:600, letterSpacing:'.08em', textTransform:'uppercase', color:'#BAB5AE', padding:'10px 10px 6px' }}>
+      <div style={{ fontFamily: S.mono, fontSize: '8px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: S.textMuted, padding: '14px 16px 5px' }}>
         {label}
       </div>
       {items.map(item => {
@@ -159,24 +67,24 @@ function NavSection({ label, items, pathname }: { label: string; items: NavItem[
             key={item.href}
             href={item.href}
             style={{
-              display:'flex', alignItems:'center', gap:'10px', padding:'8.5px 10px',
-              borderRadius:'6px', cursor:'pointer',
-              color: active ? '#0B504F' : '#4A4540',
-              fontSize:'13.5px', fontWeight: active ? 500 : 400,
-              letterSpacing:'-.01em', textDecoration:'none',
-              background: active ? '#E5F0EF' : 'transparent',
-              transition:'background 120ms ease, color 120ms ease',
-              margin:'1px 0',
+              display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 16px',
+              fontSize: '12px', color: active ? S.accent : S.textSecondary,
+              fontWeight: 500, textDecoration: 'none', cursor: 'pointer',
+              borderLeft: `2px solid ${active ? S.accent : 'transparent'}`,
+              background: active ? `rgba(240,165,0,0.04)` : 'transparent',
+              transition: 'all 80ms ease',
             }}
-            onMouseEnter={e => { if(!active){ (e.currentTarget as HTMLElement).style.background='#F3F0EA'; (e.currentTarget as HTMLElement).style.color='#1A1713'; } }}
-            onMouseLeave={e => { if(!active){ (e.currentTarget as HTMLElement).style.background='transparent'; (e.currentTarget as HTMLElement).style.color='#4A4540'; } }}
           >
-            <span style={{ width:'15px', height:'15px', flexShrink:0, opacity: active ? 1 : 0.7, display:'flex', alignItems:'center' }}>
-              {item.icon}
-            </span>
-            <span style={{ flex:1 }}>{item.label}</span>
+            <span style={{ fontFamily: S.mono, fontSize: '11px', width: '16px', textAlign: 'center', flexShrink: 0, color: active ? S.accent : S.textMuted }}>{item.icon}</span>
+            <span style={{ flex: 1 }}>{item.label}</span>
             {item.badge != null && (
-              <span style={{ marginLeft:'auto', background:'#0B504F', color:'#fff', fontSize:'10px', fontWeight:600, padding:'1px 6px', borderRadius:'100px' }}>
+              <span style={{
+                fontFamily: S.mono, fontSize: '9px', fontWeight: 700, padding: '1px 5px',
+                borderRadius: '2px',
+                background: item.badgeType === 'hot' ? 'rgba(239,68,68,0.12)' : item.badgeType === 'warn' ? 'rgba(249,115,22,0.12)' : S.bg3,
+                color: item.badgeType === 'hot' ? S.red : item.badgeType === 'warn' ? S.orange : S.textSecondary,
+                border: `1px solid ${item.badgeType === 'hot' ? 'rgba(239,68,68,0.25)' : item.badgeType === 'warn' ? 'rgba(249,115,22,0.25)' : S.border2}`,
+              }}>
                 {item.badge}
               </span>
             )}
@@ -195,127 +103,96 @@ interface AppShellProps {
 
 export function AppShell({ children, onOpenVoice, voiceActive }: AppShellProps) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const today = new Date();
-  const dateStr = today.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+  const [now, setNow] = useState('');
 
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
-
-  const pageLabel = pathname === '/' ? 'Dashboard'
-    : pathname.startsWith('/inbox') ? 'Inbox'
-    : pathname.startsWith('/tasks') ? 'Tasks'
-    : pathname.startsWith('/goals') ? 'Goals'
-    : pathname.startsWith('/calendar') ? 'Calendar'
-    : pathname.startsWith('/legal') ? 'Legal'
-    : pathname.startsWith('/employees') ? 'Employees'
-    : pathname.startsWith('/brain') ? 'Brain'
-    : pathname.startsWith('/skills') ? 'Skills'
-    : pathname.startsWith('/settings') ? 'Settings'
-    : pathname.startsWith('/stack') ? 'Stack'
-    : pathname.startsWith('/telemetry') ? 'Telemetry'
-    : 'Arthur';
-
-  const SidebarInner = () => (
-    <>
-      <div style={{ height:'56px', display:'flex', alignItems:'center', padding:'0 20px', borderBottom:'1px solid #E8E4DB', flexShrink:0 }}>
-        <span style={{ fontFamily:'var(--font-lora,"Lora",Georgia,serif)', fontSize:'22px', fontWeight:600, letterSpacing:'-.03em', fontStyle:'italic', color:'#1A1713' }}>
-          <em style={{ color:'#0B504F', fontStyle:'italic' }}>arthur</em>
-        </span>
-      </div>
-      <div style={{ flex:1, padding:'12px 10px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'2px' }}>
-        <NavSection label="Workspace" items={WORKSPACE} pathname={pathname} />
-        <div style={{ marginTop:'6px' }}><NavSection label="Business" items={BUSINESS} pathname={pathname} /></div>
-        <div style={{ marginTop:'6px' }}><NavSection label="Arthur" items={ARTHUR_SECTION} pathname={pathname} /></div>
-      </div>
-      <div style={{ borderTop:'1px solid #E8E4DB', padding:'10px', flexShrink:0 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'10px', padding:'8px 10px', borderRadius:'6px' }}>
-          <div style={{ width:'24px', height:'24px', borderRadius:'50%', background:'#0B504F', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'11px', fontWeight:600, flexShrink:0 }}>D</div>
-          <div>
-            <div style={{ fontSize:'12.5px', fontWeight:500, color:'#1A1713', lineHeight:1.2 }}>Daniel May</div>
-            <div style={{ fontSize:'11px', color:'#BAB5AE', lineHeight:1.2 }}>Aspen &amp; May</div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+  useEffect(() => {
+    const fmt = () => {
+      const d = new Date();
+      const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+      const months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+      const h = String(d.getHours()).padStart(2, '0');
+      const m = String(d.getMinutes()).padStart(2, '0');
+      return `${days[d.getDay()]} ${months[d.getMonth()]}/${String(d.getDate()).padStart(2,'0')}/${String(d.getFullYear()).slice(2)} ${h}:${m}`;
+    };
+    setNow(fmt());
+    const t = setInterval(() => setNow(fmt()), 30000);
+    return () => clearInterval(t);
+  }, []);
 
   return (
-    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#FAF8F5' }}>
-
-      {/* Left nav — desktop */}
-      <nav style={{ width:'220px', minWidth:'220px', background:'#ffffff', borderRight:'1px solid #E8E4DB', display:'flex', flexDirection:'column', overflow:'hidden', zIndex:10, flexShrink:0 }} className="desktop-sidebar">
-        <SidebarInner />
-      </nav>
-
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div style={{ position:'fixed', inset:0, zIndex:60, background:'rgba(26,23,19,0.35)', backdropFilter:'blur(4px)' }} onClick={() => setMobileOpen(false)}>
-          <nav style={{ position:'absolute', top:0, left:0, bottom:0, width:'220px', background:'#ffffff', borderRight:'1px solid #E8E4DB', display:'flex', flexDirection:'column' }} onClick={e => e.stopPropagation()}>
-            <SidebarInner />
-          </nav>
-        </div>
-      )}
-
-      {/* Main */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
-
-        {/* Topbar */}
-        <header style={{ height:'56px', background:'#ffffff', borderBottom:'1px solid #E8E4DB', display:'flex', alignItems:'center', padding:'0 32px', gap:'14px', flexShrink:0, zIndex:9 }}>
-          <button onClick={() => setMobileOpen(v => !v)} aria-label="Toggle navigation" className="mobile-hamburger-btn" style={{ display:'none', background:'none', border:'none', cursor:'pointer', color:'#8A837A', padding:'4px', marginLeft:'-8px', minWidth:'unset', minHeight:'unset' }}>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 4H16M2 9H16M2 14H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-          </button>
-
-          <span style={{ fontFamily:'var(--font-lora,"Lora",Georgia,serif)', fontSize:'15px', fontWeight:500, color:'#8A837A', letterSpacing:'-.01em', fontStyle:'italic' }}>arthur</span>
-          <div style={{ width:'1px', height:'15px', background:'#E8E4DB' }} />
-          <span style={{ fontSize:'14px', fontWeight:500, color:'#1A1713' }}>{pageLabel}</span>
-          <div style={{ flex:1 }} />
-
-          <div style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'12.5px', color:'#8A837A', fontWeight:400 }}>
-            <span style={{ display:'inline-block', width:'6px', height:'6px', background:'#16A34A', borderRadius:'50%', animation:'pulseDot 2.5s ease-in-out infinite', flexShrink:0 }} />
-            {dateStr}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', background: S.bg, color: S.textPrimary, fontFamily: S.sans, fontSize: '12px', lineHeight: '1.5', overflow: 'hidden' }}>
+      {/* Topbar */}
+      <div style={{ background: S.bg2, borderBottom: `1px solid ${S.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '44px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', height: '44px' }}>
+          {/* Logo block */}
+          <div style={{ fontFamily: S.mono, fontSize: '13px', fontWeight: 700, color: S.accent, letterSpacing: '2px', padding: '0 20px', borderRight: `1px solid ${S.border}`, height: '44px', display: 'flex', alignItems: 'center', width: '220px', flexShrink: 0 }}>
+            ARTHUR//OS
           </div>
-
-          <button onClick={onOpenVoice} style={{ display:'flex', alignItems:'center', gap:'7px', background: voiceActive ? 'rgba(11,80,79,.12)' : '#0B504F', color: voiceActive ? '#0B504F' : '#fff', border:'none', borderRadius:'6px', padding:'7px 14px', fontSize:'13px', fontWeight:500, cursor:'pointer', fontFamily:'inherit', letterSpacing:'-.01em', transition:'background 120ms ease', minWidth:'unset', minHeight:'unset', height:'32px' }}>
-            <svg viewBox="0 0 14 14" fill="none" style={{ width:'14px', height:'14px' }}>
-              <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M5 7C5 5.9 5.9 5 7 5C8.1 5 9 5.9 9 7C9 8.1 8.1 9 7 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            {voiceActive ? 'end call' : '+ Talk'}
+          {/* Entity tabs */}
+          {[
+            { label: 'ALL ENTITIES', active: true },
+            { label: 'DABNEY & CO.', active: false },
+            { label: 'ASPEN & MAY', active: false, tag: 'HOLD' },
+            { label: 'LOVELEEDAY', active: false, tag: 'EMPTY' },
+          ].map((tab, i) => (
+            <div key={i} style={{
+              height: '44px', padding: '0 16px', fontSize: '11px', fontWeight: 600,
+              display: 'flex', alignItems: 'center', gap: '6px',
+              borderBottom: tab.active ? `2px solid ${S.accent}` : '2px solid transparent',
+              color: tab.active ? S.accent : S.textSecondary,
+              letterSpacing: '0.04em', fontFamily: S.mono, cursor: 'pointer',
+            }}>
+              {tab.label}
+              {tab.tag && (
+                <span style={{ fontSize: '8px', fontWeight: 700, padding: '1px 4px', borderRadius: '2px', letterSpacing: '0.08em', background: '#1a1a1a', color: S.textMuted, border: `1px solid ${S.border2}` }}>
+                  {tab.tag}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '0 20px', fontSize: '10px', color: S.textMuted, fontFamily: S.mono }}>
+          <div style={{ background: S.bg3, border: `1px solid ${S.border2}`, borderRadius: '3px', padding: '4px 10px', fontSize: '10px', color: S.textMuted, width: '200px' }}>
+            ⌘K &nbsp; search everything…
+          </div>
+          <div style={{ background: S.red, color: 'white', fontSize: '8px', fontWeight: 700, fontFamily: S.mono, width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>3</div>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: S.green, display: 'inline-block', animation: 'pulse 2s infinite' }} />
+          <span>LIVE · SYNC 4M AGO</span>
+          <span style={{ color: S.accent, cursor: 'pointer' }}>↻ FORCE</span>
+          <span style={{ color: S.border2 }}>|</span>
+          <span>{now}</span>
+          <button onClick={onOpenVoice} style={{ background: voiceActive ? 'rgba(240,165,0,0.12)' : S.accent, color: voiceActive ? S.accent : S.bg, border: 'none', borderRadius: '3px', padding: '4px 12px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', fontFamily: S.mono, letterSpacing: '0.08em' }}>
+            {voiceActive ? '● END' : '+ TALK'}
           </button>
+        </div>
+      </div>
 
-          <div style={{ width:'32px', height:'32px', borderRadius:'50%', background:'#0B504F', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'13px', fontWeight:600, cursor:'pointer', flexShrink:0, minWidth:'unset', minHeight:'unset' }}>D</div>
-        </header>
+      {/* Body layout */}
+      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+        {/* Sidebar */}
+        <nav style={{ width: '220px', background: S.bg2, borderRight: `1px solid ${S.border}`, flexShrink: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+          <div style={{ flex: 1 }}>
+            <NavSection label="COMMAND" items={NAV_COMMAND} pathname={pathname} />
+            <NavSection label="PORTFOLIO" items={NAV_PORTFOLIO} pathname={pathname} />
+            <NavSection label="OPERATIONS" items={NAV_OPERATIONS} pathname={pathname} />
+            <NavSection label="ARTHUR CORE" items={NAV_ARTHUR} pathname={pathname} />
+          </div>
+          <div style={{ padding: '12px 16px', borderTop: `1px solid ${S.border}`, fontFamily: S.mono, fontSize: '9px', color: S.textMuted, flexShrink: 0 }}>
+            <div style={{ marginBottom: '3px' }}>arthur-online v2.0</div>
+            <div style={{ color: S.textSecondary }}>daniel@aspenandmay.com</div>
+          </div>
+        </nav>
 
-        {/* Content */}
-        <main id="main-content" style={{ flex:1, overflow:'auto', display:'flex', flexDirection:'column', minWidth:0 }}>
+        {/* Main content */}
+        <main id="main-content" style={{ flex: 1, minWidth: 0, background: S.bg, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {children}
         </main>
       </div>
 
-      {/* Mobile bottom nav */}
-      <div className="mobile-bottom-nav">
-        <div className="mobile-bottom-nav-inner">
-          {[...WORKSPACE.slice(0,4), ARTHUR_SECTION[2]].map(item => {
-            const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-            return (
-              <Link key={item.href} href={item.href} className={`mobile-bottom-nav-item${active ? ' active' : ''}`}>
-                <span className="mobile-bottom-nav-icon">{item.icon}</span>
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
       <style>{`
-        @keyframes pulseDot { 0%,100%{opacity:1;}50%{opacity:.35;} }
-        @media (max-width: 768px) {
-          .desktop-sidebar { display: none !important; }
-          .mobile-hamburger-btn { display: flex !important; }
-        }
-        @media (min-width: 769px) {
-          .mobile-hamburger-btn { display: none !important; }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
       `}</style>
     </div>
   );

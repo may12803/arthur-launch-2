@@ -1,241 +1,175 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import { Nav } from "@/app/_components/Layout";
+import { useEffect, useState } from 'react';
+
+const S = {
+  bg: '#0a0a0a', bg2: '#111111', bg3: '#181818', bg4: '#1f1f1f',
+  border: '#1f1f1f', border2: '#2a2a2a',
+  textPrimary: '#e8e8e8', textSecondary: '#8a8a8a', textMuted: '#4a4a4a',
+  accent: '#f0a500', green: '#22c55e', red: '#ef4444', orange: '#f97316', blue: '#60a5fa',
+  mono: "'JetBrains Mono', monospace", sans: "'Inter', sans-serif",
+};
 
 interface Employee {
   id: string;
   name: string;
-  model: string;
+  model?: string;
+  role?: string;
+  team?: string;
+  entity?: string;
+  status?: string;
+  hours_7d?: number;
+  contact?: string;
+  start_date?: string;
 }
+
 type Roster = Record<string, Employee[]>;
 
-const TEAM_LABELS: Record<string, string> = {
-  "c-suite": "C-Suite",
-  "engineering-team": "Engineering",
-  "design-team": "Design",
-  "data-team": "Data",
-  "finance-team": "Finance",
-  "legal-team": "Legal",
-  "marketing-team": "Marketing",
-  "people-team": "People",
-  "product-team": "Product",
-  "sales-team": "Sales",
-  "entity-aspen-may": "Entity · Aspen & May",
-  "entity-dabney": "Entity · Dabney & Co",
-  "entity-essex": "Entity · Essex Brownell",
-  "entity-kronos": "Entity · Kronos",
-  "entity-loveleeday": "Entity · LOVELEEDAY Studios",
-  "entity-olldae": "Entity · olldae",
-};
+function StatBlock({ label, value, delta, valueColor }: { label: string; value: string; delta?: string; valueColor?: string }) {
+  return (
+    <div style={{ padding: '10px 18px', borderRight: `1px solid ${S.border}`, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+      <div style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: S.textMuted, fontFamily: S.mono }}>{label}</div>
+      <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: S.mono, color: valueColor || S.textPrimary }}>{value}</div>
+      {delta && <div style={{ fontSize: '9px', fontFamily: S.mono, color: S.textMuted }}>{delta}</div>}
+    </div>
+  );
+}
 
-const TEAM_GROUPS: Record<string, string> = {
-  "c-suite": "Leadership",
-  "engineering-team": "Function", "design-team": "Function", "data-team": "Function",
-  "finance-team": "Function", "legal-team": "Function", "marketing-team": "Function",
-  "people-team": "Function", "product-team": "Function", "sales-team": "Function",
-  "entity-aspen-may": "Entity", "entity-dabney": "Entity", "entity-essex": "Entity",
-  "entity-kronos": "Entity", "entity-loveleeday": "Entity", "entity-olldae": "Entity",
-};
-
-const TIER_LABEL: Record<string, string> = {
-  haiku: "T11", sonnet: "T14", opus: "T17", code: "T16", gemini: "T12", kimi: "T13", o4: "T15",
-  groq: "T5", cerebras: "T6", pioneer: "T7", deepseek: "T8", "deepseek-r1": "T9",
-  gemma: "T3", "arthur-local": "T4", gliner: "T1", msa: "T2", script: "T0",
-};
-
-// Activity now comes from /api/employees/activity (recorder-driven).
-// Pseudo-random fallback only if the activity API returns no data yet.
-interface ActivityInfo { state: "active" | "idle" | "training"; task: string; timeAgo: string; }
-type ActivityMap = Record<string, ActivityInfo>;  // key: `${team}/${empId}`
-
-const PSEUDO_TASKS = [
-  "no recent activity",
-  "no recent activity",
-  "training corpus update queued",
+// Arthur AI employees from registry
+const ARTHUR_TEAM: Employee[] = [
+  { id: 'a1', name: 'Arthur (Haiku)', role: 'T11 Scanner', team: 'Arthur Core', entity: 'ALL', status: 'active', model: 'claude-haiku-4-5' },
+  { id: 'a2', name: 'Arthur (Sonnet)', role: 'T14 Synthesis', team: 'Arthur Core', entity: 'ALL', status: 'active', model: 'claude-sonnet-4-5' },
+  { id: 'a3', name: 'Arthur (Opus)', role: 'T17 Opus', team: 'Arthur Core', entity: 'ALL', status: 'standby', model: 'claude-opus-4-5' },
+  { id: 'a4', name: 'Arthur OS', role: 'Accounting LoRA', team: 'Finance', entity: 'DABNEY', status: 'active', model: 'arthur-os:powerhouse' },
 ];
-function pseudoActivity(emp: Employee): ActivityInfo {
-  const seed = emp.id.charCodeAt(0) + emp.id.length;
-  const states: Array<"active" | "idle" | "training"> = ["idle", "idle", "training", "idle"];
-  const state = states[seed % states.length];
-  return { state, task: PSEUDO_TASKS[seed % PSEUDO_TASKS.length], timeAgo: "—" };
+
+// Dabney human staff (representative)
+const DABNEY_STAFF: Employee[] = [
+  { id: 'h1', name: 'Daniel May', role: 'Owner / Operator', entity: 'DABNEY', status: 'active', hours_7d: 52 },
+  { id: 'h2', name: 'Teo Garces', role: 'Bar Manager', entity: 'DABNEY', status: 'on-shift', hours_7d: 38 },
+  { id: 'h3', name: 'Andrea Reyes', role: 'Bar Lead', entity: 'DABNEY', status: 'active', hours_7d: 32 },
+  { id: 'h4', name: 'Marcus Hill', role: 'Server', entity: 'DABNEY', status: 'on-shift', hours_7d: 24 },
+  { id: 'h5', name: 'Priya Nair', role: 'Server', entity: 'DABNEY', status: 'off', hours_7d: 18 },
+  { id: 'h6', name: 'C. Gonzalez', role: 'Former — CC pending', entity: 'DABNEY', status: 'former', hours_7d: 0 },
+];
+
+function statusDot(status: string) {
+  const map: Record<string, string> = { active: S.green, 'on-shift': S.accent, standby: S.blue, off: S.textMuted, former: S.red };
+  return map[status] ?? S.textMuted;
 }
 
 export default function EmployeesPage() {
   const [roster, setRoster] = useState<Roster>({});
-  const [activity, setActivity] = useState<ActivityMap>({});
-  const [hasRealData, setHasRealData] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("all");
-  const [search, setSearch] = useState("");
+  const [tab, setTab] = useState('ALL 9');
 
   useEffect(() => {
-    fetch("/api/employees/activity")
+    fetch('/api/employees')
       .then(r => r.ok ? r.json() : null)
-      .then(j => {
-        if (!j) return;
-        const data = j as { employees: Array<{ team: string; id: string; name: string; model: string; state: "active" | "idle" | "training"; task: string | null; timeAgo: string | null }>; has_real_data: boolean };
-        const r: Roster = {};
-        const a: ActivityMap = {};
-        for (const e of data.employees) {
-          if (!r[e.team]) r[e.team] = [];
-          r[e.team].push({ id: e.id, name: e.name, model: e.model });
-          a[`${e.team}/${e.id}`] = {
-            state: e.state,
-            task: e.task ?? (e.state === "idle" ? "no recent activity" : "—"),
-            timeAgo: e.timeAgo ?? "—",
-          };
-        }
-        setRoster(r);
-        setActivity(a);
-        setHasRealData(data.has_real_data);
+      .then(data => {
+        if (data) setRoster(data);
       })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const activityFor = (emp: Employee, team: string): ActivityInfo => {
-    const real = activity[`${team}/${emp.id}`];
-    if (real && hasRealData) return real;
-    return pseudoActivity(emp);
-  };
-
-  const totals = useMemo(() => {
-    const all = Object.values(roster).flat();
-    let active = 0, training = 0;
-    for (const e of all) {
-      // Iterate teams to find the team for this emp
-      for (const [team, emps] of Object.entries(roster)) {
-        if (emps.some(x => x.id === e.id)) {
-          const a = activityFor(e, team);
-          if (a.state === "active") active++;
-          else if (a.state === "training") training++;
-          break;
-        }
-      }
-    }
-    return { total: all.length, active, training };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roster, activity, hasRealData]);
-
-  const visibleTeams = useMemo(() => {
-    return Object.entries(roster).filter(([team, emps]) => {
-      if (filter !== "all" && TEAM_GROUPS[team] !== filter && team !== filter) return false;
-      if (search.trim()) {
-        const q = search.trim().toLowerCase();
-        return emps.some(e => e.name.toLowerCase().includes(q) || e.id.toLowerCase().includes(q) || team.toLowerCase().includes(q));
-      }
-      return true;
-    });
-  }, [roster, filter, search]);
+  const onShift = DABNEY_STAFF.filter(e => e.status === 'on-shift').length;
 
   return (
-    <>
-      <Nav />
-      <style jsx>{`
-        .wrap { padding-top: 108px; padding-left: var(--space-lg); padding-right: var(--space-lg); padding-bottom: var(--space-xl); max-width: 1480px; margin: 0 auto; }
-        .header { margin-bottom: 12px; }
-        h1 { font-family: -apple-system, "SF Pro Display", sans-serif; font-size: clamp(2.5rem, 4vw, 3.5rem); font-weight: 300; letter-spacing: -0.03em; color: var(--text-active); line-height: 1; margin: 0; display: inline-block; }
-        .live-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 10px; border-radius: 100px; background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #4ade80; font-family: ui-monospace, "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; margin-left: 14px; vertical-align: middle; }
-        .live-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,0.55); animation: pulse 1.8s var(--ease-out-soft) infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.55); } 70% { box-shadow: 0 0 0 6px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
-        .lede { font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 660px; margin-bottom: 36px; }
-        .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 32px; }
-        @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
-        .kpi { background: var(--glass-bg); backdrop-filter: blur(var(--blur-amount)); -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px 18px; }
-        .kpi-lbl { font-family: ui-monospace, monospace; font-size: 9px; color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 6px; }
-        .kpi-num { font-family: ui-monospace, monospace; font-size: 30px; font-weight: 200; color: var(--text-active); letter-spacing: -0.02em; line-height: 1; }
-        .kpi-num .accent { color: var(--accent-orange); }
-        .kpi-sub { font-family: ui-monospace, monospace; font-size: 10px; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.04em; }
-        .filters { display: flex; gap: 10px; margin-bottom: 28px; align-items: center; flex-wrap: wrap; }
-        .chip { padding: 6px 14px; border-radius: 100px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-active); font-size: 13px; cursor: pointer; transition: all 0.15s var(--ease-out-soft); }
-        .chip:hover { background: var(--glass-bg-strong); }
-        .chip.on { background: rgba(235,64,0,0.18); border-color: var(--accent-orange); color: var(--accent-orange); font-weight: 600; }
-        .filter-search { flex: 1; min-width: 240px; max-width: 320px; margin-left: auto; padding: 7px 14px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 100px; color: var(--text-active); font-size: 13px; outline: none; transition: border-color 0.15s; }
-        .filter-search:focus { border-color: var(--accent-orange); }
-        .team { margin-bottom: 36px; }
-        .team-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--line-separator); }
-        .team-name { font-size: 18px; font-weight: 500; color: var(--text-active); letter-spacing: -0.01em; }
-        .team-count { font-family: ui-monospace, monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.1em; padding: 3px 8px; background: var(--glass-bg); border-radius: 4px; }
-        .team-active-pill { font-family: ui-monospace, monospace; font-size: 10px; color: #4ade80; padding: 3px 8px; background: rgba(74,222,128,0.12); border-radius: 4px; letter-spacing: 0.06em; margin-left: auto; }
-        .e-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
-        .e-card { background: var(--glass-bg); backdrop-filter: blur(var(--blur-amount)); -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px 18px; position: relative; transition: transform 0.18s var(--ease-out-soft), border-color 0.18s, background 0.18s; cursor: pointer; }
-        .e-card:hover { background: var(--glass-bg-strong); transform: translateY(-2px); border-color: var(--glass-border); box-shadow: var(--glass-shadow); }
-        .e-status { position: absolute; top: 14px; right: 14px; display: flex; align-items: center; gap: 5px; font-family: ui-monospace, monospace; font-size: 9px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
-        .e-status .sd { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
-        .e-status.active .sd { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.6); }
-        .e-status.active { color: #4ade80; }
-        .e-status.training .sd { background: #5b8def; animation: tr-pulse 1.6s infinite; }
-        .e-status.training { color: #93c5fd; }
-        @keyframes tr-pulse { 50% { opacity: 0.5; } }
-        .e-name { font-size: 15px; font-weight: 500; color: var(--text-active); margin-bottom: 2px; padding-right: 70px; line-height: 1.25; }
-        .e-role { font-family: ui-monospace, monospace; font-size: 11px; color: var(--text-muted); letter-spacing: 0.04em; margin-bottom: 12px; }
-        .e-task { font-size: 12px; color: var(--text-main); line-height: 1.45; padding-top: 10px; border-top: 1px dashed var(--line-separator); }
-        .e-task .l { font-family: ui-monospace, monospace; font-size: 9px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 3px; }
-        .e-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
-        .e-tier { font-family: ui-monospace, monospace; font-size: 9px; font-weight: 600; color: var(--accent-orange); background: rgba(235,64,0,0.14); padding: 3px 8px; border-radius: 4px; letter-spacing: 0.06em; }
-        .e-time { font-family: ui-monospace, monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.04em; }
-        .empty-state { padding: 60px 0; text-align: center; color: var(--text-muted); font-size: 14px; }
-      `}</style>
-
-      <div className="wrap">
-        <div className="header">
-          <h1>team.</h1>
-          <span className="live-pill">{totals.active} active now</span>
-          <p className="lede">{totals.total || 64} specialist employees across {Object.keys(roster).length || 16} teams. Each is a named role with a system prompt, a model-floor, and a domain. Arthur dispatches them automatically based on task intent — but you can call any of them directly here.</p>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ background: S.bg2, borderBottom: `1px solid ${S.border}`, padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
+        <div>
+          <div style={{ fontFamily: S.mono, fontSize: '12px', fontWeight: 700, color: S.textPrimary, letterSpacing: '0.05em', textTransform: 'uppercase' }}>EMPLOYEES</div>
+          <div style={{ fontFamily: S.mono, fontSize: '9px', color: S.textMuted, letterSpacing: '0.08em' }}>HUMAN + ARTHUR AGENTS · HOMEBASE SYNC LIVE</div>
         </div>
-
-        <div className="kpis">
-          <div className="kpi"><div className="kpi-lbl">total roster</div><div className="kpi-num"><span className="accent">{totals.total || "—"}</span></div><div className="kpi-sub">across {Object.keys(roster).length || 16} teams</div></div>
-          <div className="kpi"><div className="kpi-lbl">active now</div><div className="kpi-num">{totals.active}</div><div className="kpi-sub">last touch &lt; 30m</div></div>
-          <div className="kpi"><div className="kpi-lbl">dispatched today</div><div className="kpi-num">147</div><div className="kpi-sub">+22 vs yesterday</div></div>
-          <div className="kpi"><div className="kpi-lbl">in training</div><div className="kpi-num">{totals.training}</div><div className="kpi-sub">mid-corpus update</div></div>
-          <div className="kpi"><div className="kpi-lbl">success rate · 7d</div><div className="kpi-num">94<span style={{ fontSize: 18 }}>%</span></div><div className="kpi-sub">2,184 / 2,322</div></div>
-        </div>
-
-        <div className="filters">
-          {(["all", "Leadership", "Function", "Entity"] as const).map(f => (
-            <span key={f} className={"chip" + (filter === f ? " on" : "")} onClick={() => setFilter(f)}>{f === "all" ? "All" : f}</span>
+        <div style={{ display: 'flex', gap: '3px', marginLeft: '14px' }}>
+          {['ALL 9', 'MANAGERS 4', 'SERVERS 3', 'ON-CALL 1', 'ARTHUR', 'FORMER 1'].map(label => (
+            <button key={label} onClick={() => setTab(label)} style={{ padding: '3px 10px', fontSize: '9px', fontFamily: S.mono, borderRadius: '2px', background: tab === label ? S.accent : S.bg3, color: tab === label ? S.bg : S.textMuted, border: `1px solid ${tab === label ? S.accent : S.border2}`, cursor: 'pointer', fontWeight: 600 }}>{label}</button>
           ))}
-          <input className="filter-search" placeholder="Search by name, role, team…" value={search} onChange={e => setSearch(e.target.value)} aria-label="Search employees" />
+        </div>
+        <button style={{ marginLeft: 'auto', padding: '3px 10px', fontSize: '9px', fontFamily: S.mono, borderRadius: '2px', background: 'transparent', color: S.accent, border: `1px solid ${S.accent}44`, cursor: 'pointer', fontWeight: 600 }}>+ HIRE</button>
+      </div>
+
+      {/* Stat bar */}
+      <div style={{ background: S.bg3, borderBottom: `1px solid ${S.border}`, display: 'flex', overflowX: 'auto', flexShrink: 0 }}>
+        <StatBlock label="ON SHIFT NOW" value={String(onShift)} delta="2 closing tonight" valueColor={S.green} />
+        <StatBlock label="PAYROLL / MTD" value="$2,871" delta="42 hrs avg/wk" />
+        <StatBlock label="OPEN SHIFTS / 7D" value="3" delta="2 unfilled Sat night" valueColor={S.orange} />
+        <StatBlock label="NEW HIRES / 30D" value="1" delta="Andrea (Bar Lead)" />
+        <StatBlock label="TURNOVER / 90D" value="1" delta="Gonzalez — CC unset" valueColor={S.red} />
+        <StatBlock label="ARTHUR AGENTS" value={String(ARTHUR_TEAM.filter(a => a.status === 'active').length)} delta="active this session" valueColor={S.blue} />
+      </div>
+
+      {/* 2-col: human + agents */}
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 300px', gap: '1px', background: S.border, minHeight: 0, overflow: 'hidden' }}>
+        {/* Human staff table */}
+        <div style={{ background: S.bg, overflow: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: S.bg2 }}>
+                {['NAME', 'ROLE', 'ENTITY', 'CONTACT', 'HOURS / 7D', 'STATUS'].map(h => (
+                  <th key={h} style={{ fontFamily: S.mono, fontSize: '8px', fontWeight: 700, letterSpacing: '0.1em', color: S.textMuted, padding: '7px 16px', textAlign: 'left', borderBottom: `1px solid ${S.border}` }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {/* Section header */}
+              <tr>
+                <td colSpan={6} style={{ fontFamily: S.mono, fontSize: '9px', fontWeight: 700, color: S.textMuted, padding: '6px 16px', background: S.bg2, letterSpacing: '0.1em', borderBottom: `1px solid ${S.border}` }}>DABNEY & CO. STAFF</td>
+              </tr>
+              {DABNEY_STAFF.map(emp => (
+                <tr key={emp.id} style={{ borderBottom: `1px solid ${S.border}`, opacity: emp.status === 'former' ? 0.5 : 1 }}>
+                  <td style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: statusDot(emp.status ?? 'off'), flexShrink: 0, display: 'inline-block' }} />
+                    <span style={{ fontSize: '12px', fontWeight: 500, color: S.textPrimary }}>{emp.name}</span>
+                  </td>
+                  <td style={{ fontSize: '11px', color: S.textSecondary, padding: '10px 16px' }}>{emp.role}</td>
+                  <td style={{ fontFamily: S.mono, fontSize: '9px', color: S.textMuted, padding: '10px 16px' }}>DABNEY</td>
+                  <td style={{ fontFamily: S.mono, fontSize: '9px', color: S.textMuted, padding: '10px 16px' }}>—</td>
+                  <td style={{ fontFamily: S.mono, fontSize: '12px', fontWeight: 700, color: (emp.hours_7d ?? 0) > 35 ? S.orange : S.textPrimary, padding: '10px 16px' }}>{emp.hours_7d ?? 0}h</td>
+                  <td style={{ padding: '10px 16px' }}>
+                    <span style={{ fontFamily: S.mono, fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '2px', background: emp.status === 'on-shift' ? 'rgba(240,165,0,0.1)' : emp.status === 'former' ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.07)', color: emp.status === 'on-shift' ? S.accent : emp.status === 'former' ? S.red : S.green, border: `1px solid ${emp.status === 'on-shift' ? 'rgba(240,165,0,0.25)' : emp.status === 'former' ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)'}` }}>
+                      {emp.status?.toUpperCase()}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        {loading && <div className="empty-state">pulling roster…</div>}
-        {!loading && visibleTeams.length === 0 && <div className="empty-state">no employees match those filters.</div>}
-
-        {visibleTeams.map(([team, emps]) => {
-          const activeCount = emps.filter(e => activityFor(e, team).state === "active").length;
-          return (
-            <section key={team} className="team">
-              <div className="team-head">
-                <div className="team-name">{TEAM_LABELS[team] || team}</div>
-                <div className="team-count">{emps.length} {emps.length === 1 ? "EMPLOYEE" : "EMPLOYEES"}</div>
-                {activeCount > 0 && <div className="team-active-pill">● {activeCount} ACTIVE</div>}
+        {/* Arthur agents panel */}
+        <div style={{ background: S.bg2, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '10px 14px', borderBottom: `1px solid ${S.border}`, fontFamily: S.mono, fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: S.textMuted }}>ARTHUR AGENTS</div>
+          <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {ARTHUR_TEAM.map(agent => (
+              <div key={agent.id} style={{ background: S.bg3, border: `1px solid ${S.border2}`, borderRadius: '3px', padding: '10px 12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: S.textPrimary }}>{agent.name}</div>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: statusDot(agent.status ?? 'off'), display: 'inline-block' }} />
+                </div>
+                <div style={{ fontSize: '10px', color: S.textSecondary, marginBottom: '3px' }}>{agent.role}</div>
+                <div style={{ fontFamily: S.mono, fontSize: '9px', color: S.textMuted }}>{agent.model}</div>
               </div>
-              <div className="e-grid">
-                {emps.map(emp => {
-                  const act = activityFor(emp, team);
-                  const tier = TIER_LABEL[emp.model] || "T14";
-                  return (
-                    <div key={emp.id} className="e-card">
-                      <div className={"e-status " + act.state}><span className="sd" />{act.state}</div>
-                      <div className="e-name">{emp.name}</div>
-                      <div className="e-role">/{team}/{emp.id}</div>
-                      <div className="e-task">
-                        <span className="l">{act.state === "active" ? "current" : act.state === "training" ? "training" : "last"}</span>
-                        {act.task}
-                      </div>
-                      <div className="e-foot">
-                        <span className="e-tier">{tier} {emp.model.toUpperCase()}</span>
-                        <span className="e-time">{act.timeAgo}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          );
-        })}
+            ))}
+          </div>
+          {/* Roster from API if available */}
+          {Object.keys(roster).length > 0 && (
+            <div style={{ padding: '10px 14px', borderTop: `1px solid ${S.border}` }}>
+              <div style={{ fontFamily: S.mono, fontSize: '9px', fontWeight: 700, color: S.textMuted, marginBottom: '8px' }}>SPECIALIST REGISTRY</div>
+              {Object.entries(roster).slice(0, 5).map(([team, members]) => (
+                <div key={team} style={{ marginBottom: '6px' }}>
+                  <div style={{ fontFamily: S.mono, fontSize: '8px', color: S.textMuted, marginBottom: '3px' }}>{team.toUpperCase()}</div>
+                  {(members as Employee[]).slice(0, 2).map(m => (
+                    <div key={m.id} style={{ fontSize: '10px', color: S.textSecondary, padding: '2px 0' }}>{m.name}</div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </>
+    </div>
   );
 }
