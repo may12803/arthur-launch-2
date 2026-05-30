@@ -50,7 +50,7 @@ export default function LegalPage() {
       const res = await fetch('/api/legal');
       if (res.ok) {
         const data = await res.json();
-        setDocs(Array.isArray(data) ? data : (data.documents ?? []));
+        setDocs(Array.isArray(data) ? data : (data.rows ?? data.documents ?? []));
       }
     } catch { /* use empty */ }
     finally { setLoading(false); }
