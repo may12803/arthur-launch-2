@@ -2201,30 +2201,15 @@ export async function POST(req: NextRequest) {
   //     pull specialist context + live-API data and inject into system prompt.
   //     Backward-compatible: any error falls through silently.
   try {
-    // Dynamic require so Next.js doesn't bundle the Node-only orchestrator client
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const dynamicRequire = eval('require');
-    const orchClientPath = (dynamicRequire('os').homedir()) + '/arthur/lib/orchestrator-client';
-    const orchClient = dynamicRequire(orchClientPath);
-    if (orchClient.shouldUseOrchestrator(prompt)) {
-      const orchResult = await orchClient.orchestrate(prompt, {
-        tenant_id: "dabney",
-        max_specialists: 3,
-        allow_live_apis: true,
-        allow_actions: false,
-        session_id: sessionId,
-      });
-      if (orchResult && orchResult.response && !orchResult.fallback_used) {
-        const specIds = (orchResult.specialists_consulted || []).map((s: { id: string }) => s.id).join(", ");
-        const apisUsed = (orchResult.apis_called || []).join(", ");
-        const enrichment = [
-          `\n\n[Orchestrator pre-fetch — specialists: ${specIds || "none"}${apisUsed ? "; live APIs: " + apisUsed : ""}]`,
-          orchResult.response.slice(0, 800),
-        ].join("\n");
-        // Append to system prompt (already built above). messages[0] is the system message.
-        systemPrompt += enrichment;
-        if (messages[0]?.role === "system") messages[0].content = systemPrompt;
-      }
+    // Unified consult: self-contained HTTP to the Modal orchestrator (the old
+    // dynamicRequire of ~/arthur FAILED on the Fly container, so the live
+    // dashboard never actually reached the 37 specialists). Same smart gate as
+    // the TUI + cloud. Context only — the 29-tool loop below still drives actions.
+    const { consultOrchestrator } = await import("@/lib/orchestrator-consult");
+    const specCtx = await consultOrchestrator(prompt, { tenant_id: "dabney", session_id: sessionId });
+    if (specCtx) {
+      systemPrompt += "\n\n" + specCtx;
+      if (messages[0]?.role === "system") messages[0].content = systemPrompt;
     }
   } catch { /* orchestrator enrichment is non-fatal — chat proceeds normally */ }
 
