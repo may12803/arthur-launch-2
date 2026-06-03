@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import Link from "next/link";
-import { Nav, Footer } from "@/app/_components/Layout";
 import BenchChart from "./BenchChart";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -59,11 +58,11 @@ function loadData(): BenchData | null {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 const LOBE_CYCLE = [
-  "#ff4713",
+  "#0B504F",
   "#f59e0b",
   "#a78bfa",
   "#60a5fa",
-  "#4ade80",
+  "#4ecdc4",
   "#c084fc",
 ];
 
@@ -92,13 +91,13 @@ function daysSince(iso?: string | null) {
 
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, { bg: string; color: string; label: string }> = {
-    measured: { bg: "rgba(74,222,128,0.12)", color: "#4ade80", label: "measured" },
-    stale: { bg: "rgba(245,158,11,0.12)", color: "#f59e0b", label: "stale" },
-    missing: { bg: "rgba(239,68,68,0.12)", color: "#ef4444", label: "missing" },
-    smoke: { bg: "rgba(96,165,250,0.12)", color: "#60a5fa", label: "smoke" },
-    blocked: { bg: "rgba(239,68,68,0.12)", color: "#ef4444", label: "blocked" },
-    open: { bg: "rgba(245,158,11,0.12)", color: "#f59e0b", label: "open" },
-    done: { bg: "rgba(74,222,128,0.12)", color: "#4ade80", label: "done" },
+    measured: { bg: "rgba(22,163,74,0.10)", color: "#166534", label: "measured" },
+    stale: { bg: "rgba(217,119,6,0.10)", color: "#92400E", label: "stale" },
+    missing: { bg: "rgba(220,38,38,0.10)", color: "#DC2626", label: "missing" },
+    smoke: { bg: "rgba(30,58,138,0.10)", color: "#1E3A8A", label: "smoke" },
+    blocked: { bg: "rgba(220,38,38,0.10)", color: "#DC2626", label: "blocked" },
+    open: { bg: "rgba(217,119,6,0.10)", color: "#92400E", label: "open" },
+    done: { bg: "rgba(22,163,74,0.10)", color: "#166534", label: "done" },
   };
   const s = map[status] || map.missing;
   return (
@@ -154,14 +153,14 @@ function BenchCard({ bench, idx }: { bench: Benchmark; idx: number }) {
             <div className="bench-score-meta">
               {bench.latest.passed != null && bench.latest.failed != null ? (
                 <>
-                  <span style={{ color: "#4ade80" }}>{bench.latest.passed} pass</span>
-                  <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>/</span>
-                  <span style={{ color: "#ef4444" }}>{bench.latest.failed} fail</span>
-                  <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>·</span>
+                  <span style={{ color: "#166534" }}>{bench.latest.passed} pass</span>
+                  <span style={{ color: "var(--text-muted)", margin: "0 4px" }}>/</span>
+                  <span style={{ color: "#DC2626" }}>{bench.latest.failed} fail</span>
+                  <span style={{ color: "var(--text-muted)", margin: "0 4px" }}>·</span>
                 </>
               ) : null}
               <span>{bench.latest.total} total</span>
-              <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>·</span>
+              <span style={{ color: "var(--text-muted)", margin: "0 4px" }}>·</span>
               <span>run {formatDate(bench.latest.ranAt)}</span>
             </div>
           )}
@@ -210,14 +209,14 @@ function BenchCard({ bench, idx }: { bench: Benchmark; idx: number }) {
             <div className="bench-score-meta">
               {bench.latest.passed != null && bench.latest.failed != null ? (
                 <>
-                  <span style={{ color: "#4ade80" }}>{bench.latest.passed} pass</span>
-                  <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>/</span>
-                  <span style={{ color: "#ef4444" }}>{bench.latest.failed} fail</span>
-                  <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>·</span>
+                  <span style={{ color: "#166534" }}>{bench.latest.passed} pass</span>
+                  <span style={{ color: "var(--text-muted)", margin: "0 4px" }}>/</span>
+                  <span style={{ color: "#DC2626" }}>{bench.latest.failed} fail</span>
+                  <span style={{ color: "var(--text-muted)", margin: "0 4px" }}>·</span>
                 </>
               ) : null}
               <span>{bench.latest.total} total</span>
-              <span style={{ color: "var(--text-faint)", margin: "0 4px" }}>·</span>
+              <span style={{ color: "var(--text-muted)", margin: "0 4px" }}>·</span>
               <span>run {formatDate(bench.latest.ranAt)}</span>
             </div>
           )}
@@ -256,8 +255,7 @@ export default function BenchmarksPage() {
   if (!data) {
     return (
       <>
-        <Nav />
-        <div className="wrap" style={{ paddingTop: 108, paddingBottom: 80 }}>
+        <div className="wrap" style={{ paddingTop: 32, paddingBottom: 80 }}>
           <div className="app-page-top">
             <span className="eyebrow">performance + gaps</span>
             <h1 className="section-title">benchmarks.</h1>
@@ -269,7 +267,6 @@ export default function BenchmarksPage() {
             </p>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
@@ -278,8 +275,7 @@ export default function BenchmarksPage() {
 
   return (
     <>
-      <Nav />
-      <div className="wrap" style={{ paddingTop: 108, paddingBottom: 96 }}>
+      <div className="wrap" style={{ paddingTop: 32, paddingBottom: 96 }}>
 
         {/* ── Header ── */}
         <div style={{ marginBottom: "var(--space-lg)" }}>
@@ -288,10 +284,10 @@ export default function BenchmarksPage() {
             fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-faint)",
           }}>performance + gaps · {data.lastUpdated ? new Date(data.lastUpdated).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "live"}</span>
           <h1 style={{
-            fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-            fontWeight: 800, fontSize: "clamp(2rem, 4vw, 3rem)",
-            letterSpacing: "-0.03em", color: "var(--text)", margin: "8px 0 12px", lineHeight: 0.95,
-          }}>benchmarks.</h1>
+            fontFamily: "var(--font-lora, Lora, Georgia, serif)",
+            fontWeight: 500, fontSize: "clamp(1.75rem, 3.5vw, 2.5rem)",
+            letterSpacing: "-0.025em", color: "var(--text-active)", margin: "8px 0 12px", lineHeight: 1.1,
+          }}>Benchmarks</h1>
         </div>
 
         {/* ── Hero stat + longmemeval iteration chart ── */}
@@ -369,33 +365,33 @@ export default function BenchmarksPage() {
         {/* ── Stat strip ── */}
         <div className="bench-stat-strip">
           <div className="bench-stat-tile glass">
-            <div className="bench-stat-num" style={{ color: "#4ade80" }}>{stats.measured}</div>
+            <div className="bench-stat-num" style={{ color: "#166534", fontVariantNumeric: "tabular-nums" }}>{stats.measured}</div>
             <div className="bench-stat-label">MEASURED</div>
           </div>
           {stats.smoke ? (
             <div className="bench-stat-tile glass">
-              <div className="bench-stat-num" style={{ color: "#60a5fa" }}>{stats.smoke}</div>
+              <div className="bench-stat-num" style={{ color: "#1E3A8A", fontVariantNumeric: "tabular-nums" }}>{stats.smoke}</div>
               <div className="bench-stat-label">SMOKE</div>
             </div>
           ) : null}
           {stats.blocked ? (
             <div className="bench-stat-tile glass">
-              <div className="bench-stat-num" style={{ color: "#ef4444" }}>{stats.blocked}</div>
+              <div className="bench-stat-num" style={{ color: "#DC2626", fontVariantNumeric: "tabular-nums" }}>{stats.blocked}</div>
               <div className="bench-stat-label">BLOCKED</div>
             </div>
           ) : null}
           {stats.missing ? (
             <div className="bench-stat-tile glass">
-              <div className="bench-stat-num" style={{ color: "#ef4444" }}>{stats.missing}</div>
+              <div className="bench-stat-num" style={{ color: "#DC2626", fontVariantNumeric: "tabular-nums" }}>{stats.missing}</div>
               <div className="bench-stat-label">MISSING</div>
             </div>
           ) : null}
           <div className="bench-stat-tile glass">
-            <div className="bench-stat-num" style={{ color: "#a78bfa" }}>{stats.gapFillCount}</div>
+            <div className="bench-stat-num" style={{ color: "#7C3AED", fontVariantNumeric: "tabular-nums" }}>{stats.gapFillCount}</div>
             <div className="bench-stat-label">GAP-FILL PLANS</div>
           </div>
           <div className="bench-stat-tile glass">
-            <div className="bench-stat-num" style={{ color: "#60a5fa" }}>{totalRuns.toLocaleString()}</div>
+            <div className="bench-stat-num" style={{ color: "#0B504F", fontVariantNumeric: "tabular-nums" }}>{totalRuns.toLocaleString()}</div>
             <div className="bench-stat-label">TOTAL RUNS</div>
           </div>
         </div>
@@ -452,7 +448,7 @@ export default function BenchmarksPage() {
         <div className="bench-upgrades-band glass" style={{ marginTop: 72 }}>
           <div className="bench-upgrades-header">
             <span className="eyebrow">research distillate</span>
-            <div className="bench-upgrades-count" style={{ color: "#4ade80" }}>
+            <div className="bench-upgrades-count" style={{ color: "#0B504F", fontVariantNumeric: "tabular-nums" }}>
               {pendingUpgrades.count}
             </div>
             <div className="bench-upgrades-sub">
@@ -473,7 +469,6 @@ export default function BenchmarksPage() {
           <Link href="/brain" className="btn-ghost">← the brain</Link>
         </div>
       </div>
-      <Footer />
     </>
   );
 }

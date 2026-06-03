@@ -101,7 +101,7 @@ function Sparkline({ points, color }: { points: TrendPoint[]; color: string }) {
       </svg>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>
         <span>{points[0]?.date?.slice(5)}</span>
-        <span style={{ color: trend >= 0 ? "#4ade80" : "#f87171" }}>
+        <span style={{ color: trend >= 0 ? "#16A34A" : "#DC2626" }}>
           {trend >= 0 ? "+" : ""}{(trend * 100).toFixed(1)}pp
         </span>
         <span>{points[points.length - 1]?.date?.slice(5)}</span>
@@ -114,7 +114,7 @@ function Sparkline({ points, color }: { points: TrendPoint[]; color: string }) {
 function AccBadge({ value }: { value: number | null }) {
   if (value === null) return <span style={{ color: "var(--text-muted)", fontSize: 12 }}>—</span>;
   const pct = Math.round(value * 100);
-  const color = pct >= 85 ? "#4ade80" : pct >= 70 ? "#facc15" : "#f87171";
+  const color = pct >= 85 ? "#16A34A" : pct >= 70 ? "#CA8A04" : "#DC2626";
   return (
     <span style={{ color, fontFamily: "var(--font-jetbrains, monospace)", fontSize: 15, fontWeight: 700 }}>
       {pct}%
@@ -144,7 +144,7 @@ function ChannelCard({ ch, stats }: { ch: string; stats: ChannelStats | undefine
         <div>
           <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{meta.label}</div>
           <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
-            {meta.cadence} &middot; <span style={{ color: "#4ade80" }}>{meta.cost}</span>
+            {meta.cadence} &middot; <span style={{ color: "#16A34A" }}>{meta.cost}</span>
           </div>
         </div>
         <AccBadge value={stats?.accuracy ?? null} />
@@ -201,8 +201,8 @@ function HardCasesTable({ cases }: { cases: HardCase[] }) {
         {cases.map((c) => (
           <tr key={c.case_id + c.created_at} style={{ borderBottom: "1px solid var(--border)", opacity: 0.85 }}>
             <td style={{ padding: "6px 8px", color: "var(--text-muted)" }}>{c.domain}</td>
-            <td style={{ padding: "6px 8px", color: "#f87171", fontFamily: "var(--font-jetbrains, monospace)" }}>{c.arthur_decision}</td>
-            <td style={{ padding: "6px 8px", color: "#4ade80", fontFamily: "var(--font-jetbrains, monospace)" }}>{c.ground_truth}</td>
+            <td style={{ padding: "6px 8px", color: "#DC2626", fontFamily: "var(--font-jetbrains, monospace)" }}>{c.arthur_decision}</td>
+            <td style={{ padding: "6px 8px", color: "#16A34A", fontFamily: "var(--font-jetbrains, monospace)" }}>{c.ground_truth}</td>
             <td style={{ padding: "6px 8px", color: "var(--text-muted)" }}>
               {c.confidence != null ? `${(c.confidence * 100).toFixed(0)}%` : "—"}
             </td>
@@ -265,7 +265,7 @@ export function ExternalChannels() {
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#4ade80", fontFamily: "var(--font-jetbrains, monospace)" }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#16A34A", fontFamily: "var(--font-jetbrains, monospace)" }}>
             {stats ? stats.total_free_cases.toLocaleString() : "—"}
           </div>
           <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
@@ -279,7 +279,7 @@ export function ExternalChannels() {
         <div style={{ color: "var(--text-muted)", fontSize: 13 }}>pulling external channel data…</div>
       )}
       {error && (
-        <div style={{ color: "#f87171", fontSize: 12 }}>Error: {error}</div>
+        <div style={{ color: "#DC2626", fontSize: 12 }}>Error: {error}</div>
       )}
 
       {/* Corpus count */}
@@ -307,7 +307,7 @@ export function ExternalChannels() {
           </div>
           <div>
             <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>est. daily cost</div>
-            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "var(--font-jetbrains, monospace)", color: "#4ade80" }}>
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "var(--font-jetbrains, monospace)", color: "#16A34A" }}>
               $0 / day
             </div>
           </div>

@@ -41,7 +41,7 @@ export default function PrinciplesCondensed() {
         cross-domain principles · top {principles.length} by confidence
       </span>
       <h2 style={{
-        fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+        fontFamily: "var(--font-space-grotesk, var(--font-lora, 'Lora', Georgia, serif))",
         fontWeight: 700,
         fontSize: 22,
         letterSpacing: "-0.02em",

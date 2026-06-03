@@ -96,7 +96,7 @@ function Sparkline({ points }: { points: AgreementPoint[] }) {
       <svg width={W} height={H} className="overflow-visible">
         <polyline
           fill="none"
-          stroke={trend >= 0 ? "#22c55e" : "#ef4444"}
+          stroke={trend >= 0 ? "#16A34A" : "#ef4444"}
           strokeWidth="2"
           points={coords.join(" ")}
         />
@@ -104,7 +104,7 @@ function Sparkline({ points }: { points: AgreementPoint[] }) {
           const [x, y] = coords[i].split(",").map(Number);
           return (
             <circle key={i} cx={x} cy={y} r="3"
-              fill={trend >= 0 ? "#22c55e" : "#ef4444"}
+              fill={trend >= 0 ? "#16A34A" : "#ef4444"}
               aria-label={`${p.date}: ${(p.agree_rate * 100).toFixed(0)}%`}
             />
           );

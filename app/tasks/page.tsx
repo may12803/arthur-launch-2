@@ -128,10 +128,35 @@ export default function TasksPage() {
         <input
           value={quickAdd}
           onChange={e => setQuickAdd(e.target.value)}
-          placeholder="Add a task… (use @ for entity, # for goal, due:tomorrow, !p1)"
+          onKeyDown={async (e) => {
+            if (e.key === 'Enter' && quickAdd.trim()) {
+              const title = quickAdd.trim();
+              setQuickAdd('');
+              const res = await fetch('/api/goal-steps', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, status: 'pending' }),
+              });
+              if (res.ok) load();
+            }
+          }}
+          placeholder="Add a task… (press Enter to save)"
           style={{ flex: 1, background: 'transparent', border: 'none', fontSize: '13px', color: S.textMuted, fontFamily: S.sans, outline: 'none' }}
         />
-        <button style={{ background: S.accent, color: S.bg, border: 'none', borderRadius: '2px', padding: '4px 12px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', fontFamily: S.mono, letterSpacing: '0.06em' }}>+ ADD</button>
+        <button
+          onClick={async () => {
+            if (!quickAdd.trim()) return;
+            const title = quickAdd.trim();
+            setQuickAdd('');
+            const res = await fetch('/api/goal-steps', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ title, status: 'pending' }),
+            });
+            if (res.ok) load();
+          }}
+          style={{ background: S.accent, color: S.bg, border: 'none', borderRadius: '2px', padding: '4px 12px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', fontFamily: S.mono, letterSpacing: '0.06em' }}
+        >+ ADD</button>
       </div>
 
       {/* Table */}
@@ -167,7 +192,18 @@ export default function TasksPage() {
                   {section.rows.map(task => (
                     <tr key={task.id} style={{ borderBottom: `1px solid ${S.border}` }}>
                       <td style={{ padding: '9px 14px' }}>
-                        <div style={{ width: '14px', height: '14px', border: `1px solid ${task.status === 'done' ? S.green : task.status === 'blocked' ? S.red : S.border2}`, borderRadius: '2px', background: task.status === 'done' ? 'rgba(34,197,94,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: S.green }}>
+                        <div
+                          onClick={async () => {
+                            const newStatus = task.status === 'done' ? 'pending' : 'done';
+                            await fetch(`/api/goal-steps/${task.id}`, {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ status: newStatus }),
+                            });
+                            load();
+                          }}
+                          style={{ width: '14px', height: '14px', border: `1px solid ${task.status === 'done' ? S.green : task.status === 'blocked' ? S.red : S.border2}`, borderRadius: '2px', background: task.status === 'done' ? 'rgba(34,197,94,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: S.green, cursor: 'pointer' }}
+                        >
                           {task.status === 'done' && '✓'}
                         </div>
                       </td>

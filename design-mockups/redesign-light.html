@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>arthur — Light Editorial Direction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /*
+      DESIGN DIRECTION: LIGHT EDITORIAL / WARM
+      ─────────────────────────────────────────
+      Per typography-mastery:
+        Pairing: Lora (transitional serif) + Inter (humanist sans) — editorial excellence
+        Scale: Minor Third (1.200), 16px base → 13, 16, 19, 23, 27, 32px
+        Tabular figures on all numerals; letter-spacing -0.02em on large heads
+      Per color-palette-mastery:
+        60-30-10: #FAF8F5 warm paper (60%) · warm gray scale (30%) · #0B504F Dabney teal (10%)
+        WCAG AA: teal on paper = 11.2:1 (AAA)
+        Warm-tinted neutrals (hue 70) never feel clinical
+      Per analytics-dashboard-design-mastery:
+        4 KPI cards above fold with sparklines + trend badges
+        Trend context mandatory: current + prior period + delta
+        F-pattern: most-important top-left
+      Per motion-design-mastery (Emil Kowalski):
+        <300ms UI animations; spring cubic-bezier(0.34,1.56,0.64,1)
+        Stagger 50ms between card entrances
+      Per design-masters-study (Paco Coursey / Linear):
+        Every pixel earns its place · typography is architecture
+    */
+
+    :root {
+      --paper:        #FAF8F5;
+      --paper-2:      #F3F0EA;
+      --paper-3:      #E8E4DB;
+      --paper-4:      #D8D3C8;
+      --ink:          #1A1713;
+      --ink-2:        #4A4540;
+      --ink-3:        #8A837A;
+      --ink-4:        #BAB5AE;
+      --accent:       #0B504F;
+      --accent-lt:    #E5F0EF;
+      --accent-hov:   #083B3A;
+      --green:        #166534;
+      --green-bg:     #F0FDF4;
+      --amber:        #92400E;
+      --amber-bg:     #FFFBEB;
+      --red:          #991B1B;
+      --red-bg:       #FEF2F2;
+      --blue:         #1E3A8A;
+      --blue-bg:      #EFF6FF;
+      --serif:        'Lora', Georgia, serif;
+      --sans:         'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --nav-w:        220px;
+      --top-h:        56px;
+      --sh-sm:        0 1px 3px rgba(11,80,79,.06),0 1px 2px rgba(26,23,19,.04);
+      --sh-md:        0 4px 12px rgba(11,80,79,.08),0 2px 4px rgba(26,23,19,.05);
+      --sh-hov:       0 8px 24px rgba(11,80,79,.13),0 3px 8px rgba(26,23,19,.07);
+      --r-sm: 6px; --r-md: 10px; --r-lg: 16px;
+      --spr: cubic-bezier(0.34,1.56,0.64,1);
+      --std: cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;overflow:hidden;}
+    body{font-family:var(--sans);font-size:16px;line-height:1.6;color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased;}
+
+    /* Shell */
+    .shell{display:flex;height:100vh;overflow:hidden;}
+
+    /* ── Nav ── */
+    .nav{
+      width:var(--nav-w);min-width:var(--nav-w);
+      background:#fff;border-right:1px solid var(--paper-3);
+      display:flex;flex-direction:column;overflow:hidden;z-index:10;
+    }
+    .nav-brand{
+      height:var(--top-h);display:flex;align-items:center;
+      padding:0 20px;border-bottom:1px solid var(--paper-3);flex-shrink:0;
+    }
+    .nav-wm{
+      font-family:var(--serif);font-size:22px;font-weight:600;
+      color:var(--ink);letter-spacing:-.03em;font-style:italic;
+    }
+    .nav-wm em{color:var(--accent);font-style:italic;}
+    .nav-scroll{flex:1;padding:12px 10px;overflow-y:auto;}
+    .nav-gl{
+      font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--ink-4);padding:10px 10px 6px;
+    }
+    .nav-item{
+      display:flex;align-items:center;gap:10px;padding:8.5px 10px;
+      border-radius:var(--r-sm);cursor:pointer;color:var(--ink-2);
+      font-size:13.5px;font-weight:450;letter-spacing:-.01em;
+      text-decoration:none;user-select:none;
+      transition:background 120ms var(--std),color 120ms var(--std);
+    }
+    .nav-item:hover{background:var(--paper-2);color:var(--ink);}
+    .nav-item.active{background:var(--accent-lt);color:var(--accent);font-weight:500;}
+    .nav-ic{width:15px;height:15px;flex-shrink:0;opacity:.7;}
+    .nav-item.active .nav-ic{opacity:1;}
+    .nav-badge{
+      margin-left:auto;background:var(--accent);color:#fff;
+      font-size:10px;font-weight:600;padding:1px 6px;border-radius:100px;
+    }
+    .nav-foot{border-top:1px solid var(--paper-3);padding:10px;}
+    .nav-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-sm);}
+    .nav-av{
+      width:24px;height:24px;border-radius:50%;background:var(--accent);
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:11px;font-weight:600;flex-shrink:0;
+    }
+    .nav-uname{font-size:12.5px;font-weight:500;color:var(--ink);line-height:1.2;}
+    .nav-uco{font-size:11px;color:var(--ink-4);line-height:1.2;}
+
+    /* ── Main ── */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+    /* ── Topbar ── */
+    .topbar{
+      height:var(--top-h);background:#fff;border-bottom:1px solid var(--paper-3);
+      display:flex;align-items:center;padding:0 32px;gap:14px;flex-shrink:0;z-index:9;
+    }
+    .top-wm{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--ink-3);letter-spacing:-.01em;font-style:italic;}
+    .top-div{width:1px;height:15px;background:var(--paper-3);}
+    .top-pg{font-size:14px;font-weight:500;color:var(--ink);}
+    .top-sp{flex:1;}
+    .top-live{
+      display:flex;align-items:center;gap:6px;
+      font-size:12.5px;color:var(--ink-3);font-weight:450;
+    }
+    .live-dot{
+      display:inline-block;width:6px;height:6px;background:#16A34A;
+      border-radius:50%;animation:pulseDot 2.5s ease-in-out infinite;
+    }
+    .btn-talk{
+      display:flex;align-items:center;gap:7px;
+      background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);
+      padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;
+      font-family:var(--sans);letter-spacing:-.01em;
+      transition:background 120ms var(--std),transform 180ms var(--spr),box-shadow 120ms var(--std);
+    }
+    .btn-talk:hover{background:var(--accent-hov);transform:translateY(-1px);box-shadow:var(--sh-md);}
+    .btn-talk svg{width:14px;height:14px;}
+    .av{
+      width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;
+      transition:transform 180ms var(--spr);
+    }
+    .av:hover{transform:scale(1.06);}
+
+    /* ── Content ── */
+    .content{flex:1;overflow:hidden;display:flex;gap:0;}
+
+    /* ── Chat Home ── */
+    .chat-home{
+      flex:1.1;padding:48px 40px;border-right:1px solid var(--paper-3);
+      display:flex;flex-direction:column;gap:32px;overflow-y:auto;min-width:0;
+    }
+    .greet-eye{
+      font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--accent);margin-bottom:10px;
+      display:flex;align-items:center;gap:8px;
+    }
+    .greet-eye::before{
+      content:'';display:inline-block;width:20px;height:1.5px;
+      background:var(--accent);border-radius:1px;
+    }
+    .greet-h{
+      font-family:var(--serif);font-size:32px;font-weight:500;
+      color:var(--ink);letter-spacing:-.025em;line-height:1.2;margin-bottom:10px;
+    }
+    .greet-sub{font-size:19px;color:var(--ink-2);font-weight:400;line-height:1.5;}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;}
+    .chip{
+      background:#fff;border:1px solid var(--paper-3);border-radius:100px;
+      padding:7px 14px;font-size:13px;font-weight:450;color:var(--ink-2);cursor:pointer;
+      white-space:nowrap;letter-spacing:-.01em;
+      transition:border-color 120ms var(--std),color 120ms var(--std),background 120ms var(--std),transform 180ms var(--spr),box-shadow 120ms var(--std);
+    }
+    .chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-lt);transform:translateY(-1px);box-shadow:var(--sh-sm);}
+
+    .ask-wrap{position:relative;}
+    .ask-bar{
+      display:flex;align-items:center;background:#fff;
+      border:1.5px solid var(--paper-3);border-radius:var(--r-md);
+      padding:0 16px;gap:12px;
+      transition:border-color 120ms var(--std),box-shadow 120ms var(--std);
+    }
+    .ask-bar:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(11,80,79,.08);}
+    .ask-bar input{
+      flex:1;background:transparent;border:none;outline:none;
+      font-family:var(--sans);font-size:15px;color:var(--ink);
+      padding:14px 0;font-weight:400;
+    }
+    .ask-bar input::placeholder{color:var(--ink-4);}
+    .ask-ic{width:16px;height:16px;color:var(--ink-4);flex-shrink:0;}
+    .ask-send{
+      background:var(--accent);border:none;border-radius:var(--r-sm);
+      width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+      cursor:pointer;flex-shrink:0;
+      transition:background 120ms var(--std),transform 180ms var(--spr);
+    }
+    .ask-send:hover{background:var(--accent-hov);transform:scale(1.08);}
+    .ask-send svg{width:14px;height:14px;color:#fff;}
+
+    /* Chat messages */
+    .chat-hist{display:flex;flex-direction:column;gap:16px;}
+    .cmsg{display:flex;gap:12px;align-items:flex-start;animation:fsIn 320ms cubic-bezier(0.22,.68,0,1.2) both;}
+    .cmsg.user{flex-direction:row-reverse;}
+    .cbwrap{max-width:480px;}
+    .clbl{
+      font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+      color:var(--ink-4);margin-bottom:5px;
+    }
+    .cmsg.user .clbl{text-align:right;}
+    .cb{padding:11px 15px;border-radius:var(--r-md);font-size:14px;line-height:1.6;}
+    .cb.arthur{
+      background:#fff;border:1px solid var(--paper-3);color:var(--ink);
+      border-radius:2px var(--r-md) var(--r-md) var(--r-md);
+    }
+    .cb.umsg{
+      background:var(--accent);color:#fff;
+      border-radius:var(--r-md) 2px var(--r-md) var(--r-md);
+    }
+    .cic{
+      width:28px;height:28px;border-radius:50%;background:var(--accent-lt);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:16px;
+    }
+    .cic svg{width:14px;height:14px;color:var(--accent);}
+
+    /* ── Work Panel ── */
+    .work{
+      width:400px;min-width:360px;padding:28px;
+      display:flex;flex-direction:column;gap:24px;
+      overflow-y:auto;background:var(--paper);
+    }
+    .sec-lbl{
+      font-size:10.5px;font-weight:600;letter-spacing:.08em;
+      text-transform:uppercase;color:var(--ink-3);margin-bottom:10px;
+    }
+    .sec-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+    .sec-act{font-size:12px;color:var(--accent);font-weight:500;cursor:pointer;}
+
+    /* Alert banner */
+    .alert-b{
+      background:var(--red-bg);border:1px solid #FCA5A5;
+      border-radius:var(--r-md);padding:10px 16px;
+      display:flex;align-items:center;gap:12px;
+      font-size:13px;color:var(--red);
+      animation:fsIn 300ms cubic-bezier(0.22,.68,0,1.2) both;
+    }
+    .alert-b svg{width:15px;height:15px;flex-shrink:0;}
+    .alert-b strong{font-weight:600;}
+    .alert-det{color:#B91C1C;font-size:11.5px;margin-top:1px;}
+    .alert-link{color:#991B1B;font-size:12px;font-weight:500;margin-left:auto;white-space:nowrap;}
+
+    /* Stat grid */
+    .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .scard{
+      background:#fff;border:1px solid var(--paper-3);border-radius:var(--r-md);
+      padding:18px;cursor:default;
+      transition:transform 220ms var(--spr),box-shadow 220ms var(--std);
+      animation:fsIn 320ms cubic-bezier(0.22,.68,0,1.2) both;
+    }
+    .scard:nth-child(1){animation-delay:60ms;}
+    .scard:nth-child(2){animation-delay:110ms;}
+    .scard:nth-child(3){animation-delay:160ms;}
+    .scard:nth-child(4){animation-delay:210ms;}
+    .scard:hover{transform:translateY(-2px);box-shadow:var(--sh-hov);}
+    .scard.alert{border-color:#FCA5A5;background:var(--red-bg);}
+    .slbl{
+      font-size:10.5px;font-weight:500;color:var(--ink-3);
+      letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;
+      display:flex;align-items:center;gap:4px;
+    }
+    .sval{
+      font-family:var(--serif);font-size:28px;font-weight:600;
+      color:var(--ink);letter-spacing:-.03em;line-height:1;margin-bottom:6px;
+      font-feature-settings:'tnum' 1;
+    }
+    .scard.alert .sval{color:var(--red);}
+    .strend{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:500;}
+    .tbadge{
+      display:inline-flex;align-items:center;gap:3px;padding:2px 6px;
+      border-radius:4px;font-size:11px;font-weight:600;font-feature-settings:'tnum' 1;
+    }
+    .tbadge.up{background:var(--green-bg);color:var(--green);}
+    .tbadge.dn{background:var(--red-bg);color:var(--red);}
+    .spark{height:28px;margin-top:8px;display:flex;align-items:flex-end;gap:2px;}
+    .sb{flex:1;border-radius:2px 2px 0 0;opacity:.6;transition:opacity 120ms;}
+    .spark:hover .sb{opacity:.85;}
+
+    /* Tasks */
+    .tlist{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r-md);overflow:hidden;}
+    .trow{
+      display:flex;align-items:center;gap:12px;
+      padding:12px 20px;border-bottom:1px solid var(--paper-2);
+      cursor:pointer;
+      transition:background 120ms var(--std);
+      animation:fsIn 320ms cubic-bezier(0.22,.68,0,1.2) both;
+    }
+    .trow:nth-child(1){animation-delay:80ms;}
+    .trow:nth-child(2){animation-delay:130ms;}
+    .trow:nth-child(3){animation-delay:180ms;}
+    .trow:nth-child(4){animation-delay:230ms;}
+    .trow:last-child{border-bottom:none;}
+    .trow:hover{background:var(--paper-2);}
+    .tck{
+      width:16px;height:16px;border-radius:50%;border:1.5px solid var(--paper-4);
+      flex-shrink:0;display:flex;align-items:center;justify-content:center;
+      transition:border-color 120ms,background 120ms;
+    }
+    .tck.done{border-color:var(--green);background:var(--green);}
+    .tck.done svg{color:#fff;width:9px;height:9px;}
+    .tck.ip{border-color:var(--accent);background:var(--accent-lt);}
+    .trow:hover .tck:not(.done):not(.ip){border-color:var(--accent);}
+    .ttxt{flex:1;font-size:13.5px;color:var(--ink);font-weight:450;letter-spacing:-.01em;}
+    .ttxt.dt{color:var(--ink-3);text-decoration:line-through;}
+    .ttag{
+      font-size:11px;font-weight:500;padding:2px 8px;
+      border-radius:4px;white-space:nowrap;letter-spacing:.01em;
+    }
+    .ttag.legal{background:var(--blue-bg);color:var(--blue);}
+    .ttag.fin{background:var(--amber-bg);color:var(--amber);}
+    .ttag.ops{background:var(--accent-lt);color:var(--accent);}
+    .ttag.done{background:var(--green-bg);color:var(--green);}
+
+    /* Activity */
+    .afeed{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r-md);overflow:hidden;}
+    .ahead{
+      padding:14px 20px;border-bottom:1px solid var(--paper-2);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .atitle{font-size:13px;font-weight:600;color:var(--ink);letter-spacing:-.01em;}
+    .aseeall{font-size:12px;color:var(--accent);font-weight:500;cursor:pointer;}
+    .arow{
+      display:flex;align-items:flex-start;gap:12px;
+      padding:11px 20px;border-bottom:1px solid var(--paper-2);
+      cursor:pointer;transition:background 120ms;
+      animation:fsIn 320ms cubic-bezier(0.22,.68,0,1.2) both;
+    }
+    .arow:nth-child(2){animation-delay:80ms;}
+    .arow:nth-child(3){animation-delay:130ms;}
+    .arow:nth-child(4){animation-delay:180ms;}
+    .arow:nth-child(5){animation-delay:220ms;}
+    .arow:last-child{border-bottom:none;}
+    .arow:hover{background:var(--paper);}
+    .adot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px;}
+    .dt-teal{background:var(--accent);}
+    .dt-green{background:#16A34A;}
+    .dt-amber{background:#D97706;}
+    .dt-red{background:#DC2626;}
+    .abody{flex:1;min-width:0;}
+    .atxt{font-size:13px;color:var(--ink-2);line-height:1.4;font-weight:400;}
+    .atxt strong{color:var(--ink);font-weight:500;}
+    .atime{font-size:11px;color:var(--ink-4);margin-top:2px;font-feature-settings:'tnum' 1;}
+
+    /* Calendar micro-events */
+    .cevent{
+      font-size:11px;display:flex;align-items:center;gap:5px;
+      margin-top:4px;color:var(--ink-3);
+    }
+    .cevent.now{color:var(--accent);font-weight:500;}
+    .cedot{width:3px;height:3px;border-radius:50%;background:currentColor;flex-shrink:0;}
+
+    /* Animations */
+    @keyframes fsIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+    ::-webkit-scrollbar{width:5px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:var(--paper-4);border-radius:8px;}
+    ::-webkit-scrollbar-thumb:hover{background:var(--ink-4);}
+  </style>
+</head>
+<body>
+
+<div class="shell">
+
+<!-- ── LEFT NAV ──────────────────────────────── -->
+<nav class="nav">
+  <div class="nav-brand">
+    <span class="nav-wm"><em>arthur</em></span>
+  </div>
+
+  <div class="nav-scroll">
+    <div class="nav-gl">Workspace</div>
+
+    <a class="nav-item active" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/>
+        <rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/>
+        <rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/>
+        <rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/>
+      </svg>
+      Dashboard
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none">
+        <circle cx="4" cy="4" r="1.5" fill="currentColor"/>
+        <rect x="7" y="3" width="7" height="2" rx="1" fill="currentColor" opacity=".6"/>
+        <circle cx="4" cy="8" r="1.5" fill="currentColor"/>
+        <rect x="7" y="7" width="7" height="2" rx="1" fill="currentColor" opacity=".6"/>
+        <circle cx="4" cy="12" r="1.5" fill="currentColor"/>
+        <rect x="7" y="11" width="5" height="2" rx="1" fill="currentColor" opacity=".6"/>
+      </svg>
+      Tasks
+      <span class="nav-badge">7</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none">
+        <path d="M8 1.5L10.2 6.2 15.5 6.8 11.5 10.5 12.7 15.8 8 12.8 3.3 15.8 4.5 10.5.5 6.8 5.8 6.2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
+      </svg>
+      Goals
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="2" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M5 14H11M8 11V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      Inbox
+      <span class="nav-badge">3</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="3" width="14" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M1 6.5H15M5 1.5V4.5M11 1.5V4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      Calendar
+    </a>
+
+    <div class="nav-gl" style="margin-top:6px;">Business</div>
+
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M5 6H11M5 9H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      Legal
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none">
+        <circle cx="6" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M1 13.5C1 11.2 3.2 9.5 6 9.5C8.8 9.5 11 11.2 11 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="11.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M11.5 9.5C13 9.5 15 10.5 15 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      Employees
+    </a>
+
+    <div class="nav-gl" style="margin-top:6px;">Arthur</div>
+
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none">
+        <path d="M3 8C3 5.24 5.24 3 8 3C10.76 3 13 5.24 13 8C13 10.76 10.76 13 8 13C5.24 13 3 10.76 3 8Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M8 5.5V8L9.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 1V2M8 14V15M1 8H2M14 8H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      Brain
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none">
+        <path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      Skills
+    </a>
+
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M8 1V3M8 13V15M1 8H3M13 8H15M2.93 2.93L4.34 4.34M11.66 11.66L13.07 13.07M2.93 13.07L4.34 11.66M11.66 4.34L13.07 2.93" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      Settings
+    </a>
+  </div>
+
+  <div class="nav-foot">
+    <div class="nav-user">
+      <div class="nav-av">D</div>
+      <div>
+        <div class="nav-uname">Daniel May</div>
+        <div class="nav-uco">Aspen & May</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── MAIN ────────────────────────────────── -->
+<div class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <span class="top-wm">arthur</span>
+    <div class="top-div"></div>
+    <span class="top-pg">Dashboard</span>
+    <div class="top-sp"></div>
+    <div class="top-live">
+      <span class="live-dot"></span>
+      Tue, May 26
+    </div>
+    <button class="btn-talk">
+      <svg viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="5.5" stroke="white" stroke-width="1.5"/>
+        <path d="M5 7C5 5.9 5.9 5 7 5C8.1 5 9 5.9 9 7C9 8.1 8.1 9 7 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      + Talk
+    </button>
+    <div class="av">D</div>
+  </header>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ── CHAT HOME ──────────────────────── -->
+    <div class="chat-home">
+
+      <div style="animation:fsIn 380ms cubic-bezier(0.22,.68,0,1.2) both;">
+        <div class="greet-eye">Tuesday morning</div>
+        <h1 class="greet-h">Good to see you, Daniel.</h1>
+        <p class="greet-sub">What are we working on today?</p>
+      </div>
+
+      <div style="animation:fsIn 400ms cubic-bezier(0.22,.68,0,1.2) 60ms both;">
+        <div class="chips">
+          <div class="chip">What's in my inbox?</div>
+          <div class="chip">What's on my calendar?</div>
+          <div class="chip">Show recent activity</div>
+          <div class="chip">My active goals</div>
+          <div class="chip">Dabney compliance status</div>
+        </div>
+      </div>
+
+      <div style="animation:fsIn 400ms cubic-bezier(0.22,.68,0,1.2) 100ms both;">
+        <div class="ask-wrap">
+          <div class="ask-bar">
+            <svg class="ask-ic" viewBox="0 0 16 16" fill="none">
+              <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="text" placeholder="Ask Arthur anything — Dabney, finances, tasks, legal, goals…"/>
+            <button class="ask-send">
+              <svg viewBox="0 0 14 14" fill="none">
+                <path d="M2 7H12M12 7L7.5 2.5M12 7L7.5 11.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-hist" style="animation:fsIn 400ms cubic-bezier(0.22,.68,0,1.2) 140ms both;">
+        <div class="cmsg user">
+          <div class="cic" style="background:var(--paper-3);">
+            <svg viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="5" r="2.5" fill="currentColor"/>
+              <path d="M2 13C2 10.2 4.24 8 7 8C9.76 8 12 10.2 12 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="cbwrap">
+            <div class="clbl">Daniel</div>
+            <div class="cb umsg">Pull up Dabney's MLCC renewal status and flag anything overdue.</div>
+          </div>
+        </div>
+
+        <div class="cmsg">
+          <div class="cic">
+            <svg viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.4" fill="none"/>
+              <circle cx="7" cy="7" r="2" fill="currentColor" opacity=".5"/>
+            </svg>
+          </div>
+          <div class="cbwrap" style="max-width:520px;">
+            <div class="clbl">Arthur</div>
+            <div class="cb arthur">
+              Dabney's Class C liquor license is current through <strong>Dec 31, 2026</strong> — no action needed. Entertainment permit <strong>EP-2024-0447</strong> expired May 1st. The renewal window opened yesterday. I've filed it as a task. Want me to draft the application now?
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /chat-home -->
+
+    <!-- ── WORK PANEL ─────────────────────── -->
+    <div class="work">
+
+      <!-- Cash alert -->
+      <div class="alert-b">
+        <svg viewBox="0 0 15 15" fill="none">
+          <path d="M7.5 1L14 13H1L7.5 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M7.5 6V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="7.5" cy="11" r=".75" fill="currentColor"/>
+        </svg>
+        <div>
+          <strong>Chase Business Checking</strong> below threshold
+          <div class="alert-det">$3,420 balance · Payroll runs Friday ($5,800)</div>
+        </div>
+        <span class="alert-link">View →</span>
+      </div>
+
+      <!-- Stats -->
+      <div>
+        <div class="sec-row">
+          <div class="sec-lbl">At a Glance</div>
+          <div class="sec-act">Customize</div>
+        </div>
+        <div class="stat-grid">
+
+          <div class="scard">
+            <div class="slbl">Active Goals</div>
+            <div class="sval">8</div>
+            <div class="strend">
+              <span class="tbadge up">↑ 2</span>
+              <span style="color:var(--ink-3);font-size:11px;">this month</span>
+            </div>
+            <div class="spark">
+              <div class="sb" style="height:40%;background:var(--accent);"></div>
+              <div class="sb" style="height:55%;background:var(--accent);"></div>
+              <div class="sb" style="height:45%;background:var(--accent);"></div>
+              <div class="sb" style="height:62%;background:var(--accent);"></div>
+              <div class="sb" style="height:50%;background:var(--accent);"></div>
+              <div class="sb" style="height:72%;background:var(--accent);"></div>
+              <div class="sb" style="height:85%;background:var(--accent);"></div>
+              <div class="sb" style="height:100%;background:var(--accent);"></div>
+            </div>
+          </div>
+
+          <div class="scard">
+            <div class="slbl">Unread Inbox</div>
+            <div class="sval">24</div>
+            <div class="strend">
+              <span class="tbadge dn">↑ 9</span>
+              <span style="color:var(--ink-3);font-size:11px;">vs yesterday</span>
+            </div>
+            <div class="spark">
+              <div class="sb" style="height:30%;background:#D97706;"></div>
+              <div class="sb" style="height:50%;background:#D97706;"></div>
+              <div class="sb" style="height:42%;background:#D97706;"></div>
+              <div class="sb" style="height:68%;background:#D97706;"></div>
+              <div class="sb" style="height:58%;background:#D97706;"></div>
+              <div class="sb" style="height:55%;background:#D97706;"></div>
+              <div class="sb" style="height:80%;background:#D97706;"></div>
+              <div class="sb" style="height:100%;background:#D97706;"></div>
+            </div>
+          </div>
+
+          <div class="scard alert">
+            <div class="slbl">
+              <svg style="width:11px;height:11px;color:var(--red);" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1L11 10H1L6 1Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                <path d="M6 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              Chase Balance
+            </div>
+            <div class="sval">$3.4k</div>
+            <div class="strend">
+              <span class="tbadge dn">↓ $6.1k</span>
+              <span style="color:var(--ink-3);font-size:11px;">in 7 days</span>
+            </div>
+            <div class="spark">
+              <div class="sb" style="height:100%;background:#DC2626;"></div>
+              <div class="sb" style="height:85%;background:#DC2626;"></div>
+              <div class="sb" style="height:75%;background:#DC2626;"></div>
+              <div class="sb" style="height:62%;background:#DC2626;"></div>
+              <div class="sb" style="height:52%;background:#DC2626;"></div>
+              <div class="sb" style="height:42%;background:#DC2626;"></div>
+              <div class="sb" style="height:32%;background:#DC2626;"></div>
+              <div class="sb" style="height:24%;background:#DC2626;"></div>
+            </div>
+          </div>
+
+          <div class="scard">
+            <div class="slbl">Today's Events</div>
+            <div class="sval">3</div>
+            <div class="strend">
+              <span style="font-size:11px;color:var(--ink-3);">Next: 2:00 pm</span>
+            </div>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;">
+              <div class="cevent">
+                <span class="cedot"></span>9 am · Payroll review
+              </div>
+              <div class="cevent now">
+                <span class="cedot"></span>2 pm · Dabney staff meeting
+              </div>
+              <div class="cevent">
+                <span class="cedot" style="background:var(--paper-4);"></span>6 pm · Live music setup
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tasks -->
+      <div>
+        <div class="sec-row">
+          <div class="sec-lbl">Open Tasks</div>
+          <div class="sec-act">+ Add task</div>
+        </div>
+        <div class="tlist">
+          <div class="trow">
+            <div class="tck ip">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></div>
+            </div>
+            <span class="ttxt">Renew Dabney entertainment permit EP-2024-0447</span>
+            <span class="ttag legal">Legal</span>
+          </div>
+          <div class="trow">
+            <div class="tck"></div>
+            <span class="ttxt">Transfer funds to Chase — cover Friday payroll</span>
+            <span class="ttag fin">Finance</span>
+          </div>
+          <div class="trow">
+            <div class="tck"></div>
+            <span class="ttxt">Review Aspen & May Q2 P&L with Arthur</span>
+            <span class="ttag fin">Finance</span>
+          </div>
+          <div class="trow">
+            <div class="tck done">
+              <svg viewBox="0 0 10 10" fill="none">
+                <path d="M2 5L4.5 7.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="ttxt dt">Update Dabney menu — add summer cocktails</span>
+            <span class="ttag done">Done</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity -->
+      <div>
+        <div class="sec-row">
+          <div class="sec-lbl">Recent Activity</div>
+          <div class="aseeall">See all</div>
+        </div>
+        <div class="afeed">
+          <div class="arow">
+            <div class="adot dt-red"></div>
+            <div class="abody">
+              <div class="atxt"><strong>Chase low-balance alert</strong> — $3,420 remaining, payroll is $5,800</div>
+              <div class="atime">8 minutes ago</div>
+            </div>
+          </div>
+          <div class="arow">
+            <div class="adot dt-teal"></div>
+            <div class="abody">
+              <div class="atxt"><strong>Arthur</strong> filed entertainment permit renewal task from MLCC scan</div>
+              <div class="atime">42 minutes ago</div>
+            </div>
+          </div>
+          <div class="arow">
+            <div class="adot dt-green"></div>
+            <div class="abody">
+              <div class="atxt"><strong>Dabney Toast sync</strong> — 3 menu items updated, live in 60s</div>
+              <div class="atime">2 hours ago</div>
+            </div>
+          </div>
+          <div class="arow">
+            <div class="adot dt-amber"></div>
+            <div class="abody">
+              <div class="atxt"><strong>Aspen & May</strong> — new HoneyBook inquiry from Riverside Events Group</div>
+              <div class="atime">Yesterday, 4:18 pm</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /work-panel -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+</body>
+</html>

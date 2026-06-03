@@ -15,9 +15,9 @@ interface Principle {
 }
 
 function confColor(conf: number): string {
-  if (conf >= 0.85) return "var(--accent-warm)";
-  if (conf >= 0.70) return "var(--accent-cool)";
-  return "var(--text-faint)";
+  if (conf >= 0.85) return "#0B504F";
+  if (conf >= 0.70) return "#1E3A8A";
+  return "#BAB5AE";
 }
 
 function confLabel(conf: number): string {
@@ -65,7 +65,7 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
           }}
           onFocus={e => {
             e.currentTarget.style.borderColor = "var(--accent-orange)";
-            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(235,64,0,0.12)";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,80,79,0.12)";
           }}
           onBlur={e => {
             e.currentTarget.style.borderColor = "var(--glass-border)";
@@ -76,7 +76,7 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
           width="14" height="14"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="var(--text-faint)"
+          stroke="#BAB5AE"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -92,7 +92,7 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
             top: "50%",
             transform: "translateY(-50%)",
             fontSize: 11,
-            color: "var(--text-faint)",
+            color: "#BAB5AE",
             fontFamily: "var(--font-jetbrains, monospace)",
           }}>
             {filtered.length} / {principles.length}
@@ -102,7 +102,7 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
 
       {/* Principles list */}
       {filtered.length === 0 ? (
-        <p style={{ fontSize: 13, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, monospace)" }}>
+        <p style={{ fontSize: 13, color: "#BAB5AE", fontFamily: "var(--font-jetbrains, monospace)" }}>
           no principles match &ldquo;{query}&rdquo;
         </p>
       ) : (
@@ -122,7 +122,7 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
                   <div style={{
                     flex: 1,
                     height: 3,
-                    background: "var(--border)",
+                    background: "#E8E4DB",
                     borderRadius: 2,
                     overflow: "hidden",
                   }}>
@@ -147,9 +147,10 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
 
                 {/* Rule statement */}
                 <h3 style={{
-                  fontSize: "var(--fs-h3)",
-                  fontWeight: 600,
-                  color: "var(--text)",
+                  fontFamily: "var(--font-lora, 'Lora', Georgia, serif)",
+                  fontSize: 17,
+                  fontWeight: 500,
+                  color: "#1A1713",
                   margin: "0 0 10px",
                   lineHeight: 1.45,
                   letterSpacing: "-0.01em",
@@ -164,9 +165,9 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
                       <span key={id} style={{
                         fontFamily: "var(--font-jetbrains, monospace)",
                         fontSize: 10,
-                        color: "var(--fg-tertiary, var(--text-faint))",
-                        background: "var(--panel-elev)",
-                        border: "1px solid var(--border)",
+                        color: "rgba(26,23,19,0.45)",
+                        background: "#F6F3EE",
+                        border: "1px solid #E8E4DB",
                         borderRadius: 4,
                         padding: "1px 7px",
                       }}>
@@ -177,7 +178,7 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
                       <span style={{
                         fontFamily: "var(--font-jetbrains, monospace)",
                         fontSize: 10,
-                        color: "var(--text-faint)",
+                        color: "#BAB5AE",
                         padding: "1px 7px",
                       }}>
                         +{p.evidence_turn_ids.length - 4} more
@@ -191,7 +192,7 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
                   <details style={{ marginTop: 4 }}>
                     <summary style={{
                       fontSize: 11,
-                      color: "var(--text-faint)",
+                      color: "#BAB5AE",
                       cursor: "pointer",
                       listStyle: "none",
                       display: "flex",
@@ -205,18 +206,18 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
                     <div style={{
                       marginTop: 10,
                       paddingTop: 10,
-                      borderTop: "1px solid var(--border)",
+                      borderTop: "1px solid #E8E4DB",
                     }}>
                       {(p.applicable_when || p.trigger_conditions) && (
                         <div style={{
-                          background: "var(--panel-elev)",
+                          background: "#F6F3EE",
                           borderRadius: 7,
                           padding: "8px 12px",
                           marginBottom: 8,
                         }}>
                           <span style={{
                             fontSize: 9,
-                            color: "var(--text-faint)",
+                            color: "#BAB5AE",
                             textTransform: "uppercase",
                             letterSpacing: "0.1em",
                             display: "block",
@@ -230,7 +231,7 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
                         </div>
                       )}
                       {p.rationale && (
-                        <p style={{ margin: 0, fontSize: 13, color: "var(--text-faint)", lineHeight: 1.6 }}>
+                        <p style={{ margin: 0, fontSize: 13, color: "#BAB5AE", lineHeight: 1.6 }}>
                           {p.rationale}
                         </p>
                       )}
@@ -241,19 +242,19 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
 
               {/* Footer metadata */}
               <div style={{
-                borderTop: "1px solid var(--border)",
+                borderTop: "1px solid #E8E4DB",
                 padding: "8px 22px",
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
               }}>
                 {p.source_trajectory_count != null && (
-                  <span style={{ fontSize: 10, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, monospace)" }}>
+                  <span style={{ fontSize: 10, color: "#BAB5AE", fontFamily: "var(--font-jetbrains, monospace)" }}>
                     {p.source_trajectory_count} trajectories
                   </span>
                 )}
                 {p.created_at && (
-                  <span style={{ fontSize: 10, color: "var(--text-faint)", fontFamily: "var(--font-jetbrains, monospace)" }}>
+                  <span style={{ fontSize: 10, color: "#BAB5AE", fontFamily: "var(--font-jetbrains, monospace)" }}>
                     {new Date(p.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </span>
                 )}

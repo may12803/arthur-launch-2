@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>arthur &mdash; Inbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:        #FAF8F5;
+      --paper-2:      #F3F0EA;
+      --paper-3:      #E8E4DB;
+      --paper-4:      #D8D3C8;
+      --ink:          #1A1713;
+      --ink-2:        #4A4540;
+      --ink-3:        #8A837A;
+      --ink-4:        #BAB5AE;
+      --accent:       #0B504F;
+      --accent-lt:    #E5F0EF;
+      --accent-hov:   #083B3A;
+      --green:        #166534;
+      --green-bg:     #F0FDF4;
+      --amber:        #92400E;
+      --amber-bg:     #FFFBEB;
+      --red:          #991B1B;
+      --red-bg:       #FEF2F2;
+      --blue:         #1E3A8A;
+      --blue-bg:      #EFF6FF;
+      --serif:        'Lora', Georgia, serif;
+      --sans:         'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --nav-w:        220px;
+      --top-h:        56px;
+      --sh-sm:        0 1px 3px rgba(11,80,79,.06),0 1px 2px rgba(26,23,19,.04);
+      --sh-md:        0 4px 12px rgba(11,80,79,.08),0 2px 4px rgba(26,23,19,.05);
+      --sh-hov:       0 8px 24px rgba(11,80,79,.13),0 3px 8px rgba(26,23,19,.07);
+      --r-sm: 6px; --r-md: 10px; --r-lg: 16px;
+      --spr: cubic-bezier(0.34,1.56,0.64,1);
+      --std: cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;overflow:hidden;}
+    body{font-family:var(--sans);font-size:16px;line-height:1.6;color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased;}
+
+    .shell{display:flex;height:100vh;overflow:hidden;}
+
+    .nav{width:var(--nav-w);min-width:var(--nav-w);background:#fff;border-right:1px solid var(--paper-3);display:flex;flex-direction:column;overflow:hidden;z-index:10;}
+    .nav-brand{height:var(--top-h);display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--paper-3);flex-shrink:0;}
+    .nav-wm{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--ink);letter-spacing:-.03em;font-style:italic;}
+    .nav-wm em{color:var(--accent);font-style:italic;}
+    .nav-scroll{flex:1;padding:12px 10px;overflow-y:auto;}
+    .nav-gl{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);padding:10px 10px 6px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:8.5px 10px;border-radius:var(--r-sm);cursor:pointer;color:var(--ink-2);font-size:13.5px;font-weight:450;letter-spacing:-.01em;text-decoration:none;user-select:none;transition:background 120ms var(--std),color 120ms var(--std);}
+    .nav-item:hover{background:var(--paper-2);color:var(--ink);}
+    .nav-item.active{background:var(--accent-lt);color:var(--accent);font-weight:500;}
+    .nav-ic{width:15px;height:15px;flex-shrink:0;opacity:.7;}
+    .nav-item.active .nav-ic{opacity:1;}
+    .nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:100px;}
+    .nav-foot{border-top:1px solid var(--paper-3);padding:10px;}
+    .nav-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-sm);}
+    .nav-av{width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;flex-shrink:0;}
+    .nav-uname{font-size:12.5px;font-weight:500;color:var(--ink);line-height:1.2;}
+    .nav-uco{font-size:11px;color:var(--ink-4);line-height:1.2;}
+
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+    .topbar{height:var(--top-h);background:#fff;border-bottom:1px solid var(--paper-3);display:flex;align-items:center;padding:0 32px;gap:14px;flex-shrink:0;z-index:9;}
+    .top-wm{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--ink-3);letter-spacing:-.01em;font-style:italic;}
+    .top-div{width:1px;height:15px;background:var(--paper-3);}
+    .top-pg{font-size:14px;font-weight:500;color:var(--ink);}
+    .top-sp{flex:1;}
+    .top-live{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-3);font-weight:450;}
+    .live-dot{display:inline-block;width:6px;height:6px;background:#16A34A;border-radius:50%;animation:pulseDot 2.5s ease-in-out infinite;}
+    .btn-talk{display:flex;align-items:center;gap:7px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:-.01em;transition:background 120ms var(--std),transform 180ms var(--spr),box-shadow 120ms var(--std);}
+    .btn-talk:hover{background:var(--accent-hov);transform:translateY(-1px);box-shadow:var(--sh-md);}
+    .btn-talk svg{width:14px;height:14px;}
+    .av{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;transition:transform 180ms var(--spr);}
+    .av:hover{transform:scale(1.06);}
+
+    .content{flex:1;overflow:hidden;display:flex;gap:0;}
+
+    /* Inbox sidebar */
+    .inbox-sidebar{width:200px;min-width:180px;background:#fff;border-right:1px solid var(--paper-3);display:flex;flex-direction:column;padding:18px 10px;gap:3px;overflow-y:auto;}
+    .ib-gl{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);padding:8px 10px 4px;}
+    .ib-folder{display:flex;align-items:center;gap:9px;padding:7.5px 10px;border-radius:var(--r-sm);cursor:pointer;color:var(--ink-2);font-size:13px;font-weight:450;letter-spacing:-.01em;transition:background 120ms var(--std),color 120ms var(--std);}
+    .ib-folder:hover{background:var(--paper-2);color:var(--ink);}
+    .ib-folder.active{background:var(--accent-lt);color:var(--accent);font-weight:500;}
+    .ib-fic{width:14px;height:14px;flex-shrink:0;opacity:.65;}
+    .ib-folder.active .ib-fic{opacity:1;}
+    .ib-fbadge{margin-left:auto;font-size:10px;font-weight:600;color:var(--ink-3);font-feature-settings:'tnum' 1;}
+    .ib-folder.active .ib-fbadge{color:var(--accent);}
+    .ib-div{height:1px;background:var(--paper-3);margin:10px 4px;}
+    .ib-chip{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--r-sm);cursor:pointer;font-size:12.5px;color:var(--ink-2);font-weight:450;transition:background 120ms var(--std);}
+    .ib-chip:hover{background:var(--paper-2);}
+    .ib-chip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+    /* Message list */
+    .msg-list{width:340px;min-width:300px;border-right:1px solid var(--paper-3);display:flex;flex-direction:column;overflow:hidden;background:var(--paper);}
+    .ml-head{padding:16px 20px 12px;border-bottom:1px solid var(--paper-3);background:#fff;flex-shrink:0;}
+    .ml-title{font-family:var(--serif);font-size:20px;font-weight:500;color:var(--ink);letter-spacing:-.02em;line-height:1.2;margin-bottom:10px;}
+    .ml-search{display:flex;align-items:center;background:var(--paper-2);border:1px solid var(--paper-3);border-radius:var(--r-sm);padding:0 10px;gap:8px;}
+    .ml-search input{flex:1;background:transparent;border:none;outline:none;font-family:var(--sans);font-size:13px;color:var(--ink);padding:8px 0;}
+    .ml-search input::placeholder{color:var(--ink-4);}
+    .ml-sic{width:13px;height:13px;color:var(--ink-4);flex-shrink:0;}
+    .ml-scroll{flex:1;overflow-y:auto;}
+
+    .mrow{display:flex;flex-direction:column;padding:13px 18px;border-bottom:1px solid var(--paper-2);cursor:pointer;background:#fff;transition:background 120ms var(--std);animation:fsIn 320ms cubic-bezier(0.22,.68,0,1.2) both;}
+    .mrow:nth-child(1){animation-delay:40ms;}
+    .mrow:nth-child(2){animation-delay:80ms;}
+    .mrow:nth-child(3){animation-delay:120ms;}
+    .mrow:nth-child(4){animation-delay:160ms;}
+    .mrow:nth-child(5){animation-delay:200ms;}
+    .mrow:nth-child(6){animation-delay:240ms;}
+    .mrow:nth-child(7){animation-delay:280ms;}
+    .mrow:last-child{border-bottom:none;}
+    .mrow:hover{background:var(--paper-2);}
+    .mrow.active{background:var(--accent-lt) !important;}
+    .mrow-top{display:flex;align-items:center;gap:8px;margin-bottom:3px;}
+    .mrow-sender{font-size:13px;font-weight:500;color:var(--ink);letter-spacing:-.01em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .mrow.unread .mrow-sender{font-weight:600;}
+    .mrow-time{font-size:11px;color:var(--ink-4);font-feature-settings:'tnum' 1;flex-shrink:0;}
+    .mrow-subject{font-size:12.5px;color:var(--ink-2);font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
+    .mrow.unread .mrow-subject{color:var(--ink);font-weight:500;}
+    .mrow-snip{font-size:12px;color:var(--ink-4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .mrow-meta{display:flex;align-items:center;gap:6px;margin-top:5px;}
+    .mtag{font-size:10.5px;font-weight:500;padding:1.5px 7px;border-radius:3px;white-space:nowrap;}
+    .mtag.legal{background:var(--blue-bg);color:var(--blue);}
+    .mtag.fin{background:var(--amber-bg);color:var(--amber);}
+    .mtag.ops{background:var(--accent-lt);color:var(--accent);}
+    .mtag.res{background:var(--green-bg);color:var(--green);}
+    .unread-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-left:auto;}
+    .flag-star{color:#D97706;font-size:12px;flex-shrink:0;}
+
+    /* Reading pane */
+    .read-pane{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:var(--paper);}
+    .rp-head{padding:24px 32px 20px;border-bottom:1px solid var(--paper-3);background:#fff;flex-shrink:0;}
+    .rp-subject{font-family:var(--serif);font-size:21px;font-weight:500;color:var(--ink);letter-spacing:-.025em;line-height:1.3;margin-bottom:14px;}
+    .rp-meta{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;}
+    .rp-from{display:flex;align-items:center;gap:10px;flex:1;}
+    .rp-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0;}
+    .rp-from-name{font-size:13px;font-weight:500;color:var(--ink);}
+    .rp-from-addr{font-size:11.5px;color:var(--ink-4);}
+    .rp-ts{font-size:12px;color:var(--ink-3);white-space:nowrap;font-feature-settings:'tnum' 1;margin-top:2px;}
+    .rp-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+    .rp-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--r-sm);font-size:12.5px;font-weight:500;border:1px solid var(--paper-3);background:#fff;color:var(--ink-2);cursor:pointer;font-family:var(--sans);transition:border-color 120ms,color 120ms,background 120ms,transform 180ms var(--spr);}
+    .rp-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-lt);transform:translateY(-1px);}
+    .rp-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+    .rp-btn.primary:hover{background:var(--accent-hov);color:#fff;}
+    .rp-btn svg{width:12px;height:12px;}
+    .rp-body{flex:1;overflow-y:auto;padding:28px 32px;}
+    .rp-lede{font-size:13.5px;color:var(--ink-2);line-height:1.7;margin-bottom:16px;}
+    .arthur-card{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r-md);padding:18px 22px;margin-bottom:22px;animation:fsIn 360ms cubic-bezier(0.22,.68,0,1.2) 100ms both;}
+    .arthur-card-lbl{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+    .arthur-card-lbl::before{content:'';display:inline-block;width:16px;height:1.5px;background:var(--accent);border-radius:1px;}
+    .arthur-card-body{font-size:13.5px;color:var(--ink-2);line-height:1.6;}
+    .arthur-card-body strong{color:var(--ink);font-weight:600;}
+    .arthur-chip{display:inline-flex;align-items:center;gap:5px;background:var(--accent-lt);color:var(--accent);font-size:11.5px;font-weight:500;padding:4px 12px;border-radius:100px;margin-top:12px;cursor:pointer;border:none;font-family:var(--sans);transition:background 120ms,transform 180ms var(--spr);}
+    .arthur-chip:hover{background:#C8E1DF;transform:translateY(-1px);}
+    .rp-attach{display:flex;align-items:center;gap:10px;background:var(--paper-2);border:1px solid var(--paper-3);border-radius:var(--r-sm);padding:10px 14px;margin-top:14px;cursor:pointer;font-size:12.5px;color:var(--ink-2);font-weight:450;transition:background 120ms,border-color 120ms;}
+    .rp-attach:hover{background:var(--paper-3);border-color:var(--ink-4);}
+    .rp-attach svg{width:14px;height:14px;color:var(--ink-3);flex-shrink:0;}
+    .rp-attach-name{flex:1;font-weight:500;color:var(--ink);}
+    .rp-attach-size{font-size:11px;color:var(--ink-4);}
+
+    @keyframes fsIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:.35;}}
+    ::-webkit-scrollbar{width:5px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:var(--paper-4);border-radius:8px;}
+    ::-webkit-scrollbar-thumb:hover{background:var(--ink-4);}
+  </style>
+</head>
+<body>
+<div class="shell">
+
+<nav class="nav">
+  <div class="nav-brand"><span class="nav-wm"><em>arthur</em></span></div>
+  <div class="nav-scroll">
+    <div class="nav-gl">Workspace</div>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="4" r="1.5" fill="currentColor"/><rect x="7" y="3" width="7" height="2" rx="1" fill="currentColor" opacity=".6"/><circle cx="4" cy="8" r="1.5" fill="currentColor"/><rect x="7" y="7" width="7" height="2" rx="1" fill="currentColor" opacity=".6"/><circle cx="4" cy="12" r="1.5" fill="currentColor"/><rect x="7" y="11" width="5" height="2" rx="1" fill="currentColor" opacity=".6"/></svg>
+      Tasks
+      <span class="nav-badge">7</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L10.2 6.2 15.5 6.8 11.5 10.5 12.7 15.8 8 12.8 3.3 15.8 4.5 10.5.5 6.8 5.8 6.2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/></svg>
+      Goals
+    </a>
+    <a class="nav-item active" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 14H11M8 11V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Inbox
+      <span class="nav-badge">9</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 6.5H15M5 1.5V4.5M11 1.5V4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Calendar
+    </a>
+    <div class="nav-gl" style="margin-top:6px;">Business</div>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 6H11M5 9H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Legal
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M1 13.5C1 11.2 3.2 9.5 6 9.5C8.8 9.5 11 11.2 11 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="11.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M11.5 9.5C13 9.5 15 10.5 15 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Employees
+    </a>
+    <div class="nav-gl" style="margin-top:6px;">Arthur</div>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><path d="M3 8C3 5.24 5.24 3 8 3C10.76 3 13 5.24 13 8C13 10.76 10.76 13 8 13C5.24 13 3 10.76 3 8Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 5.5V8L9.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 1V2M8 14V15M1 8H2M14 8H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Brain
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Skills
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1V3M8 13V15M1 8H3M13 8H15M2.93 2.93L4.34 4.34M11.66 11.66L13.07 13.07M2.93 13.07L4.34 11.66M11.66 4.34L13.07 2.93" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Settings
+    </a>
+  </div>
+  <div class="nav-foot">
+    <div class="nav-user">
+      <div class="nav-av">D</div>
+      <div><div class="nav-uname">Daniel May</div><div class="nav-uco">Aspen &amp; May</div></div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <header class="topbar">
+    <span class="top-wm">arthur</span>
+    <div class="top-div"></div>
+    <span class="top-pg">Inbox</span>
+    <div class="top-sp"></div>
+    <div class="top-live"><span class="live-dot"></span>Tue, May 26</div>
+    <button class="btn-talk">
+      <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="white" stroke-width="1.5"/><path d="M5 7C5 5.9 5.9 5 7 5C8.1 5 9 5.9 9 7C9 8.1 8.1 9 7 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+      + Talk
+    </button>
+    <div class="av">D</div>
+  </header>
+
+  <div class="content">
+
+    <!-- Inbox sidebar -->
+    <div class="inbox-sidebar">
+      <div class="ib-gl">Folders</div>
+      <div class="ib-folder active">
+        <svg class="ib-fic" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 14H11M8 11V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Inbox
+        <span class="ib-fbadge">9</span>
+      </div>
+      <div class="ib-folder">
+        <svg class="ib-fic" viewBox="0 0 16 16" fill="none"><path d="M8 2L9.8 5.8H14L10.8 8.2L12.1 12L8 9.5L3.9 12L5.2 8.2L2 5.8H6.2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/></svg>
+        Flagged
+        <span class="ib-fbadge">2</span>
+      </div>
+      <div class="ib-folder">
+        <svg class="ib-fic" viewBox="0 0 16 16" fill="none"><path d="M2 5L8 9.5L14 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+        Sent
+      </div>
+      <div class="ib-folder">
+        <svg class="ib-fic" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 6H10.5M5.5 9H8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Drafts
+        <span class="ib-fbadge">1</span>
+      </div>
+      <div class="ib-div"></div>
+      <div class="ib-gl">Accounts</div>
+      <div class="ib-chip">
+        <div class="ib-chip-dot" style="background:var(--accent);"></div>
+        Dabney &amp; Co
+      </div>
+      <div class="ib-chip">
+        <div class="ib-chip-dot" style="background:#7C3AED;"></div>
+        Aspen &amp; May
+      </div>
+      <div class="ib-chip">
+        <div class="ib-chip-dot" style="background:var(--amber);"></div>
+        Personal
+      </div>
+    </div>
+
+    <!-- Message list -->
+    <div class="msg-list">
+      <div class="ml-head">
+        <div class="ml-title">Inbox</div>
+        <div class="ml-search">
+          <svg class="ml-sic" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L13.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <input type="text" placeholder="Search messages..." />
+        </div>
+      </div>
+      <div class="ml-scroll">
+
+        <div class="mrow unread active">
+          <div class="mrow-top">
+            <span class="mrow-sender">Michigan LARA</span>
+            <span class="flag-star">&#9733;</span>
+            <span class="mrow-time">9:14 am</span>
+          </div>
+          <div class="mrow-subject">Certificate of Restoration received</div>
+          <div class="mrow-snip">Your LLC Certificate of Restoration for Dabney &amp; Co. has been processed...</div>
+          <div class="mrow-meta"><span class="mtag legal">Legal</span><span class="unread-dot"></span></div>
+        </div>
+
+        <div class="mrow unread">
+          <div class="mrow-top">
+            <span class="mrow-sender">Venard Roberson</span>
+            <span class="flag-star">&#9733;</span>
+            <span class="mrow-time">8:47 am</span>
+          </div>
+          <div class="mrow-subject">Re: NI loan financials (overdue)</div>
+          <div class="mrow-snip">Daniel -- following up on the financials package. We need Q1 statements...</div>
+          <div class="mrow-meta"><span class="mtag fin">Finance</span><span class="unread-dot"></span></div>
+        </div>
+
+        <div class="mrow unread">
+          <div class="mrow-top">
+            <span class="mrow-sender">OpenTable</span>
+            <span class="mrow-time">8:02 am</span>
+          </div>
+          <div class="mrow-subject">3 new reservations -- Fri May 30</div>
+          <div class="mrow-snip">You have 3 new reservations for Friday evening. Total covers: 14...</div>
+          <div class="mrow-meta"><span class="mtag ops">Ops</span><span class="unread-dot"></span></div>
+        </div>
+
+        <div class="mrow unread">
+          <div class="mrow-top">
+            <span class="mrow-sender">Chase Business</span>
+            <span class="mrow-time">7:30 am</span>
+          </div>
+          <div class="mrow-subject">Low balance alert -- action required</div>
+          <div class="mrow-snip">Your Dabney &amp; Co. checking balance has fallen below your $5,000 threshold...</div>
+          <div class="mrow-meta"><span class="mtag fin">Finance</span><span class="unread-dot"></span></div>
+        </div>
+
+        <div class="mrow">
+          <div class="mrow-top">
+            <span class="mrow-sender">Toast</span>
+            <span class="mrow-time">Yesterday</span>
+          </div>
+          <div class="mrow-subject">Your weekly sales summary -- May 19-25</div>
+          <div class="mrow-snip">Net sales $18,420 &bull; Covers 312 &bull; Avg check $59.04 &bull; Top: Raspberry Mojito</div>
+          <div class="mrow-meta"><span class="mtag ops">Ops</span></div>
+        </div>
+
+        <div class="mrow">
+          <div class="mrow-top">
+            <span class="mrow-sender">Stripe</span>
+            <span class="mrow-time">Yesterday</span>
+          </div>
+          <div class="mrow-subject">Payout of $4,218.50 deposited</div>
+          <div class="mrow-snip">Your payout has been deposited to your Chase account ending in 7834...</div>
+          <div class="mrow-meta"><span class="mtag fin">Finance</span></div>
+        </div>
+
+        <div class="mrow">
+          <div class="mrow-top">
+            <span class="mrow-sender">Resend</span>
+            <span class="mrow-time">Mon</span>
+          </div>
+          <div class="mrow-subject">Dabney inquiry confirmation delivered</div>
+          <div class="mrow-snip">Email to james.r@example.com delivered at 3:12 pm -- no bounces</div>
+          <div class="mrow-meta"><span class="mtag res">Delivered</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Reading pane -->
+    <div class="read-pane">
+      <div class="rp-head">
+        <div class="rp-subject">Certificate of Restoration received -- Dabney &amp; Co. LLC</div>
+        <div class="rp-meta">
+          <div class="rp-from">
+            <div class="rp-av" style="background:#1E3A8A;">MI</div>
+            <div>
+              <div class="rp-from-name">Michigan LARA -- Corporations Division</div>
+              <div class="rp-from-addr">noreply@michigan.gov &bull; To: blackmarble.m.g@gmail.com</div>
+            </div>
+          </div>
+          <span class="rp-ts">Tue, May 26 &bull; 9:14 am</span>
+        </div>
+        <div class="rp-actions">
+          <button class="rp-btn primary">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Mark done
+          </button>
+          <button class="rp-btn">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M1.5 6L5 2.5M5 2.5L8.5 6M5 2.5V10M8.5 10H11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Reply
+          </button>
+          <button class="rp-btn">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M1.5 10L5 6.5M5 6.5L8.5 10M5 6.5V2M8.5 2H11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Forward
+          </button>
+          <button class="rp-btn">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M6 1.5L7.4 4.5H10.5L8.1 6.4L9 9.5L6 7.6L3 9.5L3.9 6.4L1.5 4.5H4.6Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" fill="none"/></svg>
+            Flag
+          </button>
+        </div>
+      </div>
+
+      <div class="rp-body">
+        <div class="arthur-card">
+          <div class="arthur-card-lbl">Arthur Summary</div>
+          <div class="arthur-card-body">
+            <strong>Good news.</strong> Michigan LARA processed the Certificate of Restoration for Dabney &amp; Co. LLC. The LLC is now in <strong>good standing</strong> as of today. This unblocks the MLCC liquor license renewal and clears the DBA re-establishment path. I have updated the Dabney legal goal progress.
+          </div>
+          <button class="arthur-chip">
+            <svg viewBox="0 0 12 12" fill="none" style="width:11px;height:11px;"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Mark legal goal step complete
+          </button>
+        </div>
+
+        <p class="rp-lede">Dear Daniel May,</p>
+        <p class="rp-lede">We are pleased to inform you that the Certificate of Restoration for <strong>Dabney &amp; Co. LLC</strong> (Entity ID: 802-942117) has been approved and your entity is now restored to good standing with the State of Michigan.</p>
+        <p class="rp-lede">Your entity may now resume lawful business operations. Please retain a copy of this certificate for your records. If you require a certified copy, you may request one through the LARA Corporations Online Filing System.</p>
+        <p class="rp-lede" style="color:var(--ink-3);font-size:12.5px;">This is an automated message from the Michigan Department of Licensing and Regulatory Affairs, Corporations, Securities &amp; Commercial Licensing Bureau.</p>
+
+        <div class="rp-attach">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M3 1H9L13 5V13H3V1Z" stroke="currentColor" stroke-width="1.4"/><path d="M9 1V5H13" stroke="currentColor" stroke-width="1.4"/><path d="M5 8H9M5 10H7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span class="rp-attach-name">Certificate_of_Restoration_DabneyAndCo_LLC.pdf</span>
+          <span class="rp-attach-size">184 KB</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+</body>
+</html>

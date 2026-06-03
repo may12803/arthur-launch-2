@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Nav, Footer } from "@/app/_components/Layout";
 
 interface EmailAccount {
   id: string;
@@ -169,19 +168,19 @@ export default function EmailSettingsPage() {
 
   return (
     <>
-      <Nav />
-      <main className="wrap" style={{ paddingTop: 108, paddingLeft: "var(--space-lg)", paddingRight: "var(--space-lg)", paddingBottom: 80, maxWidth: 900, margin: "0 auto" }}>
+      <main className="wrap" style={{ padding: "32px 40px", maxWidth: 900, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
           <div style={{
-            fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
-            fontSize: "var(--fs-mono)",
-            letterSpacing: "0.12em",
+            fontFamily: "var(--font-inter, Inter, sans-serif)",
+            fontSize: 10.5,
+            letterSpacing: ".08em",
+            fontWeight: 600,
             textTransform: "uppercase",
-            color: "var(--accent-orange)",
+            color: "#BAB5AE",
             marginBottom: 8,
           }}>Settings / Email</div>
-          <h1 style={{ margin: 0, fontSize: "clamp(1.75rem, 3vw, 2.5rem)", fontWeight: 200, letterSpacing: "-0.03em", color: "var(--text-active)", fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)" }}>email accounts.</h1>
+          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 500, letterSpacing: "-0.025em", color: "#1A1713", fontFamily: "var(--font-lora, 'Lora', Georgia, serif)", lineHeight: 1.2 }}>Email Accounts</h1>
           <p style={{ margin: "6px 0 0", color: "var(--text-muted)", fontSize: 13 }}>
             connected inboxes arthur monitors and processes automatically.
           </p>
@@ -193,9 +192,9 @@ export default function EmailSettingsPage() {
             marginBottom: 20,
             padding: "12px 16px",
             borderRadius: 8,
-            background: statusBanner.type === "success" ? "rgba(74, 222, 128, 0.08)" : "rgba(255, 71, 19, 0.1)",
-            border: `1px solid ${statusBanner.type === "success" ? "rgba(74, 222, 128, 0.25)" : "var(--accent-soft)"}`,
-            color: statusBanner.type === "success" ? "#4ade80" : "var(--accent)",
+            background: statusBanner.type === "success" ? "#F0FDF4" : "#FEF2F2",
+            border: `1px solid ${statusBanner.type === "success" ? "rgba(22,163,74,.25)" : "rgba(153,27,27,.25)"}`,
+            color: statusBanner.type === "success" ? "#166534" : "#991B1B",
             fontSize: 13,
             display: "flex", justifyContent: "space-between", alignItems: "center",
           }}>
@@ -217,7 +216,7 @@ export default function EmailSettingsPage() {
             <h2 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--text)" }}>
               connected accounts
               {accounts.length > 0 && (
-                <span style={{ marginLeft: 8, background: "var(--accent-soft)", color: "var(--accent)", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
+                <span style={{ marginLeft: 8, background: "rgba(11,80,79,0.12)", color: "#0B504F", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
                   {accounts.length}
                 </span>
               )}
@@ -268,8 +267,8 @@ export default function EmailSettingsPage() {
                       {/* Status badge */}
                       <div style={{
                         padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700,
-                        background: "rgba(74, 222, 128, 0.1)", color: "#4ade80",
-                        border: "1px solid rgba(74, 222, 128, 0.2)",
+                        background: "#F0FDF4", color: "#166534",
+                        border: "1px solid rgba(22,163,74,.2)",
                       }}>
                         ACTIVE
                       </div>
@@ -327,7 +326,7 @@ export default function EmailSettingsPage() {
 
         {/* Add accounts */}
         <section>
-          <h2 style={{ margin: "0 0 16px", fontSize: 12, fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)" }}>
+          <h2 style={{ margin: "0 0 16px", fontSize: 10.5, fontWeight: 600, color: "#BAB5AE", textTransform: "uppercase", letterSpacing: ".08em", fontFamily: "var(--font-inter, Inter, sans-serif)" }}>
             add account
           </h2>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -452,12 +451,12 @@ export default function EmailSettingsPage() {
               )}
 
               {imapError && (
-                <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(255,71,19,0.08)", border: "1px solid rgba(255,71,19,0.2)", borderRadius: 8, color: "var(--accent)", fontSize: 12 }}>
+                <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", borderRadius: 8, color: "#DC2626", fontSize: 12 }}>
                   {imapError}
                 </div>
               )}
               {imapSuccess && (
-                <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 8, color: "#4ade80", fontSize: 12 }}>
+                <div style={{ marginTop: 12, padding: "10px 14px", background: "#F0FDF4", border: "1px solid rgba(22,163,74,.2)", borderRadius: 8, color: "#166534", fontSize: 12 }}>
                   Account connected successfully.
                 </div>
               )}
@@ -479,7 +478,6 @@ export default function EmailSettingsPage() {
           The Nylas Client ID is <code>21640001-154e-426f-8710-545c97318298</code> (already in vault).
         </div>
       </main>
-      <Footer />
     </>
   );
 }

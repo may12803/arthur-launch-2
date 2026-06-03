@@ -63,7 +63,7 @@ function SourceIcon({ source }: { source?: string }) {
       <span
         title="iCloud Calendar"
         className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold flex-shrink-0"
-        style={{ background: 'rgba(255,255,255,0.12)', color: '#f5f6f8' }}
+        style={{ background: 'rgba(30,58,138,0.12)', color: '#1E3A8A' }}
       >
         ⬡
       </span>
@@ -74,7 +74,7 @@ function SourceIcon({ source }: { source?: string }) {
       <span
         title="Email extraction"
         className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold flex-shrink-0"
-        style={{ background: 'rgba(212,255,61,0.18)', color: '#d4ff3d' }}
+        style={{ background: 'rgba(124,58,237,0.12)', color: '#7C3AED' }}
       >
         @
       </span>
@@ -85,7 +85,7 @@ function SourceIcon({ source }: { source?: string }) {
       <span
         title="Arthur"
         className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold flex-shrink-0"
-        style={{ background: 'rgba(212,255,61,0.18)', color: '#d4ff3d' }}
+        style={{ background: 'rgba(11,80,79,0.12)', color: '#0B504F' }}
       >
         A
       </span>

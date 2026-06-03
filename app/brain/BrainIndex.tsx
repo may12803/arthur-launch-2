@@ -30,18 +30,18 @@ const LOBE_COLORS: Record<string, string> = {
   'memory':      '#f59e0b',
   'skills':      '#a78bfa',
   'agentic':     '#60a5fa',
-  'upgrades':    '#4ade80',
+  'upgrades':    '#16A34A',
   'data':        '#c084fc',
   'engineering': '#ff4713',
   'business':    '#f59e0b',
   'design':      '#a78bfa',
   'ai-research': '#60a5fa',
-  'credit':      '#4ade80',
+  'credit':      '#16A34A',
   'legal':       '#c084fc',
   'marketing':   '#fbbf24',
-  'finance':     '#34d399',
+  'finance':     '#0D9488',
   'operations':  '#38bdf8',
-  'security':    '#f87171',
+  'security':    '#DC2626',
   'research':    '#818cf8',
   'algorithms':  '#2dd4bf',
   'mathematics': '#fb923c',
@@ -145,9 +145,9 @@ export default function BrainIndex({ data }: { data: BrainIndexData }) {
                 onMouseEnter={e => { if (!q) (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.02)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
               >
-                <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}60`, flexShrink: 0 }} />
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: 'var(--font-space-grotesk, "Space Grotesk", sans-serif)', fontWeight: 700, fontSize: 14, letterSpacing: '-0.01em', color: 'var(--text)' }}>
+                  <div style={{ fontFamily: "var(--font-lora, 'Lora', Georgia, serif)", fontWeight: 500, fontSize: 14, letterSpacing: '-0.01em', color: 'var(--text)' }}>
                     {root.name}
                   </div>
                   <div style={{ fontSize: 11.5, color: 'var(--text-faint)', marginTop: 2 }}>

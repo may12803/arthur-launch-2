@@ -22,7 +22,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   languages: "#00b894",
   algorithms: "#0984e3",
   meta: "#74b9ff",
-  "external-skills": "#d4ff3d",
+  "external-skills": "#8A837A",
   credit: "#fdcb6e",
   legal: "#81ecec",
   research: "#b2bec3",
@@ -30,7 +30,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   platforms: "#636e72",
   mathematics: "#a8e6cf",
   "image-generation": "#ffeaa7",
-  principles: "#d4ff3d",
+  principles: "#0B504F",
   "xero-expert": "#55efc4",
   essex: "#fd79a8",
 };
@@ -48,12 +48,11 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
       >
         <h2
           style={{
-            fontFamily:
-              "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-            fontWeight: 700,
-            fontSize: "1.5rem",
+            fontFamily: "var(--font-lora, 'Lora', Georgia, serif)",
+            fontWeight: 500,
+            fontSize: "1.375rem",
             letterSpacing: "-0.02em",
-            color: "var(--text-active, var(--text))",
+            color: "var(--text-active)",
             margin: 0,
           }}
         >
@@ -91,9 +90,6 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
                   "background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s",
               }}
               // TODO: filter the graph and recent-files panel to this category
-              onClick={() => {
-                console.log("[brain] category click:", cat.name);
-              }}
             >
               {/* Header */}
               <div
@@ -107,11 +103,10 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span
                     style={{
-                      width: 8,
-                      height: 8,
+                      width: 7,
+                      height: 7,
                       borderRadius: "50%",
                       background: color,
-                      boxShadow: `0 0 6px ${color}80`,
                       flexShrink: 0,
                     }}
                   />

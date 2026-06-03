@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arthur — operator command</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Design refs:
+   - Linear density + keyboard-first (design-masters-study.md — Paco Coursey / Linear team)
+   - Dark-first: 4-level luminance elevation, borders not shadows (dark-mode-theming-mastery.md)
+   - IBM Plex Mono for data/timestamps, Inter for UI chrome (typography-mastery.md)
+   - Text #e2e2e2 not #fff — reduced white point (dark-mode-theming-mastery.md)
+   - Emil Kowalski stagger + 150ms/250ms timing system (design-masters-study.md)
+   - KPI cards Level 1, table Level 3 (analytics-dashboard-design-mastery.md)
+*/
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-base:    #0c0c0e;
+  --bg-panel:   #111114;
+  --bg-card:    #16161a;
+  --bg-hover:   #1c1c22;
+  --bg-active:  #1e1e28;
+  --border:     rgba(255,255,255,0.07);
+  --border-l:   rgba(255,255,255,0.12);
+  --border-f:   rgba(124,111,255,0.5);
+  --t-primary:  #e2e2e8;
+  --t-secondary:#8b8b98;
+  --t-muted:    #55555f;
+  --t-dim:      #3a3a44;
+  --accent:     #7c6fff;
+  --accent-dim: rgba(124,111,255,0.14);
+  --accent-glow:rgba(124,111,255,0.28);
+  --green:  #3ecf8e;
+  --yellow: #e8c468;
+  --red:    #f26b6b;
+  --blue:   #5b8dee;
+  --font-ui:  'Inter',-apple-system,sans-serif;
+  --font-mono:'IBM Plex Mono','Menlo',monospace;
+  --nav-w: 218px;
+  --top-h:  44px;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg-base);color:var(--t-primary);
+  font-family:var(--font-ui);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.shell{display:grid;grid-template-columns:var(--nav-w) 1fr;grid-template-rows:var(--top-h) 1fr;height:100vh}
+
+/* TOPBAR */
+.topbar{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:0 16px;
+  border-bottom:1px solid var(--border);background:var(--bg-panel);z-index:10}
+.wordmark{font-family:var(--font-mono);font-size:14px;font-weight:500;letter-spacing:-0.02em;
+  color:var(--t-primary);display:flex;align-items:center;gap:7px;flex-shrink:0}
+.wm-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 8px var(--accent-glow)}
+.cmd-search{flex:1;max-width:460px;margin:0 auto;display:flex;align-items:center;gap:7px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:6px;
+  padding:0 10px;height:28px;cursor:pointer;
+  transition:border-color 150ms cubic-bezier(0,0,0.2,1)}
+.cmd-search:hover{border-color:var(--border-l)}
+.cs-icon{color:var(--t-muted);font-size:11px}
+.cs-text{font-size:12px;color:var(--t-muted);flex:1}
+.cs-kbd{font-family:var(--font-mono);font-size:10px;color:var(--t-dim);
+  background:var(--bg-hover);border:1px solid var(--border);border-radius:3px;padding:1px 5px}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.btn-talk{display:flex;align-items:center;gap:6px;background:var(--accent-dim);
+  border:1px solid rgba(124,111,255,0.3);border-radius:5px;padding:4px 10px;
+  font-size:12px;font-weight:500;color:var(--accent);cursor:pointer;
+  transition:background 150ms,border-color 150ms}
+.btn-talk:hover{background:rgba(124,111,255,0.22);border-color:var(--border-f)}
+.bt-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);
+  animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.82)}}
+.avatar{width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:600;color:#fff;cursor:pointer;
+  border:1px solid rgba(255,255,255,0.1)}
+
+/* SIDENAV */
+.sidenav{grid-row:2;background:var(--bg-panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:8px 0;overflow-y:auto;scrollbar-width:none}
+.sidenav::-webkit-scrollbar{display:none}
+.nav-lbl{font-family:var(--font-mono);font-size:9px;font-weight:500;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--t-dim);padding:8px 16px 3px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 16px;
+  cursor:pointer;color:var(--t-secondary);font-size:13px;position:relative;
+  transition:background 100ms,color 100ms}
+.nav-item:hover{background:var(--bg-hover);color:var(--t-primary)}
+.nav-item.active{background:var(--bg-active);color:var(--t-primary)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:5px;bottom:5px;
+  width:2px;background:var(--accent);border-radius:0 2px 2px 0}
+.nav-icon{width:15px;height:15px;flex-shrink:0;opacity:.65}
+.nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1}
+.nav-kbd{margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--t-dim)}
+.nav-item:hover .nav-kbd{color:var(--t-muted)}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;
+  font-size:9px;font-weight:600;font-family:var(--font-mono);
+  border-radius:8px;padding:1px 5px;line-height:1.4}
+.nav-div{height:1px;background:var(--border);margin:5px 12px}
+.nav-footer{margin-top:auto;border-top:1px solid var(--border);padding:10px 16px}
+.status-line{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);
+  font-size:10px;color:var(--t-muted)}
+.si{width:6px;height:6px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 5px rgba(62,207,142,.4)}
+svg.i{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.5;
+  stroke-linecap:round;stroke-linejoin:round}
+
+/* MAIN GRID */
+.main{grid-row:2;overflow:hidden;background:var(--bg-base)}
+.home-pane{display:grid;grid-template-columns:1fr 336px;height:100%;overflow:hidden}
+
+/* CMD ZONE (left) */
+.cmd-zone{padding:22px 26px;display:flex;flex-direction:column;gap:18px;
+  overflow-y:auto;border-right:1px solid var(--border)}
+.cmd-zone::-webkit-scrollbar{width:3px}
+.cmd-zone::-webkit-scrollbar-thumb{background:var(--border-l);border-radius:2px}
+
+.greeting-time{font-family:var(--font-mono);font-size:10px;color:var(--t-dim);letter-spacing:.04em}
+.greeting-text{font-size:18px;font-weight:500;color:var(--t-primary);letter-spacing:-.025em;margin-top:1px}
+.greeting-sub{font-size:12px;color:var(--t-secondary);margin-top:2px}
+
+.cmd-box{display:flex;align-items:center;gap:9px;background:var(--bg-card);
+  border:1px solid var(--border-l);border-radius:7px;padding:9px 13px;
+  transition:border-color 150ms,box-shadow 150ms}
+.cmd-box:focus-within{border-color:var(--border-f);box-shadow:0 0 0 3px var(--accent-dim)}
+.cmd-prompt{font-family:var(--font-mono);font-size:13px;color:var(--accent);user-select:none}
+.cmd-input{flex:1;background:none;border:none;outline:none;
+  font-family:var(--font-ui);font-size:13.5px;color:var(--t-primary);caret-color:var(--accent)}
+.cmd-input::placeholder{color:var(--t-muted)}
+.enter-hint{font-family:var(--font-mono);font-size:10px;color:var(--t-dim);
+  background:var(--bg-hover);border:1px solid var(--border);border-radius:3px;padding:2px 6px}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg-card);
+  border:1px solid var(--border);border-radius:5px;padding:4px 10px;
+  font-size:11.5px;color:var(--t-secondary);cursor:pointer;white-space:nowrap;
+  transition:background 100ms,border-color 100ms,color 100ms}
+.chip:hover{background:var(--bg-hover);border-color:var(--border-l);color:var(--t-primary)}
+.cdot{width:5px;height:5px;border-radius:50%}
+
+/* STAT ROW */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.st{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--t-muted);display:flex;align-items:center;gap:5px}
+.sa{font-size:11px;color:var(--t-muted);cursor:pointer;background:none;border:none;
+  padding:2px 6px;border-radius:3px;transition:color 100ms,background 100ms}
+.sa:hover{color:var(--t-primary);background:var(--bg-hover)}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--border);border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.stat{background:var(--bg-card);padding:10px 13px}
+.slbl{font-family:var(--font-mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--t-muted)}
+.sval{font-family:var(--font-mono);font-size:19px;font-weight:500;
+  color:var(--t-primary);letter-spacing:-.03em;line-height:1.2;margin-top:1px}
+.sdelta{font-family:var(--font-mono);font-size:10px;margin-top:1px}
+.du{color:var(--green)}.dw{color:var(--yellow)}.dd{color:var(--red)}
+
+/* TASKS TABLE */
+.tbl{width:100%;border-collapse:collapse;border:1px solid var(--border);
+  border-radius:7px;overflow:hidden}
+.tbl th{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--t-muted);text-align:left;padding:7px 11px;background:var(--bg-card);
+  border-bottom:1px solid var(--border);font-weight:400}
+.tbl td{padding:7px 11px;border-bottom:1px solid var(--border);
+  background:var(--bg-base);font-size:12.5px;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg-card)}
+.tid{font-family:var(--font-mono);font-size:10px;color:var(--t-dim);margin-right:5px}
+.tag{display:inline-flex;align-items:center;font-family:var(--font-mono);
+  font-size:9.5px;letter-spacing:.03em;border-radius:3px;padding:2px 7px;font-weight:500}
+.td{background:rgba(62,207,142,.12);color:#3ecf8e}
+.ta{background:rgba(124,111,255,.12);color:#a89bff}
+.tar{background:rgba(91,141,238,.12);color:#5b8dee}
+.sp{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:var(--font-mono);color:var(--t-secondary)}
+.sdot{width:6px;height:6px;border-radius:50%}
+.s-todo .sdot{background:var(--t-dim)}
+.s-ip .sdot{background:var(--accent);box-shadow:0 0 4px var(--accent-glow)}
+.s-bl .sdot{background:var(--red)}
+.s-rv .sdot{background:var(--yellow)}
+.s-dn .sdot{background:var(--green)}
+.due{font-family:var(--font-mono);font-size:11px;color:var(--t-secondary)}
+.due-ov{color:var(--red)}.due-td{color:var(--yellow)}
+
+/* RIGHT PANEL */
+.rpanel{display:flex;flex-direction:column;overflow:hidden;background:var(--bg-panel)}
+.ph{display:flex;align-items:center;justify-content:space-between;
+  padding:13px 15px 9px;border-bottom:1px solid var(--border);flex-shrink:0}
+.pt{font-family:var(--font-mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--t-muted)}
+.pf{display:flex;gap:4px}
+.pfb{font-family:var(--font-mono);font-size:9px;letter-spacing:.03em;padding:2px 7px;
+  border-radius:3px;border:1px solid var(--border);background:none;color:var(--t-muted);cursor:pointer;
+  transition:all 100ms}
+.pfb.active,.pfb:hover{background:var(--bg-hover);color:var(--t-secondary);border-color:var(--border-l)}
+.alog{flex:1;overflow-y:auto;padding:6px 0;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.le{display:grid;grid-template-columns:68px 1fr;gap:7px;padding:5px 15px;transition:background 80ms;cursor:default}
+.le:hover{background:var(--bg-hover)}
+.lts{font-family:var(--font-mono);font-size:10px;color:var(--t-dim);padding-top:1px;white-space:nowrap}
+.lm{font-size:12px;color:var(--t-secondary);line-height:1.45}
+.lm strong{color:var(--t-primary);font-weight:500}
+.ltag{font-family:var(--font-mono);font-size:9.5px;color:var(--t-dim);margin-top:1px;display:block}
+.lsep{height:1px;background:var(--border);margin:4px 15px}
+.sbar{display:flex;align-items:center;gap:14px;padding:8px 14px;
+  border-top:1px solid var(--border);background:var(--bg-panel);flex-shrink:0}
+.sc{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--t-dim);white-space:nowrap}
+.kbd{font-family:var(--font-mono);font-size:9.5px;background:var(--bg-hover);
+  border:1px solid var(--border-l);border-radius:3px;padding:1px 5px;color:var(--t-muted)}
+
+/* CALENDAR MINI */
+.ev{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:5px;margin-bottom:5px}
+.ev-t{font-family:var(--font-mono);font-size:9px;color:var(--t-dim);width:58px;flex-shrink:0;padding-top:1px}
+.ev-lbl{font-size:12px;color:var(--t-primary)}
+.ev-sub{font-family:var(--font-mono);font-size:9.5px;color:var(--t-muted);margin-top:1px}
+
+/* MICRO ANIMATIONS — Emil Kowalski stagger, ease-out entrances (design-masters-study.md) */
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.greeting    {animation:fadeUp 200ms cubic-bezier(0,0,.2,1) 20ms both}
+.cmd-box     {animation:fadeUp 200ms cubic-bezier(0,0,.2,1) 50ms both}
+.chips       {animation:fadeUp 200ms cubic-bezier(0,0,.2,1) 80ms both}
+.stats-row   {animation:fadeUp 250ms cubic-bezier(0,0,.2,1) 100ms both}
+.tbl         {animation:fadeUp 250ms cubic-bezier(0,0,.2,1) 140ms both}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="wordmark"><span class="wm-dot"></span>arthur</div>
+  <div class="cmd-search">
+    <span class="cs-icon">⌕</span>
+    <span class="cs-text">⌘K — ask or command…</span>
+    <span class="cs-kbd">⌘K</span>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-talk"><span class="bt-dot"></span>+ Talk</button>
+    <div class="avatar">D</div>
+  </div>
+</header>
+
+<!-- SIDENAV -->
+<nav class="sidenav">
+  <div class="nav-item active">
+    <svg class="i nav-icon" viewBox="0 0 16 16"><rect x="2" y="2" width="5.5" height="5.5" rx=".8"/><rect x="8.5" y="2" width="5.5" height="5.5" rx=".8"/><rect x="2" y="8.5" width="5.5" height="5.5" rx=".8"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx=".8"/></svg>
+    Dashboard<span class="nav-kbd">G D</span>
+  </div>
+  <div class="nav-item">
+    <svg class="i nav-icon" viewBox="0 0 16 16"><path d="M2.5 8h11M2.5 4.5h11M2.5 11.5h6.5"/></svg>
+    Tasks<span class="nav-badge">7</span>
+  </div>
+  <div class="nav-item">
+    <svg class="i nav-icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l1.8 1.8"/></svg>
+    Goals<span class="nav-kbd">G G</span>
+  </div>
+  <div class="nav-item">
+    <svg class="i nav-icon" viewBox="0 0 16 16"><path d="M2 3h12a.8.8 0 01.8.8v7.4a.8.8 0 01-.8.8H2L.5 14V3.8A.8.8 0 012 3z"/></svg>
+    Inbox<span class="nav-badge">3</span>
+  </div>
+
+  <div class="nav-div"></div>
+
+  <span class="nav-lbl">Ops</span>
+  <div class="nav-item">
+    <svg class="i nav-icon" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.2"/><path d="M5 1.5v2M11 1.5v2M1.5 6.5h13"/></svg>
+    Calendar<span class="nav-kbd">G C</span>
+  </div>
+  <div class="nav-item">
+    <svg class="i nav-icon" viewBox="0 0 16 16"><path d="M4 5.5h8M4 9h5.5"/><circle cx="11.5" cy="11.5" r="3"/><path d="M13.5 13.5l1.5 1.5"/></svg>
+    Legal<span class="nav-kbd">G L</span>
+  </div>
+  <div class="nav-item">
+    <svg class="i nav-icon" viewBox="0 0 16 16"><circle cx="5.5" cy="5" r="2.5"/><circle cx="10.5" cy="5" r="2.5"/><path d="M1 12.5c0-2 2-3.5 4.5-3.5s4.5 1.5 4.5 3.5"/><path d="M11 9.5c1.7.4 3 1.6 3 3.2" stroke-dasharray="1.5 1.5"/></svg>
+    Employees<span class="nav-kbd">G E</span>
+  </div>
+
+  <div class="nav-div"></div>
+
+  <span class="nav-lbl">Arthur</span>
+  <div class="nav-item">
+    <svg class="i nav-icon" viewBox="0 0 16 16"><path d="M3 8a5 5 0 0110 0"/><path d="M8 3v1.5M5.2 4.2l1 1M10.8 4.2l-1 1"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><path d="M8 9.5v3"/></svg>
+    Brain<span class="nav-kbd">G B</span>
+  </div>
+  <div class="nav-item">
+    <svg class="i nav-icon" viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx=".5"/><rect x="9" y="2.5" width="4.5" height="4.5" rx=".5"/><rect x="2.5" y="9" width="4.5" height="4.5" rx=".5"/><path d="M9 11.2h4.5M11.2 9v4.5"/></svg>
+    Skills<span class="nav-kbd">G S</span>
+  </div>
+  <div class="nav-item">
+    <svg class="i nav-icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 1.5v1.3M8 13.2v1.3M1.5 8h1.3M13.2 8h1.3M3.5 3.5l.9.9M11.6 11.6l.9.9M11.6 3.5l-.9.9M4.4 11.6l-.9.9"/></svg>
+    Settings<span class="nav-kbd">⌘,</span>
+  </div>
+
+  <div class="nav-footer">
+    <div class="status-line"><span class="si"></span>all systems nominal</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="home-pane">
+
+    <!-- LEFT CMD ZONE -->
+    <div class="cmd-zone">
+
+      <!-- GREETING -->
+      <div class="greeting">
+        <span class="greeting-time">MON 26 MAY 2026 &nbsp;·&nbsp; 09:14 ET</span>
+        <span class="greeting-text">Good to see you, Daniel.</span>
+        <span class="greeting-sub">3 tasks due today &nbsp;·&nbsp; Dabney opens in 6h &nbsp;·&nbsp; 3 unread</span>
+      </div>
+
+      <!-- COMMAND INPUT -->
+      <div>
+        <div class="cmd-box">
+          <span class="cmd-prompt">&gt;</span>
+          <input class="cmd-input" placeholder="Ask Arthur or run a command…" autofocus>
+          <span class="enter-hint">↵ run</span>
+        </div>
+        <div class="chips" style="margin-top:8px">
+          <div class="chip"><span class="cdot" style="background:var(--red)"></span>Inbox <span style="font-family:var(--font-mono);font-size:9px;color:var(--t-dim)">3</span></div>
+          <div class="chip"><span class="cdot" style="background:var(--blue)"></span>Calendar</div>
+          <div class="chip"><span class="cdot" style="background:var(--t-muted)"></span>Recent activity</div>
+          <div class="chip"><span class="cdot" style="background:var(--accent)"></span>Active goals</div>
+          <div class="chip"><span class="cdot" style="background:var(--yellow)"></span>Dabney compliance</div>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div>
+        <div class="sh">
+          <span class="st">today at a glance</span>
+          <button class="sa">this week →</button>
+        </div>
+        <div class="stats-row">
+          <div class="stat"><div class="slbl">Active Goals</div><div class="sval">9</div><div class="sdelta du">↑ 2 new</div></div>
+          <div class="stat"><div class="slbl">Unread</div><div class="sval">3</div><div class="sdelta dw">! 2 urgent</div></div>
+          <div class="stat"><div class="slbl">⚠ Chase Cash</div><div class="sval">$4.2k</div><div class="sdelta dw">2 invoices</div></div>
+          <div class="stat"><div class="slbl">Events Today</div><div class="sval">2</div><div class="sdelta" style="color:var(--t-muted)">+1 tomorrow</div></div>
+        </div>
+      </div>
+
+      <!-- TASKS TABLE -->
+      <div>
+        <div class="sh">
+          <span class="st">open tasks <span style="font-family:var(--font-mono);font-size:9px;color:var(--t-dim)">(7)</span></span>
+          <button class="sa">all tasks →</button>
+        </div>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th style="width:108px">Project</th>
+              <th style="width:102px">Status</th>
+              <th style="width:88px">Due</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tid">#031</span>Renew MLCC liquor license</td>
+              <td><span class="tag td">Dabney</span></td>
+              <td><span class="sp s-bl"><span class="sdot"></span>Blocked</span></td>
+              <td><span class="due due-ov">May 28</span></td>
+            </tr>
+            <tr>
+              <td><span class="tid">#028</span>Review June staff schedule</td>
+              <td><span class="tag td">Dabney</span></td>
+              <td><span class="sp s-ip"><span class="sdot"></span>In progress</span></td>
+              <td><span class="due due-td">Today</span></td>
+            </tr>
+            <tr>
+              <td><span class="tid">#027</span>Send LOVELEEDAY Q2 invoice</td>
+              <td><span class="tag ta">A&amp;M</span></td>
+              <td><span class="sp s-rv"><span class="sdot"></span>In review</span></td>
+              <td><span class="due due-td">Today</span></td>
+            </tr>
+            <tr>
+              <td><span class="tid">#026</span>olldae: wire Ecobee anomaly alert</td>
+              <td><span class="tag tar">Arthur</span></td>
+              <td><span class="sp s-ip"><span class="sdot"></span>In progress</span></td>
+              <td><span class="due">Jun 2</span></td>
+            </tr>
+            <tr>
+              <td><span class="tid">#025</span>Flipbook cover logo resize</td>
+              <td><span class="tag td">Dabney</span></td>
+              <td><span class="sp s-todo"><span class="sdot"></span>To do</span></td>
+              <td><span class="due">Jun 4</span></td>
+            </tr>
+            <tr>
+              <td><span class="tid">#024</span>Xero re-auth — Aspen &amp; May</td>
+              <td><span class="tag ta">A&amp;M</span></td>
+              <td><span class="sp s-bl"><span class="sdot"></span>Blocked</span></td>
+              <td><span class="due">Jun 5</span></td>
+            </tr>
+            <tr>
+              <td><span class="tid">#022</span>Dabney private event inquiry flow</td>
+              <td><span class="tag td">Dabney</span></td>
+              <td><span class="sp s-todo"><span class="sdot"></span>To do</span></td>
+              <td><span class="due">Jun 9</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SHORTCUTS HINT (bottom of cmd zone) -->
+      <div style="display:flex;gap:14px;padding-top:2px">
+        <div class="sc"><span class="kbd">⌘K</span>command</div>
+        <div class="sc"><span class="kbd">G T</span>tasks</div>
+        <div class="sc"><span class="kbd">G G</span>goals</div>
+        <div class="sc"><span class="kbd">G I</span>inbox</div>
+        <div class="sc"><span class="kbd">?</span>all keys</div>
+      </div>
+
+    </div><!-- /cmd-zone -->
+
+    <!-- RIGHT PANEL: ACTIVITY + CALENDAR -->
+    <div class="rpanel">
+      <div class="ph">
+        <span class="pt">Activity log</span>
+        <div class="pf">
+          <button class="pfb active">All</button>
+          <button class="pfb">Arthur</button>
+          <button class="pfb">Dabney</button>
+        </div>
+      </div>
+
+      <div class="alog">
+        <div class="le">
+          <span class="lts">09:11:44</span>
+          <div><span class="lm"><strong>Arthur</strong> pulled Toast menu snapshot — 0 items changed</span><span class="ltag">auto · dabney</span></div>
+        </div>
+        <div class="le">
+          <span class="lts">09:08:02</span>
+          <div><span class="lm"><strong>Arthur</strong> flagged invoice INV-0091 — 14 days overdue</span><span class="ltag">chase-cash · a&m</span></div>
+        </div>
+        <div class="lsep"></div>
+        <div class="le">
+          <span class="lts">08:47:30</span>
+          <div><span class="lm"><strong>Daniel</strong> updated task #028 → In progress</span><span class="ltag">task · dabney</span></div>
+        </div>
+        <div class="le">
+          <span class="lts">08:31:15</span>
+          <div><span class="lm"><strong>Arthur</strong> completed nightly brain snapshot · <strong style="color:var(--green)">2,114 chunks</strong></span><span class="ltag">brain · system</span></div>
+        </div>
+        <div class="le">
+          <span class="lts">08:30:00</span>
+          <div><span class="lm"><strong>Arthur</strong> nightly routine done in <strong style="color:var(--green)">4m 12s</strong></span><span class="ltag">cron · system</span></div>
+        </div>
+        <div class="lsep"></div>
+        <div class="le">
+          <span class="lts">yesterday</span>
+          <div><span class="lm"><strong>Arthur</strong> wrote 5 Toast item descriptions — Batch 2</span><span class="ltag">menu · dabney</span></div>
+        </div>
+        <div class="le">
+          <span class="lts">yesterday</span>
+          <div><span class="lm"><strong>Daniel</strong> locked flipbook cover — 08A Blue Note</span><span class="ltag">design · dabney</span></div>
+        </div>
+        <div class="le">
+          <span class="lts">25 May</span>
+          <div><span class="lm"><strong>Arthur</strong> indexed 393 design chunks → pgvector</span><span class="ltag">brain · system</span></div>
+        </div>
+        <div class="le">
+          <span class="lts">25 May</span>
+          <div><span class="lm"><strong>Daniel</strong> approved Rule 21 — short responses default</span><span class="ltag">config · system</span></div>
+        </div>
+        <div class="lsep"></div>
+
+        <!-- CALENDAR MINI -->
+        <div style="padding:10px 15px 6px">
+          <div class="pt" style="margin-bottom:8px">upcoming</div>
+          <div class="ev">
+            <div class="ev-t">today<br>3:00 PM</div>
+            <div><div class="ev-lbl">Dabney happy hour — opens</div><div class="ev-sub">330 E Michigan Ave · Fri live music</div></div>
+          </div>
+          <div class="ev">
+            <div class="ev-t">today<br>7:00 PM</div>
+            <div><div class="ev-lbl">Private event — Carter group</div><div class="ev-sub">20 pax · off-site bar · A&M contract</div></div>
+          </div>
+          <div class="ev" style="opacity:.65">
+            <div class="ev-t">Wed<br>2:00 PM</div>
+            <div><div class="ev-lbl">Xero re-auth window</div><div class="ev-sub">token expiry · A&M bookkeeping</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sbar">
+        <div class="sc"><span class="kbd">J/K</span>navigate</div>
+        <div class="sc"><span class="kbd">E</span>expand</div>
+        <div class="sc"><span class="kbd">X</span>dismiss</div>
+      </div>
+    </div><!-- /rpanel -->
+
+  </div>
+</main>
+
+</div>
+</body>
+</html>

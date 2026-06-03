@@ -35,16 +35,29 @@ export default function InboxPage() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<GmailThread | null>(null);
   const [tab, setTab] = useState('ALL');
+  const [actionMsg, setActionMsg] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      // Will use Gmail MCP if available — fall back to static
-      const res = await fetch('/api/inbox/threads?limit=20');
+      // arthur_inbox_emails via /api/inbox/list
+      const res = await fetch('/api/inbox/list?limit=20&folder=inbox');
       if (res.ok) {
         const data = await res.json();
-        const items = Array.isArray(data) ? data : (data.threads ?? []);
-        setThreads(items.length > 0 ? items : STATIC_THREADS);
+        const rawRows = Array.isArray(data) ? data : (data.rows ?? data.threads ?? []);
+        if (rawRows.length > 0) {
+          const mapped: GmailThread[] = rawRows.map((r: Record<string, unknown>) => ({
+            id: String(r.id ?? r.thread_id ?? ''),
+            subject: String(r.subject ?? '(no subject)'),
+            from: String(r.from_name ? `${r.from_name} <${r.from_email ?? ''}>` : r.from_email ?? 'Unknown'),
+            snippet: String(r.snippet ?? r.body_preview ?? r.body_text ?? '').slice(0, 120),
+            date: r.received_at ? new Date(r.received_at as string).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' }) : '—',
+            unread: Boolean((r as Record<string, unknown>).is_unread ?? false),
+          }));
+          setThreads(mapped);
+        } else {
+          setThreads(STATIC_THREADS);
+        }
       } else {
         setThreads(STATIC_THREADS);
       }
@@ -81,7 +94,10 @@ export default function InboxPage() {
             <button key={t.key} onClick={() => setTab(t.key)} style={{ padding: '3px 10px', fontSize: '9px', fontFamily: S.mono, borderRadius: '2px', background: tab === t.key ? S.accent : t.hot ? 'rgba(239,68,68,0.1)' : S.bg3, color: tab === t.key ? S.bg : t.hot ? S.red : S.textMuted, border: `1px solid ${tab === t.key ? S.accent : t.hot ? 'rgba(239,68,68,0.25)' : S.border2}`, cursor: 'pointer', fontWeight: 600 }}>{t.label}</button>
           ))}
         </div>
-        <button style={{ marginLeft: 'auto', padding: '3px 10px', fontSize: '9px', fontFamily: S.mono, borderRadius: '2px', background: 'transparent', color: S.accent, border: `1px solid ${S.accent}44`, cursor: 'pointer', fontWeight: 600 }}>✎ COMPOSE</button>
+        <button
+          onClick={() => window.open('https://mail.google.com/mail/u/0/?view=cm&fs=1', '_blank')}
+          style={{ marginLeft: 'auto', padding: '3px 10px', fontSize: '9px', fontFamily: S.mono, borderRadius: '2px', background: 'transparent', color: S.accent, border: `1px solid ${S.accent}44`, cursor: 'pointer', fontWeight: 600 }}
+        >✎ COMPOSE</button>
       </div>
 
       {/* 3-col layout */}
@@ -121,8 +137,38 @@ export default function InboxPage() {
               </div>
               <div style={{ fontSize: '13px', color: S.textSecondary, lineHeight: '1.7', borderTop: `1px solid ${S.border}`, paddingTop: '20px' }}>{selected.snippet}</div>
               <div style={{ marginTop: '24px', display: 'flex', gap: '8px' }}>
-                <button style={{ background: S.accent, color: S.bg, border: 'none', borderRadius: '3px', padding: '8px 16px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', fontFamily: S.mono, letterSpacing: '0.06em' }}>→ DRAFT REPLY</button>
-                <button style={{ background: S.bg3, color: S.textMuted, border: `1px solid ${S.border2}`, borderRadius: '3px', padding: '8px 16px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', fontFamily: S.mono }}>+ ADD TASK</button>
+                <button
+                  onClick={async () => {
+                    if (!selected) return;
+                    setActionMsg(m => ({ ...m, draft: 'drafting…' }));
+                    try {
+                      const res = await fetch('/api/email/draft-reply', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email_id: selected.id, subject: selected.subject, from: selected.from }),
+                      });
+                      setActionMsg(m => ({ ...m, draft: res.ok ? 'draft queued ✓' : 'see chat' }));
+                    } catch { setActionMsg(m => ({ ...m, draft: 'see chat' })); }
+                    setTimeout(() => setActionMsg(m => ({ ...m, draft: '' })), 3000);
+                  }}
+                  style={{ background: S.accent, color: S.bg, border: 'none', borderRadius: '3px', padding: '8px 16px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', fontFamily: S.mono, letterSpacing: '0.06em' }}
+                >{actionMsg.draft || '→ DRAFT REPLY'}</button>
+                <button
+                  onClick={async () => {
+                    if (!selected) return;
+                    setActionMsg(m => ({ ...m, task: 'adding…' }));
+                    try {
+                      const res = await fetch('/api/goal-steps', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title: `Follow up: ${selected.subject}`, description: `Re: ${selected.from}`, status: 'pending' }),
+                      });
+                      setActionMsg(m => ({ ...m, task: res.ok ? 'task added ✓' : 'error' }));
+                    } catch { setActionMsg(m => ({ ...m, task: 'error' })); }
+                    setTimeout(() => setActionMsg(m => ({ ...m, task: '' })), 3000);
+                  }}
+                  style={{ background: S.bg3, color: actionMsg.task?.includes('✓') ? S.green : S.textMuted, border: `1px solid ${actionMsg.task?.includes('✓') ? S.green : S.border2}`, borderRadius: '3px', padding: '8px 16px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', fontFamily: S.mono }}
+                >{actionMsg.task || '+ ADD TASK'}</button>
               </div>
             </div>
           ) : (

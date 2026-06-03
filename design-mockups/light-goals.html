@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>arthur -- Goals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:        #FAF8F5;
+      --paper-2:      #F3F0EA;
+      --paper-3:      #E8E4DB;
+      --paper-4:      #D8D3C8;
+      --ink:          #1A1713;
+      --ink-2:        #4A4540;
+      --ink-3:        #8A837A;
+      --ink-4:        #BAB5AE;
+      --accent:       #0B504F;
+      --accent-lt:    #E5F0EF;
+      --accent-hov:   #083B3A;
+      --green:        #166534;
+      --green-bg:     #F0FDF4;
+      --amber:        #92400E;
+      --amber-bg:     #FFFBEB;
+      --red:          #991B1B;
+      --red-bg:       #FEF2F2;
+      --blue:         #1E3A8A;
+      --blue-bg:      #EFF6FF;
+      --serif:        'Lora', Georgia, serif;
+      --sans:         'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --nav-w:        220px;
+      --top-h:        56px;
+      --sh-sm:        0 1px 3px rgba(11,80,79,.06),0 1px 2px rgba(26,23,19,.04);
+      --sh-md:        0 4px 12px rgba(11,80,79,.08),0 2px 4px rgba(26,23,19,.05);
+      --sh-hov:       0 8px 24px rgba(11,80,79,.13),0 3px 8px rgba(26,23,19,.07);
+      --r-sm: 6px; --r-md: 10px; --r-lg: 16px;
+      --spr: cubic-bezier(0.34,1.56,0.64,1);
+      --std: cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;overflow:hidden;}
+    body{font-family:var(--sans);font-size:16px;line-height:1.6;color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased;}
+
+    .shell{display:flex;height:100vh;overflow:hidden;}
+
+    .nav{width:var(--nav-w);min-width:var(--nav-w);background:#fff;border-right:1px solid var(--paper-3);display:flex;flex-direction:column;overflow:hidden;z-index:10;}
+    .nav-brand{height:var(--top-h);display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--paper-3);flex-shrink:0;}
+    .nav-wm{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--ink);letter-spacing:-.03em;font-style:italic;}
+    .nav-wm em{color:var(--accent);font-style:italic;}
+    .nav-scroll{flex:1;padding:12px 10px;overflow-y:auto;}
+    .nav-gl{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);padding:10px 10px 6px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:8.5px 10px;border-radius:var(--r-sm);cursor:pointer;color:var(--ink-2);font-size:13.5px;font-weight:450;letter-spacing:-.01em;text-decoration:none;user-select:none;transition:background 120ms var(--std),color 120ms var(--std);}
+    .nav-item:hover{background:var(--paper-2);color:var(--ink);}
+    .nav-item.active{background:var(--accent-lt);color:var(--accent);font-weight:500;}
+    .nav-ic{width:15px;height:15px;flex-shrink:0;opacity:.7;}
+    .nav-item.active .nav-ic{opacity:1;}
+    .nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:100px;}
+    .nav-foot{border-top:1px solid var(--paper-3);padding:10px;}
+    .nav-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-sm);}
+    .nav-av{width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;flex-shrink:0;}
+    .nav-uname{font-size:12.5px;font-weight:500;color:var(--ink);line-height:1.2;}
+    .nav-uco{font-size:11px;color:var(--ink-4);line-height:1.2;}
+
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+    .topbar{height:var(--top-h);background:#fff;border-bottom:1px solid var(--paper-3);display:flex;align-items:center;padding:0 32px;gap:14px;flex-shrink:0;z-index:9;}
+    .top-wm{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--ink-3);letter-spacing:-.01em;font-style:italic;}
+    .top-div{width:1px;height:15px;background:var(--paper-3);}
+    .top-pg{font-size:14px;font-weight:500;color:var(--ink);}
+    .top-sp{flex:1;}
+    .top-live{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-3);font-weight:450;}
+    .live-dot{display:inline-block;width:6px;height:6px;background:#16A34A;border-radius:50%;animation:pulseDot 2.5s ease-in-out infinite;}
+    .btn-talk{display:flex;align-items:center;gap:7px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:-.01em;transition:background 120ms var(--std),transform 180ms var(--spr),box-shadow 120ms var(--std);}
+    .btn-talk:hover{background:var(--accent-hov);transform:translateY(-1px);box-shadow:var(--sh-md);}
+    .btn-talk svg{width:14px;height:14px;}
+    .av{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;transition:transform 180ms var(--spr);}
+    .av:hover{transform:scale(1.06);}
+
+    /* Content + page layout */
+    .content{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+
+    /* Goals page header */
+    .pg-head{
+      padding:28px 40px 20px;border-bottom:1px solid var(--paper-3);
+      background:#fff;flex-shrink:0;
+      display:flex;align-items:flex-end;gap:24px;
+    }
+    .pg-head-left{flex:1;}
+    .pg-eye{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:7px;display:flex;align-items:center;gap:8px;}
+    .pg-eye::before{content:'';display:inline-block;width:16px;height:1.5px;background:var(--accent);border-radius:1px;}
+    .pg-title{font-family:var(--serif);font-size:26px;font-weight:500;color:var(--ink);letter-spacing:-.025em;line-height:1.2;}
+    .pg-sub{font-size:13px;color:var(--ink-3);margin-top:4px;}
+    .pg-head-stats{display:flex;gap:28px;padding-bottom:4px;}
+    .pg-stat{text-align:center;}
+    .pg-stat-val{font-family:var(--serif);font-size:22px;font-weight:500;color:var(--ink);letter-spacing:-.02em;line-height:1;font-feature-settings:'tnum' 1;}
+    .pg-stat-lbl{font-size:10.5px;color:var(--ink-3);font-weight:500;letter-spacing:.03em;text-transform:uppercase;margin-top:3px;}
+    .pg-add-btn{display:flex;align-items:center;gap:7px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--sans);letter-spacing:-.01em;transition:background 120ms var(--std),transform 180ms var(--spr);}
+    .pg-add-btn:hover{background:var(--accent-hov);transform:translateY(-1px);}
+
+    /* Columns board */
+    .board{flex:1;display:flex;gap:0;overflow:hidden;}
+    .col{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--paper-3);overflow:hidden;}
+    .col:last-child{border-right:none;}
+
+    .col-head{
+      padding:16px 22px 14px;border-bottom:1px solid var(--paper-3);
+      background:var(--paper-2);flex-shrink:0;
+      display:flex;align-items:center;gap:10px;
+    }
+    .col-lbl{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);}
+    .col-count{font-size:11px;font-weight:600;color:var(--ink-4);background:var(--paper-3);padding:1px 7px;border-radius:100px;}
+    .col-scroll{flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:12px;}
+
+    /* Goal card */
+    .gcard{
+      background:#fff;border:1px solid var(--paper-3);border-radius:var(--r-md);
+      padding:18px 20px;cursor:pointer;
+      transition:transform 220ms var(--spr),box-shadow 220ms var(--std),border-color 120ms;
+      animation:fsIn 320ms cubic-bezier(0.22,.68,0,1.2) both;
+    }
+    .gcard:nth-child(1){animation-delay:60ms;}
+    .gcard:nth-child(2){animation-delay:110ms;}
+    .gcard:nth-child(3){animation-delay:160ms;}
+    .gcard:hover{transform:translateY(-2px);box-shadow:var(--sh-hov);border-color:var(--paper-4);}
+    .gcard.featured{border-color:var(--accent);background:linear-gradient(135deg,#fff 80%,var(--accent-lt));}
+    .gcard-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+    .gcard-icon{
+      width:30px;height:30px;border-radius:8px;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
+    }
+    .gcard-icon svg{width:15px;height:15px;}
+    .gcard-title{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--ink);letter-spacing:-.01em;line-height:1.3;flex:1;}
+    .gcard-tag{font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:3px;white-space:nowrap;margin-left:auto;flex-shrink:0;}
+    .gcard-tag.legal{background:var(--blue-bg);color:var(--blue);}
+    .gcard-tag.fin{background:var(--amber-bg);color:var(--amber);}
+    .gcard-tag.ops{background:var(--accent-lt);color:var(--accent);}
+    .gcard-tag.tech{background:#F3E8FF;color:#6D28D9;}
+    .gcard-tag.biz{background:var(--paper-2);color:var(--ink-2);}
+
+    /* Progress bar */
+    .prog-wrap{margin-bottom:12px;}
+    .prog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+    .prog-pct{font-size:11.5px;font-weight:600;color:var(--ink);font-feature-settings:'tnum' 1;}
+    .prog-lbl{font-size:11px;color:var(--ink-4);}
+    .prog-bar{height:4px;background:var(--paper-3);border-radius:100px;overflow:hidden;}
+    .prog-fill{height:100%;border-radius:100px;transition:width 600ms var(--std);}
+
+    /* Steps */
+    .gcard-steps{display:flex;flex-direction:column;gap:6px;}
+    .gstep{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);}
+    .gstep-ck{
+      width:14px;height:14px;border-radius:50%;border:1.5px solid var(--paper-4);
+      flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    }
+    .gstep-ck.done{border-color:var(--green);background:var(--green);}
+    .gstep-ck.done svg{width:8px;height:8px;color:#fff;}
+    .gstep-ck.ip{border-color:var(--accent);background:var(--accent-lt);}
+    .gstep-ck.ip .ip-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);}
+    .gstep-txt{flex:1;line-height:1.3;}
+    .gstep-txt.done{text-decoration:line-through;color:var(--ink-4);}
+    .gcard-more{font-size:11.5px;color:var(--ink-4);margin-top:8px;cursor:pointer;}
+    .gcard-more:hover{color:var(--accent);}
+
+    /* Done column styles */
+    .col.done-col .gcard{opacity:.72;}
+    .col.done-col .gcard:hover{opacity:1;}
+    .col.done-col .gcard-title{color:var(--ink-3);}
+
+    @keyframes fsIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:.35;}}
+    ::-webkit-scrollbar{width:5px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:var(--paper-4);border-radius:8px;}
+    ::-webkit-scrollbar-thumb:hover{background:var(--ink-4);}
+  </style>
+</head>
+<body>
+<div class="shell">
+
+<nav class="nav">
+  <div class="nav-brand"><span class="nav-wm"><em>arthur</em></span></div>
+  <div class="nav-scroll">
+    <div class="nav-gl">Workspace</div>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="4" r="1.5" fill="currentColor"/><rect x="7" y="3" width="7" height="2" rx="1" fill="currentColor" opacity=".6"/><circle cx="4" cy="8" r="1.5" fill="currentColor"/><rect x="7" y="7" width="7" height="2" rx="1" fill="currentColor" opacity=".6"/><circle cx="4" cy="12" r="1.5" fill="currentColor"/><rect x="7" y="11" width="5" height="2" rx="1" fill="currentColor" opacity=".6"/></svg>
+      Tasks
+      <span class="nav-badge">7</span>
+    </a>
+    <a class="nav-item active" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L10.2 6.2 15.5 6.8 11.5 10.5 12.7 15.8 8 12.8 3.3 15.8 4.5 10.5.5 6.8 5.8 6.2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/></svg>
+      Goals
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 14H11M8 11V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Inbox
+      <span class="nav-badge">9</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 6.5H15M5 1.5V4.5M11 1.5V4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Calendar
+    </a>
+    <div class="nav-gl" style="margin-top:6px;">Business</div>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 6H11M5 9H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Legal
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M1 13.5C1 11.2 3.2 9.5 6 9.5C8.8 9.5 11 11.2 11 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="11.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M11.5 9.5C13 9.5 15 10.5 15 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Employees
+    </a>
+    <div class="nav-gl" style="margin-top:6px;">Arthur</div>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><path d="M3 8C3 5.24 5.24 3 8 3C10.76 3 13 5.24 13 8C13 10.76 10.76 13 8 13C5.24 13 3 10.76 3 8Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 5.5V8L9.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 1V2M8 14V15M1 8H2M14 8H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Brain
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Skills
+    </a>
+    <a class="nav-item" href="#">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1V3M8 13V15M1 8H3M13 8H15M2.93 2.93L4.34 4.34M11.66 11.66L13.07 13.07M2.93 13.07L4.34 11.66M11.66 4.34L13.07 2.93" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Settings
+    </a>
+  </div>
+  <div class="nav-foot">
+    <div class="nav-user">
+      <div class="nav-av">D</div>
+      <div><div class="nav-uname">Daniel May</div><div class="nav-uco">Aspen &amp; May</div></div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <header class="topbar">
+    <span class="top-wm">arthur</span>
+    <div class="top-div"></div>
+    <span class="top-pg">Goals</span>
+    <div class="top-sp"></div>
+    <div class="top-live"><span class="live-dot"></span>Tue, May 26</div>
+    <button class="btn-talk">
+      <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="white" stroke-width="1.5"/><path d="M5 7C5 5.9 5.9 5 7 5C8.1 5 9 5.9 9 7C9 8.1 8.1 9 7 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+      + Talk
+    </button>
+    <div class="av">D</div>
+  </header>
+
+  <div class="content">
+
+    <!-- Page header -->
+    <div class="pg-head">
+      <div class="pg-head-left">
+        <div class="pg-eye">2026 Goals</div>
+        <div class="pg-title">What you are building.</div>
+        <div class="pg-sub">6 active goals across Dabney, Aspen &amp; May, and technology</div>
+      </div>
+      <div class="pg-head-stats">
+        <div class="pg-stat">
+          <div class="pg-stat-val">3</div>
+          <div class="pg-stat-lbl">In Progress</div>
+        </div>
+        <div class="pg-stat">
+          <div class="pg-stat-val">2</div>
+          <div class="pg-stat-lbl">Planned</div>
+        </div>
+        <div class="pg-stat">
+          <div class="pg-stat-val">1</div>
+          <div class="pg-stat-lbl">Done</div>
+        </div>
+      </div>
+      <button class="pg-add-btn">
+        <svg viewBox="0 0 14 14" fill="none" style="width:13px;height:13px;"><path d="M7 2V12M2 7H12" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+        New goal
+      </button>
+    </div>
+
+    <!-- Board -->
+    <div class="board">
+
+      <!-- IN PROGRESS -->
+      <div class="col">
+        <div class="col-head">
+          <div class="col-lbl">In Progress</div>
+          <div class="col-count">3</div>
+        </div>
+        <div class="col-scroll">
+
+          <!-- Dabney legal -->
+          <div class="gcard featured">
+            <div class="gcard-top">
+              <div class="gcard-icon" style="background:var(--blue-bg);">
+                <svg viewBox="0 0 16 16" fill="none" style="color:var(--blue);"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 6H11M5 9H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="gcard-title">Dabney legal good standing</div>
+              <span class="gcard-tag legal">Legal</span>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-row">
+                <span class="prog-pct">60%</span>
+                <span class="prog-lbl">3 of 5 steps</span>
+              </div>
+              <div class="prog-bar">
+                <div class="prog-fill" style="width:60%;background:var(--accent);"></div>
+              </div>
+            </div>
+            <div class="gcard-steps">
+              <div class="gstep">
+                <div class="gstep-ck done"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="gstep-txt done">LLC Certificate of Restoration filed</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck done"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="gstep-txt done">LARA restoration approved (today)</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck ip"><div class="ip-dot"></div></div>
+                <span class="gstep-txt">DBA re-establishment -- Kalamazoo County</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck"></div>
+                <span class="gstep-txt">MLCC liquor license renewal</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck"></div>
+                <span class="gstep-txt">Kalamazoo tax account current</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Arthur dashboard redesign -->
+          <div class="gcard">
+            <div class="gcard-top">
+              <div class="gcard-icon" style="background:#F3E8FF;">
+                <svg viewBox="0 0 16 16" fill="none" style="color:#6D28D9;"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".45"/></svg>
+              </div>
+              <div class="gcard-title">Arthur dashboard redesign</div>
+              <span class="gcard-tag tech">Tech</span>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-row">
+                <span class="prog-pct">35%</span>
+                <span class="prog-lbl">2 of 6 screens</span>
+              </div>
+              <div class="prog-bar">
+                <div class="prog-fill" style="width:35%;background:#7C3AED;"></div>
+              </div>
+            </div>
+            <div class="gcard-steps">
+              <div class="gstep">
+                <div class="gstep-ck done"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="gstep-txt done">Light editorial direction -- approved</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck ip"><div class="ip-dot"></div></div>
+                <span class="gstep-txt">Inbox + Goals mockups</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck"></div>
+                <span class="gstep-txt">Calendar + Legal + Employees</span>
+              </div>
+            </div>
+            <div class="gcard-more">+3 more steps</div>
+          </div>
+
+          <!-- Aspen & May financials -->
+          <div class="gcard">
+            <div class="gcard-top">
+              <div class="gcard-icon" style="background:var(--amber-bg);">
+                <svg viewBox="0 0 16 16" fill="none" style="color:var(--amber);"><path d="M8 1V15M5 4H9.5C10.88 4 12 5.12 12 6.5C12 7.88 10.88 9 9.5 9H5M5 9H10C11.1 9 12 9.9 12 11C12 12.1 11.1 13 10 13H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="gcard-title">Aspen &amp; May financials current</div>
+              <span class="gcard-tag fin">Finance</span>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-row">
+                <span class="prog-pct">45%</span>
+                <span class="prog-lbl">Xero sync in progress</span>
+              </div>
+              <div class="prog-bar">
+                <div class="prog-fill" style="width:45%;background:#D97706;"></div>
+              </div>
+            </div>
+            <div class="gcard-steps">
+              <div class="gstep">
+                <div class="gstep-ck done"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="gstep-txt done">Chart of accounts reconciled</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck ip"><div class="ip-dot"></div></div>
+                <span class="gstep-txt">NI loan financials package (overdue)</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck"></div>
+                <span class="gstep-txt">Q1 P&amp;L review with Arthur</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck"></div>
+                <span class="gstep-txt">2025 tax returns filed</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- PLANNED -->
+      <div class="col">
+        <div class="col-head">
+          <div class="col-lbl">Planned</div>
+          <div class="col-count">2</div>
+        </div>
+        <div class="col-scroll">
+
+          <!-- olldae -->
+          <div class="gcard">
+            <div class="gcard-top">
+              <div class="gcard-icon" style="background:var(--accent-lt);">
+                <svg viewBox="0 0 16 16" fill="none" style="color:var(--accent);"><rect x="1" y="4" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 4V3C4 1.9 4.9 1 6 1H10C11.1 1 12 1.9 12 3V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M1 9H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="gcard-title">olldae bar/restaurant OS</div>
+              <span class="gcard-tag tech">Tech</span>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-row">
+                <span class="prog-pct">12%</span>
+                <span class="prog-lbl">Discovery phase</span>
+              </div>
+              <div class="prog-bar">
+                <div class="prog-fill" style="width:12%;background:var(--accent);"></div>
+              </div>
+            </div>
+            <div class="gcard-steps">
+              <div class="gstep">
+                <div class="gstep-ck done"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="gstep-txt done">Product spec drafted</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck"></div>
+                <span class="gstep-txt">Pricing model finalized</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck"></div>
+                <span class="gstep-txt">MVP scope locked + build started</span>
+              </div>
+            </div>
+            <div class="gcard-more">+4 more steps</div>
+          </div>
+
+          <!-- LOVELEEDAY SaaS -->
+          <div class="gcard">
+            <div class="gcard-top">
+              <div class="gcard-icon" style="background:#FCE7F3;">
+                <svg viewBox="0 0 16 16" fill="none" style="color:#9D174D;"><path d="M8 3C8 3 4 5 4 8.5C4 10.43 5.79 12 8 12C10.21 12 12 10.43 12 8.5C12 5 8 3 8 3Z" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M8 12V15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </div>
+              <div class="gcard-title">LOVELEEDAY SaaS launch</div>
+              <span class="gcard-tag biz">Business</span>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-row">
+                <span class="prog-pct">20%</span>
+                <span class="prog-lbl">Brand + market research</span>
+              </div>
+              <div class="prog-bar">
+                <div class="prog-fill" style="width:20%;background:#9D174D;"></div>
+              </div>
+            </div>
+            <div class="gcard-steps">
+              <div class="gstep">
+                <div class="gstep-ck done"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="gstep-txt done">Brand identity established</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck"></div>
+                <span class="gstep-txt">ICP research + positioning doc</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck"></div>
+                <span class="gstep-txt">Landing page + waitlist live</span>
+              </div>
+            </div>
+            <div class="gcard-more">+3 more steps</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- DONE -->
+      <div class="col done-col">
+        <div class="col-head">
+          <div class="col-lbl">Done</div>
+          <div class="col-count">1</div>
+        </div>
+        <div class="col-scroll">
+
+          <div class="gcard">
+            <div class="gcard-top">
+              <div class="gcard-icon" style="background:var(--green-bg);">
+                <svg viewBox="0 0 16 16" fill="none" style="color:var(--green);"><path d="M2 8L6 12L14 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="gcard-title">Dabney &amp; Co. website launched</div>
+              <span class="gcard-tag ops" style="background:var(--green-bg);color:var(--green);">Done</span>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-row">
+                <span class="prog-pct" style="color:var(--green);">100%</span>
+                <span class="prog-lbl">Completed May 21</span>
+              </div>
+              <div class="prog-bar">
+                <div class="prog-fill" style="width:100%;background:var(--green);"></div>
+              </div>
+            </div>
+            <div class="gcard-steps">
+              <div class="gstep">
+                <div class="gstep-ck done"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="gstep-txt done">Toast menu sync live</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck done"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="gstep-txt done">Flipbook + mobile menu shipped</span>
+              </div>
+              <div class="gstep">
+                <div class="gstep-ck done"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="gstep-txt done">OOS live overlay wired</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /board -->
+  </div>
+</div>
+</div>
+</body>
+</html>

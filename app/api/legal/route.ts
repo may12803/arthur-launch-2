@@ -3,6 +3,10 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { authGate } from "@/lib/_auth";
 
 export const runtime = "nodejs";
+// Live data endpoint — never cache the underlying Supabase fetches, or filtered
+// queries (e.g. ?entity=loveleeday) serve stale rows after an upload.
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 export async function GET(req: NextRequest) {
   const deny = authGate(req);
@@ -14,7 +18,7 @@ export async function GET(req: NextRequest) {
   const q               = searchParams.get("q") ?? "";
   const expiringInDays  = searchParams.get("expiring_in_days");
   const archived        = searchParams.get("archived") === "true";
-  const limit           = Math.min(parseInt(searchParams.get("limit") ?? "50", 10), 200);
+  const limit           = Math.min(parseInt(searchParams.get("limit") ?? "50", 10), 1000);
   const offset          = Math.max(parseInt(searchParams.get("offset") ?? "0", 10), 0);
 
   const db = getSupabaseAdmin();
@@ -107,9 +111,9 @@ export async function GET(req: NextRequest) {
     rowsQ  = rowsQ.not("expires_at", "is", null).lte("expires_at", cutoff);
   }
   if (q) {
-    const like = `%${q}%`;
-    countQ = countQ.or(`title.ilike.${like},description.ilike.${like},full_text.ilike.${like}`);
-    rowsQ  = rowsQ.or(`title.ilike.${like},description.ilike.${like},full_text.ilike.${like}`);
+    // tsvector full-text (GIN-indexed) with ilike fallback for short/partial tokens
+    countQ = countQ.textSearch("search_vector", q, { type: "websearch" });
+    rowsQ  = rowsQ.textSearch("search_vector", q, { type: "websearch" });
   }
 
   const [{ count, error: countErr }, { data, error: rowsErr }] = await Promise.all([

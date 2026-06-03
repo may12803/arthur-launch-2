@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arthur — dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --s0: hsl(220,14%,7%);
+  --s1: hsl(220,12%,11%);
+  --s2: hsl(220,11%,15%);
+  --s3: hsl(220,10%,20%);
+  --s4: hsl(220,9%,27%);
+  --tp:  hsl(220,8%,93%);
+  --ts:  hsl(220,6%,62%);
+  --tt:  hsl(220,5%,42%);
+  --tm:  hsl(220,5%,32%);
+  --ac:  hsl(210,85%,62%);
+  --ad:  hsl(210,70%,52%);
+  --as:  hsl(210,60%,22%);
+  --ag:  hsla(210,85%,62%,0.10);
+  --ok:  hsl(142,76%,60%);
+  --wn:  hsl(38,96%,62%);
+  --er:  hsl(0,89%,68%);
+  --b:   rgba(255,255,255,0.07);
+  --bm:  rgba(255,255,255,0.11);
+  --bs:  rgba(255,255,255,0.16);
+  --nw:  216px;
+  --th:  52px;
+  --eo:  cubic-bezier(0.16,1,0.3,1);
+  --tf:  120ms;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Geist',-apple-system,sans-serif;background:var(--s0);color:var(--tp);font-size:14px;line-height:1.5;font-weight:400;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--s4);border-radius:2px;}
+.shell{display:grid;grid-template-columns:var(--nw) 1fr;grid-template-rows:var(--th) 1fr;height:100vh;}
+.topbar{grid-column:1/-1;grid-row:1;background:var(--s1);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 22px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);}
+.wm{font-size:17px;font-weight:600;letter-spacing:-0.03em;color:var(--tp);cursor:pointer;transition:color var(--tf) var(--eo);}
+.wm:hover{color:var(--ac);}
+.tbr{display:flex;align-items:center;gap:10px;}
+.bv{display:flex;align-items:center;gap:7px;padding:0 13px;height:30px;border-radius:6px;background:var(--s2);border:1px solid var(--bm);color:var(--ts);font-size:13px;font-family:inherit;font-weight:500;cursor:pointer;transition:background var(--tf) var(--eo),color var(--tf) var(--eo);letter-spacing:-0.01em;}
+.bv:hover{background:var(--s3);color:var(--tp);border-color:var(--bs);}
+.vd{width:6px;height:6px;border-radius:50%;background:var(--ac);box-shadow:0 0 6px var(--ac);animation:pu 2.4s ease-in-out infinite;}
+@keyframes pu{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.6;transform:scale(.85);}}
+.av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,hsl(210,80%,42%),hsl(230,70%,55%));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;cursor:pointer;border:1px solid var(--bm);transition:box-shadow var(--tf) var(--eo);}
+.av:hover{box-shadow:0 0 0 2px var(--as);}
+.nav{grid-column:1;grid-row:2;background:var(--s1);border-right:1px solid var(--b);padding:12px 10px;display:flex;flex-direction:column;gap:1px;overflow-y:auto;}
+.nsl{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--tm);padding:10px 10px 6px;margin-top:4px;}
+.nsl:first-child{margin-top:0;padding-top:4px;}
+.ni{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:6px;color:var(--tt);font-size:13px;font-weight:450;cursor:pointer;text-decoration:none;transition:background var(--tf) var(--eo),color var(--tf) var(--eo);letter-spacing:-0.01em;position:relative;}
+.ni:hover{background:var(--s2);color:var(--tp);}
+.ni.on{background:var(--ag);color:var(--ac);font-weight:500;}
+.ni.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2px;height:16px;background:var(--ac);border-radius:0 2px 2px 0;}
+.ico{width:15px;height:15px;flex-shrink:0;opacity:.75;}
+.ni.on .ico{opacity:1;}
+.nb{margin-left:auto;font-size:10px;font-weight:600;color:var(--ts);background:var(--s3);border-radius:999px;padding:1px 6px;line-height:1.6;font-variant-numeric:tabular-nums;}
+.ni.on .nb{background:var(--as);color:var(--ac);}
+.main{grid-column:2;grid-row:2;background:var(--s0);display:grid;grid-template-columns:1fr 336px;height:calc(100vh - var(--th));}
+.cp{grid-column:1;display:flex;flex-direction:column;height:calc(100vh - var(--th));border-right:1px solid var(--b);}
+.cg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 52px 80px;text-align:center;}
+.gi{width:40px;height:40px;border-radius:10px;background:linear-gradient(145deg,hsl(210,80%,26%),hsl(230,75%,38%));display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 0 24px hsla(210,80%,50%,.15);border:1px solid rgba(255,255,255,.08);animation:fu .5s var(--eo) .05s both;}
+.gt{font-size:30px;font-weight:500;letter-spacing:-0.035em;color:var(--tp);margin-bottom:8px;line-height:1.15;animation:fu .5s var(--eo) .12s both;}
+.gs{font-size:15px;color:var(--ts);font-weight:400;letter-spacing:-0.01em;margin-bottom:32px;animation:fu .5s var(--eo) .19s both;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:520px;animation:fu .5s var(--eo) .26s both;}
+.chip{padding:7px 14px;border-radius:999px;background:var(--s2);border:1px solid var(--bm);color:var(--ts);font-size:13px;font-family:inherit;font-weight:450;cursor:pointer;transition:background var(--tf) var(--eo),color var(--tf) var(--eo),border-color var(--tf) var(--eo),transform var(--tf) var(--eo);letter-spacing:-0.01em;white-space:nowrap;}
+.chip:hover{background:var(--s3);color:var(--tp);border-color:var(--bs);transform:translateY(-1px);}
+.iw{padding:18px 22px 22px;border-top:1px solid var(--b);animation:fu .4s var(--eo) .32s both;}
+.ib{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--bm);border-radius:12px;padding:10px 13px;transition:border-color var(--tf) var(--eo),box-shadow var(--tf) var(--eo);}
+.ib:focus-within{border-color:var(--ad);box-shadow:0 0 0 3px var(--ag);}
+.ib input{flex:1;background:none;border:none;outline:none;color:var(--tp);font-family:inherit;font-size:14px;font-weight:400;letter-spacing:-0.01em;}
+.ib input::placeholder{color:var(--tm);}
+.sb{width:30px;height:30px;border-radius:7px;background:var(--ac);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background var(--tf) var(--eo),transform var(--tf) var(--eo);box-shadow:0 2px 8px hsla(210,85%,50%,.22);}
+.sb:hover{background:var(--ad);transform:scale(1.06);}
+.ih{margin-top:7px;text-align:center;font-size:11px;color:var(--tm);letter-spacing:.01em;}
+.wp{grid-column:2;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px;}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.stit{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--tm);}
+.sli{font-size:11px;color:var(--tt);cursor:pointer;letter-spacing:-0.01em;transition:color var(--tf) var(--eo);}
+.sli:hover{color:var(--ac);}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.sc{background:var(--s1);border:1px solid var(--b);border-radius:9px;padding:13px;cursor:pointer;transition:background var(--tf) var(--eo),border-color var(--tf) var(--eo),transform 220ms var(--eo);}
+.sc:hover{background:var(--s2);border-color:var(--bm);transform:translateY(-1px);}
+.sl{font-size:11px;color:var(--tt);font-weight:500;letter-spacing:.02em;margin-bottom:5px;text-transform:uppercase;}
+.sv{font-size:22px;font-weight:600;letter-spacing:-0.04em;color:var(--tp);font-variant-numeric:tabular-nums;line-height:1;margin-bottom:5px;}
+.sd{font-size:11px;font-weight:500;display:flex;align-items:center;gap:3px;}
+.sd.up{color:var(--ok);}.sd.dn{color:var(--er);}.sd.wn{color:var(--wn);}.sd.nt{color:var(--tt);}
+.sc.al{border-color:hsla(38,96%,62%,.20);background:hsla(38,25%,9%,.8);}
+.sc.al .sv{color:var(--wn);}
+.pc{background:var(--s1);border:1px solid var(--b);border-radius:14px;overflow:hidden;}
+.pch{padding:12px 14px 0;}
+.pcb{padding:4px 2px 8px;}
+.ti{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:background var(--tf) var(--eo);}
+.ti:hover{background:var(--s2);}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.td.op{background:var(--tm);}.td.pr{background:var(--ac);box-shadow:0 0 5px var(--ac);}.td.dn{background:var(--ok);}.td.bl{background:var(--wn);}
+.tt2{flex:1;font-size:13px;color:var(--ts);font-weight:440;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tt2.dn{text-decoration:line-through;color:var(--tm);}
+.tm2{font-size:11px;color:var(--tm);font-variant-numeric:tabular-nums;flex-shrink:0;}
+.tg{display:inline-flex;align-items:center;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
+.tg.op{background:hsla(210,60%,22%,.7);color:var(--ac);}.tg.rv{background:hsla(38,60%,18%,.7);color:var(--wn);}
+.ci{display:flex;align-items:flex-start;gap:9px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:background var(--tf) var(--eo);}
+.ci:hover{background:var(--s2);}
+.ct{font-size:10px;font-weight:600;color:var(--tm);font-variant-numeric:tabular-nums;width:28px;flex-shrink:0;padding-top:2px;letter-spacing:.01em;}
+.ca{width:2px;min-height:28px;border-radius:2px;flex-shrink:0;}
+.ctt{font-size:13px;color:var(--ts);font-weight:440;letter-spacing:-0.01em;line-height:1.35;}
+.cd{font-size:11px;color:var(--tm);margin-top:1px;}
+.fi{display:flex;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:background var(--tf) var(--eo);align-items:flex-start;}
+.fi:hover{background:var(--s2);}
+.fp{width:6px;height:6px;border-radius:50%;background:var(--s4);margin-top:5px;flex-shrink:0;}
+.fp.ac{background:var(--ac);box-shadow:0 0 4px var(--ac);}.fp.wn{background:var(--wn);}.fp.ok{background:var(--ok);}
+.ft{font-size:13px;color:var(--ts);font-weight:440;letter-spacing:-0.01em;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fw{font-size:11px;color:var(--tm);margin-top:1px;}
+@keyframes fu{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.sc:nth-child(1){animation:fu .38s var(--eo) .08s both;}
+.sc:nth-child(2){animation:fu .38s var(--eo) .14s both;}
+.sc:nth-child(3){animation:fu .38s var(--eo) .20s both;}
+.sc:nth-child(4){animation:fu .38s var(--eo) .26s both;}
+.pc:nth-of-type(1){animation:fu .38s var(--eo) .10s both;}
+.pc:nth-of-type(2){animation:fu .38s var(--eo) .18s both;}
+.pc:nth-of-type(3){animation:fu .38s var(--eo) .26s both;}
+.wmark{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);font-family:'Geist Mono',monospace;font-size:10px;color:var(--tm);letter-spacing:.04em;pointer-events:none;opacity:.45;}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="topbar">
+  <span class="wm">arthur</span>
+  <div class="tbr">
+    <button class="bv"><span class="vd"></span>+ Talk</button>
+    <div class="av">D</div>
+  </div>
+</header>
+<nav class="nav">
+  <span class="nsl">Workspace</span>
+  <a class="ni on" href="#">
+    <svg class="ico" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/></svg>
+    Dashboard
+  </a>
+  <a class="ni" href="#">
+    <svg class="ico" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Tasks<span class="nb">7</span>
+  </a>
+  <a class="ni" href="#">
+    <svg class="ico" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Goals<span class="nb">4</span>
+  </a>
+  <a class="ni" href="#">
+    <svg class="ico" viewBox="0 0 16 16" fill="none"><path d="M2 3h12v8a2 2 0 01-2 2H4a2 2 0 01-2-2V3z" stroke="currentColor" stroke-width="1.5"/><path d="M2 3l6 5 6-5" stroke="currentColor" stroke-width="1.5"/></svg>
+    Inbox<span class="nb">12</span>
+  </a>
+  <a class="ni" href="#">
+    <svg class="ico" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M1.5 6.5h13" stroke="currentColor" stroke-width="1.5"/></svg>
+    Calendar
+  </a>
+  <span class="nsl">Business</span>
+  <a class="ni" href="#">
+    <svg class="ico" viewBox="0 0 16 16" fill="none"><path d="M3 13V8M6 13V5M9 13V7M12 13V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Legal
+  </a>
+  <a class="ni" href="#">
+    <svg class="ico" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 13c0-2.485 2.015-4.5 4.5-4.5s4.5 2.015 4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="11.5" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M13.5 12.5c0-1.933-1.567-3.5-3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Employees
+  </a>
+  <span class="nsl">Arthur</span>
+  <a class="ni" href="#">
+    <svg class="ico" viewBox="0 0 16 16" fill="none"><path d="M8 2a6 6 0 100 12A6 6 0 008 2z" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Brain
+  </a>
+  <a class="ni" href="#">
+    <svg class="ico" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+    Skills
+  </a>
+  <a class="ni" href="#">
+    <svg class="ico" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="currentColor" opacity=".6"/></svg>
+    Settings
+  </a>
+</nav>
+<main class="main">
+  <div class="cp">
+    <div class="cg">
+      <div class="gi">
+        <svg viewBox="0 0 20 20" fill="none" width="20" height="20">
+          <path d="M5 15L10 5L15 15" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7 11.5h6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h1 class="gt">Good to see you, Daniel.</h1>
+      <p class="gs">What are we working on today?</p>
+      <div class="chips">
+        <button class="chip">What's in my inbox?</button>
+        <button class="chip">What's on my calendar?</button>
+        <button class="chip">Show recent activity</button>
+        <button class="chip">My active goals</button>
+        <button class="chip">Dabney compliance status</button>
+      </div>
+    </div>
+    <div class="iw">
+      <div class="ib">
+        <input type="text" placeholder="Ask Arthur anything…"/>
+        <button class="sb" aria-label="Send">
+          <svg viewBox="0 0 13 13" fill="none" width="13" height="13"><path d="M2 11L11 6.5L2 2v3.5l6 1-6 1V11z" fill="white"/></svg>
+        </button>
+      </div>
+      <p class="ih">&#8629; to send &middot; Shift+&#8629; for new line</p>
+    </div>
+  </div>
+  <aside class="wp">
+    <div>
+      <div class="sh"><span class="stit">Overview</span><span class="sli">May 26, 2026</span></div>
+      <div class="sg">
+        <div class="sc"><div class="sl">Active Goals</div><div class="sv">4</div><div class="sd nt">2 in progress</div></div>
+        <div class="sc"><div class="sl">Unread Inbox</div><div class="sv">12</div><div class="sd up">&#8593; 3 new today</div></div>
+        <div class="sc al"><div class="sl">&#9888; Chase Balance</div><div class="sv">$4.2k</div><div class="sd wn">&#8595; Below $5k threshold</div></div>
+        <div class="sc"><div class="sl">Today's Events</div><div class="sv">3</div><div class="sd nt">Next at 2:00 PM</div></div>
+      </div>
+    </div>
+    <div class="pc">
+      <div class="pch"><div class="sh"><span class="stit">Tasks</span><span class="sli">See all &rarr;</span></div></div>
+      <div class="pcb">
+        <div class="ti"><span class="td pr"></span><span class="tt2">Review Dabney liquor license renewal</span><span class="tm2"><span class="tg rv">Due</span></span></div>
+        <div class="ti"><span class="td op"></span><span class="tt2">Transfer Chase reserve &rarr; ops account</span><span class="tm2">Today</span></div>
+        <div class="ti"><span class="td pr"></span><span class="tt2">Finalize Aspen &amp; May Q2 forecast</span><span class="tm2"><span class="tg op">Active</span></span></div>
+        <div class="ti"><span class="td dn"></span><span class="tt2 dn">Arthur brain snapshot &mdash; ran 1am</span><span class="tm2">Done</span></div>
+      </div>
+    </div>
+    <div class="pc">
+      <div class="pch"><div class="sh"><span class="stit">Today</span><span class="sli">Calendar &rarr;</span></div></div>
+      <div class="pcb">
+        <div class="ci"><span class="ct">10a</span><div class="ca" style="background:var(--ac)"></div><div><div class="ctt">Staff check-in &middot; Dabney &amp; Co</div><div class="cd">Weekly ops + floor update</div></div></div>
+        <div class="ci"><span class="ct">2p</span><div class="ca" style="background:var(--ok)"></div><div><div class="ctt">LOVELEEDAY &mdash; Product review</div><div class="cd">SaaS roadmap Q3</div></div></div>
+        <div class="ci"><span class="ct">7p</span><div class="ca" style="background:hsl(270,70%,62%)"></div><div><div class="ctt">Dabney &mdash; Live music night</div><div class="cd">Every Friday &middot; doors 6pm</div></div></div>
+      </div>
+    </div>
+    <div class="pc">
+      <div class="pch"><div class="sh"><span class="stit">Activity</span><span class="sli">All &rarr;</span></div></div>
+      <div class="pcb">
+        <div class="fi"><span class="fp wn"></span><div><div class="ft">Chase account dipped below $5k threshold</div><div class="fw">2 hours ago</div></div></div>
+        <div class="fi"><span class="fp ac"></span><div><div class="ft">Brain snapshot complete &middot; 1,847 vectors indexed</div><div class="fw">5 hours ago</div></div></div>
+        <div class="fi"><span class="fp ok"></span><div><div class="ft">Dabney Toast menu sync &mdash; 42 items current</div><div class="fw">Yesterday, 11:40 PM</div></div></div>
+        <div class="fi"><span class="fp"></span><div><div class="ft">Aspen &amp; May &middot; HoneyBook inquiry &mdash; Emily R.</div><div class="fw">Yesterday, 4:12 PM</div></div></div>
+      </div>
+    </div>
+  </aside>
+</main>
+</div>
+<div class="wmark">arthur &middot; design direction &middot; refined dark v1</div>
+</body>
+</html>

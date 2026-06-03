@@ -133,7 +133,7 @@ function NavDrawer({
         >
           <span
             style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: "var(--font-lora, 'Lora', Georgia, serif)",
               fontSize: 18,
               fontWeight: 600,
               color: "var(--text-active)",

@@ -72,7 +72,7 @@ export default function SkillsLayout({ skills }: { skills: Skill[] }) {
             type="button"
             onClick={() => setActiveCategory(null)}
             style={{
-              background: activeCategory === null ? "rgba(235,64,0,0.12)" : "transparent",
+              background: activeCategory === null ? "rgba(11,80,79,0.10)" : "transparent",
               border: "none",
               borderRadius: 6,
               cursor: "pointer",
@@ -107,7 +107,7 @@ export default function SkillsLayout({ skills }: { skills: Skill[] }) {
               type="button"
               onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
               style={{
-                background: activeCategory === cat ? "rgba(235,64,0,0.08)" : "transparent",
+                background: activeCategory === cat ? "rgba(11,80,79,0.08)" : "transparent",
                 border: "none",
                 borderRadius: 6,
                 cursor: "pointer",

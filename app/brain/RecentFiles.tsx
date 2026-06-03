@@ -22,13 +22,13 @@ const CATEGORY_COLORS: Record<string, string> = {
   languages: "#00b894",
   algorithms: "#0984e3",
   meta: "#74b9ff",
-  "external-skills": "#d4ff3d",
+  "external-skills": "#8A837A",
   credit: "#fdcb6e",
   legal: "#81ecec",
   research: "#b2bec3",
   platforms: "#636e72",
   mathematics: "#a8e6cf",
-  principles: "#d4ff3d",
+  principles: "#0B504F",
 };
 
 function relativeTime(isoString: string | null): string {
@@ -56,12 +56,11 @@ export default function RecentFiles({ files }: RecentFilesProps) {
       >
         <h2
           style={{
-            fontFamily:
-              "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-            fontWeight: 700,
-            fontSize: "1.5rem",
+            fontFamily: "var(--font-lora, 'Lora', Georgia, serif)",
+            fontWeight: 500,
+            fontSize: "1.375rem",
             letterSpacing: "-0.02em",
-            color: "var(--text-active, var(--text))",
+            color: "var(--text-active)",
             margin: 0,
           }}
         >
@@ -100,9 +99,6 @@ export default function RecentFiles({ files }: RecentFilesProps) {
                 transition: "background 0.15s",
               }}
               // TODO: preview this file on click
-              onClick={() => {
-                console.log("[brain] recent file click:", file.title);
-              }}
             >
               {/* Category dot */}
               <span
@@ -111,7 +107,6 @@ export default function RecentFiles({ files }: RecentFilesProps) {
                   height: 8,
                   borderRadius: "50%",
                   background: color,
-                  boxShadow: `0 0 4px ${color}60`,
                   flexShrink: 0,
                 }}
               />

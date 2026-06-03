@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { Nav, Footer } from "@/app/_components/Layout";
 
 interface Settings {
   automation_enabled: boolean;
@@ -178,8 +177,7 @@ export default function InboxSettingsPage() {
 
   return (
     <>
-      <Nav />
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "108px 24px 80px" }}>
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 24px 80px" }}>
 
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
@@ -211,13 +209,14 @@ export default function InboxSettingsPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <h1 style={{
               margin: 0,
-              fontWeight: 300,
-              fontSize: "clamp(1.8rem, 3vw, 2.4rem)",
-              letterSpacing: "-0.03em",
+              fontFamily: "var(--font-lora, Lora, Georgia, serif)",
+              fontWeight: 500,
+              fontSize: "clamp(1.6rem, 3vw, 2.2rem)",
+              letterSpacing: "-0.025em",
               color: "var(--text-active)",
               lineHeight: 1,
             }}>
-              settings.
+              Settings
             </h1>
             {saving && (
               <span style={{
@@ -251,8 +250,8 @@ export default function InboxSettingsPage() {
             }}>
               automation control
             </div>
-            <h2 style={{ margin: "0 0 20px", fontWeight: 400, fontSize: 22, letterSpacing: "-0.02em", color: "var(--text-active)" }}>
-              automation.
+            <h2 style={{ margin: "0 0 20px", fontFamily: "var(--font-lora, Lora, Georgia, serif)", fontWeight: 500, fontSize: 20, letterSpacing: "-0.02em", color: "var(--text-active)" }}>
+              Automation
             </h2>
 
             {loadingSettings ? (
@@ -288,7 +287,7 @@ export default function InboxSettingsPage() {
                   alignItems: "center",
                   gap: 16,
                   padding: "14px 0",
-                  borderTop: "1px dashed rgba(255,255,255,0.10)",
+                  borderTop: "1px dashed rgba(0,0,0,0.08)",
                 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 11, color: "var(--text-main)", marginBottom: 2 }}>
@@ -328,8 +327,8 @@ export default function InboxSettingsPage() {
                 <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 4 }}>
                   classification rules
                 </div>
-                <h2 style={{ margin: 0, fontWeight: 400, fontSize: 22, letterSpacing: "-0.02em", color: "var(--text-active)" }}>
-                  rules.
+                <h2 style={{ margin: 0, fontFamily: "var(--font-lora, Lora, Georgia, serif)", fontWeight: 500, fontSize: 20, letterSpacing: "-0.02em", color: "var(--text-active)" }}>
+                  Rules
                 </h2>
               </div>
               <button
@@ -484,7 +483,6 @@ export default function InboxSettingsPage() {
           </div>
         </section>
       </div>
-      <Footer />
     </>
   );
 }
@@ -496,13 +494,16 @@ function ToggleRow({ label, desc, value, onChange }: { label: string; desc: stri
       alignItems: "center",
       gap: 16,
       padding: "14px 0",
-      borderBottom: "1px dashed rgba(255,255,255,0.10)",
+      borderBottom: "1px dashed rgba(0,0,0,0.08)",
     }}>
       <div style={{ flex: 1 }}>
         <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 11, color: "var(--text-main)", marginBottom: 2 }}>{label}</div>
         <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.5 }}>{desc}</div>
       </div>
       <button
+        role="switch"
+        aria-checked={value}
+        aria-label={label}
         onClick={() => onChange(!value)}
         style={{
           flexShrink: 0,
@@ -510,7 +511,7 @@ function ToggleRow({ label, desc, value, onChange }: { label: string; desc: stri
           height: 24,
           borderRadius: 12,
           border: "none",
-          background: value ? "var(--accent-orange)" : "var(--glass-bg-strong)",
+          background: value ? "var(--accent-orange)" : "#E8E4DB",
           cursor: "pointer",
           position: "relative",
           transition: "background 0.2s",
@@ -524,7 +525,7 @@ function ToggleRow({ label, desc, value, onChange }: { label: string; desc: stri
           width: 18,
           height: 18,
           borderRadius: "50%",
-          background: value ? "var(--accent-text-on)" : "rgba(245,246,248,0.5)",
+          background: value ? "#FAF8F5" : "rgba(26,23,19,0.25)",
           transition: "left 0.2s",
         }} />
       </button>

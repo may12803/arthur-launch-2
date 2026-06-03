@@ -80,9 +80,9 @@ export default function ModelLadder() {
               background: isHovered
                 ? "var(--glass-bg-strong)"
                 : isArthur
-                ? "rgba(235,64,0,0.06)"
+                ? "rgba(11,80,79,0.06)"
                 : "var(--glass-bg)",
-              border: `1px solid ${isHovered ? "var(--line-separator)" : isArthur ? "rgba(235,64,0,0.2)" : "var(--glass-border)"}`,
+              border: `1px solid ${isHovered ? "var(--line-separator)" : isArthur ? "rgba(11,80,79,0.2)" : "var(--glass-border)"}`,
               transition: "all 150ms var(--ease-out-soft)",
               transform: isHovered ? "translateY(-1px)" : "none",
               boxShadow: isHovered ? "0 4px 16px -4px rgba(245,246,248,0.06)" : "none",
@@ -163,7 +163,7 @@ export default function ModelLadder() {
               <span style={{
                 fontFamily: "var(--font-jetbrains, monospace)",
                 fontSize: 10,
-                color: "#4ade80",
+                color: "#16A34A",
                 background: "rgba(74,222,128,0.08)",
                 border: "1px solid rgba(74,222,128,0.2)",
                 borderRadius: 20,

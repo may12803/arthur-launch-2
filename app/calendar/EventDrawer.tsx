@@ -38,7 +38,7 @@ export function EventDrawer({ event, onClose }: EventDrawerProps) {
       <div
         className="fixed inset-0 z-40 transition-opacity duration-300"
         style={{
-          background: 'rgba(0,0,0,0.4)',
+          background: 'rgba(26,23,19,0.30)',
           opacity: open ? 1 : 0,
           pointerEvents: open ? 'auto' : 'none',
         }}
@@ -50,12 +50,11 @@ export function EventDrawer({ event, onClose }: EventDrawerProps) {
         className="fixed top-0 right-0 h-full z-50 flex flex-col overflow-hidden"
         style={{
           width: 'min(320px, 100vw)',
-          background: 'rgba(18, 21, 28, 0.98)',
-          backdropFilter: 'blur(24px)',
+          background: 'var(--glass-bg)',
           borderLeft: '1px solid var(--glass-border)',
           transform: open ? 'translateX(0)' : 'translateX(100%)',
           transition: 'transform 280ms cubic-bezier(0.32,0.72,0,1)',
-          boxShadow: '-8px 0 32px rgba(0,0,0,0.5)',
+          boxShadow: 'var(--glass-shadow-tier3)',
         }}
       >
         {event && (

@@ -58,22 +58,54 @@ function statusDot(status: string) {
   return map[status] ?? S.textMuted;
 }
 
+interface AgentEntry {
+  id: string;
+  name: string;
+  model?: string;
+  team?: string;
+  state?: string;
+  task?: string | null;
+  timeAgo?: string | null;
+}
+
+interface ActivityResponse {
+  total?: number;
+  active?: number;
+  employees?: AgentEntry[];
+}
+
 export default function EmployeesPage() {
   const [roster, setRoster] = useState<Roster>({});
+  const [agents, setAgents] = useState<AgentEntry[]>([]);
+  const [agentStats, setAgentStats] = useState<{ total: number; active: number }>({ total: 0, active: 0 });
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('ALL 9');
+  const [tab, setTab] = useState('ALL');
 
   useEffect(() => {
-    fetch('/api/employees')
+    // /api/employees/activity returns real Arthur agent registry
+    fetch('/api/employees/activity')
       .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data) setRoster(data);
+      .then((data: ActivityResponse | null) => {
+        if (data) {
+          setAgentStats({ total: data.total ?? 0, active: data.active ?? 0 });
+          setAgents(data.employees ?? []);
+          // Group by team for roster
+          const grouped: Roster = {};
+          for (const emp of (data.employees ?? [])) {
+            const team = emp.team || 'other';
+            if (!grouped[team]) grouped[team] = [];
+            grouped[team].push({ id: emp.id, name: emp.name, model: emp.model, role: emp.state ?? 'idle', team, entity: 'ALL', status: emp.state ?? 'idle' });
+          }
+          setRoster(grouped);
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   const onShift = DABNEY_STAFF.filter(e => e.status === 'on-shift').length;
+  const activeAgents = agents.filter(a => a.state === 'active' || a.state === 'running').length;
+  const displayedAgents = tab === 'ARTHUR' ? agents : agents.slice(0, 10);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -84,11 +116,14 @@ export default function EmployeesPage() {
           <div style={{ fontFamily: S.mono, fontSize: '9px', color: S.textMuted, letterSpacing: '0.08em' }}>HUMAN + ARTHUR AGENTS · HOMEBASE SYNC LIVE</div>
         </div>
         <div style={{ display: 'flex', gap: '3px', marginLeft: '14px' }}>
-          {['ALL 9', 'MANAGERS 4', 'SERVERS 3', 'ON-CALL 1', 'ARTHUR', 'FORMER 1'].map(label => (
+          {['ALL', 'ARTHUR', 'FORMER'].map(label => (
             <button key={label} onClick={() => setTab(label)} style={{ padding: '3px 10px', fontSize: '9px', fontFamily: S.mono, borderRadius: '2px', background: tab === label ? S.accent : S.bg3, color: tab === label ? S.bg : S.textMuted, border: `1px solid ${tab === label ? S.accent : S.border2}`, cursor: 'pointer', fontWeight: 600 }}>{label}</button>
           ))}
         </div>
-        <button style={{ marginLeft: 'auto', padding: '3px 10px', fontSize: '9px', fontFamily: S.mono, borderRadius: '2px', background: 'transparent', color: S.accent, border: `1px solid ${S.accent}44`, cursor: 'pointer', fontWeight: 600 }}>+ HIRE</button>
+        <button
+          onClick={() => window.open('https://app.joinhomebase.com/', '_blank')}
+          style={{ marginLeft: 'auto', padding: '3px 10px', fontSize: '9px', fontFamily: S.mono, borderRadius: '2px', background: 'transparent', color: S.accent, border: `1px solid ${S.accent}44`, cursor: 'pointer', fontWeight: 600 }}
+        >↗ HOMEBASE</button>
       </div>
 
       {/* Stat bar */}
@@ -98,7 +133,7 @@ export default function EmployeesPage() {
         <StatBlock label="OPEN SHIFTS / 7D" value="3" delta="2 unfilled Sat night" valueColor={S.orange} />
         <StatBlock label="NEW HIRES / 30D" value="1" delta="Andrea (Bar Lead)" />
         <StatBlock label="TURNOVER / 90D" value="1" delta="Gonzalez — CC unset" valueColor={S.red} />
-        <StatBlock label="ARTHUR AGENTS" value={String(ARTHUR_TEAM.filter(a => a.status === 'active').length)} delta="active this session" valueColor={S.blue} />
+        <StatBlock label="ARTHUR AGENTS" value={loading ? '…' : String(agentStats.total)} delta={`${agentStats.active} active`} valueColor={S.blue} />
       </div>
 
       {/* 2-col: human + agents */}
@@ -143,29 +178,23 @@ export default function EmployeesPage() {
         <div style={{ background: S.bg2, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '10px 14px', borderBottom: `1px solid ${S.border}`, fontFamily: S.mono, fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: S.textMuted }}>ARTHUR AGENTS</div>
           <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {ARTHUR_TEAM.map(agent => (
+            {loading ? (
+              <div style={{ fontFamily: S.mono, fontSize: '10px', color: S.textMuted, padding: '8px' }}>loading agents…</div>
+            ) : displayedAgents.slice(0, 12).map(agent => (
               <div key={agent.id} style={{ background: S.bg3, border: `1px solid ${S.border2}`, borderRadius: '3px', padding: '10px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 600, color: S.textPrimary }}>{agent.name}</div>
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: statusDot(agent.status ?? 'off'), display: 'inline-block' }} />
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: statusDot(agent.state ?? 'idle'), display: 'inline-block' }} />
                 </div>
-                <div style={{ fontSize: '10px', color: S.textSecondary, marginBottom: '3px' }}>{agent.role}</div>
-                <div style={{ fontFamily: S.mono, fontSize: '9px', color: S.textMuted }}>{agent.model}</div>
+                {agent.task && <div style={{ fontSize: '10px', color: S.textSecondary, marginBottom: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{agent.task}</div>}
+                <div style={{ fontFamily: S.mono, fontSize: '9px', color: S.textMuted }}>{agent.model ?? agent.team}</div>
+                {agent.timeAgo && <div style={{ fontFamily: S.mono, fontSize: '9px', color: S.textMuted }}>{agent.timeAgo}</div>}
               </div>
             ))}
           </div>
-          {/* Roster from API if available */}
-          {Object.keys(roster).length > 0 && (
-            <div style={{ padding: '10px 14px', borderTop: `1px solid ${S.border}` }}>
-              <div style={{ fontFamily: S.mono, fontSize: '9px', fontWeight: 700, color: S.textMuted, marginBottom: '8px' }}>SPECIALIST REGISTRY</div>
-              {Object.entries(roster).slice(0, 5).map(([team, members]) => (
-                <div key={team} style={{ marginBottom: '6px' }}>
-                  <div style={{ fontFamily: S.mono, fontSize: '8px', color: S.textMuted, marginBottom: '3px' }}>{team.toUpperCase()}</div>
-                  {(members as Employee[]).slice(0, 2).map(m => (
-                    <div key={m.id} style={{ fontSize: '10px', color: S.textSecondary, padding: '2px 0' }}>{m.name}</div>
-                  ))}
-                </div>
-              ))}
+          {!loading && agentStats.total > 12 && (
+            <div style={{ padding: '8px 14px', borderTop: `1px solid ${S.border}`, fontFamily: S.mono, fontSize: '9px', color: S.textMuted }}>
+              +{agentStats.total - 12} more agents in registry
             </div>
           )}
         </div>

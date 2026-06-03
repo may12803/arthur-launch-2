@@ -124,3 +124,95 @@ export async function searchFlights(args: FlightSearchArgs): Promise<{ ok: true;
     return { ok: false, error: `Duffel error: ${e.message?.slice(0, 200) || String(e).slice(0, 200)}` };
   }
 }
+
+
+// --- Stays (hotel) search via Duffel Stays API ---
+// https://duffel.com/docs/api/v2/stays - Daniel's rules: specific prices not
+// ranges, clickable URLs, full nightly + total cost.
+export interface HotelSearchArgs {
+  location: string;
+  check_in: string;
+  check_out: string;
+  guests?: number;
+  rooms?: number;
+  max_price_per_night_usd?: number;
+}
+
+export interface HotelOffer {
+  name: string;
+  rating?: number;
+  address?: string;
+  total_currency: string;
+  total_amount: string;
+  per_night_amount: string;
+  rooms: number;
+  nights: number;
+  cancellation_policy?: string;
+  booking_url: string;
+  duffel_offer_id?: string;
+  thumbnail_url?: string;
+}
+
+export async function searchHotels(args: HotelSearchArgs): Promise<{ ok: true; offers: HotelOffer[] } | { ok: false; error: string }> {
+  const token = loadToken();
+  if (!token) return { ok: false, error: "DUFFEL_TOKEN not set" };
+  if (!args.check_in || !/^\d{4}-\d{2}-\d{2}$/.test(args.check_in)) return { ok: false, error: "check_in YYYY-MM-DD required" };
+  if (!args.check_out || !/^\d{4}-\d{2}-\d{2}$/.test(args.check_out)) return { ok: false, error: "check_out YYYY-MM-DD required" };
+  const nights = Math.max(1, Math.round((Date.parse(args.check_out) - Date.parse(args.check_in)) / 86400000));
+  const guests = args.guests || 2;
+  const rooms = args.rooms || 1;
+  const body = {
+    data: {
+      check_in_date: args.check_in,
+      check_out_date: args.check_out,
+      guests: Array.from({ length: guests }, () => ({ type: "adult" })),
+      rooms,
+      location: { query: args.location },
+    },
+  };
+  try {
+    const r = await fetch(BASE + "/stays/search", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+        "Duffel-Version": VERSION,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(25000),
+    });
+    if (!r.ok) {
+      const txt = await r.text();
+      return { ok: false, error: "Duffel Stays HTTP " + r.status + ": " + txt.slice(0, 300) };
+    }
+    const j: any = await r.json();
+    const results: any[] = j.data?.results || j.data?.accommodations || [];
+    const offers: HotelOffer[] = results.slice(0, 8).map((res: any) => {
+      const acc = res.accommodation || res;
+      const cheapest = (res.cheapest_rate || res.rates?.[0] || {}) as any;
+      const total = parseFloat(cheapest.total_amount || cheapest.price?.amount || "0");
+      const ceiling = args.max_price_per_night_usd;
+      if (ceiling && (total / nights) > ceiling) return null as any;
+      const cur = cheapest.total_currency || cheapest.price?.currency || "USD";
+      return {
+        name: acc.name || "Hotel",
+        rating: acc.rating || acc.stars,
+        address: [acc.address?.line_one, acc.address?.city_name, acc.address?.country_code].filter(Boolean).join(", "),
+        total_currency: cur,
+        total_amount: total.toFixed(2),
+        per_night_amount: (total / nights).toFixed(2),
+        rooms,
+        nights,
+        cancellation_policy: cheapest.cancellation_policy || cheapest.payment_method || undefined,
+        booking_url: cheapest.deep_link || cheapest.booking_url || acc.url ||
+          ("https://www.google.com/travel/hotels?q=" + encodeURIComponent(acc.name + " " + (acc.address?.city_name || args.location))),
+        duffel_offer_id: cheapest.id || cheapest.offer_id,
+        thumbnail_url: (acc.photos || acc.images)?.[0]?.url,
+      };
+    }).filter(Boolean);
+    return { ok: true, offers };
+  } catch (e: any) {
+    return { ok: false, error: "Duffel Stays error: " + (e.message?.slice(0, 200) || String(e).slice(0, 200)) };
+  }
+}

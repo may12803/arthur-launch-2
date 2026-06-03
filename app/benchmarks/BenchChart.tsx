@@ -40,8 +40,8 @@ export default function BenchChart({ points }: { points: Point[] }) {
         .attr("id", "bench-grad")
         .attr("x1", "0").attr("y1", "0")
         .attr("x2", "0").attr("y2", "1");
-      grad.append("stop").attr("offset", "0%").attr("stop-color", "#4ade80").attr("stop-opacity", 0.3);
-      grad.append("stop").attr("offset", "100%").attr("stop-color", "#4ade80").attr("stop-opacity", 0);
+      grad.append("stop").attr("offset", "0%").attr("stop-color", "#0B504F").attr("stop-opacity", 0.2);
+      grad.append("stop").attr("offset", "100%").attr("stop-color", "#0B504F").attr("stop-opacity", 0);
 
       g.append("path")
         .datum(points)
@@ -58,7 +58,7 @@ export default function BenchChart({ points }: { points: Point[] }) {
         .datum(points)
         .attr("d", line)
         .attr("fill", "none")
-        .attr("stroke", "#4ade80")
+        .attr("stroke", "#0B504F")
         .attr("stroke-width", 1.5);
 
       // Dots on each point
@@ -69,15 +69,15 @@ export default function BenchChart({ points }: { points: Point[] }) {
         .attr("cx", d => x(d.i))
         .attr("cy", d => y(d.score))
         .attr("r", 3)
-        .attr("fill", "#4ade80");
+        .attr("fill", "#0B504F");
 
       // Y axis ticks
       g.append("g")
         .call(d3.axisLeft(y).ticks(3).tickFormat(d => `${Math.round((d as number) * 100)}%`))
         .call(g2 => {
-          g2.selectAll("text").attr("fill", "#515869").attr("font-size", 8);
+          g2.selectAll("text").attr("fill", "#8A837A").attr("font-size", 8);
           g2.select(".domain").remove();
-          g2.selectAll(".tick line").attr("stroke", "#161b24");
+          g2.selectAll(".tick line").attr("stroke", "rgba(0,0,0,0.08)");
         });
     });
   }, [points]);

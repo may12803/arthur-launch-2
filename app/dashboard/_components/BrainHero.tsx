@@ -43,13 +43,13 @@ const LOBE_COLORS: Record<string, string> = {
   "memory":        "#f59e0b",
   "skills":        "#a78bfa",
   "agentic":       "#60a5fa",
-  "upgrades":      "#4ade80",
+  "upgrades":      "#16A34A",
   "data":          "#c084fc",
-  "credit":        "#4ade80",
+  "credit":        "#16A34A",
   "legal":         "#c084fc",
   "marketing":     "#f59e0b",
   "operations":    "#60a5fa",
-  "finance":       "#4ade80",
+  "finance":       "#16A34A",
 };
 
 function lobeColor(lobe: string): string {

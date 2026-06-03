@@ -1,8 +1,30 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
+import { Lora, Inter, JetBrains_Mono } from "next/font/google";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { AppShellWrapper } from "./_components/AppShellWrapper";
+
+const lora = Lora({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-lora",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-jetbrains",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
@@ -26,7 +48,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`dark ${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" className={`${lora.variable} ${inter.variable} ${jetbrainsMono.variable} ${GeistMono.variable}`}>
       <body className="bg-bg-base text-text-main">
         <AppShellWrapper>{children}</AppShellWrapper>
       </body>

@@ -1,49 +1,49 @@
 @import "tailwindcss";
 
-/* ─── ARTHUR OS — Design Tokens (DEEP MIDNIGHT) ─────────────────────────────
- * Glass-morphism on near-black canvas. Dark theme. Translucent panels.
- * #d4ff3d chartreuse accent reserved for moments. White text on glass.
- * Picked by Daniel from color mockup option 2 (2026-05-04).
+/* ─── ARTHUR OS — Design Tokens (LIGHT EDITORIAL) ───────────────────────────
+ * Warm paper canvas. Lora serif + Inter sans. Teal #0B504F accent.
+ * 60-30-10: #FAF8F5 warm paper (60%) · warm gray scale (30%) · teal (10%).
+ * Replaces DEEP MIDNIGHT glass-morphism — Stage 1 theme flip 2026-05-26.
  * ─────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Arthur OS canvas — Deep Midnight */
-  --bg-base:        #0c0e12;
-  --grid-line:      rgba(255, 255, 255, 0.045);
+  /* Arthur OS canvas — Light Editorial / Warm Paper */
+  --bg-base:        #FAF8F5;
+  --grid-line:      rgba(0, 0, 0, 0.03);
 
-  /* Glass panel surface — 3-tier depth system */
-  /* Tier 1 (inactive): subtle, faint background */
-  --glass-bg:       rgba(255, 255, 255, 0.04);
-  --glass-bg-strong: rgba(255, 255, 255, 0.08);
-  --glass-bg-faint: rgba(255, 255, 255, 0.02);
-  --glass-border:   rgba(255, 255, 255, 0.08);
-  --glass-shadow:   0 4px 16px rgba(0, 0, 0, 0.2);
+  /* Surface tiers — flat warm card surfaces (replaces glass) */
+  /* Tier 1 (base surface): white card */
+  --glass-bg:       #FFFFFF;
+  --glass-bg-strong: #F6F3EE;
+  --glass-bg-faint: #FDFCFA;
+  --glass-border:   rgba(0, 0, 0, 0.06);
+  --glass-shadow:   0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
   
-  /* Tier 2 (interactive): medium depth with responsive hover */
-  --glass-bg-tier2: rgba(255, 255, 255, 0.08);
-  --glass-border-tier2: rgba(255, 255, 255, 0.12);
-  --glass-shadow-tier2: 0 8px 24px rgba(0, 0, 0, 0.3);
+  /* Tier 2 (interactive/hover): warmer mid-surface */
+  --glass-bg-tier2: #F3F0EA;
+  --glass-border-tier2: rgba(0, 0, 0, 0.10);
+  --glass-shadow-tier2: 0 4px 12px rgba(11, 80, 79, 0.08), 0 2px 4px rgba(26, 23, 19, 0.05);
   
-  /* Tier 3 (elevated/selected): deepest, most prominent */
-  --glass-bg-tier3: rgba(255, 255, 255, 0.12);
-  --glass-border-tier3: rgba(255, 255, 255, 0.16);
-  --glass-shadow-tier3: 0 12px 40px rgba(0, 0, 0, 0.4);
+  /* Tier 3 (elevated/selected): deepest warm surface */
+  --glass-bg-tier3: #EDE9E1;
+  --glass-border-tier3: rgba(0, 0, 0, 0.14);
+  --glass-shadow-tier3: 0 8px 24px rgba(11, 80, 79, 0.13), 0 3px 8px rgba(26, 23, 19, 0.07);
 
-  /* Text — light primary, accent for high-emphasis (the inverse of the grey theme) */
-  --text-main:      rgba(245, 246, 248, 0.85);
-  --text-active:    #f5f6f8;
-  --text-muted:     rgba(245, 246, 248, 0.45);
-  --line-separator: rgba(255, 255, 255, 0.12);
+  /* Text — ink on warm paper */
+  --text-main:      rgba(26, 23, 19, 0.82);
+  --text-active:    #1A1713;
+  --text-muted:     rgba(26, 23, 19, 0.50);
+  --line-separator: rgba(0, 0, 0, 0.08);
 
-  /* Accent — chartreuse, used sparingly. Black text on accent for high contrast. */
-  --accent-orange:  #d4ff3d;
-  --accent-orange-soft: rgba(212, 255, 61, 0.18);
-  --accent-text-on: #1a2400;
+  /* Accent — teal #0B504F. Light text on accent. */
+  --accent-orange:  #0B504F;
+  --accent-orange-soft: rgba(11, 80, 79, 0.12);
+  --accent-text-on: #FAF8F5;
 
   /* Geometry */
   --radius-pill:    100px;
-  --radius-panel:   24px;
-  --blur-amount:    24px;
+  --radius-panel:   16px;
+  --blur-amount:    0px;
   
   /* Max content width — prevents overwhelming on 4K monitors */
   --max-content-width: 1120px;
@@ -56,7 +56,7 @@
   --space-lg:       32px;
   --space-xl:       48px;
 
-  /* ─── Backwards-compat aliases — DARK THEME values (re-inverted) ─── */
+  /* ─── Backwards-compat aliases — LIGHT EDITORIAL values ─── */
   --bg:            var(--bg-base);
   --bg-canvas:     var(--bg-base);
   --bg-elev-1:     var(--glass-bg);
@@ -65,22 +65,22 @@
   --panel-elev:    var(--glass-bg-strong);
   --panel-bg:      var(--glass-bg);
   --text:          var(--text-active);
-  --text-dim:      rgba(245, 246, 248, 0.70);
-  --text-faint:    rgba(245, 246, 248, 0.45);
+  --text-dim:      rgba(26, 23, 19, 0.65);
+  --text-faint:    rgba(26, 23, 19, 0.40);
   --fg:            var(--text-active);
   --fg-primary:    var(--text-active);
   --fg-secondary:  var(--text-main);
-  --fg-tertiary:   rgba(245, 246, 248, 0.45);
-  --muted:         rgba(245, 246, 248, 0.55);
+  --fg-tertiary:   rgba(26, 23, 19, 0.45);
+  --muted:         rgba(26, 23, 19, 0.50);
   --border:        var(--glass-border);
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-strong: rgba(255, 255, 255, 0.20);
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --border-strong: rgba(0, 0, 0, 0.14);
   --accent:        var(--accent-orange);
   --accent-primary: var(--accent-orange);
   --accent-warm:   var(--accent-orange);
-  --accent-cool:   rgba(91, 141, 239, 0.7);
+  --accent-cool:   #1E3A8A;
   --accent-dark:   var(--accent-text-on);
-  --accent-hover:  #c5f028;
+  --accent-hover:  #073937;
 
   /* Type scale — hero commanding presence (ENHANCED for redesign) */
   --fs-display:    clamp(4rem, 8vw, 6rem);
@@ -117,20 +117,14 @@
   --break-2xl: 1920px;
 }
 
-/* ─── Body — grey canvas + grid pattern ─── */
+/* ─── Body — warm paper canvas ─── */
 html, body {
   background-color: var(--bg-base);
 }
 body {
   background-color: var(--bg-base);
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 60px 60px;
-  background-position: center top;
-  background-attachment: fixed;
   color: var(--text-main);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "Inter", Arial, sans-serif;
+  font-family: var(--font-inter, "Inter", -apple-system, BlinkMacSystemFont, sans-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
@@ -140,8 +134,6 @@ body {
 .glass-panel,
 .glass {
   background: var(--glass-bg);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-panel);
   box-shadow: var(--glass-shadow);
@@ -157,8 +149,6 @@ body {
 .glass-panel-strong,
 .glass-tier2 {
   background: var(--glass-bg-tier2);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border-tier2);
   border-radius: var(--radius-panel);
   box-shadow: var(--glass-shadow-tier2);
@@ -168,8 +158,6 @@ body {
 .glass-tier3,
 .glass-elevated {
   background: var(--glass-bg-tier3);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
   border: 1px solid var(--glass-border-tier3);
   border-radius: var(--radius-panel);
   box-shadow: var(--glass-shadow-tier3);
@@ -236,7 +224,7 @@ button, a[role="button"], [role="tab"], input[type="checkbox"], input[type="radi
   cursor: pointer;
   transition: all 0.2s var(--ease-out-soft);
 }
-.nav-pill:hover { background: rgba(255, 255, 255, 0.45); }
+.nav-pill:hover { background: var(--glass-bg-tier2); }
 .nav-pill.left   { border-radius: var(--radius-pill) 8px 8px var(--radius-pill); padding-left: 24px; }
 .nav-pill.center { border-radius: 8px; gap: 24px; padding: 0 32px; }
 .nav-pill.right  { border-radius: 8px var(--radius-pill) var(--radius-pill) 8px; padding-right: 24px; }
@@ -311,23 +299,22 @@ button, a[role="button"], [role="tab"], input[type="checkbox"], input[type="radi
 
 /* Original tokens kept below for any references not yet migrated */
 :root {
-  /* legacy alias: these were the dark-theme values; kept for any deep imports
-     that still reference them. The Arthur OS root above takes precedence. */
-  --legacy-bg-dark: #07080b;
-  --legacy-panel-dark: #13161b;
-  --fg-dim:        rgba(0, 0, 0, 0.65);   /* alias for fg-secondary, on light */
-  --muted:         #868a95;   /* alias: text-dim — kept for subscriptions compat */
+  /* legacy alias: updated for light editorial theme 2026-05-26 */
+  --legacy-bg-dark: #FAF8F5;
+  --legacy-panel-dark: #FFFFFF;
+  --fg-dim:        rgba(26, 23, 19, 0.65);   /* alias for fg-secondary */
+  --muted:         rgba(26, 23, 19, 0.50);   /* alias: text-dim */
 
   /* Borders */
-  --border:        #1d2028;   /* default dividers */
-  --border-strong: #2a2e38;   /* hover states, active frames */
+  --border:        rgba(0, 0, 0, 0.08);   /* default dividers */
+  --border-strong: rgba(0, 0, 0, 0.14);   /* hover states, active frames */
 
-  /* Brand accent — Arthur orange */
-  --accent:        #ff4713;   /* primary action color (5.88:1 on --bg ✓) */
-  --accent-dark:   #0d0500;   /* button text on accent bg (5.93:1 ✓) */
-  --accent-hover:  #e03a0d;   /* hover state for accent */
-  --accent-soft:   rgba(255, 71, 19, 0.12);  /* subtle tint backgrounds */
-  --accent-glow:   rgba(255, 71, 19, 0.35);  /* glow effects */
+  /* Brand accent — Arthur teal */
+  --accent:        #0B504F;   /* primary action color */
+  --accent-dark:   #FAF8F5;   /* text on accent bg */
+  --accent-hover:  #073937;   /* hover state for accent */
+  --accent-soft:   rgba(11, 80, 79, 0.12);  /* subtle tint backgrounds */
+  --accent-glow:   rgba(11, 80, 79, 0.25);  /* glow effects */
 
   /* Type scale */
   --type-hero:     100px;     /* homepage h1 */
@@ -376,8 +363,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'cv11', 'ss01';
   min-height: 100vh;
-  background-image: radial-gradient(circle at 0% 0%, rgba(255, 71, 19, 0.06), transparent 50%);
-  background-attachment: fixed;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -403,8 +388,8 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
   position: sticky;
   top: 0;
   z-index: 50;
-  backdrop-filter: blur(16px) saturate(1.3);
-  background: rgba(7, 8, 11, 0.85);
+  backdrop-filter: blur(8px) saturate(1.1);
+  background: rgba(250, 248, 245, 0.92);
 }
 
 .nav-inner {
@@ -415,7 +400,7 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
 }
 
 .brand {
-  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  font-family: var(--font-lora, "Lora", Georgia, serif);
   font-weight: 700;
   font-size: 20px;
   letter-spacing: -0.02em;
@@ -429,14 +414,14 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
   height: 8px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 16px var(--accent);
+  box-shadow: 0 0 8px rgba(11, 80, 79, 0.3);
   flex-shrink: 0;
   animation: breathe 3.5s ease-in-out infinite;
 }
 
 @keyframes breathe {
-  0%, 100% { opacity: 1; box-shadow: 0 0 16px var(--accent); }
-  50%       { opacity: 0.55; box-shadow: 0 0 6px var(--accent); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(11, 80, 79, 0.3); }
+  50%       { opacity: 0.55; box-shadow: 0 0 3px rgba(11, 80, 79, 0.2); }
 }
 
 .nav-links {
@@ -521,7 +506,7 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgba(7,8,11,0.7);
+  background: rgba(26, 23, 19, 0.4);
   backdrop-filter: blur(4px);
 }
 .mobile-drawer-inner {
@@ -530,8 +515,8 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
   right: 0;
   bottom: 0;
   width: 280px;
-  background: var(--panel);
-  border-left: 1px solid var(--border-strong);
+  background: var(--glass-bg);
+  border-left: 1px solid var(--glass-border-tier2);
   padding: 72px 24px 32px;
   display: flex;
   flex-direction: column;
@@ -552,8 +537,8 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
   color: var(--text);
 }
 .mobile-nav-link-active {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--accent-orange-soft);
+  color: var(--accent-orange);
   font-weight: 600;
 }
 
@@ -578,7 +563,7 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
 }
 .cta-btn:hover {
   background: var(--accent-hover);
-  box-shadow: 0 0 20px var(--accent-glow);
+  box-shadow: 0 4px 12px rgba(11, 80, 79, 0.25);
 }
 .cta-btn:disabled {
   opacity: 0.5;
@@ -610,7 +595,7 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
 
 /* Focus ring — orange, 2px, all interactive elements */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-orange);
   outline-offset: 2px;
   border-radius: 3px;
 }
@@ -671,7 +656,7 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
   height: 6px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 8px var(--accent-glow);
+  box-shadow: 0 0 5px rgba(11, 80, 79, 0.25);
   animation: breathe 3.5s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -688,7 +673,7 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
 }
 
 .section-title {
-  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  font-family: var(--font-lora, "Lora", Georgia, serif);
   font-weight: 700;
   font-size: 56px;
   letter-spacing: -0.02em;
@@ -708,11 +693,10 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
 /* ─── Glass cards ─── */
 
 .glass {
-  background: rgba(19, 22, 27, 0.7);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
-  backdrop-filter: blur(14px) saturate(1.2);
-  box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--glass-shadow);
 }
 
 /* ─── Hero ─── */
@@ -728,7 +712,7 @@ code { font-family: "JetBrains Mono", "Fira Mono", monospace; font-size: 0.85em;
 .hero > * { min-width: 0; }
 
 .hero h1 {
-  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  font-family: var(--font-lora, "Lora", Georgia, serif);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 0.9;
@@ -801,11 +785,10 @@ section:last-of-type { border-bottom: none; }
 }
 
 .cap-card {
-  background: rgba(19, 22, 27, 0.7);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
-  backdrop-filter: blur(14px) saturate(1.2);
-  box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--glass-shadow);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -826,7 +809,7 @@ section:last-of-type { border-bottom: none; }
 }
 
 .cap-card .title {
-  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  font-family: var(--font-lora, "Lora", Georgia, serif);
   font-weight: 700;
   font-size: 17px;
   letter-spacing: -0.01em;
@@ -854,10 +837,9 @@ section:last-of-type { border-bottom: none; }
 /* ─── Comparison table ─── */
 
 .comparison {
-  background: rgba(19, 22, 27, 0.7);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
-  backdrop-filter: blur(14px);
   overflow: hidden;
 }
 
@@ -884,7 +866,7 @@ section:last-of-type { border-bottom: none; }
   text-transform: uppercase;
   color: var(--text-faint);
   font-weight: 400;
-  background: rgba(29, 32, 40, 0.6);
+  background: var(--glass-bg-faint);
 }
 
 .comparison th.highlight {
@@ -916,10 +898,9 @@ section:last-of-type { border-bottom: none; }
 }
 
 .panel {
-  background: rgba(19, 22, 27, 0.7);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
-  backdrop-filter: blur(14px);
   overflow: hidden;
 }
 
@@ -933,7 +914,7 @@ section:last-of-type { border-bottom: none; }
 }
 
 .panel .head h2 {
-  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  font-family: var(--font-lora, "Lora", Georgia, serif);
   font-weight: 700;
   font-size: 18px;
   letter-spacing: -0.01em;
@@ -950,7 +931,7 @@ textarea, input {
   padding: 12px 14px;
   font-family: inherit;
   font-size: 13px;
-  background: rgba(7, 8, 11, 0.5);
+  background: rgba(250, 248, 245, 0.95);
   color: var(--text);
   resize: vertical;
   transition: border-color 0.15s;
@@ -970,8 +951,8 @@ textarea:focus, input:focus {
 .response {
   white-space: pre-wrap;
   padding: 14px 16px;
-  background: rgba(7, 8, 11, 0.5);
-  border: 1px solid var(--border);
+  background: var(--glass-bg-faint);
+  border: 1px solid var(--glass-border);
   border-radius: 8px;
   margin-top: 14px;
   border-left: 3px solid var(--accent);
@@ -1061,7 +1042,7 @@ textarea:focus, input:focus {
   gap: 6px;
 }
 .bench-stat-num {
-  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  font-family: var(--font-lora, "Lora", Georgia, serif);
   font-weight: 700;
   font-size: 36px;
   letter-spacing: -0.03em;
@@ -1096,7 +1077,7 @@ textarea:focus, input:focus {
   gap: 10px;
 }
 .bench-name {
-  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  font-family: var(--font-lora, "Lora", Georgia, serif);
   font-weight: 700;
   font-size: 16px;
   letter-spacing: -0.01em;
@@ -1134,7 +1115,7 @@ textarea:focus, input:focus {
   gap: 6px;
 }
 .bench-score {
-  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  font-family: var(--font-lora, "Lora", Georgia, serif);
   font-weight: 700;
   font-size: 40px;
   letter-spacing: -0.03em;
@@ -1206,8 +1187,8 @@ textarea:focus, input:focus {
   line-height: 1.6;
   margin: 0;
   padding: 10px 12px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid var(--border);
+  background: var(--glass-bg-faint);
+  border: 1px solid var(--glass-border);
   border-radius: 6px;
   border-left: 2px solid var(--border-strong);
 }
@@ -1231,7 +1212,7 @@ textarea:focus, input:focus {
 }
 
 .bench-section-h2 {
-  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  font-family: var(--font-lora, "Lora", Georgia, serif);
   font-weight: 700;
   font-size: 42px;
   letter-spacing: -0.03em;
@@ -1279,7 +1260,7 @@ textarea:focus, input:focus {
   margin-bottom: 14px;
 }
 .bench-upgrades-count {
-  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  font-family: var(--font-lora, "Lora", Georgia, serif);
   font-weight: 700;
   font-size: 52px;
   letter-spacing: -0.04em;
@@ -1316,8 +1297,8 @@ textarea:focus, input:focus {
 /* ─── Skills grid ─── */
 
 .skill-card {
-  background: rgba(19, 22, 27, 0.7);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 10px;
   padding: 14px 16px;
   transition: border-color 0.15s;
@@ -1354,7 +1335,7 @@ footer.site .footer-grid {
 }
 
 footer.site .brand-line {
-  font-family: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  font-family: var(--font-lora, "Lora", Georgia, serif);
   font-weight: 700;
   font-size: 22px;
   letter-spacing: -0.02em;
@@ -1458,9 +1439,9 @@ footer.site .footer-bottom {
   left: 0;
   right: 0;
   height: var(--mobile-nav-h);
-  background: rgba(19, 22, 27, 0.95);
+  background: rgba(250, 248, 245, 0.97);
   border-top: 1px solid var(--border-strong);
-  backdrop-filter: blur(16px) saturate(1.3);
+  backdrop-filter: blur(8px);
   z-index: 60;
   padding: 0 4px env(safe-area-inset-bottom, 0);
 }
@@ -1577,14 +1558,14 @@ footer.site .footer-bottom {
 }
 .lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 8px 24px rgba(11, 80, 79, 0.10), 0 2px 6px rgba(26, 23, 19, 0.06);
 }
 
 /* ─── Accessibility: Global focus ring ─── */
 *:focus-visible {
   outline: 2px solid var(--accent-orange);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 /* ─── Skeleton shimmer for loading states ─── */

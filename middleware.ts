@@ -18,6 +18,9 @@ const PUBLIC_PATHS = [
   "/security",
   "/contact",
   "/lock",
+  "/login",
+  "/api/login",
+  "/api/logout",
   "/favicon.ico",
   "/robots.txt",
   "/sitemap.xml",
@@ -92,12 +95,44 @@ function checkBearerAuth(req: NextRequest): boolean {
   return (!!s1 && token === s1) || (!!s2 && token === s2);
 }
 
-export function middleware(req: NextRequest) {
+// Session token derived from server-only secrets (mirror of /api/login's
+// node:crypto computation). Edge runtime uses Web Crypto.
+async function expectedSessionToken(): Promise<string | null> {
+  const user = process.env.ARTHUR_ONLINE_USER || "daniel";
+  const pass = process.env.ARTHUR_ONLINE_PASSWORD;
+  if (!pass) return null;
+  const secret = process.env.ARTHUR_SECRET || pass;
+  const data = new TextEncoder().encode(`${user}:${pass}:${secret}`);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function checkSessionCookie(req: NextRequest): Promise<boolean> {
+  const token = req.cookies.get("arthur_session")?.value;
+  if (!token) return false;
+  const expected = await expectedSessionToken();
+  return !!expected && token === expected;
+}
+
+function wantsHtml(req: NextRequest): boolean {
+  return req.method === "GET" && (req.headers.get("accept") || "").includes("text/html");
+}
+
+export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  // Step 1: Auth gate for non-public paths — Basic OR Bearer
+  // Step 1: Auth gate — session cookie, Basic, or Bearer
   if (!isPublic(path)) {
-    if (!checkBasicAuth(req) && !checkBearerAuth(req)) {
+    const authed =
+      checkBasicAuth(req) || checkBearerAuth(req) || (await checkSessionCookie(req));
+    if (!authed) {
+      // Real login UI for browser navigations; 401 for APIs + programmatic callers.
+      if (wantsHtml(req) && !path.startsWith("/api/")) {
+        const url = req.nextUrl.clone();
+        url.pathname = "/login";
+        url.search = `?next=${encodeURIComponent(path + (req.nextUrl.search || ""))}`;
+        return NextResponse.redirect(url);
+      }
       return new NextResponse("Authentication required", {
         status: 401,
         headers: {

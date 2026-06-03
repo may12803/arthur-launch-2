@@ -65,20 +65,19 @@ export default function KnowledgeGraph({ lastUpdated }: KnowledgeGraphProps) {
         <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
           <span
             style={{
-              width: 8,
-              height: 8,
+              width: 7,
+              height: 7,
               borderRadius: "50%",
               background: "var(--accent-orange)",
-              boxShadow: "0 0 8px var(--accent-orange)",
               flexShrink: 0,
             }}
           />
           <span
             style={{
-              fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
+              fontFamily: "var(--font-inter, Inter, sans-serif)",
               fontWeight: 600,
-              fontSize: 15,
-              color: "var(--text-active, var(--text))",
+              fontSize: 14,
+              color: "var(--text-active)",
               letterSpacing: "-0.01em",
             }}
           >
@@ -99,12 +98,13 @@ export default function KnowledgeGraph({ lastUpdated }: KnowledgeGraphProps) {
           )}
         </div>
 
-        {/* View mode chips */}
+        {/* View mode chips — TODO: wire activeMode to BrainCanvas when layout prop is added */}
         <div style={{ display: "flex", gap: 4 }}>
           {VIEW_MODES.map((mode) => (
             <button
               key={mode.id}
               onClick={() => setActiveMode(mode.id)}
+              aria-pressed={activeMode === mode.id}
               style={{
                 padding: "5px 12px",
                 borderRadius: "var(--radius-pill, 999px)",
@@ -183,7 +183,6 @@ export default function KnowledgeGraph({ lastUpdated }: KnowledgeGraphProps) {
                 height: 8,
                 borderRadius: "50%",
                 background: color,
-                boxShadow: `0 0 4px ${color}80`,
                 flexShrink: 0,
               }}
             />

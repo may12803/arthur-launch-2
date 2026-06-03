@@ -77,7 +77,7 @@ export default function EmailDetail({ emailId }: { emailId: string }) {
             sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin"
           />
         ) : (
-          <div className="prose prose-invert max-w-none whitespace-pre-wrap">
+          <div className="max-w-none whitespace-pre-wrap" style={{ fontSize: 14, lineHeight: 1.7, color: '#4A4540' }}>
             {email.body_text}
           </div>
         )}

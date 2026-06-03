@@ -30,7 +30,7 @@ interface Manifest {
 const KIND_COLORS: Record<string, string> = {
   lib:    "#60a5fa",
   script: "#a78bfa",
-  grader: "#4ade80",
+  grader: "#16A34A",
   eval:   "#fb923c",
   engine: "#ff4713",
 };
@@ -74,7 +74,7 @@ function fmtAge(ts: string | null | undefined): string {
 function EvalScore({ score }: { score: number | null }) {
   if (score === null) return null;
   const pct = Math.round(score * 100);
-  const color = pct >= 80 ? "#4ade80" : pct >= 60 ? "#facc15" : "#f87171";
+  const color = pct >= 80 ? "#16A34A" : pct >= 60 ? "#CA8A04" : "#DC2626";
   return (
     <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
       <span style={{
@@ -109,7 +109,7 @@ function LiveDot({ live }: { live: boolean }) {
           width: 6,
           height: 6,
           borderRadius: "50%",
-          background: live ? "#4ade80" : "#6b7280",
+          background: live ? "#16A34A" : "#6b7280",
           boxShadow: live ? "0 0 8px rgba(74,222,128,0.6)" : "none",
           animation: live ? "manifest-pulse 2s ease-in-out infinite" : "none",
           display: "inline-block",
@@ -125,7 +125,7 @@ function LiveDot({ live }: { live: boolean }) {
       <span style={{
         fontFamily: "var(--font-jetbrains, monospace)",
         fontSize: 10,
-        color: live ? "#4ade80" : "var(--text-faint)",
+        color: live ? "#16A34A" : "var(--text-faint)",
         textTransform: "uppercase",
         letterSpacing: "0.1em",
       }}>
@@ -302,7 +302,7 @@ export default function CapabilityManifest() {
         borderRadius: 8,
         fontFamily: "var(--font-jetbrains, monospace)",
         fontSize: 12,
-        color: "#f87171",
+        color: "#DC2626",
         marginTop: 24,
       }}>
         capability manifest unavailable — {err}

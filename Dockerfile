@@ -25,6 +25,19 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+
+# Universal document converter dependencies — pandoc (docx/odt/rtf/epub/tex),
+# ffmpeg (audio/video extract + keyframes). Whisper is called via Groq HTTP
+# API (existing wrapper), so no whisper-cpp needed in the container.
+# Adds ~280MB but unlocks Office/audio/video doc reading on the dashboard
+# (parity with Telegram universal-converter).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      pandoc \
+      ffmpeg \
+      ca-certificates \
+      unzip \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static

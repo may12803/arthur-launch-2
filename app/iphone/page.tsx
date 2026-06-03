@@ -1,5 +1,4 @@
 "use client";
-import { Nav } from "../_components/Layout";
 import { useState, useEffect } from "react";
 
 const SITE_URL = "https://arthur-online.fly.dev";
@@ -81,7 +80,7 @@ const SHORTCUTS = [
     body: "__ASK__",
     addResult: "Show Result",
     addSpeak: false,
-    color: "#22c55e",
+    color: "#0B504F",
     icon: "bolt.fill",
   },
   {
@@ -153,12 +152,12 @@ function ShortcutSteps({ s }: { s: typeof SHORTCUTS[0] }) {
   return (
     <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
       {steps.map((step, i) => (
-        <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <li key={`${i}-${step.label}`} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
           <span style={{
             flexShrink: 0,
             width: 22, height: 22,
             borderRadius: "50%",
-            background: "var(--accent-soft)",
+            background: "rgba(11,80,79,0.12)",
             color: "var(--accent)",
             fontSize: 11,
             fontWeight: 700,
@@ -322,16 +321,15 @@ export default function IphonePage() {
 
   return (
     <>
-      <Nav />
-      <main style={{ minHeight: "100vh", paddingTop: 108, paddingBottom: 80 }}>
+      <main style={{ paddingBottom: 80 }}>
         <div className="wrap" style={{ maxWidth: 740 }}>
 
           {/* ── Header ──────────────────────────────────────────────────────── */}
           <div style={{ marginBottom: 40 }}>
-            <div style={{ fontSize: 11, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, marginBottom: 8 }}>
+            <div style={{ fontSize: 10.5, color: "#BAB5AE", textTransform: "uppercase", letterSpacing: ".08em", fontWeight: 600, marginBottom: 8 }}>
               Arthur · iPhone
             </div>
-            <h1 style={{ fontSize: 28, fontWeight: 700, color: "var(--text)", margin: 0, lineHeight: 1.2 }}>
+            <h1 style={{ fontFamily: "var(--font-lora, 'Lora', Georgia, serif)", fontSize: 28, fontWeight: 500, color: "#1A1713", margin: 0, lineHeight: 1.2, letterSpacing: "-.025em" }}>
               iPhone Control Surface
             </h1>
             <p style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 8, marginBottom: 0, lineHeight: 1.6 }}>
@@ -380,7 +378,7 @@ export default function IphonePage() {
                     flexShrink: 0,
                     width: 28, height: 28,
                     borderRadius: "50%",
-                    background: "var(--accent-soft)",
+                    background: "rgba(11,80,79,0.12)",
                     color: "var(--accent)",
                     fontWeight: 700,
                     fontSize: 13,
@@ -407,7 +405,7 @@ export default function IphonePage() {
                     flexShrink: 0,
                     width: 28, height: 28,
                     borderRadius: "50%",
-                    background: "var(--accent-soft)",
+                    background: "rgba(11,80,79,0.12)",
                     color: "var(--accent)",
                     fontWeight: 700,
                     fontSize: 13,
@@ -463,9 +461,9 @@ export default function IphonePage() {
                     marginTop: 10,
                     padding: "10px 12px",
                     borderRadius: 7,
-                    background: pushcutResult.ok ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.1)",
-                    border: `1px solid ${pushcutResult.ok ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`,
-                    color: pushcutResult.ok ? "#22c55e" : "#ef4444",
+                    background: pushcutResult.ok ? "rgba(11,80,79,0.08)" : "rgba(239,68,68,0.1)",
+                    border: `1px solid ${pushcutResult.ok ? "rgba(11,80,79,0.25)" : "rgba(239,68,68,0.3)"}`,
+                    color: pushcutResult.ok ? "#0B504F" : "#ef4444",
                     fontSize: 13,
                   }}>
                     {pushcutResult.ok ? "✓ " : "✗ "}{pushcutResult.message}
@@ -492,6 +490,8 @@ export default function IphonePage() {
                   }}>
                     <button
                       onClick={() => setExpandedShortcut(expanded ? null : s.name)}
+                      aria-expanded={expanded}
+                      aria-controls={`shortcut-detail-${s.name}`}
                       style={{
                         width: "100%",
                         background: "none",
@@ -527,7 +527,7 @@ export default function IphonePage() {
                     </button>
 
                     {expanded && (
-                      <div style={{ padding: "0 16px 16px", borderTop: "1px solid var(--border)" }}>
+                      <div id={`shortcut-detail-${s.name}`} style={{ padding: "0 16px 16px", borderTop: "1px solid var(--border)" }}>
                         <div style={{ marginTop: 14, marginBottom: 14 }}>
                           <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
                             Build it step by step
@@ -633,7 +633,7 @@ export default function IphonePage() {
                     {sendingTest ? "sending…" : "Send test notification"}
                   </button>
                   {testResult && (
-                    <span style={{ fontSize: 13, color: testResult.includes("sent") ? "#22c55e" : "#ef4444" }}>
+                    <span style={{ fontSize: 13, color: testResult.includes("sent") ? "#0B504F" : "#ef4444" }}>
                       {testResult}
                     </span>
                   )}
@@ -668,8 +668,8 @@ export default function IphonePage() {
                       <div key={ep.path} style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12 }}>
                         <span style={{
                           flexShrink: 0,
-                          background: ep.method === "GET" ? "rgba(34,197,94,0.15)" : "rgba(99,102,241,0.15)",
-                          color:       ep.method === "GET" ? "#22c55e" : "#6366f1",
+                          background: ep.method === "GET" ? "rgba(11,80,79,0.10)" : "rgba(99,102,241,0.15)",
+                          color:       ep.method === "GET" ? "#0B504F" : "#6366f1",
                           borderRadius: 4,
                           padding: "1px 6px",
                           fontFamily: "var(--font-jetbrains), monospace",
@@ -711,12 +711,12 @@ function SectionHeader({ letter, title, time }: { letter: string; title: string;
         justifyContent: "center",
         flexShrink: 0,
       }}>{letter}</span>
-      <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", margin: 0 }}>{title}</h2>
+      <h2 style={{ fontFamily: "var(--font-lora, 'Lora', Georgia, serif)", fontSize: 17, fontWeight: 500, color: "#1A1713", margin: 0, letterSpacing: "-.015em" }}>{title}</h2>
       {time && (
         <span style={{
           fontSize: 11,
           color: "var(--accent)",
-          background: "var(--accent-soft)",
+          background: "rgba(11,80,79,0.12)",
           borderRadius: 20,
           padding: "2px 10px",
           fontWeight: 500,

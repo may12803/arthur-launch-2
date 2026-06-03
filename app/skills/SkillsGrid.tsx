@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 type Skill = { name: string; description: string };
 
 const LOBE_COLORS: Record<string, string> = {
-  design: "#a78bfa", engineering: "#eb4000", business: "#f59e0b",
-  marketing: "#f59e0b", ops: "#60a5fa", seo: "#4ade80",
-  data: "#c084fc", legal: "#c084fc", finance: "#4ade80",
-  ai: "#60a5fa", content: "#f59e0b", security: "#eb4000",
+  design: "#a78bfa", engineering: "#0B504F", business: "#f59e0b",
+  marketing: "#f59e0b", ops: "#60a5fa", seo: "#0B504F",
+  data: "#c084fc", legal: "#c084fc", finance: "#0B504F",
+  ai: "#60a5fa", content: "#f59e0b", security: "#0B504F",
 };
 
 function skillLobe(name: string): string {
@@ -73,7 +73,7 @@ export default function SkillsGrid({ skills }: { skills: Skill[] }) {
           }}
           onFocus={e => {
             e.currentTarget.style.borderColor = "var(--accent-orange)";
-            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(235,64,0,0.12)";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,80,79,0.12)";
           }}
           onBlur={e => {
             e.currentTarget.style.borderColor = "var(--glass-border)";
@@ -142,8 +142,8 @@ export default function SkillsGrid({ skills }: { skills: Skill[] }) {
                   boxShadow: `0 0 6px ${c}80`,
                 }} />
                 <div style={{
-                  fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)",
-                  fontWeight: 700,
+                  fontFamily: "var(--font-inter, Inter, sans-serif)",
+                  fontWeight: 600,
                   fontSize: "var(--fs-small)",
                   color: "var(--text-active)",
                   letterSpacing: "-0.01em",
@@ -186,8 +186,8 @@ export default function SkillsGrid({ skills }: { skills: Skill[] }) {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(12,14,18,0.75)",
-            backdropFilter: "blur(12px)",
+            background: "rgba(26,23,19,0.40)",
+            backdropFilter: "blur(8px)",
             zIndex: 100,
             display: "flex",
             alignItems: "center",
@@ -206,7 +206,7 @@ export default function SkillsGrid({ skills }: { skills: Skill[] }) {
               maxWidth: 640,
               maxHeight: "85vh",
               overflowY: "auto",
-              boxShadow: "0 32px 64px -16px rgba(245,246,248,0.04)",
+              boxShadow: "0 8px 32px rgba(26,23,19,0.12), 0 2px 8px rgba(26,23,19,0.06)",
               backdropFilter: "blur(var(--blur-amount))",
             }}
           >
@@ -220,8 +220,8 @@ export default function SkillsGrid({ skills }: { skills: Skill[] }) {
                 flexShrink: 0,
               }} />
               <h2 style={{
-                fontFamily: "var(--font-space-grotesk, sans-serif)",
-                fontWeight: 800,
+                fontFamily: "var(--font-lora, 'Lora', Georgia, serif)",
+                fontWeight: 500,
                 fontSize: "var(--fs-h3)",
                 letterSpacing: "-0.02em",
                 margin: 0,

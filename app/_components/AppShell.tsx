@@ -50,7 +50,7 @@ const S = {
   red: '#ef4444',
   orange: '#f97316',
   blue: '#60a5fa',
-  mono: "'JetBrains Mono', 'GeistMono', monospace",
+  mono: "var(--font-jetbrains, 'JetBrains Mono', 'GeistMono', monospace)",
   sans: "'Inter', sans-serif",
 } as const;
 
@@ -190,7 +190,6 @@ export function AppShell({ children, onOpenVoice, voiceActive }: AppShellProps) 
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap');
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
       `}</style>

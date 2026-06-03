@@ -333,6 +333,9 @@ export default function LockPage() {
               marginTop: 'var(--space-md)',
             }}>
               <div
+                role="button"
+                aria-label="Unlock with fingerprint"
+                tabIndex={0}
                 style={{
                   width: 64,
                   height: 64,
@@ -354,15 +357,18 @@ export default function LockPage() {
               >
                 {hoveringFP ? <FingerprintIconAccent /> : <FingerprintIcon />}
               </div>
-              <button style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: 'var(--fs-mono)',
-                color: 'var(--text-muted)',
-                letterSpacing: '0.04em',
-                padding: '4px 8px',
-              }}>
+              <button
+                aria-label="Use passcode to unlock"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: 'var(--fs-mono)',
+                  color: 'var(--text-muted)',
+                  letterSpacing: '0.04em',
+                  padding: '4px 8px',
+                }}
+              >
                 Use Passcode Instead
               </button>
             </div>
