@@ -566,7 +566,8 @@ async function toolGetCashBalance(): Promise<string> {
       const bal = acct.balance?.cash?.available?.usd ?? acct.balance?.current?.usd;
       const asOf = acct.balance?.as_of ? new Date(acct.balance.as_of * 1000).toISOString().slice(0, 16) + "Z" : "unknown";
       const fresh = acct.balance_refresh?.status === "succeeded" ? "refreshed" : `refresh ${acct.balance_refresh?.status || "n/a"} (may lag)`;
-      lines.push(`${acct.institution_name || "Bank"} ****${acct.last4}: $${bal != null ? (bal / 100).toFixed(2) : "?"} (as of ${asOf}, ${fresh})`);
+      const kind = acct.subcategory === "credit_card" ? "credit card — balance owed" : (acct.subcategory || "account");
+      lines.push(`${acct.institution_name || "Bank"} ****${acct.last4} (${kind}): $${bal != null ? (bal / 100).toFixed(2) : "?"} (as of ${asOf}, ${fresh})`);
     }
     return lines.join("\n");
   } catch (e) {
