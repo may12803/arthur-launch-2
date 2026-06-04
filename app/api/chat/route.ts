@@ -77,7 +77,7 @@ function buildSystemPrompt(contextDigest: string, currentLocation?: string | nul
     // (which lack native tool_use protocol) from hallucinating tool-call syntax
     // when given tool definitions in their system prompt.
     tools: toolsEnabled
-      ? ["query_inbox", "send_email", "query_calendar_events", "create_calendar_event", "query_legal", "query_brain_graph", "query_memory", "list_recent_actions", "get_weather", "web_search", "live_sports_score", "scrape_url", "validate_email", "convert_currency", "apilayer", "composio_execute", "pipedream_workflow", "propose_project_concepts", "build_new_project", "audit_and_rebuild_site", "get_build_status"]
+      ? ["query_inbox", "send_email", "query_calendar_events", "create_calendar_event", "query_legal", "query_brain_graph", "query_memory", "list_recent_actions", "get_cash_balance", "get_weather", "web_search", "live_sports_score", "scrape_url", "validate_email", "convert_currency", "apilayer", "composio_execute", "pipedream_workflow", "propose_project_concepts", "build_new_project", "audit_and_rebuild_site", "get_build_status"]
       : [],
   });
 }
@@ -150,6 +150,14 @@ ${contextDigest}`;
 // ─────────────────────────────────────────────────────────────────────────────
 
 const TOOL_DEFINITIONS = [
+  {
+    type: "function",
+    function: {
+      name: "get_cash_balance",
+      description: "Get Daniel's LIVE bank balances (Dabney Chase accounts) via Stripe Financial Connections with force-refresh. Use for ANY question about cash balance, bank balance, how much money, account balance, runway. NEVER answer balance questions from memory or tell Daniel to check Xero — call this.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
   {
     type: "function",
     function: {
@@ -537,6 +545,34 @@ const TOOL_DEFINITIONS = [
 // ─────────────────────────────────────────────────────────────────────────────
 // Tool implementations
 // ─────────────────────────────────────────────────────────────────────────────
+
+async function toolGetCashBalance(): Promise<string> {
+  const key = process.env.STRIPE_DABNEY_SECRET_KEY;
+  if (!key) return "Cash-balance tool is wired but STRIPE_DABNEY_SECRET_KEY is not set on this deployment — tell Daniel one command fixes it: flyctl secrets set STRIPE_DABNEY_SECRET_KEY=<key> -a arthur-online";
+  const auth = "Basic " + Buffer.from(key + ":").toString("base64");
+  const sFetch = (p: string, init?: RequestInit) =>
+    fetch(`https://api.stripe.com/v1/${p}`, { ...init, headers: { Authorization: auth, "Content-Type": "application/x-www-form-urlencoded", ...(init?.headers || {}) }, signal: AbortSignal.timeout(20000) });
+  try {
+    const list = await (await sFetch("financial_connections/accounts?limit=10")).json();
+    const accounts = (list.data || []).filter((a: { status: string }) => a.status === "active");
+    if (!accounts.length) return "No active Financial Connections accounts found on the Dabney Stripe account.";
+    const lines: string[] = [];
+    for (const a of accounts) {
+      // Force a balance refresh — GET alone returns Stripe's stale cache
+      // (the frozen-balance bug class from 2026-06-03).
+      await sFetch(`financial_connections/accounts/${a.id}/refresh`, { method: "POST", body: "features[]=balance" }).catch(() => null);
+      await new Promise((r) => setTimeout(r, 3000));
+      const acct = await (await sFetch(`financial_connections/accounts/${a.id}`)).json();
+      const bal = acct.balance?.cash?.available?.usd ?? acct.balance?.current?.usd;
+      const asOf = acct.balance?.as_of ? new Date(acct.balance.as_of * 1000).toISOString().slice(0, 16) + "Z" : "unknown";
+      const fresh = acct.balance_refresh?.status === "succeeded" ? "refreshed" : `refresh ${acct.balance_refresh?.status || "n/a"} (may lag)`;
+      lines.push(`${acct.institution_name || "Bank"} ****${acct.last4}: $${bal != null ? (bal / 100).toFixed(2) : "?"} (as of ${asOf}, ${fresh})`);
+    }
+    return lines.join("\n");
+  } catch (e) {
+    return `Cash-balance lookup failed: ${e instanceof Error ? e.message : String(e)}. Daniel can run ~/arthur/scripts/dabney-bank-current.js locally as fallback.`;
+  }
+}
 
 async function toolQueryInbox(args: { q?: string; entity?: string; intent?: string; folder?: string; limit?: number }): Promise<string> {
   try {
@@ -1242,6 +1278,7 @@ async function executeTool(name: string, argsStr: string): Promise<string> {
   try { args = JSON.parse(argsStr || "{}"); } catch { /* empty args */ }
 
   switch (name) {
+    case "get_cash_balance":  return toolGetCashBalance();
     case "query_inbox":       return toolQueryInbox(args as Parameters<typeof toolQueryInbox>[0]);
     case "query_legal":       return toolQueryLegal(args as Parameters<typeof toolQueryLegal>[0]);
     case "query_brain_graph": return toolQueryBrainGraph(args as Parameters<typeof toolQueryBrainGraph>[0]);
