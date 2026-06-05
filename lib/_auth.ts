@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -68,6 +69,27 @@ export function hasValidBasicAuth(req: NextRequest): boolean {
 }
 
 /**
+ * Returns true if the request carries a valid arthur_session cookie. The cookie
+ * value is sha256(user:pass:secret) — identical to the token /api/login sets and
+ * middleware.ts validates. Only a caller who already logged in with the correct
+ * dashboard credentials can present it, so it's safe to trust for mutations.
+ * Mirrors checkSessionCookie() in middleware.ts (node:crypto vs edge crypto.subtle).
+ */
+export function hasValidSessionCookie(req: NextRequest): boolean {
+  const token = req.cookies.get("arthur_session")?.value;
+  if (!token) return false;
+  const user = process.env.ARTHUR_ONLINE_USER || "daniel";
+  const pass = process.env.ARTHUR_ONLINE_PASSWORD;
+  if (!pass) return false;
+  const secret = process.env.ARTHUR_SECRET || pass;
+  const expected = crypto
+    .createHash("sha256")
+    .update(`${user}:${pass}:${secret}`)
+    .digest("hex");
+  return token === expected;
+}
+
+/**
  * Returns a 401 response with brand-voice error message.
  * Use when isAuthed() returns false.
  */
@@ -101,6 +123,12 @@ export function authGate(
   // mutations, etc. work from an authed browser without exposing ARTHUR_SECRET
   // to client JS.
   if (hasValidBasicAuth(req)) return null;
+  // A valid arthur_session cookie means this caller already authenticated with
+  // the dashboard credentials (login set sha256(user:pass:secret)). Trust it for
+  // every method — including mutations — so a logged-in browser can POST/PATCH
+  // without exposing ARTHUR_SECRET to client JS. Cookie is unforgeable without
+  // the server secrets, so this does not open the route to anonymous callers.
+  if (hasValidSessionCookie(req)) return null;
   if (allowRead && req.method === "GET" && isSameOriginBrowser(req)) return null;
   return unauthorized();
 }

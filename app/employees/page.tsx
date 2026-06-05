@@ -19,7 +19,6 @@ interface Employee {
   entity?: string;
   status?: string;
   hours_7d?: number;
-  contact?: string;
   start_date?: string;
 }
 
@@ -104,7 +103,9 @@ export default function EmployeesPage() {
   }, []);
 
   const onShift = DABNEY_STAFF.filter(e => e.status === 'on-shift').length;
-  const activeAgents = agents.filter(a => a.state === 'active' || a.state === 'running').length;
+  // Single source of truth for agent counts: the live activity API (agentStats).
+  // It derives `active` server-side from a 30-min activity window; if the API
+  // returns no active field we fall back to showing the total only.
   const displayedAgents = tab === 'ARTHUR' ? agents : agents.slice(0, 10);
 
   return (
@@ -133,7 +134,7 @@ export default function EmployeesPage() {
         <StatBlock label="OPEN SHIFTS / 7D" value="3" delta="2 unfilled Sat night" valueColor={S.orange} />
         <StatBlock label="NEW HIRES / 30D" value="1" delta="Andrea (Bar Lead)" />
         <StatBlock label="TURNOVER / 90D" value="1" delta="Gonzalez — CC unset" valueColor={S.red} />
-        <StatBlock label="ARTHUR AGENTS" value={loading ? '…' : String(agentStats.total)} delta={`${agentStats.active} active`} valueColor={S.blue} />
+        <StatBlock label="ARTHUR AGENTS" value={loading ? '…' : String(agentStats.total)} delta={loading ? undefined : agentStats.active > 0 ? `${agentStats.active} active` : `${agentStats.total} in registry`} valueColor={S.blue} />
       </div>
 
       {/* 2-col: human + agents */}
@@ -143,7 +144,7 @@ export default function EmployeesPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: S.bg2 }}>
-                {['NAME', 'ROLE', 'ENTITY', 'CONTACT', 'HOURS / 7D', 'STATUS'].map(h => (
+                {['NAME', 'ROLE', 'ENTITY', 'HOURS / 7D', 'STATUS'].map(h => (
                   <th key={h} style={{ fontFamily: S.mono, fontSize: '8px', fontWeight: 700, letterSpacing: '0.1em', color: S.textMuted, padding: '7px 16px', textAlign: 'left', borderBottom: `1px solid ${S.border}` }}>{h}</th>
                 ))}
               </tr>
@@ -151,7 +152,7 @@ export default function EmployeesPage() {
             <tbody>
               {/* Section header */}
               <tr>
-                <td colSpan={6} style={{ fontFamily: S.mono, fontSize: '9px', fontWeight: 700, color: S.textMuted, padding: '6px 16px', background: S.bg2, letterSpacing: '0.1em', borderBottom: `1px solid ${S.border}` }}>DABNEY & CO. STAFF</td>
+                <td colSpan={5} style={{ fontFamily: S.mono, fontSize: '9px', fontWeight: 700, color: S.textMuted, padding: '6px 16px', background: S.bg2, letterSpacing: '0.1em', borderBottom: `1px solid ${S.border}` }}>DABNEY & CO. STAFF</td>
               </tr>
               {DABNEY_STAFF.map(emp => (
                 <tr key={emp.id} style={{ borderBottom: `1px solid ${S.border}`, opacity: emp.status === 'former' ? 0.5 : 1 }}>
@@ -161,7 +162,6 @@ export default function EmployeesPage() {
                   </td>
                   <td style={{ fontSize: '11px', color: S.textSecondary, padding: '10px 16px' }}>{emp.role}</td>
                   <td style={{ fontFamily: S.mono, fontSize: '9px', color: S.textMuted, padding: '10px 16px' }}>DABNEY</td>
-                  <td style={{ fontFamily: S.mono, fontSize: '9px', color: S.textMuted, padding: '10px 16px' }}>—</td>
                   <td style={{ fontFamily: S.mono, fontSize: '12px', fontWeight: 700, color: (emp.hours_7d ?? 0) > 35 ? S.orange : S.textPrimary, padding: '10px 16px' }}>{emp.hours_7d ?? 0}h</td>
                   <td style={{ padding: '10px 16px' }}>
                     <span style={{ fontFamily: S.mono, fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '2px', background: emp.status === 'on-shift' ? 'rgba(240,165,0,0.1)' : emp.status === 'former' ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.07)', color: emp.status === 'on-shift' ? S.accent : emp.status === 'former' ? S.red : S.green, border: `1px solid ${emp.status === 'on-shift' ? 'rgba(240,165,0,0.25)' : emp.status === 'former' ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)'}` }}>

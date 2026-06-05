@@ -35,7 +35,12 @@ function monthlyDisplay(sub: Subscription): number {
 
 function fmtDate(iso: string | null): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Detroit" });
+}
+
+function fmtDateTime(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "America/Detroit" });
 }
 
 function daysUntil(iso: string | null): number | null {
@@ -169,9 +174,12 @@ function SubCard({ sub }: { sub: Subscription }) {
 
 export default function SubscriptionsPage() {
   const [data, setData] = useState<SubsResponse | null>(null);
+  const [source, setSource] = useState<"live" | "seed">("seed");
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
+
+  const seedData = () => ({ subscriptions: PLACEHOLDER, monthly_total_usd: PLACEHOLDER.filter(s => s.status === "active").reduce((a, s) => a + monthlyDisplay(s), 0) });
 
   const fetchSubs = async () => {
     setLoading(true);
@@ -180,11 +188,14 @@ export default function SubscriptionsPage() {
       const json = await res.json() as SubsResponse;
       if (json.subscriptions && json.subscriptions.length > 0) {
         setData(json);
+        setSource("live");
       } else {
-        setData({ subscriptions: PLACEHOLDER, monthly_total_usd: PLACEHOLDER.filter(s => s.status === "active").reduce((a, s) => a + monthlyDisplay(s), 0) });
+        setData(seedData());
+        setSource("seed");
       }
     } catch {
-      setData({ subscriptions: PLACEHOLDER, monthly_total_usd: PLACEHOLDER.filter(s => s.status === "active").reduce((a, s) => a + monthlyDisplay(s), 0) });
+      setData(seedData());
+      setSource("seed");
     } finally {
       setLoading(false);
     }
@@ -209,6 +220,11 @@ export default function SubscriptionsPage() {
   const activeSubs = (data?.subscriptions ?? []).filter(s => s.status === "active");
   const canceledSubs = (data?.subscriptions ?? []).filter(s => s.status !== "active");
   const monthlyTotal = data?.monthly_total_usd ?? 0;
+  const lastSynced = (data?.subscriptions ?? [])
+    .map(s => s.last_seen_iso)
+    .filter((v): v is string => !!v)
+    .sort()
+    .pop() ?? null;
 
   return (
     <>
@@ -259,6 +275,21 @@ export default function SubscriptionsPage() {
               {scanning ? "Scanning…" : "Scan for new subscriptions"}
             </button>
           </div>
+
+          {!loading && data && (
+            <div style={{
+              fontFamily: D2.mono, fontSize: "0.6875rem", color: D2.textFaint,
+              letterSpacing: "0.04em", lineHeight: 1.6, marginBottom: "40px",
+            }}>
+              {source === "live" ? (
+                lastSynced
+                  ? <>Source: tracked subscriptions · last synced {fmtDateTime(lastSynced)} ET</>
+                  : <>Source: tracked subscriptions · sync time unavailable</>
+              ) : (
+                <>Source: seeded example data — not yet live-synced to Stripe. Connect Plaid to auto-detect real recurring charges.</>
+              )}
+            </div>
+          )}
 
           {scanResult && (
             <div style={{

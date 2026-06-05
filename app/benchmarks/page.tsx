@@ -73,7 +73,7 @@ function lobeColor(i: number) {
 function formatDate(iso?: string | null) {
   if (!iso) return "—";
   const d = new Date(iso);
-  return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "America/Detroit" });
 }
 
 function formatScore(score?: number) {
@@ -282,7 +282,7 @@ export default function BenchmarksPage() {
           <span style={{
             fontFamily: "var(--font-jetbrains, 'JetBrains Mono', monospace)",
             fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-faint)",
-          }}>performance + gaps · {data.lastUpdated ? new Date(data.lastUpdated).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "live"}</span>
+          }}>performance + gaps · {data.lastUpdated ? new Date(data.lastUpdated).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Detroit" }) : "live"}</span>
           <h1 style={{
             fontFamily: "var(--font-lora, Lora, Georgia, serif)",
             fontWeight: 500, fontSize: "clamp(1.75rem, 3.5vw, 2.5rem)",
@@ -342,7 +342,12 @@ export default function BenchmarksPage() {
                   {top ? formatScore(top.latest?.score) : "96%"}
                 </div>
                 <div style={{ fontSize: 13, color: "var(--text-dim)", marginTop: 8 }}>
-                  {top ? "top benchmark score" : "longmemeval-rag · iter 6"}
+                  {top
+                    ? (() => {
+                        const n = top.latest?.total ?? top.publicSetTotal;
+                        return n ? `top score · ${n}-item ${top.name} subset` : "top benchmark score";
+                      })()
+                    : "longmemeval-rag · iter 6"}
                 </div>
               </div>
               <div>

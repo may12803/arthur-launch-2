@@ -13,17 +13,26 @@ const NAV_COMMAND: NavItem[] = [
 ];
 
 const NAV_PORTFOLIO: NavItem[] = [
-  { href: '/goals', label: 'Goals', badge: 6, icon: '◎' },
-  { href: '/tasks', label: 'Tasks', badge: 4, badgeType: 'warn', icon: '☑' },
-  { href: '/inbox', label: 'Inbox', badge: 7, badgeType: 'hot', icon: '✉' },
-  { href: '/calendar', label: 'Calendar', badge: 12, icon: '⊞' },
+  { href: '/goals', label: 'Goals', icon: '◎' },
+  { href: '/tasks', label: 'Tasks', badgeType: 'warn', icon: '☑' },
+  { href: '/inbox', label: 'Inbox', badgeType: 'hot', icon: '✉' },
+  { href: '/calendar', label: 'Calendar', icon: '⊞' },
 ];
 
 const NAV_OPERATIONS: NavItem[] = [
-  { href: '/employees', label: 'Employees', badge: 9, icon: '◈' },
+  { href: '/employees', label: 'Employees', icon: '◈' },
   { href: '/legal', label: 'Legal', badge: 2, badgeType: 'warn', icon: '◧' },
   { href: '/subscriptions', label: 'Subscriptions', icon: '▣' },
 ];
+
+type NavCounts = { inbox: number; tasks: number; calendar: number; goals: number; employees: number };
+const COUNT_KEY_BY_HREF: Record<string, keyof NavCounts> = {
+  '/inbox': 'inbox',
+  '/tasks': 'tasks',
+  '/calendar': 'calendar',
+  '/goals': 'goals',
+  '/employees': 'employees',
+};
 
 const NAV_ARTHUR: NavItem[] = [
   { href: '/brain', label: 'Brain', icon: '◍' },
@@ -54,7 +63,7 @@ const S = {
   sans: "'Inter', sans-serif",
 } as const;
 
-function NavSection({ label, items, pathname }: { label: string; items: NavItem[]; pathname: string }) {
+function NavSection({ label, items, pathname, counts, onNavigate }: { label: string; items: NavItem[]; pathname: string; counts: NavCounts | null; onNavigate?: () => void }) {
   return (
     <div>
       <div style={{ fontFamily: S.mono, fontSize: '8px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: S.textMuted, padding: '14px 16px 5px' }}>
@@ -62,10 +71,16 @@ function NavSection({ label, items, pathname }: { label: string; items: NavItem[
       </div>
       {items.map(item => {
         const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+        const countKey = COUNT_KEY_BY_HREF[item.href];
+        // Live counts override the static badge for mapped routes; hide the
+        // badge entirely while loading or when the live count is 0.
+        const badgeValue = countKey ? counts?.[countKey] : item.badge;
+        const showBadge = badgeValue != null && badgeValue > 0;
         return (
           <Link
             key={item.href}
             href={item.href}
+            onClick={onNavigate}
             style={{
               display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 16px',
               fontSize: '12px', color: active ? S.accent : S.textSecondary,
@@ -77,7 +92,7 @@ function NavSection({ label, items, pathname }: { label: string; items: NavItem[
           >
             <span style={{ fontFamily: S.mono, fontSize: '11px', width: '16px', textAlign: 'center', flexShrink: 0, color: active ? S.accent : S.textMuted }}>{item.icon}</span>
             <span style={{ flex: 1 }}>{item.label}</span>
-            {item.badge != null && (
+            {showBadge && (
               <span style={{
                 fontFamily: S.mono, fontSize: '9px', fontWeight: 700, padding: '1px 5px',
                 borderRadius: '2px',
@@ -85,7 +100,7 @@ function NavSection({ label, items, pathname }: { label: string; items: NavItem[
                 color: item.badgeType === 'hot' ? S.red : item.badgeType === 'warn' ? S.orange : S.textSecondary,
                 border: `1px solid ${item.badgeType === 'hot' ? 'rgba(239,68,68,0.25)' : item.badgeType === 'warn' ? 'rgba(249,115,22,0.25)' : S.border2}`,
               }}>
-                {item.badge}
+                {badgeValue}
               </span>
             )}
           </Link>
@@ -106,6 +121,34 @@ export function AppShell({ children, onOpenVoice, voiceActive }: AppShellProps) 
   const [now, setNow] = useState('');
   const [syncAge, setSyncAge] = useState('');
   const [syncedAt] = useState(() => Date.now());
+  const [counts, setCounts] = useState<NavCounts | null>(null);
+  // Mobile drawer. `mobile` stays false on the server + first client render so
+  // SSR and hydration match (desktop layout); matchMedia flips it after mount.
+  const [mobile, setMobile] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const apply = () => setMobile(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+
+  // Close the drawer whenever the route changes.
+  useEffect(() => { setDrawerOpen(false); }, [pathname]);
+
+  useEffect(() => {
+    let alive = true;
+    const load = () =>
+      fetch('/api/nav-counts')
+        .then(r => (r.ok ? r.json() : null))
+        .then(d => { if (alive && d) setCounts(d as NavCounts); })
+        .catch(() => {});
+    load();
+    const t = setInterval(load, 60000);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
 
   useEffect(() => {
     const fmt = () => {
@@ -135,12 +178,22 @@ export function AppShell({ children, onOpenVoice, voiceActive }: AppShellProps) 
       {/* Topbar */}
       <div style={{ background: S.bg2, borderBottom: `1px solid ${S.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '44px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', height: '44px' }}>
+          {/* Hamburger (mobile only) */}
+          {mobile && (
+            <button
+              onClick={() => setDrawerOpen(o => !o)}
+              aria-label="Toggle navigation"
+              style={{ background: 'transparent', border: 'none', color: S.textPrimary, fontSize: '18px', lineHeight: 1, padding: '0 16px', height: '44px', cursor: 'pointer', flexShrink: 0 }}
+            >
+              ☰
+            </button>
+          )}
           {/* Logo block */}
-          <div style={{ fontFamily: S.mono, fontSize: '13px', fontWeight: 700, color: S.accent, letterSpacing: '2px', padding: '0 20px', borderRight: `1px solid ${S.border}`, height: '44px', display: 'flex', alignItems: 'center', width: '220px', flexShrink: 0 }}>
+          <div style={{ fontFamily: S.mono, fontSize: '13px', fontWeight: 700, color: S.accent, letterSpacing: '2px', padding: mobile ? '0 14px' : '0 20px', borderRight: `1px solid ${S.border}`, height: '44px', display: 'flex', alignItems: 'center', width: mobile ? 'auto' : '220px', flexShrink: 0 }}>
             ARTHUR//OS
           </div>
-          {/* Entity tabs */}
-          {[
+          {/* Entity tabs (desktop only) */}
+          {!mobile && [
             { label: 'ALL ENTITIES', active: true },
             { label: 'DABNEY & CO.', active: false },
             { label: 'ASPEN & MAY', active: false, tag: 'HOLD' },
@@ -162,16 +215,18 @@ export function AppShell({ children, onOpenVoice, voiceActive }: AppShellProps) 
             </div>
           ))}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '0 20px', fontSize: '10px', color: S.textMuted, fontFamily: S.mono }}>
-          <div style={{ background: S.bg3, border: `1px solid ${S.border2}`, borderRadius: '3px', padding: '4px 10px', fontSize: '10px', color: S.textMuted, width: '200px' }}>
-            ⌘K &nbsp; search everything…
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: mobile ? '10px' : '14px', padding: mobile ? '0 12px' : '0 20px', fontSize: '10px', color: S.textMuted, fontFamily: S.mono }}>
+          {!mobile && (
+            <div style={{ background: S.bg3, border: `1px solid ${S.border2}`, borderRadius: '3px', padding: '4px 10px', fontSize: '10px', color: S.textMuted, width: '200px' }}>
+              ⌘K &nbsp; search everything…
+            </div>
+          )}
           <div style={{ background: S.red, color: 'white', fontSize: '8px', fontWeight: 700, fontFamily: S.mono, width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>3</div>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: S.green, display: 'inline-block', animation: 'pulse 2s infinite' }} />
-          <span>LIVE · SYNC {syncAge}</span>
-          <span style={{ color: S.accent, cursor: 'pointer' }}>↻ FORCE</span>
-          <span style={{ color: S.border2 }}>|</span>
-          <span>{now}</span>
+          {!mobile && <span>LIVE · SYNC {syncAge}</span>}
+          {!mobile && <span style={{ color: S.accent, cursor: 'pointer' }}>↻ FORCE</span>}
+          {!mobile && <span style={{ color: S.border2 }}>|</span>}
+          {!mobile && <span>{now}</span>}
           <button onClick={onOpenVoice} style={{ background: voiceActive ? 'rgba(240,165,0,0.12)' : S.accent, color: voiceActive ? S.accent : S.bg, border: 'none', borderRadius: '3px', padding: '4px 12px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', fontFamily: S.mono, letterSpacing: '0.08em' }}>
             {voiceActive ? '● END' : '+ TALK'}
           </button>
@@ -179,14 +234,33 @@ export function AppShell({ children, onOpenVoice, voiceActive }: AppShellProps) 
       </div>
 
       {/* Body layout */}
-      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-        {/* Sidebar */}
-        <nav style={{ width: '220px', background: S.bg2, borderRight: `1px solid ${S.border}`, flexShrink: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', flex: 1, minHeight: 0, position: 'relative' }}>
+        {/* Backdrop (mobile drawer open only) */}
+        {mobile && drawerOpen && (
+          <div
+            onClick={() => setDrawerOpen(false)}
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 40 }}
+          />
+        )}
+        {/* Sidebar — fixed column on desktop, off-canvas drawer on mobile */}
+        <nav
+          style={{
+            width: '220px', background: S.bg2, borderRight: `1px solid ${S.border}`,
+            flexShrink: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto',
+            ...(mobile
+              ? {
+                  position: 'absolute', top: 0, bottom: 0, left: 0, zIndex: 50,
+                  transform: drawerOpen ? 'translateX(0)' : 'translateX(-100%)',
+                  transition: 'transform 180ms ease', boxShadow: drawerOpen ? '2px 0 16px rgba(0,0,0,0.5)' : 'none',
+                }
+              : {}),
+          }}
+        >
           <div style={{ flex: 1 }}>
-            <NavSection label="COMMAND" items={NAV_COMMAND} pathname={pathname} />
-            <NavSection label="PORTFOLIO" items={NAV_PORTFOLIO} pathname={pathname} />
-            <NavSection label="OPERATIONS" items={NAV_OPERATIONS} pathname={pathname} />
-            <NavSection label="ARTHUR CORE" items={NAV_ARTHUR} pathname={pathname} />
+            <NavSection label="COMMAND" items={NAV_COMMAND} pathname={pathname} counts={counts} onNavigate={() => setDrawerOpen(false)} />
+            <NavSection label="PORTFOLIO" items={NAV_PORTFOLIO} pathname={pathname} counts={counts} onNavigate={() => setDrawerOpen(false)} />
+            <NavSection label="OPERATIONS" items={NAV_OPERATIONS} pathname={pathname} counts={counts} onNavigate={() => setDrawerOpen(false)} />
+            <NavSection label="ARTHUR CORE" items={NAV_ARTHUR} pathname={pathname} counts={counts} onNavigate={() => setDrawerOpen(false)} />
           </div>
           <div style={{ padding: '12px 16px', borderTop: `1px solid ${S.border}`, fontFamily: S.mono, fontSize: '9px', color: S.textMuted, flexShrink: 0 }}>
             <div style={{ marginBottom: '3px' }}>arthur-online v2.0</div>

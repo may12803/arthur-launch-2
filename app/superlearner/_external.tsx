@@ -161,7 +161,7 @@ function ChannelCard({ ch, stats }: { ch: string; stats: ChannelStats | undefine
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <span style={{ fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>last run</span>
           <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-jetbrains, monospace)" }}>
-            {stats?.last_run ? new Date(stats.last_run).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "never"}
+            {stats?.last_run ? new Date(stats.last_run).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "America/Detroit" }) : "never"}
           </span>
         </div>
       </div>
@@ -207,7 +207,7 @@ function HardCasesTable({ cases }: { cases: HardCase[] }) {
               {c.confidence != null ? `${(c.confidence * 100).toFixed(0)}%` : "—"}
             </td>
             <td style={{ padding: "6px 8px", color: "var(--text-muted)" }}>
-              {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Detroit" })}
             </td>
           </tr>
         ))}
@@ -271,6 +271,11 @@ export function ExternalChannels() {
           <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
             free training cases captured
           </div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "var(--font-jetbrains, monospace)", marginTop: 4 }}>
+            {stats?.generated_at
+              ? `as of ${new Date(stats.generated_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "America/Detroit" })} ET`
+              : "—"}
+          </div>
         </div>
       </div>
 
@@ -312,7 +317,7 @@ export function ExternalChannels() {
             </div>
           </div>
           <div style={{ marginLeft: "auto", fontSize: 10, color: "var(--text-muted)" }}>
-            updated {stats?.generated_at ? new Date(stats.generated_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "—"}
+            updated {stats?.generated_at ? new Date(stats.generated_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZone: "America/Detroit" }) : "—"}
           </div>
         </div>
       )}

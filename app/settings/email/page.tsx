@@ -2,6 +2,14 @@
 
 import { useEffect, useState, useCallback } from "react";
 
+const S = {
+  bg: '#0a0a0a', bg2: '#111111', bg3: '#181818', bg4: '#1f1f1f',
+  border: '#1f1f1f', border2: '#2a2a2a',
+  textPrimary: '#e8e8e8', textSecondary: '#8a8a8a', textMuted: '#4a4a4a',
+  accent: '#f0a500', green: '#22c55e', red: '#ef4444', orange: '#f97316', blue: '#60a5fa',
+  mono: "'JetBrains Mono', monospace", sans: "'Inter', sans-serif",
+};
+
 interface EmailAccount {
   id: string;
   email: string;
@@ -168,20 +176,20 @@ export default function EmailSettingsPage() {
 
   return (
     <>
-      <main className="wrap" style={{ padding: "32px 40px", maxWidth: 900, margin: "0 auto" }}>
+      <main className="wrap" style={{ padding: "32px 40px", maxWidth: 900, margin: "0 auto", background: S.bg, color: S.textPrimary, fontFamily: S.sans, minHeight: "100%" }}>
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
           <div style={{
-            fontFamily: "var(--font-inter, Inter, sans-serif)",
-            fontSize: 10.5,
-            letterSpacing: ".08em",
-            fontWeight: 600,
+            fontFamily: S.mono,
+            fontSize: 9,
+            letterSpacing: ".12em",
+            fontWeight: 700,
             textTransform: "uppercase",
-            color: "#BAB5AE",
+            color: S.textMuted,
             marginBottom: 8,
           }}>Settings / Email</div>
-          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 500, letterSpacing: "-0.025em", color: "#1A1713", fontFamily: "var(--font-lora, 'Lora', Georgia, serif)", lineHeight: 1.2 }}>Email Accounts</h1>
-          <p style={{ margin: "6px 0 0", color: "var(--text-muted)", fontSize: 13 }}>
+          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, letterSpacing: "-0.025em", color: S.textPrimary, fontFamily: S.sans, lineHeight: 1.2 }}>Email Accounts</h1>
+          <p style={{ margin: "6px 0 0", color: S.textSecondary, fontSize: 13 }}>
             connected inboxes arthur monitors and processes automatically.
           </p>
         </div>
@@ -191,10 +199,10 @@ export default function EmailSettingsPage() {
           <div style={{
             marginBottom: 20,
             padding: "12px 16px",
-            borderRadius: 8,
-            background: statusBanner.type === "success" ? "#F0FDF4" : "#FEF2F2",
-            border: `1px solid ${statusBanner.type === "success" ? "rgba(22,163,74,.25)" : "rgba(153,27,27,.25)"}`,
-            color: statusBanner.type === "success" ? "#166534" : "#991B1B",
+            borderRadius: 3,
+            background: statusBanner.type === "success" ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)",
+            border: `1px solid ${statusBanner.type === "success" ? "rgba(34,197,94,.25)" : "rgba(239,68,68,.25)"}`,
+            color: statusBanner.type === "success" ? S.green : S.red,
             fontSize: 13,
             display: "flex", justifyContent: "space-between", alignItems: "center",
           }}>
@@ -205,18 +213,16 @@ export default function EmailSettingsPage() {
 
         {/* Connected accounts */}
         <section style={{
-          background: "var(--glass-bg)",
-          backdropFilter: "blur(var(--blur-amount))",
-          border: "1px solid var(--glass-border)",
-          borderRadius: "var(--radius-panel)",
-          boxShadow: "var(--glass-shadow)",
+          background: S.bg2,
+          border: `1px solid ${S.border}`,
+          borderRadius: 3,
           marginBottom: 24,
         }}>
-          <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--glass-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--text)" }}>
+          <div style={{ padding: "16px 20px", borderBottom: `1px solid ${S.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: S.textPrimary }}>
               connected accounts
               {accounts.length > 0 && (
-                <span style={{ marginLeft: 8, background: "rgba(11,80,79,0.12)", color: "#0B504F", borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
+                <span style={{ marginLeft: 8, background: "rgba(240,165,0,0.12)", color: S.accent, borderRadius: 20, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
                   {accounts.length}
                 </span>
               )}
@@ -224,11 +230,11 @@ export default function EmailSettingsPage() {
           </div>
 
           {loading ? (
-            <div style={{ padding: "32px 20px", textAlign: "center", color: "var(--text-dim)", fontSize: 13 }}>pulling accounts…</div>
+            <div style={{ padding: "32px 20px", textAlign: "center", color: S.textMuted, fontSize: 13, fontFamily: S.mono }}>pulling accounts…</div>
           ) : error ? (
-            <div style={{ padding: "20px", color: "var(--accent)", fontSize: 13 }}>Error: {error}</div>
+            <div style={{ padding: "20px", color: S.red, fontSize: 13 }}>Error: {error}</div>
           ) : accounts.length === 0 ? (
-            <div style={{ padding: "32px 20px", textAlign: "center", color: "var(--text-dim)", fontSize: 13 }}>no inboxes connected yet — add one below.</div>
+            <div style={{ padding: "32px 20px", textAlign: "center", color: S.textMuted, fontSize: 13 }}>no inboxes connected yet — add one below.</div>
           ) : (
             <div>
               {accounts.map((acct, i) => (
@@ -237,7 +243,7 @@ export default function EmailSettingsPage() {
                   alignItems: "flex-start",
                   gap: 12,
                   padding: "14px 20px",
-                  borderBottom: i < accounts.length - 1 ? "1px solid var(--glass-border)" : "none",
+                  borderBottom: i < accounts.length - 1 ? `1px solid ${S.border}` : "none",
                   flexWrap: "wrap",
                 }}>
                   {/* Provider icon */}
@@ -255,8 +261,8 @@ export default function EmailSettingsPage() {
 
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2, wordBreak: "break-all" }}>{acct.email}</div>
-                    <div style={{ color: "var(--text-dim)", fontSize: 11, marginBottom: 8 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2, wordBreak: "break-all", color: S.textPrimary }}>{acct.email}</div>
+                    <div style={{ color: S.textMuted, fontSize: 11, marginBottom: 8 }}>
                       {acct.display_name && acct.display_name !== acct.email ? `${acct.display_name} · ` : ""}
                       <span style={{ textTransform: "capitalize" }}>{acct.provider}</span>
                       {" · "}Connected {relDate(acct.connected_at)}
@@ -267,8 +273,9 @@ export default function EmailSettingsPage() {
                       {/* Status badge */}
                       <div style={{
                         padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700,
-                        background: "#F0FDF4", color: "#166534",
-                        border: "1px solid rgba(22,163,74,.2)",
+                        fontFamily: S.mono,
+                        background: "rgba(34,197,94,0.1)", color: S.green,
+                        border: "1px solid rgba(34,197,94,.25)",
                       }}>
                         ACTIVE
                       </div>
@@ -281,10 +288,10 @@ export default function EmailSettingsPage() {
                           title="Authorise Google Calendar access for this account"
                           style={{
                             display: "flex", alignItems: "center", gap: 6,
-                            background: "rgba(66, 133, 244, 0.1)",
-                            border: "1px solid rgba(66, 133, 244, 0.35)",
-                            borderRadius: 6, padding: "5px 11px", cursor: "pointer",
-                            color: "#4285f4", fontSize: 11, fontWeight: 600,
+                            background: "rgba(96, 165, 250, 0.1)",
+                            border: "1px solid rgba(96, 165, 250, 0.35)",
+                            borderRadius: 3, padding: "5px 11px", cursor: "pointer",
+                            color: S.blue, fontSize: 11, fontWeight: 600,
                             opacity: connectingGcal === acct.email ? 0.6 : 1,
                             whiteSpace: "nowrap",
                           }}
@@ -295,9 +302,9 @@ export default function EmailSettingsPage() {
                       {acct.provider === "gmail" && acct.has_google_calendar && (
                         <div style={{
                           display: "flex", alignItems: "center", gap: 4,
-                          padding: "3px 9px", borderRadius: 6, fontSize: 10, fontWeight: 600,
-                          background: "rgba(66, 133, 244, 0.08)", color: "#4285f4",
-                          border: "1px solid rgba(66, 133, 244, 0.2)",
+                          padding: "3px 9px", borderRadius: 3, fontSize: 10, fontWeight: 600,
+                          background: "rgba(96, 165, 250, 0.08)", color: S.blue,
+                          border: "1px solid rgba(96, 165, 250, 0.2)",
                         }}>
                           Cal ✓
                         </div>
@@ -308,9 +315,9 @@ export default function EmailSettingsPage() {
                         onClick={() => handleDisconnect(acct.id, acct.email)}
                         disabled={disconnecting === acct.id}
                         style={{
-                          background: "none", border: "1px solid var(--border-strong)",
-                          borderRadius: 6, padding: "5px 12px", cursor: "pointer",
-                          color: "var(--text-dim)", fontSize: 12,
+                          background: "none", border: `1px solid ${S.border2}`,
+                          borderRadius: 3, padding: "5px 12px", cursor: "pointer",
+                          color: S.textSecondary, fontSize: 12,
                           opacity: disconnecting === acct.id ? 0.5 : 1,
                         }}
                       >
@@ -326,7 +333,7 @@ export default function EmailSettingsPage() {
 
         {/* Add accounts */}
         <section>
-          <h2 style={{ margin: "0 0 16px", fontSize: 10.5, fontWeight: 600, color: "#BAB5AE", textTransform: "uppercase", letterSpacing: ".08em", fontFamily: "var(--font-inter, Inter, sans-serif)" }}>
+          <h2 style={{ margin: "0 0 16px", fontSize: 9, fontWeight: 700, color: S.textMuted, textTransform: "uppercase", letterSpacing: ".12em", fontFamily: S.mono }}>
             add account
           </h2>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -336,10 +343,10 @@ export default function EmailSettingsPage() {
               disabled={connectingOAuth === "gmail"}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
-                background: "var(--glass-bg)", backdropFilter: "blur(var(--blur-amount))",
-                border: "1px solid var(--glass-border)",
-                borderRadius: 10, padding: "12px 20px", cursor: "pointer",
-                color: "var(--text-active)", fontSize: 13, fontWeight: 500,
+                background: S.bg3,
+                border: `1px solid ${S.border2}`,
+                borderRadius: 3, padding: "12px 20px", cursor: "pointer",
+                color: S.textPrimary, fontSize: 13, fontWeight: 500,
                 opacity: connectingOAuth === "gmail" ? 0.6 : 1,
                 transition: "border-color 0.15s, background 0.15s",
               }}
@@ -354,10 +361,10 @@ export default function EmailSettingsPage() {
               disabled={connectingOAuth === "microsoft"}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
-                background: "var(--glass-bg)", backdropFilter: "blur(var(--blur-amount))",
-                border: "1px solid var(--glass-border)",
-                borderRadius: 10, padding: "12px 20px", cursor: "pointer",
-                color: "var(--text-active)", fontSize: 13, fontWeight: 500,
+                background: S.bg3,
+                border: `1px solid ${S.border2}`,
+                borderRadius: 3, padding: "12px 20px", cursor: "pointer",
+                color: S.textPrimary, fontSize: 13, fontWeight: 500,
                 opacity: connectingOAuth === "microsoft" ? 0.6 : 1,
               }}
             >
@@ -370,11 +377,10 @@ export default function EmailSettingsPage() {
               onClick={() => { setShowImap(v => !v); setImapError(null); setImapSuccess(false); }}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
-                background: showImap ? "var(--glass-bg-strong)" : "var(--glass-bg)",
-                backdropFilter: "blur(var(--blur-amount))",
-                border: `1px solid ${showImap ? "var(--accent-orange)" : "var(--glass-border)"}`,
-                borderRadius: 10, padding: "12px 20px", cursor: "pointer",
-                color: "var(--text-active)", fontSize: 13, fontWeight: 500,
+                background: showImap ? S.bg4 : S.bg3,
+                border: `1px solid ${showImap ? S.orange : S.border2}`,
+                borderRadius: 3, padding: "12px 20px", cursor: "pointer",
+                color: S.textPrimary, fontSize: 13, fontWeight: 500,
               }}
             >
               <span style={{ width: 20, height: 20, borderRadius: 4, background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#f59e0b" }}>✉</span>
@@ -386,21 +392,20 @@ export default function EmailSettingsPage() {
           {showImap && (
             <form onSubmit={handleImapSubmit} style={{
               marginTop: 16,
-              background: "var(--glass-bg)",
-              backdropFilter: "blur(var(--blur-amount))",
-              border: "1px solid var(--glass-border)",
-              borderRadius: 12,
+              background: S.bg2,
+              border: `1px solid ${S.border}`,
+              borderRadius: 3,
               padding: 20,
             }}>
-              <h3 style={{ margin: "0 0 16px", fontSize: 13, fontWeight: 600, color: "var(--text)" }}>IMAP / App Password</h3>
-              <p style={{ margin: "0 0 16px", fontSize: 12, color: "var(--text-dim)", lineHeight: 1.6 }}>
+              <h3 style={{ margin: "0 0 16px", fontSize: 13, fontWeight: 600, color: S.textPrimary }}>IMAP / App Password</h3>
+              <p style={{ margin: "0 0 16px", fontSize: 12, color: S.textSecondary, lineHeight: 1.6 }}>
                 For Yahoo and AOL, use an <strong>app password</strong> — not your regular login password.
-                Generate one at <a href="https://security.yahoo.com" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)" }}>security.yahoo.com</a> → Security → App Passwords.
+                Generate one at <a href="https://security.yahoo.com" target="_blank" rel="noopener noreferrer" style={{ color: S.accent }}>security.yahoo.com</a> → Security → App Passwords.
               </p>
 
               <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--text-dim)", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.04em" }}>Email address</label>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: S.textMuted, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.04em" }}>Email address</label>
                   <input
                     type="email" required
                     value={imapForm.email}
@@ -410,7 +415,7 @@ export default function EmailSettingsPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--text-dim)", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.04em" }}>App password</label>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: S.textMuted, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.04em" }}>App password</label>
                   <input
                     type="password" required
                     value={imapForm.password}
@@ -424,7 +429,7 @@ export default function EmailSettingsPage() {
               <button
                 type="button"
                 onClick={() => setShowImapAdvanced(v => !v)}
-                style={{ marginTop: 12, background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)", fontSize: 12, padding: 0 }}
+                style={{ marginTop: 12, background: "none", border: "none", cursor: "pointer", color: S.textSecondary, fontSize: 12, padding: 0 }}
               >
                 {showImapAdvanced ? "▾" : "▸"} Custom IMAP / SMTP settings
               </button>
@@ -451,12 +456,12 @@ export default function EmailSettingsPage() {
               )}
 
               {imapError && (
-                <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", borderRadius: 8, color: "#DC2626", fontSize: 12 }}>
+                <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 3, color: S.red, fontSize: 12 }}>
                   {imapError}
                 </div>
               )}
               {imapSuccess && (
-                <div style={{ marginTop: 12, padding: "10px 14px", background: "#F0FDF4", border: "1px solid rgba(22,163,74,.2)", borderRadius: 8, color: "#166534", fontSize: 12 }}>
+                <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,.25)", borderRadius: 3, color: S.green, fontSize: 12 }}>
                   Account connected successfully.
                 </div>
               )}
@@ -472,8 +477,8 @@ export default function EmailSettingsPage() {
         </section>
 
         {/* Info note */}
-        <div style={{ marginTop: 32, padding: "14px 18px", background: "var(--glass-bg)", backdropFilter: "blur(var(--blur-amount))", border: "1px solid var(--glass-border)", borderRadius: 10, fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6 }}>
-          <strong style={{ color: "var(--text)" }}>Note:</strong> OAuth connect requires <code>NYLAS_CLIENT_ID</code> and <code>NYLAS_CLIENT_SECRET</code> to be set as Fly secrets.
+        <div style={{ marginTop: 32, padding: "14px 18px", background: S.bg2, border: `1px solid ${S.border}`, borderRadius: 3, fontSize: 12, color: S.textSecondary, lineHeight: 1.6 }}>
+          <strong style={{ color: S.textPrimary }}>Note:</strong> OAuth connect requires <code>NYLAS_CLIENT_ID</code> and <code>NYLAS_CLIENT_SECRET</code> to be set as Fly secrets.
           If not yet configured, run: <code>fly secrets set NYLAS_CLIENT_ID=&lt;id&gt; NYLAS_CLIENT_SECRET=&lt;secret&gt; -a arthur-online</code>.
           The Nylas Client ID is <code>21640001-154e-426f-8710-545c97318298</code> (already in vault).
         </div>
@@ -484,11 +489,11 @@ export default function EmailSettingsPage() {
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "var(--glass-bg-strong)",
-  border: "1px solid var(--glass-border)",
-  borderRadius: 7,
+  background: S.bg3,
+  border: `1px solid ${S.border2}`,
+  borderRadius: 3,
   padding: "8px 12px",
-  color: "var(--text-active)",
+  color: S.textPrimary,
   fontSize: 13,
   outline: "none",
 };
@@ -497,17 +502,17 @@ const labelStyle: React.CSSProperties = {
   display: "block",
   fontSize: 11,
   fontWeight: 600,
-  color: "var(--text-dim)",
+  color: S.textMuted,
   marginBottom: 4,
   textTransform: "uppercase",
   letterSpacing: "0.04em",
 };
 
 const submitBtnStyle: React.CSSProperties = {
-  background: "var(--accent-orange)",
-  color: "var(--accent-text-on)",
+  background: S.accent,
+  color: S.bg,
   border: "none",
-  borderRadius: 7,
+  borderRadius: 3,
   padding: "9px 18px",
   cursor: "pointer",
   fontSize: 13,
@@ -516,9 +521,9 @@ const submitBtnStyle: React.CSSProperties = {
 
 const cancelBtnStyle: React.CSSProperties = {
   background: "none",
-  color: "var(--text-muted)",
-  border: "1px solid var(--glass-border)",
-  borderRadius: 7,
+  color: S.textSecondary,
+  border: `1px solid ${S.border2}`,
+  borderRadius: 3,
   padding: "9px 18px",
   cursor: "pointer",
   fontSize: 13,

@@ -2,6 +2,14 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 
+const S = {
+  bg: '#0a0a0a', bg2: '#111111', bg3: '#181818', bg4: '#1f1f1f',
+  border: '#1f1f1f', border2: '#2a2a2a',
+  textPrimary: '#e8e8e8', textSecondary: '#8a8a8a', textMuted: '#4a4a4a',
+  accent: '#f0a500', green: '#22c55e', red: '#ef4444', orange: '#f97316', blue: '#60a5fa',
+  mono: "'JetBrains Mono', monospace", sans: "'Inter', sans-serif",
+};
+
 interface MetaPage {
   id: string;
   page_id: string;
@@ -31,6 +39,8 @@ interface Thread {
   unreviewed: number;
 }
 
+const DET = "America/Detroit";
+
 function relTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
@@ -38,21 +48,28 @@ function relTime(iso: string): string {
   if (m < 60) return `${m}m`;
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}h`;
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: DET });
+}
+
+function timeStr(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: DET });
+}
+
+function dateStr(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: DET });
 }
 
 const inputSt: React.CSSProperties = {
-  background: "var(--glass-bg)",
-  border: "1px solid var(--glass-border)",
-  borderRadius: 8,
-  padding: "8px 12px",
-  color: "var(--text-active)",
+  background: S.bg,
+  border: `1px solid ${S.border2}`,
+  borderRadius: 6,
+  padding: "9px 12px",
+  color: S.textPrimary,
   fontSize: 12,
-  fontFamily: "inherit",
+  fontFamily: S.mono,
   outline: "none",
   width: "100%",
   boxSizing: "border-box",
-  height: 36,
 };
 
 export default function MessengerPage() {
@@ -131,7 +148,8 @@ export default function MessengerPage() {
   const [connectPageName, setConnectPageName] = useState("");
   const [connectToken, setConnectToken] = useState("");
   const [connecting, setConnecting] = useState(false);
-  const [connectStatus, setConnectStatus] = useState<string | null>(null);
+  const [connectStatus, setConnectStatus] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [showConnect, setShowConnect] = useState(false);
 
   async function handleConnectPage(e: React.FormEvent) {
     e.preventDefault();
@@ -139,181 +157,170 @@ export default function MessengerPage() {
     setConnecting(true);
     setConnectStatus(null);
     try {
+      // connect-page route expects { page_id, name, page_access_token }
       const res = await fetch("/api/meta/connect-page", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ page_id: connectPageId.trim(), page_name: connectPageName.trim(), access_token: connectToken.trim() }),
+        body: JSON.stringify({
+          page_id: connectPageId.trim(),
+          name: connectPageName.trim(),
+          page_access_token: connectToken.trim(),
+        }),
       });
       const data = await res.json() as { ok?: boolean; error?: string };
       if (data.ok) {
-        setConnectStatus("page connected.");
+        setConnectStatus({ ok: true, msg: "page connected" });
         setConnectPageId(""); setConnectPageName(""); setConnectToken("");
+        setShowConnect(false);
         await fetchData();
       } else {
-        setConnectStatus("error: " + (data.error ?? res.statusText));
+        setConnectStatus({ ok: false, msg: data.error ?? res.statusText });
       }
     } catch (err: unknown) {
-      setConnectStatus("network error: " + (err instanceof Error ? err.message : String(err)));
+      setConnectStatus({ ok: false, msg: err instanceof Error ? err.message : String(err) });
     } finally {
       setConnecting(false);
     }
   }
 
-  const notConfigured = pages.length === 0 && !loading;
-  const now = new Date();
-  const dateStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).toLowerCase();
-
-  const codeBlockStyle: React.CSSProperties = {
-    display: "block",
-    background: "var(--glass-bg-strong)",
-    border: "1px solid var(--glass-border)",
-    borderRadius: 6,
-    padding: "10px 14px",
-    fontSize: 11,
-    fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
-    color: "var(--text-main)",
-    overflowX: "auto",
-    whiteSpace: "pre",
-    marginTop: 4,
-    marginBottom: 4,
-  };
+  const headerLabelSt: React.CSSProperties = { fontFamily: S.mono, fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: S.textMuted };
+  const noPages = pages.length === 0;
 
   return (
-    <div style={{ minHeight: "100%", paddingTop: 32, background: "var(--bg-base)" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
+    <div style={{ minHeight: "100%", background: S.bg, fontFamily: S.sans, color: S.textPrimary }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px 80px" }}>
 
         {/* Header */}
-        <div style={{ paddingTop: 24, paddingBottom: 28, borderBottom: "1px solid var(--line-separator)", marginBottom: 28, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+        <div style={{ paddingBottom: 20, borderBottom: `1px solid ${S.border}`, marginBottom: 24, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontSize: "10.5px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#BAB5AE", marginBottom: 8 }}>
-              Meta Business Messaging
-            </div>
-            <h1 style={{ fontFamily: "var(--font-lora, Lora, Georgia, serif)", margin: 0, fontWeight: 500, fontSize: "28px", letterSpacing: "-0.025em", color: "var(--text-active)", lineHeight: 1.2 }}>
-              Messenger
-            </h1>
+            <div style={{ ...headerLabelSt, marginBottom: 8 }}>Meta Business Messaging</div>
+            <h1 style={{ margin: 0, fontWeight: 700, fontSize: 24, letterSpacing: "-0.5px", color: S.textPrimary }}>Messenger</h1>
           </div>
-          <div style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace", fontSize: 10, color: "var(--text-muted)", paddingBottom: 4 }}>
-            {dateStr}
-          </div>
+          <button
+            onClick={() => { setShowConnect(s => !s); setConnectStatus(null); }}
+            style={{ background: showConnect ? S.bg3 : S.accent, color: showConnect ? S.textPrimary : "#000", border: `1px solid ${showConnect ? S.border2 : S.accent}`, borderRadius: 6, padding: "8px 16px", fontSize: 12, fontWeight: 700, fontFamily: S.mono, cursor: "pointer" }}
+          >
+            {showConnect ? "close" : "+ connect page"}
+          </button>
         </div>
 
-        {/* Setup instructions (not configured) */}
-        {notConfigured && (
-          <div style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)", backdropFilter: "blur(var(--blur-amount))", borderRadius: "var(--radius-panel)", padding: "var(--space-lg)", maxWidth: 640, marginBottom: 28 }}>
-            <div style={{ fontSize: "10.5px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#BAB5AE", marginBottom: 8 }}>Setup Required</div>
-            <h2 style={{ fontFamily: "var(--font-lora, Lora, Georgia, serif)", margin: "0 0 12px", fontWeight: 500, fontSize: 20, letterSpacing: "-0.02em", color: "var(--text-active)" }}>No pages connected.</h2>
-            <p style={{ color: "var(--text-main)", fontSize: 13, marginBottom: 20, lineHeight: 1.6 }}>Follow these steps to enable auto-responses.</p>
-            <ol style={{ color: "var(--text-muted)", fontSize: 12, lineHeight: 2.2, paddingLeft: 20, listStyleType: "decimal" }}>
-              <li>Go to <a href="https://developers.facebook.com" target="_blank" rel="noreferrer" style={{ color: "var(--accent-orange)" }}>developers.facebook.com</a> → apps → create app (business type)</li>
-              <li>Add the Messenger product to your app</li>
-              <li>In Messenger settings → generate page access token for Dabney &amp; Co page</li>
-              <li>Configure webhook URL:<pre style={codeBlockStyle}>https://arthur-online.fly.dev/api/meta/webhook</pre></li>
-              <li>Set your verify token:<pre style={codeBlockStyle}>fly secrets set META_VERIFY_TOKEN=&lt;random-string&gt; -a arthur-online</pre></li>
-              <li>Subscribe to:<pre style={codeBlockStyle}>{`messages\nmessaging_postbacks`}</pre></li>
-              <li>Set your page token:<pre style={codeBlockStyle}>fly secrets set META_PAGE_ACCESS_TOKEN_DABNEY=&lt;token&gt; -a arthur-online</pre></li>
-            </ol>
-          </div>
-        )}
+        {/* Connected pages summary */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+          {pages.map(p => (
+            <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, background: S.bg2, border: `1px solid ${S.border}`, borderRadius: 6, padding: "8px 14px" }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: S.green, flexShrink: 0 }} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: S.textPrimary }}>{p.page_name}</span>
+              <span style={{ fontFamily: S.mono, fontSize: 10, color: S.textMuted }}>{p.page_id}</span>
+              <span style={{ fontFamily: S.mono, fontSize: 10, color: S.textMuted }}>· connected {dateStr(p.connected_at)}</span>
+            </div>
+          ))}
+          {noPages && !loading && !showConnect && (
+            <div style={{ fontSize: 12, color: S.textSecondary, fontFamily: S.mono }}>
+              no pages connected — hit “+ connect page” to add one.
+            </div>
+          )}
+        </div>
 
         {/* Connect a page form */}
-        <div style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)", backdropFilter: "blur(var(--blur-amount))", borderRadius: "var(--radius-panel)", padding: "var(--space-lg)", maxWidth: 480, marginBottom: 28 }}>
-          <div style={{ fontSize: "10.5px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#BAB5AE", marginBottom: 8 }}>Connect Page</div>
-          <h3 style={{ fontFamily: "var(--font-lora, Lora, Georgia, serif)", margin: "0 0 16px", fontWeight: 500, fontSize: 16, letterSpacing: "-0.02em", color: "var(--text-active)" }}>Add a page.</h3>
-          <form onSubmit={handleConnectPage} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <input aria-label="Facebook Page ID" value={connectPageId} onChange={e => setConnectPageId(e.target.value)} placeholder="page ID" required style={{ ...inputSt, fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }} />
-            <input aria-label="Facebook Page name" value={connectPageName} onChange={e => setConnectPageName(e.target.value)} placeholder="page name (e.g. Dabney & Co)" required style={inputSt} />
-            <input aria-label="Page access token" value={connectToken} onChange={e => setConnectToken(e.target.value)} placeholder="page access token" type="password" required style={{ ...inputSt, fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }} />
-            <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 4 }}>
-              <button type="submit" disabled={connecting} style={{ background: "var(--accent-orange)", color: "var(--accent-text-on)", border: "none", borderRadius: "var(--radius-pill)", padding: "8px 20px", fontSize: 12, fontWeight: 700, cursor: connecting ? "not-allowed" : "pointer", opacity: connecting ? 0.7 : 1 }}>
-                {connecting ? "connecting…" : "connect page →"}
-              </button>
-              {connectStatus && (
-                <span style={{ fontSize: 11, color: connectStatus.startsWith("error") ? "#ef4444" : "var(--accent-orange)", fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>
-                  {connectStatus}
-                </span>
-              )}
-            </div>
-          </form>
-        </div>
-
-        {/* Two-column thread UI — only when pages are connected */}
-        {!notConfigured && (
-          <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 16, height: "calc(100vh - 320px)", minHeight: 400 }}>
-            {/* Conversation list */}
-            <div style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)", backdropFilter: "blur(var(--blur-amount))", borderRadius: "var(--radius-panel)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-              <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--line-separator)", display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ fontSize: "10.5px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#BAB5AE" }}>Conversations</div>
-                <span style={{ fontSize: 10, fontWeight: 600, color: "#0B504F", background: "#E5F0EF", borderRadius: 6, padding: "1px 6px", fontVariantNumeric: "tabular-nums" }}>{threads.length}</span>
-              </div>
-              <div style={{ overflowY: "auto", flex: 1 }}>
-                {loading && (
-                  <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-                    {[1, 2, 3].map(i => <div key={i} style={{ height: 64, borderRadius: 8, background: "rgba(255,255,255,0.04)" }} />)}
-                  </div>
+        {showConnect && (
+          <div style={{ background: S.bg2, border: `1px solid ${S.border}`, borderRadius: 8, padding: 20, maxWidth: 480, marginBottom: 24 }}>
+            <div style={{ ...headerLabelSt, marginBottom: 8 }}>Connect Page</div>
+            <h3 style={{ margin: "0 0 6px", fontWeight: 700, fontSize: 15, color: S.textPrimary }}>Connect a Facebook Page</h3>
+            <p style={{ margin: "0 0 16px", fontSize: 11.5, lineHeight: 1.6, color: S.textSecondary }}>
+              Generate a Page access token in Meta Business Suite (Messenger product → page token), then paste it below. The token is verified against the Graph API before it&apos;s saved.
+            </p>
+            <form onSubmit={handleConnectPage} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <input aria-label="Facebook Page ID" value={connectPageId} onChange={e => setConnectPageId(e.target.value)} placeholder="page ID" required style={inputSt} />
+              <input aria-label="Facebook Page name" value={connectPageName} onChange={e => setConnectPageName(e.target.value)} placeholder="page name (e.g. Dabney & Co)" required style={{ ...inputSt, fontFamily: S.sans }} />
+              <input aria-label="Page access token" value={connectToken} onChange={e => setConnectToken(e.target.value)} placeholder="page access token" type="password" required style={inputSt} />
+              <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 4 }}>
+                <button type="submit" disabled={connecting} style={{ background: S.accent, color: "#000", border: "none", borderRadius: 6, padding: "9px 20px", fontSize: 12, fontWeight: 700, fontFamily: S.mono, cursor: connecting ? "not-allowed" : "pointer", opacity: connecting ? 0.6 : 1 }}>
+                  {connecting ? "verifying…" : "connect page →"}
+                </button>
+                {connectStatus && (
+                  <span style={{ fontSize: 11, color: connectStatus.ok ? S.green : S.red, fontFamily: S.mono }}>
+                    {connectStatus.ok ? "✓ " : "✗ "}{connectStatus.msg}
+                  </span>
                 )}
-                {threads.length === 0 && !loading && (
-                  <div style={{ padding: "24px 16px", color: "var(--text-muted)", fontSize: 12 }}>no conversations yet.</div>
-                )}
-                {threads.map(t => (
-                  <button key={`${t.page_id}:${t.sender_id}`} onClick={() => setActive(t)} style={{ width: "100%", textAlign: "left", padding: "13px 16px", background: active?.sender_id === t.sender_id ? "#E5F0EF" : "transparent", border: "none", borderBottom: "1px solid #F3F0EA", borderLeft: active?.sender_id === t.sender_id ? "2px solid #0B504F" : "2px solid transparent", cursor: "pointer" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontWeight: 500, fontSize: 13, color: "var(--text-active)" }}>{t.sender_name ?? t.sender_id.slice(-8)}</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        {t.unreviewed > 0 && <span style={{ background: "var(--accent-orange)", color: "var(--accent-text-on)", fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 10 }}>{t.unreviewed}</span>}
-                        <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 10, color: "var(--text-muted)" }}>{relTime(t.last_at)}</span>
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 11, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.messages.at(-1)?.message_text?.slice(0, 40) ?? "—"}</div>
-                  </button>
-                ))}
               </div>
-            </div>
-
-            {/* Thread detail */}
-            <div style={{ background: "var(--glass-bg-strong)", border: "1px solid var(--glass-border)", backdropFilter: "blur(var(--blur-amount))", borderRadius: "var(--radius-panel)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-              {active ? (
-                <>
-                  <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--line-separator)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div>
-                      <div style={{ fontWeight: 400, fontSize: 16, color: "var(--text-active)" }}>{active.sender_name ?? active.sender_id.slice(-8)}</div>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "ui-monospace, monospace", marginTop: 2 }}>{pages.find(p => p.page_id === active.page_id)?.page_name ?? active.page_id}</div>
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: 10 }}>
-                    {active.messages.sort((a, b) => a.created_at.localeCompare(b.created_at)).map(m => (
-                      <div key={m.id} style={{ alignSelf: m.direction === "outbound" ? "flex-end" : "flex-start", maxWidth: "70%" }}>
-                        <div style={{ background: m.direction === "outbound" ? "var(--accent-orange)" : "var(--glass-bg)", border: m.direction === "outbound" ? "none" : `1px solid ${m.requires_review ? "rgba(239,68,68,0.4)" : "var(--glass-border)"}`, borderRadius: m.direction === "outbound" ? "14px 14px 4px 14px" : "14px 14px 14px 4px", padding: "10px 14px" }}>
-                          <div style={{ fontSize: 13, lineHeight: 1.5, color: m.direction === "outbound" ? "var(--accent-text-on)" : "var(--text-active)" }}>{m.message_text}</div>
-                          <div style={{ fontSize: 10, color: m.direction === "outbound" ? "rgba(250,248,245,0.75)" : "#BAB5AE", marginTop: 5, fontFamily: "ui-monospace, monospace", fontVariantNumeric: "tabular-nums" }}>
-                            {m.direction === "outbound" ? "arthur → sent" : "customer"} · {new Date(m.created_at).toLocaleTimeString()}
-                            {m.requires_review && <span style={{ color: "#ef4444", marginLeft: 8 }}>⚠ needs review</span>}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ padding: "16px 20px", borderTop: "1px solid var(--line-separator)" }}>
-                    <div style={{ display: "flex", gap: 10 }}>
-                      <textarea value={editMsg} onChange={e => setEditMsg(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleResend(); } }} placeholder="edit and resend a response…" rows={2} style={{ flex: 1, background: "var(--glass-bg)", border: "1px solid var(--glass-border)", borderRadius: 10, padding: "10px 14px", color: "var(--text-active)", fontSize: 13, resize: "none", outline: "none", fontFamily: "inherit" }} />
-                      <button onClick={handleResend} disabled={sending || !editMsg.trim()} style={{ background: editMsg.trim() ? "var(--accent-orange)" : "var(--glass-bg-strong)", color: editMsg.trim() ? "var(--accent-text-on)" : "var(--text-muted)", border: "none", borderRadius: "var(--radius-pill)", padding: "0 20px", cursor: editMsg.trim() ? "pointer" : "not-allowed", fontSize: 13, fontWeight: 700, flexShrink: 0, transition: "background 0.15s" }}>
-                        {sending ? "sending…" : "send →"}
-                      </button>
-                    </div>
-                    {sendErr && <p style={{ color: "#ef4444", fontSize: 11, marginTop: 6, fontFamily: "ui-monospace, monospace" }}>{sendErr}</p>}
-                  </div>
-                </>
-              ) : (
-                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: 13 }}>
-                  {loading ? "loading conversations…" : "select a conversation"}
-                </div>
-              )}
-            </div>
+            </form>
           </div>
         )}
-      </div>
 
-      {/* Shimmer animation without style jsx */}
-      <style>{`@keyframes shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }`}</style>
+        {/* Two-column thread UI */}
+        <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 14, height: "calc(100vh - 300px)", minHeight: 400 }}>
+          {/* Conversation list */}
+          <div style={{ background: S.bg2, border: `1px solid ${S.border}`, borderRadius: 8, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "13px 16px", borderBottom: `1px solid ${S.border}`, display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={headerLabelSt}>Conversations</div>
+              <span style={{ fontFamily: S.mono, fontSize: 10, fontWeight: 700, color: S.accent, background: S.bg4, borderRadius: 4, padding: "1px 6px", fontVariantNumeric: "tabular-nums" }}>{threads.length}</span>
+            </div>
+            <div style={{ overflowY: "auto", flex: 1 }}>
+              {loading && (
+                <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[1, 2, 3].map(i => <div key={i} style={{ height: 60, borderRadius: 6, background: S.bg3 }} />)}
+                </div>
+              )}
+              {threads.length === 0 && !loading && (
+                <div style={{ padding: "24px 16px", color: S.textMuted, fontSize: 12, fontFamily: S.mono }}>no conversations yet.</div>
+              )}
+              {threads.map(t => {
+                const isActive = active?.page_id === t.page_id && active?.sender_id === t.sender_id;
+                return (
+                  <button key={`${t.page_id}:${t.sender_id}`} onClick={() => setActive(t)} style={{ width: "100%", textAlign: "left", padding: "12px 16px", background: isActive ? S.bg3 : "transparent", border: "none", borderBottom: `1px solid ${S.border}`, borderLeft: isActive ? `2px solid ${S.accent}` : "2px solid transparent", cursor: "pointer" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                      <span style={{ fontWeight: 600, fontSize: 13, color: S.textPrimary }}>{t.sender_name ?? t.sender_id.slice(-8)}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {t.unreviewed > 0 && <span style={{ background: S.orange, color: "#000", fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 8, fontFamily: S.mono }}>{t.unreviewed}</span>}
+                        <span style={{ fontFamily: S.mono, fontSize: 10, color: S.textMuted }}>{relTime(t.last_at)}</span>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 11, color: S.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.messages.at(-1)?.message_text?.slice(0, 40) ?? "—"}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Thread detail */}
+          <div style={{ background: S.bg2, border: `1px solid ${S.border}`, borderRadius: 8, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            {active ? (
+              <>
+                <div style={{ padding: "15px 20px", borderBottom: `1px solid ${S.border}` }}>
+                  <div style={{ fontWeight: 600, fontSize: 15, color: S.textPrimary }}>{active.sender_name ?? active.sender_id.slice(-8)}</div>
+                  <div style={{ fontSize: 11, color: S.textMuted, fontFamily: S.mono, marginTop: 2 }}>{pages.find(p => p.page_id === active.page_id)?.page_name ?? active.page_id}</div>
+                </div>
+                <div style={{ flex: 1, overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+                  {[...active.messages].sort((a, b) => a.created_at.localeCompare(b.created_at)).map(m => (
+                    <div key={m.id} style={{ alignSelf: m.direction === "outbound" ? "flex-end" : "flex-start", maxWidth: "70%" }}>
+                      <div style={{ background: m.direction === "outbound" ? S.accent : S.bg3, border: m.direction === "outbound" ? "none" : `1px solid ${m.requires_review ? S.red : S.border2}`, borderRadius: m.direction === "outbound" ? "12px 12px 4px 12px" : "12px 12px 12px 4px", padding: "9px 13px" }}>
+                        <div style={{ fontSize: 13, lineHeight: 1.5, color: m.direction === "outbound" ? "#000" : S.textPrimary }}>{m.message_text}</div>
+                        <div style={{ fontSize: 10, color: m.direction === "outbound" ? "rgba(0,0,0,0.6)" : S.textMuted, marginTop: 5, fontFamily: S.mono, fontVariantNumeric: "tabular-nums" }}>
+                          {m.direction === "outbound" ? "arthur → sent" : "customer"} · {timeStr(m.created_at)}
+                          {m.requires_review && m.direction === "inbound" && <span style={{ color: S.red, marginLeft: 8 }}>⚠ needs review</span>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ padding: "14px 20px", borderTop: `1px solid ${S.border}` }}>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <textarea value={editMsg} onChange={e => setEditMsg(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleResend(); } }} placeholder="write a reply…" rows={2} style={{ flex: 1, background: S.bg, border: `1px solid ${S.border2}`, borderRadius: 6, padding: "9px 13px", color: S.textPrimary, fontSize: 13, resize: "none", outline: "none", fontFamily: S.sans }} />
+                    <button onClick={handleResend} disabled={sending || !editMsg.trim()} style={{ background: editMsg.trim() ? S.accent : S.bg3, color: editMsg.trim() ? "#000" : S.textMuted, border: "none", borderRadius: 6, padding: "0 20px", cursor: editMsg.trim() ? "pointer" : "not-allowed", fontSize: 13, fontWeight: 700, fontFamily: S.mono, flexShrink: 0 }}>
+                      {sending ? "sending…" : "send →"}
+                    </button>
+                  </div>
+                  {sendErr && <p style={{ color: S.red, fontSize: 11, marginTop: 6, fontFamily: S.mono }}>{sendErr}</p>}
+                </div>
+              </>
+            ) : (
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: S.textMuted, fontSize: 13, fontFamily: S.mono }}>
+                {loading ? "loading conversations…" : noPages ? "connect a page to start receiving messages" : "select a conversation"}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
