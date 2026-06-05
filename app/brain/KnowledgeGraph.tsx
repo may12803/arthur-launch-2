@@ -38,6 +38,7 @@ export default function KnowledgeGraph({ lastUpdated }: KnowledgeGraphProps) {
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: "America/Detroit",
       })
     : null;
 

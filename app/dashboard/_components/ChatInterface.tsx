@@ -12,7 +12,11 @@ interface UploadedFile {
 }
 
 function greeting(): string {
-  const h = new Date().getHours();
+  // Pin to Daniel's timezone so the SSR (UTC on Fly) and client renders agree —
+  // otherwise the greeting text mismatches and React bails out of hydration (#425).
+  const h = Number(
+    new Intl.DateTimeFormat('en-US', { timeZone: 'America/Detroit', hour: 'numeric', hour12: false }).format(new Date())
+  ) % 24;
   if (h < 12) return 'Good morning, Daniel.';
   if (h < 17) return 'Good afternoon, Daniel.';
   return 'Good evening, Daniel.';
