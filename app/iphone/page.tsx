@@ -262,7 +262,11 @@ export default function IphonePage() {
       try {
         const [countsRes, eventsRes] = await Promise.allSettled([
           fetch(`/api/iphone/inbox-count`, { headers: { Authorization: `Bearer ${BEARER}` } }),
-          fetch(`/api/iphone/log`, { method: "GET" }).catch(() => null),
+          fetch(`/api/iphone/log`, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${BEARER}` },
+            body:    JSON.stringify({ event: "page_load" }),
+          }).catch(() => null),
         ]);
 
         let counts: InboxCounts | null = null;

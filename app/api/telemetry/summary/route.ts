@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { existsSync } from "fs";
+import { join } from "path";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,18 +10,24 @@ export async function GET(req: NextRequest) {
   const hours = hoursParam ? Math.min(Math.max(parseInt(hoursParam) || 24, 1), 168) : 24;
 
   try {
+    const telemetryPath = process.env.HOME
+      ? join(process.env.HOME, "arthur/lib/telemetry.js")
+      : null;
+    if (!telemetryPath || !existsSync(telemetryPath)) {
+      throw new Error("telemetry module not found");
+    }
     // Dynamic require so the module resolves at runtime on the server, not at build time
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { getTelemetrySummary } = require("/Users/danielmay/arthur/lib/telemetry.js");
+    const { getTelemetrySummary } = require(telemetryPath);
     const data = await getTelemetrySummary({ hours });
     return NextResponse.json(data);
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[telemetry/summary]", err);
     // If telemetry lib isn't available (e.g. on hosted Fly build), return a stub
     return NextResponse.json({
       generated_at: new Date().toISOString(),
       range_hours: hours,
-      error: `telemetry_unavailable: ${msg}`,
+      error: "telemetry temporarily unavailable",
       kpi: {
         queries_today: 0,
         avg_confidence: null,

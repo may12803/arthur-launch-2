@@ -43,6 +43,18 @@ function fmt(n: number | null): string {
   return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function relativeAge(ts: number): string {
+  const diff = Date.now() - ts;
+  if (diff < 0) return 'just now';
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
 function StatBlock({ label, value, delta, valueColor }: { label: string; value: string; delta?: string; valueColor?: string }) {
   return (
     <div style={{ padding: '10px 18px', borderRight: `1px solid ${S.border}`, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -111,6 +123,12 @@ export default function FinancePage() {
   const txCount = rev?.transaction_count ?? null;
   const daysIn = rev?.days_included ?? null;
   const byPayment = rev?.by_payment ?? {};
+  const hasData = grossRevenue != null || txCount != null;
+
+  const generatedTs = data?.generated_at ? new Date(data.generated_at).getTime() : NaN;
+  const generatedValid = !Number.isNaN(generatedTs);
+  const STALE_MS = 36 * 60 * 60 * 1000;
+  const isStale = generatedValid && Date.now() - generatedTs > STALE_MS;
 
   const displayedRows = data
     ? [...buildToastRows(data), ...data.transactions]
@@ -168,7 +186,7 @@ export default function FinancePage() {
         <div style={{ background: S.bg, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '10px 20px', borderBottom: `1px solid ${S.border}`, fontFamily: S.mono, fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: S.textMuted, display: 'flex', justifyContent: 'space-between', flexShrink: 0 }}>
             <span>TRANSACTIONS · {range}</span>
-            <span style={{ color: S.green }}>● TOAST SFTP LIVE</span>
+            <span style={{ color: hasData ? S.green : S.orange }}>{hasData ? '● TOAST SFTP LIVE' : '● NO DATA — SYNC EMPTY'}</span>
           </div>
           {loading ? (
             <div style={{ padding: '20px', fontFamily: S.mono, fontSize: '10px', color: S.textMuted }}>fetching Toast data…</div>
@@ -242,12 +260,14 @@ export default function FinancePage() {
           </div>
 
           {/* Data source badge */}
-          <div style={{ padding: '12px 14px', borderTop: `1px solid ${S.border}`, background: 'rgba(34,197,94,0.03)' }}>
-            <div style={{ fontFamily: S.mono, fontSize: '9px', color: S.green, fontWeight: 700, marginBottom: '4px' }}>● LIVE DATA</div>
+          <div style={{ padding: '12px 14px', borderTop: `1px solid ${S.border}`, background: hasData ? (isStale ? 'rgba(249,115,22,0.04)' : 'rgba(34,197,94,0.03)') : 'rgba(239,68,68,0.04)' }}>
+            <div style={{ fontFamily: S.mono, fontSize: '9px', color: hasData ? (isStale ? S.orange : S.green) : S.red, fontWeight: 700, marginBottom: '4px' }}>
+              {!hasData ? '● NO DATA — SYNC RETURNED EMPTY' : isStale ? '● STALE DATA' : '● LIVE DATA'}
+            </div>
             <div style={{ fontFamily: S.mono, fontSize: '10px', color: S.textMuted, lineHeight: 1.5 }}>
               Source: Toast SFTP rollup<br />
               Month: {data?.month || '—'}<br />
-              Updated: {data?.generated_at ? new Date(data.generated_at).toLocaleTimeString() : '—'}
+              Updated: {generatedValid ? `${new Date(generatedTs).toLocaleString()} · ${relativeAge(generatedTs)}${isStale ? ' (stale)' : ''}` : '—'}
             </div>
             <button
               onClick={() => load(range)}

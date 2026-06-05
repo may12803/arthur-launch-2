@@ -104,6 +104,8 @@ interface AppShellProps {
 export function AppShell({ children, onOpenVoice, voiceActive }: AppShellProps) {
   const pathname = usePathname();
   const [now, setNow] = useState('');
+  const [syncAge, setSyncAge] = useState('');
+  const [syncedAt] = useState(() => Date.now());
 
   useEffect(() => {
     const fmt = () => {
@@ -114,10 +116,19 @@ export function AppShell({ children, onOpenVoice, voiceActive }: AppShellProps) 
       const m = String(d.getMinutes()).padStart(2, '0');
       return `${days[d.getDay()]} ${months[d.getMonth()]}/${String(d.getDate()).padStart(2,'0')}/${String(d.getFullYear()).slice(2)} ${h}:${m}`;
     };
+    const fmtAge = () => {
+      const secs = Math.floor((Date.now() - syncedAt) / 1000);
+      if (secs < 60) return `${secs}S AGO`;
+      const mins = Math.floor(secs / 60);
+      if (mins < 60) return `${mins}M AGO`;
+      const hrs = Math.floor(mins / 60);
+      return `${hrs}H AGO`;
+    };
     setNow(fmt());
-    const t = setInterval(() => setNow(fmt()), 30000);
+    setSyncAge(fmtAge());
+    const t = setInterval(() => { setNow(fmt()); setSyncAge(fmtAge()); }, 30000);
     return () => clearInterval(t);
-  }, []);
+  }, [syncedAt]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', background: S.bg, color: S.textPrimary, fontFamily: S.sans, fontSize: '12px', lineHeight: '1.5', overflow: 'hidden' }}>
@@ -157,7 +168,7 @@ export function AppShell({ children, onOpenVoice, voiceActive }: AppShellProps) 
           </div>
           <div style={{ background: S.red, color: 'white', fontSize: '8px', fontWeight: 700, fontFamily: S.mono, width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>3</div>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: S.green, display: 'inline-block', animation: 'pulse 2s infinite' }} />
-          <span>LIVE · SYNC 4M AGO</span>
+          <span>LIVE · SYNC {syncAge}</span>
           <span style={{ color: S.accent, cursor: 'pointer' }}>↻ FORCE</span>
           <span style={{ color: S.border2 }}>|</span>
           <span>{now}</span>
