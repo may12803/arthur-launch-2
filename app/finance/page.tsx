@@ -181,7 +181,7 @@ export default function FinancePage() {
       </div>
 
       {/* 2-col layout */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 300px', gap: '1px', background: S.border, minHeight: 0, overflow: 'hidden' }}>
+      <div className="os-split" style={{ flex: 1, gap: '1px', background: S.border, minHeight: 0, overflow: 'hidden' }}>
         {/* Transactions table */}
         <div style={{ background: S.bg, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '10px 20px', borderBottom: `1px solid ${S.border}`, fontFamily: S.mono, fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: S.textMuted, display: 'flex', justifyContent: 'space-between', flexShrink: 0 }}>

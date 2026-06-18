@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* OS split layout — main column + fixed right rail. Was an inline grid on
+   finance/chat/employees, so it couldn't carry a breakpoint and the fixed rail
+   crushed the main column on mobile. This collapses to a single column ≤768px. */
+.os-split { display: grid; grid-template-columns: 1fr var(--rail, 300px); }
+@media (max-width: 768px) { .os-split { grid-template-columns: 1fr; } }
+
 /* ─── ARTHUR OS — Design Tokens (LIGHT EDITORIAL) ───────────────────────────
  * Warm paper canvas. Lora serif + Inter sans. Teal #0B504F accent.
  * 60-30-10: #FAF8F5 warm paper (60%) · warm gray scale (30%) · teal (10%).

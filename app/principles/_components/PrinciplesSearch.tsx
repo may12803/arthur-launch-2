@@ -255,7 +255,7 @@ export default function PrinciplesSearch({ principles }: { principles: Principle
                 )}
                 {p.created_at && (
                   <span style={{ fontSize: 10, color: "#BAB5AE", fontFamily: "var(--font-jetbrains, monospace)" }}>
-                    {new Date(p.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    {new Date(p.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}
                   </span>
                 )}
               </div>

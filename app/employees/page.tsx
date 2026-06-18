@@ -138,7 +138,7 @@ export default function EmployeesPage() {
       </div>
 
       {/* 2-col: human + agents */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 300px', gap: '1px', background: S.border, minHeight: 0, overflow: 'hidden' }}>
+      <div className="os-split" style={{ flex: 1, gap: '1px', background: S.border, minHeight: 0, overflow: 'hidden' }}>
         {/* Human staff table */}
         <div style={{ background: S.bg, overflow: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>

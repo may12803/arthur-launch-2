@@ -47,7 +47,7 @@ export default function ChatPage() {
       </div>
 
       {/* 2-col layout */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 280px', gap: '1px', background: S.border, minHeight: 0 }}>
+      <div className="os-split" style={{ flex: 1, ['--rail' as string]: '280px', gap: '1px', background: S.border, minHeight: 0 }}>
         {/* Chat area */}
         <div style={{ background: S.bg, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           {/* Messages */}
