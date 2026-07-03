@@ -333,6 +333,33 @@ async function callKimi(messages: OpenAIMessage[], withTools: boolean, toolDefs:
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Tier 10 — NVIDIA NIM (FREE, 143 models) — TOOL-CAPABLE (cheapest tool tier)
+// integrate.api.nvidia.com. Default Llama 3.3 70B; free tier 40rpm/1000 credits,
+// no credit card. OpenAI-compatible tool-use. Wired 2026-06-17 (mirrors ~/arthur).
+// ─────────────────────────────────────────────────────────────────────────────
+async function callNim(messages: OpenAIMessage[], withTools: boolean, toolDefs: ToolDef[]): Promise<LLMResponse | null> {
+  const key = process.env.NVIDIA_API_KEY;
+  if (!key) return null;
+  try {
+    const body: Record<string, unknown> = {
+      model: "meta/llama-3.3-70b-instruct",
+      messages,
+      max_tokens: 1500,
+      temperature: 0.6,
+    };
+    if (withTools && toolDefs.length) { body.tools = toolDefs; body.tool_choice = "auto"; }
+    const r = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!r.ok) throw new Error(`nim ${r.status}`);
+    return (await r.json()) as LLMResponse;
+  } catch (e) { console.warn("[router/nim]", e instanceof Error ? e.message : String(e)); return null; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Tier 14 — Claude Sonnet ($0.010) — TOOL-CAPABLE
 // ─────────────────────────────────────────────────────────────────────────────
 async function callSonnet(messages: OpenAIMessage[], withTools: boolean, toolDefs: ToolDef[]): Promise<LLMResponse | null> {
@@ -395,6 +422,7 @@ export const TIERS: TierDefinition[] = [
   { tier:  7, id: "pioneer",       label: "Pioneer.ai",                 cost: 0.0005, toolCapable: false, call: callPioneer },
   { tier:  8, id: "deepseek-chat", label: "DeepSeek Chat",              cost: 0.0014, toolCapable: false, call: callDeepseekChat },
   { tier:  9, id: "deepseek-r1",   label: "DeepSeek R1",                cost: 0.0055, toolCapable: false, call: callDeepseekR1 },
+  { tier: 10, id: "nim",           label: "NVIDIA NIM (free, tool-use)", cost: 0,     toolCapable: true,  call: callNim },
   { tier: 11, id: "haiku",         label: "Claude Haiku",               cost: 0.001,  toolCapable: true,  call: callHaiku },
   { tier: 12, id: "gemini-2.5-pro",label: "Gemini 2.5 Pro",             cost: 0.0035, toolCapable: true,  call: callGemini },
   { tier: 13, id: "kimi-k2.6",     label: "Kimi K2.6 (OpenRouter)",     cost: 0.0035, toolCapable: true,  call: callKimi },

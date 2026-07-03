@@ -38,3 +38,15 @@ next-env.d.ts
 
 # bun
 bun.lockb
+
+# build artifact — regenerated, not source
+tsconfig.tsbuildinfo
+# one-off render/shot debug scripts
+check-grid.mjs
+render-all-dabney.mjs
+render-dabney-emails.mjs
+render-pillar-icons.mjs
+shot-enh.mjs
+shot-enh2.mjs
+shot-faq.mjs
+shot-inquiry.mjs
