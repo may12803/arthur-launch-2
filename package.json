@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "gen:persona": "node scripts/gen-persona.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
