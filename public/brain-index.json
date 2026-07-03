@@ -1,10 +1,613 @@
 {
   "totals": {
-    "files": 739,
-    "sizeBytes": 16212194
+    "files": 751,
+    "sizeBytes": 16262382
   },
-  "generated_at": "2026-06-25T10:31:06.825Z",
+  "generated_at": "2026-07-03T19:24:42.602Z",
   "roots": [
+    {
+      "name": "meta",
+      "label": "meta",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "arthur-operating-manual.md",
+              "relativePath": "meta/arthur-operating-manual.md",
+              "sizeBytes": 61334
+            },
+            {
+              "name": "arthur-session-playbooks.md",
+              "relativePath": "meta/arthur-session-playbooks.md",
+              "sizeBytes": 43841
+            },
+            {
+              "name": "arthur-v1-capability-manifest.md",
+              "relativePath": "meta/arthur-v1-capability-manifest.md",
+              "sizeBytes": 75792
+            },
+            {
+              "name": "arthur-vs-emergent-sh.md",
+              "relativePath": "meta/arthur-vs-emergent-sh.md",
+              "sizeBytes": 3232
+            },
+            {
+              "name": "brain-analysis.md",
+              "relativePath": "meta/brain-analysis.md",
+              "sizeBytes": 5530
+            },
+            {
+              "name": "BRAIN-ATLAS.md",
+              "relativePath": "meta/BRAIN-ATLAS.md",
+              "sizeBytes": 78766
+            },
+            {
+              "name": "cross-domain-synthesis-mastery.md",
+              "relativePath": "meta/cross-domain-synthesis-mastery.md",
+              "sizeBytes": 78736
+            },
+            {
+              "name": "curiosity-1031-like-kind-exchange-basis-carryover-1780109685088.md",
+              "relativePath": "meta/curiosity-1031-like-kind-exchange-basis-carryover-1780109685088.md",
+              "sizeBytes": 1346
+            },
+            {
+              "name": "customer-relationship-management.md",
+              "relativePath": "meta/customer-relationship-management.md",
+              "sizeBytes": 5594
+            },
+            {
+              "name": "dedup-report.md",
+              "relativePath": "meta/dedup-report.md",
+              "sizeBytes": 16931
+            },
+            {
+              "name": "entity-registry-audit.md",
+              "relativePath": "meta/entity-registry-audit.md",
+              "sizeBytes": 6897
+            },
+            {
+              "name": "financial-injection-diagnosis.md",
+              "relativePath": "meta/financial-injection-diagnosis.md",
+              "sizeBytes": 10453
+            },
+            {
+              "name": "improvement-log.md",
+              "relativePath": "meta/improvement-log.md",
+              "sizeBytes": 4108
+            },
+            {
+              "name": "INDEX-by-domain.md",
+              "relativePath": "meta/INDEX-by-domain.md",
+              "sizeBytes": 6223
+            },
+            {
+              "name": "inventory-management.md",
+              "relativePath": "meta/inventory-management.md",
+              "sizeBytes": 5330
+            },
+            {
+              "name": "kg-ingestion-audit.md",
+              "relativePath": "meta/kg-ingestion-audit.md",
+              "sizeBytes": 2250
+            },
+            {
+              "name": "knowledge-gaps-apr14.md",
+              "relativePath": "meta/knowledge-gaps-apr14.md",
+              "sizeBytes": 2571
+            },
+            {
+              "name": "knowledge-gaps-master.md",
+              "relativePath": "meta/knowledge-gaps-master.md",
+              "sizeBytes": 27242
+            },
+            {
+              "name": "KNOWLEDGE-INDEX-v2.md",
+              "relativePath": "meta/KNOWLEDGE-INDEX-v2.md",
+              "sizeBytes": 46573
+            },
+            {
+              "name": "KNOWLEDGE-INDEX.md",
+              "relativePath": "meta/KNOWLEDGE-INDEX.md",
+              "sizeBytes": 95878
+            },
+            {
+              "name": "longmemeval-runner-audit.md",
+              "relativePath": "meta/longmemeval-runner-audit.md",
+              "sizeBytes": 13820
+            },
+            {
+              "name": "memory-utility-report.md",
+              "relativePath": "meta/memory-utility-report.md",
+              "sizeBytes": 7280
+            },
+            {
+              "name": "meta-gaps-implementation-audit.md",
+              "relativePath": "meta/meta-gaps-implementation-audit.md",
+              "sizeBytes": 11791
+            },
+            {
+              "name": "msa-4b-deployment-status.md",
+              "relativePath": "meta/msa-4b-deployment-status.md",
+              "sizeBytes": 5232
+            },
+            {
+              "name": "operator-vs-arthur.md",
+              "relativePath": "meta/operator-vs-arthur.md",
+              "sizeBytes": 24045
+            },
+            {
+              "name": "pending-upgrades.md",
+              "relativePath": "meta/pending-upgrades.md",
+              "sizeBytes": 115747
+            },
+            {
+              "name": "personal-eval-2026-04-27.md",
+              "relativePath": "meta/personal-eval-2026-04-27.md",
+              "sizeBytes": 13290
+            },
+            {
+              "name": "policy-tuner-2026-04-27.md",
+              "relativePath": "meta/policy-tuner-2026-04-27.md",
+              "sizeBytes": 4559
+            },
+            {
+              "name": "principles-monotonicity.md",
+              "relativePath": "meta/principles-monotonicity.md",
+              "sizeBytes": 2547
+            },
+            {
+              "name": "probe-daily-2026-04-27.md",
+              "relativePath": "meta/probe-daily-2026-04-27.md",
+              "sizeBytes": 2180
+            },
+            {
+              "name": "recipe-health-2026-04-28.md",
+              "relativePath": "meta/recipe-health-2026-04-28.md",
+              "sizeBytes": 1432
+            },
+            {
+              "name": "retrieval-daily-2026-04-27.md",
+              "relativePath": "meta/retrieval-daily-2026-04-27.md",
+              "sizeBytes": 4025
+            },
+            {
+              "name": "retrieval-daily-2026-05-02.md",
+              "relativePath": "meta/retrieval-daily-2026-05-02.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-04.md",
+              "relativePath": "meta/retrieval-daily-2026-05-04.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-05.md",
+              "relativePath": "meta/retrieval-daily-2026-05-05.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-06.md",
+              "relativePath": "meta/retrieval-daily-2026-05-06.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-08.md",
+              "relativePath": "meta/retrieval-daily-2026-05-08.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-13.md",
+              "relativePath": "meta/retrieval-daily-2026-05-13.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-14.md",
+              "relativePath": "meta/retrieval-daily-2026-05-14.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-15.md",
+              "relativePath": "meta/retrieval-daily-2026-05-15.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-17.md",
+              "relativePath": "meta/retrieval-daily-2026-05-17.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-18.md",
+              "relativePath": "meta/retrieval-daily-2026-05-18.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-19.md",
+              "relativePath": "meta/retrieval-daily-2026-05-19.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-20.md",
+              "relativePath": "meta/retrieval-daily-2026-05-20.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-21.md",
+              "relativePath": "meta/retrieval-daily-2026-05-21.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-22.md",
+              "relativePath": "meta/retrieval-daily-2026-05-22.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-24.md",
+              "relativePath": "meta/retrieval-daily-2026-05-24.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-25.md",
+              "relativePath": "meta/retrieval-daily-2026-05-25.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-26.md",
+              "relativePath": "meta/retrieval-daily-2026-05-26.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-27.md",
+              "relativePath": "meta/retrieval-daily-2026-05-27.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-28.md",
+              "relativePath": "meta/retrieval-daily-2026-05-28.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-29.md",
+              "relativePath": "meta/retrieval-daily-2026-05-29.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-30.md",
+              "relativePath": "meta/retrieval-daily-2026-05-30.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-05-31.md",
+              "relativePath": "meta/retrieval-daily-2026-05-31.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-01.md",
+              "relativePath": "meta/retrieval-daily-2026-06-01.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-03.md",
+              "relativePath": "meta/retrieval-daily-2026-06-03.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-04.md",
+              "relativePath": "meta/retrieval-daily-2026-06-04.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-05.md",
+              "relativePath": "meta/retrieval-daily-2026-06-05.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-06.md",
+              "relativePath": "meta/retrieval-daily-2026-06-06.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-07.md",
+              "relativePath": "meta/retrieval-daily-2026-06-07.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-08.md",
+              "relativePath": "meta/retrieval-daily-2026-06-08.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-09.md",
+              "relativePath": "meta/retrieval-daily-2026-06-09.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-11.md",
+              "relativePath": "meta/retrieval-daily-2026-06-11.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-12.md",
+              "relativePath": "meta/retrieval-daily-2026-06-12.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-13.md",
+              "relativePath": "meta/retrieval-daily-2026-06-13.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-14.md",
+              "relativePath": "meta/retrieval-daily-2026-06-14.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-15.md",
+              "relativePath": "meta/retrieval-daily-2026-06-15.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-16.md",
+              "relativePath": "meta/retrieval-daily-2026-06-16.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-17.md",
+              "relativePath": "meta/retrieval-daily-2026-06-17.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-18.md",
+              "relativePath": "meta/retrieval-daily-2026-06-18.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-19.md",
+              "relativePath": "meta/retrieval-daily-2026-06-19.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-20.md",
+              "relativePath": "meta/retrieval-daily-2026-06-20.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-21.md",
+              "relativePath": "meta/retrieval-daily-2026-06-21.md",
+              "sizeBytes": 3071
+            },
+            {
+              "name": "retrieval-daily-2026-06-22.md",
+              "relativePath": "meta/retrieval-daily-2026-06-22.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-23.md",
+              "relativePath": "meta/retrieval-daily-2026-06-23.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-24.md",
+              "relativePath": "meta/retrieval-daily-2026-06-24.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-25.md",
+              "relativePath": "meta/retrieval-daily-2026-06-25.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-27.md",
+              "relativePath": "meta/retrieval-daily-2026-06-27.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-28.md",
+              "relativePath": "meta/retrieval-daily-2026-06-28.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-29.md",
+              "relativePath": "meta/retrieval-daily-2026-06-29.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-06-30.md",
+              "relativePath": "meta/retrieval-daily-2026-06-30.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-07-01.md",
+              "relativePath": "meta/retrieval-daily-2026-07-01.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-07-02.md",
+              "relativePath": "meta/retrieval-daily-2026-07-02.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-daily-2026-07-03.md",
+              "relativePath": "meta/retrieval-daily-2026-07-03.md",
+              "sizeBytes": 184
+            },
+            {
+              "name": "retrieval-weekly.md",
+              "relativePath": "meta/retrieval-weekly.md",
+              "sizeBytes": 2058
+            },
+            {
+              "name": "self-heal-2026-04-26.md",
+              "relativePath": "meta/self-heal-2026-04-26.md",
+              "sizeBytes": 13790
+            },
+            {
+              "name": "self-improvement-report.md",
+              "relativePath": "meta/self-improvement-report.md",
+              "sizeBytes": 3530
+            },
+            {
+              "name": "self-teach-log.md",
+              "relativePath": "meta/self-teach-log.md",
+              "sizeBytes": 2639
+            },
+            {
+              "name": "specialist-buildout-roadmap.md",
+              "relativePath": "meta/specialist-buildout-roadmap.md",
+              "sizeBytes": 6798
+            },
+            {
+              "name": "specialist-eval-standard.md",
+              "relativePath": "meta/specialist-eval-standard.md",
+              "sizeBytes": 4653
+            },
+            {
+              "name": "state-persistence-session-continuity.md",
+              "relativePath": "meta/state-persistence-session-continuity.md",
+              "sizeBytes": 73865
+            },
+            {
+              "name": "type-prior-replay.md",
+              "relativePath": "meta/type-prior-replay.md",
+              "sizeBytes": 5914
+            },
+            {
+              "name": "video-transcript-synthesis-index.md",
+              "relativePath": "meta/video-transcript-synthesis-index.md",
+              "sizeBytes": 5908
+            },
+            {
+              "name": "web-agent-coverage.md",
+              "relativePath": "meta/web-agent-coverage.md",
+              "sizeBytes": 7808
+            }
+          ]
+        },
+        {
+          "name": "gap-fill-archive",
+          "files": [
+            {
+              "name": "gap-fill-1776435894430.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1776435894430.md",
+              "sizeBytes": 1670
+            },
+            {
+              "name": "gap-fill-1776947412244.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1776947412244.md",
+              "sizeBytes": 1772
+            },
+            {
+              "name": "gap-fill-1776947413567.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1776947413567.md",
+              "sizeBytes": 1792
+            },
+            {
+              "name": "gap-fill-1776947415052.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1776947415052.md",
+              "sizeBytes": 1739
+            },
+            {
+              "name": "gap-fill-1777028710774.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777028710774.md",
+              "sizeBytes": 1694
+            },
+            {
+              "name": "gap-fill-1777028710830.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777028710830.md",
+              "sizeBytes": 1580
+            },
+            {
+              "name": "gap-fill-1777028712017.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777028712017.md",
+              "sizeBytes": 1792
+            },
+            {
+              "name": "gap-fill-1777030208572.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777030208572.md",
+              "sizeBytes": 1704
+            },
+            {
+              "name": "gap-fill-1777030212566.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777030212566.md",
+              "sizeBytes": 1902
+            },
+            {
+              "name": "gap-fill-1777030213116.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777030213116.md",
+              "sizeBytes": 1864
+            },
+            {
+              "name": "gap-fill-1777306344665.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306344665.md",
+              "sizeBytes": 1732
+            },
+            {
+              "name": "gap-fill-1777306347823.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306347823.md",
+              "sizeBytes": 1838
+            },
+            {
+              "name": "gap-fill-1777306350264.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306350264.md",
+              "sizeBytes": 1660
+            },
+            {
+              "name": "gap-fill-1777306351140.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306351140.md",
+              "sizeBytes": 1694
+            },
+            {
+              "name": "gap-fill-1777306355804.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306355804.md",
+              "sizeBytes": 1803
+            },
+            {
+              "name": "gap-fill-1777306362166.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777306362166.md",
+              "sizeBytes": 1826
+            },
+            {
+              "name": "gap-fill-1777307131638.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307131638.md",
+              "sizeBytes": 1681
+            },
+            {
+              "name": "gap-fill-1777307132226.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307132226.md",
+              "sizeBytes": 1968
+            },
+            {
+              "name": "gap-fill-1777307133655.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307133655.md",
+              "sizeBytes": 1717
+            },
+            {
+              "name": "gap-fill-1777307136625.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307136625.md",
+              "sizeBytes": 1670
+            },
+            {
+              "name": "gap-fill-1777307140833.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307140833.md",
+              "sizeBytes": 1751
+            },
+            {
+              "name": "gap-fill-1777307144171.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307144171.md",
+              "sizeBytes": 1724
+            },
+            {
+              "name": "gap-fill-1777307146310.md",
+              "relativePath": "meta/gap-fill-archive/gap-fill-1777307146310.md",
+              "sizeBytes": 1764
+            }
+          ]
+        }
+      ],
+      "files": 117,
+      "sizeBytes": 964330
+    },
     {
       "name": "external-skills",
       "label": "external-skills",
@@ -587,574 +1190,6 @@
       ],
       "files": 113,
       "sizeBytes": 1011871
-    },
-    {
-      "name": "meta",
-      "label": "meta",
-      "categories": [
-        {
-          "name": "_loose",
-          "files": [
-            {
-              "name": "arthur-operating-manual.md",
-              "relativePath": "meta/arthur-operating-manual.md",
-              "sizeBytes": 61334
-            },
-            {
-              "name": "arthur-session-playbooks.md",
-              "relativePath": "meta/arthur-session-playbooks.md",
-              "sizeBytes": 43841
-            },
-            {
-              "name": "arthur-v1-capability-manifest.md",
-              "relativePath": "meta/arthur-v1-capability-manifest.md",
-              "sizeBytes": 75792
-            },
-            {
-              "name": "arthur-vs-emergent-sh.md",
-              "relativePath": "meta/arthur-vs-emergent-sh.md",
-              "sizeBytes": 3232
-            },
-            {
-              "name": "brain-analysis.md",
-              "relativePath": "meta/brain-analysis.md",
-              "sizeBytes": 5530
-            },
-            {
-              "name": "BRAIN-ATLAS.md",
-              "relativePath": "meta/BRAIN-ATLAS.md",
-              "sizeBytes": 78766
-            },
-            {
-              "name": "cross-domain-synthesis-mastery.md",
-              "relativePath": "meta/cross-domain-synthesis-mastery.md",
-              "sizeBytes": 78736
-            },
-            {
-              "name": "curiosity-1031-like-kind-exchange-basis-carryover-1780109685088.md",
-              "relativePath": "meta/curiosity-1031-like-kind-exchange-basis-carryover-1780109685088.md",
-              "sizeBytes": 1346
-            },
-            {
-              "name": "customer-relationship-management.md",
-              "relativePath": "meta/customer-relationship-management.md",
-              "sizeBytes": 5594
-            },
-            {
-              "name": "dedup-report.md",
-              "relativePath": "meta/dedup-report.md",
-              "sizeBytes": 16931
-            },
-            {
-              "name": "entity-registry-audit.md",
-              "relativePath": "meta/entity-registry-audit.md",
-              "sizeBytes": 6897
-            },
-            {
-              "name": "financial-injection-diagnosis.md",
-              "relativePath": "meta/financial-injection-diagnosis.md",
-              "sizeBytes": 10453
-            },
-            {
-              "name": "improvement-log.md",
-              "relativePath": "meta/improvement-log.md",
-              "sizeBytes": 4108
-            },
-            {
-              "name": "INDEX-by-domain.md",
-              "relativePath": "meta/INDEX-by-domain.md",
-              "sizeBytes": 6223
-            },
-            {
-              "name": "inventory-management.md",
-              "relativePath": "meta/inventory-management.md",
-              "sizeBytes": 5330
-            },
-            {
-              "name": "kg-ingestion-audit.md",
-              "relativePath": "meta/kg-ingestion-audit.md",
-              "sizeBytes": 2250
-            },
-            {
-              "name": "knowledge-gaps-apr14.md",
-              "relativePath": "meta/knowledge-gaps-apr14.md",
-              "sizeBytes": 2571
-            },
-            {
-              "name": "knowledge-gaps-master.md",
-              "relativePath": "meta/knowledge-gaps-master.md",
-              "sizeBytes": 27242
-            },
-            {
-              "name": "KNOWLEDGE-INDEX-v2.md",
-              "relativePath": "meta/KNOWLEDGE-INDEX-v2.md",
-              "sizeBytes": 46573
-            },
-            {
-              "name": "KNOWLEDGE-INDEX.md",
-              "relativePath": "meta/KNOWLEDGE-INDEX.md",
-              "sizeBytes": 94287
-            },
-            {
-              "name": "longmemeval-runner-audit.md",
-              "relativePath": "meta/longmemeval-runner-audit.md",
-              "sizeBytes": 13820
-            },
-            {
-              "name": "memory-utility-report.md",
-              "relativePath": "meta/memory-utility-report.md",
-              "sizeBytes": 7280
-            },
-            {
-              "name": "meta-gaps-implementation-audit.md",
-              "relativePath": "meta/meta-gaps-implementation-audit.md",
-              "sizeBytes": 11791
-            },
-            {
-              "name": "msa-4b-deployment-status.md",
-              "relativePath": "meta/msa-4b-deployment-status.md",
-              "sizeBytes": 5232
-            },
-            {
-              "name": "operator-vs-arthur.md",
-              "relativePath": "meta/operator-vs-arthur.md",
-              "sizeBytes": 24045
-            },
-            {
-              "name": "pending-upgrades.md",
-              "relativePath": "meta/pending-upgrades.md",
-              "sizeBytes": 115747
-            },
-            {
-              "name": "personal-eval-2026-04-27.md",
-              "relativePath": "meta/personal-eval-2026-04-27.md",
-              "sizeBytes": 13290
-            },
-            {
-              "name": "policy-tuner-2026-04-27.md",
-              "relativePath": "meta/policy-tuner-2026-04-27.md",
-              "sizeBytes": 4559
-            },
-            {
-              "name": "principles-monotonicity.md",
-              "relativePath": "meta/principles-monotonicity.md",
-              "sizeBytes": 2547
-            },
-            {
-              "name": "probe-daily-2026-04-27.md",
-              "relativePath": "meta/probe-daily-2026-04-27.md",
-              "sizeBytes": 2180
-            },
-            {
-              "name": "recipe-health-2026-04-28.md",
-              "relativePath": "meta/recipe-health-2026-04-28.md",
-              "sizeBytes": 1432
-            },
-            {
-              "name": "retrieval-daily-2026-04-27.md",
-              "relativePath": "meta/retrieval-daily-2026-04-27.md",
-              "sizeBytes": 4025
-            },
-            {
-              "name": "retrieval-daily-2026-05-02.md",
-              "relativePath": "meta/retrieval-daily-2026-05-02.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-04.md",
-              "relativePath": "meta/retrieval-daily-2026-05-04.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-05.md",
-              "relativePath": "meta/retrieval-daily-2026-05-05.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-06.md",
-              "relativePath": "meta/retrieval-daily-2026-05-06.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-08.md",
-              "relativePath": "meta/retrieval-daily-2026-05-08.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-13.md",
-              "relativePath": "meta/retrieval-daily-2026-05-13.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-14.md",
-              "relativePath": "meta/retrieval-daily-2026-05-14.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-15.md",
-              "relativePath": "meta/retrieval-daily-2026-05-15.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-17.md",
-              "relativePath": "meta/retrieval-daily-2026-05-17.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-18.md",
-              "relativePath": "meta/retrieval-daily-2026-05-18.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-19.md",
-              "relativePath": "meta/retrieval-daily-2026-05-19.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-20.md",
-              "relativePath": "meta/retrieval-daily-2026-05-20.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-21.md",
-              "relativePath": "meta/retrieval-daily-2026-05-21.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-22.md",
-              "relativePath": "meta/retrieval-daily-2026-05-22.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-24.md",
-              "relativePath": "meta/retrieval-daily-2026-05-24.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-25.md",
-              "relativePath": "meta/retrieval-daily-2026-05-25.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-26.md",
-              "relativePath": "meta/retrieval-daily-2026-05-26.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-27.md",
-              "relativePath": "meta/retrieval-daily-2026-05-27.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-28.md",
-              "relativePath": "meta/retrieval-daily-2026-05-28.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-29.md",
-              "relativePath": "meta/retrieval-daily-2026-05-29.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-30.md",
-              "relativePath": "meta/retrieval-daily-2026-05-30.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-05-31.md",
-              "relativePath": "meta/retrieval-daily-2026-05-31.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-01.md",
-              "relativePath": "meta/retrieval-daily-2026-06-01.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-03.md",
-              "relativePath": "meta/retrieval-daily-2026-06-03.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-04.md",
-              "relativePath": "meta/retrieval-daily-2026-06-04.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-05.md",
-              "relativePath": "meta/retrieval-daily-2026-06-05.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-06.md",
-              "relativePath": "meta/retrieval-daily-2026-06-06.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-07.md",
-              "relativePath": "meta/retrieval-daily-2026-06-07.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-08.md",
-              "relativePath": "meta/retrieval-daily-2026-06-08.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-09.md",
-              "relativePath": "meta/retrieval-daily-2026-06-09.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-11.md",
-              "relativePath": "meta/retrieval-daily-2026-06-11.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-12.md",
-              "relativePath": "meta/retrieval-daily-2026-06-12.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-13.md",
-              "relativePath": "meta/retrieval-daily-2026-06-13.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-14.md",
-              "relativePath": "meta/retrieval-daily-2026-06-14.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-15.md",
-              "relativePath": "meta/retrieval-daily-2026-06-15.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-16.md",
-              "relativePath": "meta/retrieval-daily-2026-06-16.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-17.md",
-              "relativePath": "meta/retrieval-daily-2026-06-17.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-18.md",
-              "relativePath": "meta/retrieval-daily-2026-06-18.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-19.md",
-              "relativePath": "meta/retrieval-daily-2026-06-19.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-20.md",
-              "relativePath": "meta/retrieval-daily-2026-06-20.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-21.md",
-              "relativePath": "meta/retrieval-daily-2026-06-21.md",
-              "sizeBytes": 3071
-            },
-            {
-              "name": "retrieval-daily-2026-06-22.md",
-              "relativePath": "meta/retrieval-daily-2026-06-22.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-23.md",
-              "relativePath": "meta/retrieval-daily-2026-06-23.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-24.md",
-              "relativePath": "meta/retrieval-daily-2026-06-24.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-daily-2026-06-25.md",
-              "relativePath": "meta/retrieval-daily-2026-06-25.md",
-              "sizeBytes": 184
-            },
-            {
-              "name": "retrieval-weekly.md",
-              "relativePath": "meta/retrieval-weekly.md",
-              "sizeBytes": 2058
-            },
-            {
-              "name": "self-heal-2026-04-26.md",
-              "relativePath": "meta/self-heal-2026-04-26.md",
-              "sizeBytes": 13790
-            },
-            {
-              "name": "self-improvement-report.md",
-              "relativePath": "meta/self-improvement-report.md",
-              "sizeBytes": 3530
-            },
-            {
-              "name": "self-teach-log.md",
-              "relativePath": "meta/self-teach-log.md",
-              "sizeBytes": 2639
-            },
-            {
-              "name": "specialist-buildout-roadmap.md",
-              "relativePath": "meta/specialist-buildout-roadmap.md",
-              "sizeBytes": 6798
-            },
-            {
-              "name": "specialist-eval-standard.md",
-              "relativePath": "meta/specialist-eval-standard.md",
-              "sizeBytes": 4653
-            },
-            {
-              "name": "state-persistence-session-continuity.md",
-              "relativePath": "meta/state-persistence-session-continuity.md",
-              "sizeBytes": 73865
-            },
-            {
-              "name": "type-prior-replay.md",
-              "relativePath": "meta/type-prior-replay.md",
-              "sizeBytes": 5914
-            },
-            {
-              "name": "video-transcript-synthesis-index.md",
-              "relativePath": "meta/video-transcript-synthesis-index.md",
-              "sizeBytes": 5908
-            },
-            {
-              "name": "web-agent-coverage.md",
-              "relativePath": "meta/web-agent-coverage.md",
-              "sizeBytes": 7808
-            }
-          ]
-        },
-        {
-          "name": "gap-fill-archive",
-          "files": [
-            {
-              "name": "gap-fill-1776435894430.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1776435894430.md",
-              "sizeBytes": 1670
-            },
-            {
-              "name": "gap-fill-1776947412244.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1776947412244.md",
-              "sizeBytes": 1772
-            },
-            {
-              "name": "gap-fill-1776947413567.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1776947413567.md",
-              "sizeBytes": 1792
-            },
-            {
-              "name": "gap-fill-1776947415052.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1776947415052.md",
-              "sizeBytes": 1739
-            },
-            {
-              "name": "gap-fill-1777028710774.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777028710774.md",
-              "sizeBytes": 1694
-            },
-            {
-              "name": "gap-fill-1777028710830.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777028710830.md",
-              "sizeBytes": 1580
-            },
-            {
-              "name": "gap-fill-1777028712017.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777028712017.md",
-              "sizeBytes": 1792
-            },
-            {
-              "name": "gap-fill-1777030208572.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777030208572.md",
-              "sizeBytes": 1704
-            },
-            {
-              "name": "gap-fill-1777030212566.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777030212566.md",
-              "sizeBytes": 1902
-            },
-            {
-              "name": "gap-fill-1777030213116.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777030213116.md",
-              "sizeBytes": 1864
-            },
-            {
-              "name": "gap-fill-1777306344665.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777306344665.md",
-              "sizeBytes": 1732
-            },
-            {
-              "name": "gap-fill-1777306347823.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777306347823.md",
-              "sizeBytes": 1838
-            },
-            {
-              "name": "gap-fill-1777306350264.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777306350264.md",
-              "sizeBytes": 1660
-            },
-            {
-              "name": "gap-fill-1777306351140.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777306351140.md",
-              "sizeBytes": 1694
-            },
-            {
-              "name": "gap-fill-1777306355804.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777306355804.md",
-              "sizeBytes": 1803
-            },
-            {
-              "name": "gap-fill-1777306362166.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777306362166.md",
-              "sizeBytes": 1826
-            },
-            {
-              "name": "gap-fill-1777307131638.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777307131638.md",
-              "sizeBytes": 1681
-            },
-            {
-              "name": "gap-fill-1777307132226.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777307132226.md",
-              "sizeBytes": 1968
-            },
-            {
-              "name": "gap-fill-1777307133655.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777307133655.md",
-              "sizeBytes": 1717
-            },
-            {
-              "name": "gap-fill-1777307136625.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777307136625.md",
-              "sizeBytes": 1670
-            },
-            {
-              "name": "gap-fill-1777307140833.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777307140833.md",
-              "sizeBytes": 1751
-            },
-            {
-              "name": "gap-fill-1777307144171.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777307144171.md",
-              "sizeBytes": 1724
-            },
-            {
-              "name": "gap-fill-1777307146310.md",
-              "relativePath": "meta/gap-fill-archive/gap-fill-1777307146310.md",
-              "sizeBytes": 1764
-            }
-          ]
-        }
-      ],
-      "files": 110,
-      "sizeBytes": 961451
     },
     {
       "name": "engineering",
@@ -4156,6 +4191,83 @@
       ],
       "files": 4,
       "sizeBytes": 45264
+    },
+    {
+      "name": "photography",
+      "label": "photography",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "food-photo-editing-mastery.md",
+              "relativePath": "photography/food-photo-editing-mastery.md",
+              "sizeBytes": 5949
+            },
+            {
+              "name": "food-photo-field-guide.md",
+              "relativePath": "photography/food-photo-field-guide.md",
+              "sizeBytes": 5243
+            }
+          ]
+        }
+      ],
+      "files": 2,
+      "sizeBytes": 11192
+    },
+    {
+      "name": "opentable",
+      "label": "opentable",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "opentable-restaurant-center-mastery.md",
+              "relativePath": "opentable/opentable-restaurant-center-mastery.md",
+              "sizeBytes": 6698
+            }
+          ]
+        }
+      ],
+      "files": 1,
+      "sizeBytes": 6698
+    },
+    {
+      "name": "sourcing",
+      "label": "sourcing",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "sourcing-manager-mastery.md",
+              "relativePath": "sourcing/sourcing-manager-mastery.md",
+              "sizeBytes": 25941
+            }
+          ]
+        }
+      ],
+      "files": 1,
+      "sizeBytes": 25941
+    },
+    {
+      "name": "standards",
+      "label": "standards",
+      "categories": [
+        {
+          "name": "_loose",
+          "files": [
+            {
+              "name": "definition-of-done-rubrics.md",
+              "relativePath": "standards/definition-of-done-rubrics.md",
+              "sizeBytes": 3478
+            }
+          ]
+        }
+      ],
+      "files": 1,
+      "sizeBytes": 3478
     }
   ]
 }
