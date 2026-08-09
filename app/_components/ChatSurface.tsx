@@ -146,6 +146,78 @@ export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurface
     // 4. POST to /api/chat
     const assistantMsgId = uid();
     try {
+      // Real SSE streaming first. The old path waited for the ENTIRE reply (every
+      // tool round + full generation) before pseudoStream animated it — so the
+      // typewriter effect was cosmetic and the user stared at a spinner until then.
+      // Now tokens render as they are produced. Any failure falls through to the
+      // original non-streaming path below, so this can never cost a reply.
+      try {
+        const sres = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+          credentials: 'include',
+          body: JSON.stringify({
+            prompt,
+            session_id: currentSessionId,
+            stream: true,
+            attachments: attachments.length > 0 ? attachments : undefined,
+          }),
+        });
+
+        if (sres.ok && sres.body && (sres.headers.get('content-type') || '').includes('text/event-stream')) {
+          const reader = sres.body.getReader();
+          const dec = new TextDecoder();
+          let buf = '';
+          let acc = '';
+          let placed = false;
+          type DoneMeta = { model_used?: string; tier_used?: string; latency_ms?: number; tokens?: number };
+          let done: DoneMeta | null = null;
+
+          const place = () => {
+            if (placed) return;
+            placed = true;
+            setLoading(false);
+            setMessages(prev => [...prev, {
+              id: assistantMsgId, role: 'assistant', content: '', ts: Date.now(), streaming: true,
+            }]);
+          };
+          const paint = (s: string) => setMessages(prev => prev.map(m =>
+            m.id === assistantMsgId ? { ...m, content: s } : m));
+
+          for (;;) {
+            const { done: fin, value } = await reader.read();
+            if (fin) break;
+            buf += dec.decode(value, { stream: true });
+            let nl: number;
+            while ((nl = buf.indexOf('\n')) !== -1) {
+              const line = buf.slice(0, nl).trim();
+              buf = buf.slice(nl + 1);
+              if (!line.startsWith('data:')) continue;
+              let ev: { type?: string; text?: string; name?: string } & Record<string, unknown>;
+              try { ev = JSON.parse(line.slice(5).trim()); } catch { continue; }
+              if (ev.type === 'status') { place(); }
+              else if (ev.type === 'tool') { place(); paint(acc || `_${String(ev.name)}…_`); }
+              else if (ev.type === 'delta') { place(); acc += ev.text || ''; paint(acc); }
+              else if (ev.type === 'done') { done = ev as unknown as DoneMeta; }
+              else if (ev.type === 'error') { acc = acc || `Error: ${String(ev.error)}`; place(); paint(acc); }
+            }
+          }
+
+          if (acc.trim()) {
+            setMessages(prev => prev.map(m => m.id === assistantMsgId ? {
+              ...m, content: acc, streaming: false,
+              model: done?.model_used, tier: done?.tier_used,
+              latency_ms: done?.latency_ms, tokens: done?.tokens,
+            } : m));
+            window.dispatchEvent(new CustomEvent('arthur:chat-saved'));
+            setLoading(false);
+            return;
+          }
+          // Stream produced nothing usable — drop the placeholder and fall through.
+          if (placed) setMessages(prev => prev.filter(m => m.id !== assistantMsgId));
+        }
+      } catch { /* fall through to the non-streaming path */ }
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

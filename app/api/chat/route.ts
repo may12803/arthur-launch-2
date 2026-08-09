@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { authGate, rateLimit } from "@/lib/_auth";
 import { buildPersona } from "@/lib/persona/arthur-system-prompt";
 import { sanitizeArthurReply } from "@/lib/sanitizer";
+import { streamChat } from "@/lib/router-stream";
 import { fetchLivePersona as livePullerFetch } from "@/lib/persona/live-puller";
 
 export const runtime = "nodejs";
@@ -2226,30 +2227,146 @@ export async function POST(req: NextRequest) {
     { role: "user", content: prompt.slice(0, 8000) },
   ];
 
-  // 3. Persist user message
-  await persistMessage(sessionId, "user", prompt);
+  // 3. Pre-LLM work: persist the user turn, run the implicit-correction detector,
+  //    and pull orchestrator enrichment. Extracted into one function so the
+  //    streaming path can run it AFTER the stream is already open — none of this
+  //    produces user-visible output, so making the reader wait on it (a Supabase
+  //    round trip plus an HTTP call to the Modal orchestrator) is pure dead time.
+  const runPreWork = async () => {
+    await persistMessage(sessionId, "user", prompt);
 
-  // 3b. Implicit-correction detector — fire before LLM, never blocks chat path
-  try {
-    const { maybeRecordImplicitCorrection } = await import("@/lib/training/implicit-correction-detector");
-    await maybeRecordImplicitCorrection({ sessionId, userTurn: prompt });
-  } catch { /* non-fatal */ }
+    // Implicit-correction detector — fire before LLM, never blocks chat path
+    try {
+      const { maybeRecordImplicitCorrection } = await import("@/lib/training/implicit-correction-detector");
+      await maybeRecordImplicitCorrection({ sessionId, userTurn: prompt });
+    } catch { /* non-fatal */ }
 
-  // 3c. Orchestrator pre-enrichment — when query matches multi-specialist heuristic,
-  //     pull specialist context + live-API data and inject into system prompt.
-  //     Backward-compatible: any error falls through silently.
-  try {
-    // Unified consult: self-contained HTTP to the Modal orchestrator (the old
-    // dynamicRequire of ~/arthur FAILED on the Fly container, so the live
-    // dashboard never actually reached the 37 specialists). Same smart gate as
-    // the TUI + cloud. Context only — the 29-tool loop below still drives actions.
-    const { consultOrchestrator } = await import("@/lib/orchestrator-consult");
-    const specCtx = await consultOrchestrator(prompt, { tenant_id: "dabney", session_id: sessionId });
-    if (specCtx) {
-      systemPrompt += "\n\n" + specCtx;
-      if (messages[0]?.role === "system") messages[0].content = systemPrompt;
-    }
-  } catch { /* orchestrator enrichment is non-fatal — chat proceeds normally */ }
+    // Orchestrator pre-enrichment — when query matches multi-specialist heuristic,
+    // pull specialist context + live-API data and inject into system prompt.
+    // Backward-compatible: any error falls through silently.
+    try {
+      // Unified consult: self-contained HTTP to the Modal orchestrator (the old
+      // dynamicRequire of ~/arthur FAILED on the Fly container, so the live
+      // dashboard never actually reached the 37 specialists). Same smart gate as
+      // the TUI + cloud. Context only — the 29-tool loop below still drives actions.
+      const { consultOrchestrator } = await import("@/lib/orchestrator-consult");
+      const specCtx = await consultOrchestrator(prompt, { tenant_id: "dabney", session_id: sessionId });
+      if (specCtx) {
+        systemPrompt += "\n\n" + specCtx;
+        if (messages[0]?.role === "system") messages[0].content = systemPrompt;
+      }
+    } catch { /* orchestrator enrichment is non-fatal — chat proceeds normally */ }
+  };
+
+  // 3d. STREAMING PATH (opt-in: body.stream === true, or Accept: text/event-stream)
+  //
+  // The non-streaming path below returns one NextResponse.json() only after every
+  // tool round AND the full generation have finished — so nothing renders for
+  // seconds. ChatGPT's speed advantage is time-to-first-token, not total time.
+  //
+  // Here we hand the client an SSE stream immediately: a status event right away,
+  // a tool event per tool round (so the UI shows motion), then the final answer
+  // token-by-token. Everything below this block is untouched — a client that does
+  // not opt in gets byte-identical behaviour.
+  const wantStream =
+    (payload as { stream?: boolean } | null)?.stream === true ||
+    (req.headers.get("accept") || "").includes("text/event-stream");
+
+  if (wantStream) {
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        const send = (obj: unknown) => {
+          try { controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`)); } catch { /* client gone */ }
+        };
+        let text = "";
+        let provider = "stream";
+        try {
+          // First byte goes out before ANY dependency is touched, so the UI paints
+          // immediately even if Supabase or the orchestrator is slow.
+          send({ type: "status", text: "thinking", session_id: sessionId });
+
+          await runPreWork();
+
+          // Tool rounds run server-side (the answer can't exist before they do),
+          // but each one is announced so the UI is never silent.
+          const thread: OpenAIMessage[] = [...messages];
+          const toolNames: string[] = [];
+          for (let round = 0; round < 3; round++) {
+            if (!promptNeedsTools(thread)) break;
+            const r = await callLLM(thread, true);
+            const msg = r?.response?.choices?.[0]?.message;
+            const calls = msg?.tool_calls ?? [];
+            if (!calls.length) {
+              if (msg?.content) { text = msg.content; provider = r?.provider || provider; }
+              break;
+            }
+            thread.push({ role: "assistant", content: msg?.content ?? null, tool_calls: calls });
+            for (const tc of calls) {
+              const name = tc.function?.name ?? "unknown";
+              toolNames.push(name);
+              send({ type: "tool", name });
+              const out = await executeTool(name, tc.function?.arguments ?? "{}");
+              thread.push({ role: "tool", content: out, tool_call_id: tc.id, name });
+            }
+          }
+
+          // Stream the user-visible answer.
+          if (!text) {
+            const res = await streamChat(thread as never, (d) => { text += d; send({ type: "delta", text: d }); });
+            if (res) provider = res.tier.id;
+          } else {
+            // The tool loop already produced the final text (model answered without
+            // further tool calls). Emit it as a single delta — WITHOUT this the
+            // client receives zero deltas, discards the stream, and silently
+            // re-runs the whole request on the non-streaming path: double the
+            // API cost on every tool-using prompt. Chunkier than token streaming,
+            // but it costs nothing extra.
+            send({ type: "delta", text });
+          }
+
+          // Fallback: streaming ladder produced nothing → non-streaming call, so a
+          // streaming client never ends up worse off than a non-streaming one.
+          if (!text.trim()) {
+            const r = await callLLM(thread, false);
+            text = r?.response?.choices?.[0]?.message?.content ?? "";
+            provider = r?.provider || provider;
+            if (text) send({ type: "delta", text });
+          }
+
+          text = sanitizeArthurReply(text, toolNames.length);
+          send({
+            type: "done",
+            session_id: sessionId,
+            model: provider,
+            model_used: provider,
+            tier_used: tierForProvider(provider),
+            latency_ms: Date.now() - _requestStart,
+            tokens: Math.round(text.length / 4),
+            tool_calls: toolNames.length,
+          });
+        } catch (e) {
+          send({ type: "error", error: e instanceof Error ? e.message : String(e) });
+        } finally {
+          // Persist off the critical path — the user already has the full reply.
+          try { if (text.trim()) await persistMessage(sessionId, "assistant", text, { metadata: { provider, streamed: true } }); } catch { /* non-fatal */ }
+          try { controller.close(); } catch { /* already closed */ }
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        "content-type": "text/event-stream; charset=utf-8",
+        "cache-control": "no-cache, no-transform",
+        connection: "keep-alive",
+        "x-accel-buffering": "no", // defeat proxy buffering, which would erase the point
+      },
+    });
+  }
+
+  // Non-streaming path: same pre-work, run inline as before.
+  await runPreWork();
 
   // 4. Tool-call loop (max 4 rounds)
   const MAX_ROUNDS = 4;
