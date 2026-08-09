@@ -2201,12 +2201,34 @@ export async function POST(req: NextRequest) {
     try {
       mark("location");
       const { retrieveSimilar: retrieveMemory } = await import("@/lib/memory");
-      const memHits = await retrieveMemory(prompt, 3, {
-        embeddingsSource: "supabase",
-        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
-        supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-        embedUrl: process.env.OLLAMA_EMBED_URL || undefined,
-      });
+      // HARD DEADLINE. Recall is an enhancement, never a gate on the answer.
+      // The embedder (nomic on Modal) scales to zero; a cold start measured ~17s,
+      // and without a deadline the first request after the warm window expires
+      // would stall the whole reply behind it. A reply that arrives now without
+      // memory beats a perfect one that arrives in ten seconds.
+      //
+      // The in-flight request is deliberately NOT aborted on timeout — letting it
+      // finish warms the Modal container, so the next turn gets recall.
+      // 2000ms, not 1500: phase timing from Fly measured the WARM embed+search at
+      // 1137ms and a COLD one at 7564ms. 1500 would clip the warm path
+      // intermittently and silently cost us recall; 2000 clears warm with headroom
+      // while still cutting a cold start from 7.5s to 2s.
+      const RECALL_DEADLINE_MS = 2000;
+      let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
+      const memHits = await Promise.race([
+        retrieveMemory(prompt, 3, {
+          embeddingsSource: "supabase",
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
+          supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+          embedUrl: process.env.OLLAMA_EMBED_URL || undefined,
+        }),
+        new Promise<never>((_, rej) => {
+          deadlineTimer = setTimeout(
+            () => rej(new Error(`recall exceeded ${RECALL_DEADLINE_MS}ms deadline — answering without memory`)),
+            RECALL_DEADLINE_MS
+          );
+        }),
+      ]).finally(() => { if (deadlineTimer) clearTimeout(deadlineTimer); });
         memoryHits = memHits.length;
     if (memHits.length > 0) {
         memoryContext = "\n\nRELEVANT PAST CONTEXT (semantic memory, ranked by similarity):\n" +
