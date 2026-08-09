@@ -2002,11 +2002,18 @@ async function callLLM(messages: OpenAIMessage[], withTools: boolean): Promise<{
 
 export async function POST(req: NextRequest) {
   const _requestStart = Date.now();
+  // Phase timing. Black-box measurement showed a bimodal time-to-first-byte
+  // (~930ms vs ~3400ms) that could not be attributed to any single phase from
+  // outside. Each mark() records cumulative ms from request entry; the deltas
+  // between them name the slow phase instead of guessing at it.
+  const _phases: Record<string, number> = {};
+  const mark = (name: string) => { _phases[name] = Date.now() - _requestStart; };
   const deny = authGate(req, { allowReadFromBrowser: false });
   if (deny) return deny;
 
   // Rate limit chat: 30 requests/min to protect Anthropic API quota
   const rl = await rateLimit("chat", 30, 60);
+  mark("rateLimit");
   if (rl) return rl;
 
   let payload: unknown;
@@ -2138,6 +2145,7 @@ export async function POST(req: NextRequest) {
     : randomUUID();
 
   // 1. Fetch context digest + history in parallel
+  mark("preHistory");
   const [contextDigest, history] = await Promise.all([
     buildContextDigest(),
     loadHistory(sessionId, 20),
@@ -2146,6 +2154,7 @@ export async function POST(req: NextRequest) {
   // 1b. Resolve user's current location from their IP (cached 1h)
   // Canonical user-location: read from arthur_user_location row (Mac cron upserts every 5min).
   // Fall back to request-IP geo if the table is stale (>30min old) or missing.
+  mark("history");
   let currentLocation: string | null = null;
   try {
     const sb = getSupabaseAdmin();
@@ -2178,6 +2187,7 @@ export async function POST(req: NextRequest) {
   // with location resolution above but awaited before system prompt is built.
   let memoryContext = "";
   try {
+    mark("location");
     const { retrieveSimilar: retrieveMemory } = await import("@/lib/memory");
     const memHits = await retrieveMemory(prompt, 3, {
       embeddingsSource: "supabase",
@@ -2208,6 +2218,7 @@ export async function POST(req: NextRequest) {
   //    NO REDEPLOY NEEDED for persona edits.
   let systemPrompt: string = buildSystemPrompt(contextDigest + memoryContext, currentLocation, turnRequiresTools);
   try {
+    mark("memory");
     const livePersona = await livePullerFetch();
     if (livePersona) systemPrompt = livePersona;
   } catch { /* fallback to bundled */ }
@@ -2227,6 +2238,7 @@ export async function POST(req: NextRequest) {
     }
   } catch { /* dashboard running in cloud container — file unreachable, OK */ }
 
+  mark("persona");
   const messages: OpenAIMessage[] = [
     { role: "system", content: systemPrompt },
     ...history.map((h): OpenAIMessage => {
@@ -2300,7 +2312,8 @@ export async function POST(req: NextRequest) {
         try {
           // First byte goes out before ANY dependency is touched, so the UI paints
           // immediately even if Supabase or the orchestrator is slow.
-          send({ type: "status", text: "thinking", session_id: sessionId });
+          mark("streamOpen");
+          send({ type: "status", text: "thinking", session_id: sessionId, phases: _phases });
 
           await runPreWork();
 
@@ -2360,7 +2373,9 @@ export async function POST(req: NextRequest) {
             latency_ms: Date.now() - _requestStart,
             tokens: Math.round(text.length / 4),
             tool_calls: toolNames.length,
+            phases: _phases,
           });
+          console.log(`[chat/phases] ${JSON.stringify(_phases)} firstByte=${_phases.streamOpen ?? "?"} total=${Date.now() - _requestStart}`);
         } catch (e) {
           send({ type: "error", error: e instanceof Error ? e.message : String(e) });
         } finally {
