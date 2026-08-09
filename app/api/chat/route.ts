@@ -2144,116 +2144,127 @@ export async function POST(req: NextRequest) {
     ? clientSessionId.trim()
     : randomUUID();
 
-  // 1. Fetch context digest + history in parallel
-  mark("preHistory");
-  const [contextDigest, history] = await Promise.all([
-    buildContextDigest(),
-    loadHistory(sessionId, 20),
-  ]);
+  // Everything from here to the messages array is Supabase/network work whose
+  // result the reader never sees directly. Phase timing (2026-08-09) measured
+  // history at +1319ms and rateLimit at +582ms on the slow path, all of it
+  // blocking the stream from opening. Wrapped so the streaming path can open
+  // the stream FIRST and run this inside it — first byte then no longer waits
+  // on Supabase at all. Both paths call it exactly once.
+  let systemPrompt: string = "";
+  let messages: OpenAIMessage[] = [];
+  const buildTurn = async () => {
+    // 1. Fetch context digest + history in parallel
+    mark("preHistory");
+    const [contextDigest, history] = await Promise.all([
+      buildContextDigest(),
+      loadHistory(sessionId, 20),
+    ]);
 
-  // 1b. Resolve user's current location from their IP (cached 1h)
-  // Canonical user-location: read from arthur_user_location row (Mac cron upserts every 5min).
-  // Fall back to request-IP geo if the table is stale (>30min old) or missing.
-  mark("history");
-  let currentLocation: string | null = null;
-  try {
-    const sb = getSupabaseAdmin();
-    const { data } = await sb
-      .from("arthur_user_location")
-      .select("city, region, updated_at")
-      .eq("id", "daniel")
-      .single();
-    if (data?.city) {
-      const ageMin = (Date.now() - new Date(data.updated_at as string).getTime()) / 60000;
-      if (ageMin < 30) {
-        currentLocation = `${data.city}${data.region ? ", " + data.region : ""}`;
+    // 1b. Resolve user's current location from their IP (cached 1h)
+    // Canonical user-location: read from arthur_user_location row (Mac cron upserts every 5min).
+    // Fall back to request-IP geo if the table is stale (>30min old) or missing.
+    mark("history");
+    let currentLocation: string | null = null;
+    try {
+      const sb = getSupabaseAdmin();
+      const { data } = await sb
+        .from("arthur_user_location")
+        .select("city, region, updated_at")
+        .eq("id", "daniel")
+        .single();
+      if (data?.city) {
+        const ageMin = (Date.now() - new Date(data.updated_at as string).getTime()) / 60000;
+        if (ageMin < 30) {
+          currentLocation = `${data.city}${data.region ? ", " + data.region : ""}`;
+        }
       }
+    } catch { /* table read non-critical */ }
+    if (!currentLocation) {
+      const userIp = req.headers.get("fly-client-ip")
+        || req.headers.get("cf-connecting-ip")
+        || req.headers.get("x-client-ip")
+        || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+        || "";
+      const geo = userIp ? await inferLocationFromIP(userIp) : null;
+      currentLocation = geo ? `${geo.city}${geo.region ? ", " + geo.region : ""}` : null;
     }
-  } catch { /* table read non-critical */ }
-  if (!currentLocation) {
-    const userIp = req.headers.get("fly-client-ip")
-      || req.headers.get("cf-connecting-ip")
-      || req.headers.get("x-client-ip")
-      || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-      || "";
-    const geo = userIp ? await inferLocationFromIP(userIp) : null;
-    currentLocation = geo ? `${geo.city}${geo.region ? ", " + geo.region : ""}` : null;
-  }
 
-  // 1c. Semantic memory retrieval — top-3 similar past turns from the corpus.
-  // Uses Supabase backend (arthur_corpus_embeddings table, pgvector similarity).
-  // Embeds via Ollama nomic-embed-text if OLLAMA_EMBED_URL is set, otherwise
-  // skips gracefully (empty hits, no crash). Non-blocking — fires in parallel
-  // with location resolution above but awaited before system prompt is built.
-  let memoryContext = "";
-  try {
-    mark("location");
-    const { retrieveSimilar: retrieveMemory } = await import("@/lib/memory");
-    const memHits = await retrieveMemory(prompt, 3, {
-      embeddingsSource: "supabase",
-      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
-      supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-      embedUrl: process.env.OLLAMA_EMBED_URL || undefined,
-    });
-    if (memHits.length > 0) {
-      memoryContext = "\n\nRELEVANT PAST CONTEXT (semantic memory, ranked by similarity):\n" +
-        memHits.map((h, i) =>
-          `[${i + 1}] (score ${h.score}${h.timestamp ? `, ${h.timestamp.slice(0, 10)}` : ""})\n` +
-          `Q: ${h.input.slice(0, 200)}\n` +
-          `A: ${h.output_preview.slice(0, 300)}`
-        ).join("\n\n");
-    }
-  } catch { /* memory retrieval is non-critical — never block chat */ }
-
-  // 2. Build messages array
-  // Decide once whether this turn needs tools, and build the system prompt
-  // with or without tool definitions. Chat-only providers (Cerebras/Groq)
-  // leak tool-call syntax as text when given tool definitions they can't honor.
-  const turnRequiresTools = promptNeedsTools([{ role: "user", content: prompt }]);
-
-  // ── LIVE PERSONA PULL — fetch latest persona from Supabase arthur_persona_live
-  //    table (pushed by ~/arthur/lib/integration/persona-pusher.js on Daniel's
-  //    Mac on every persona.ts mtime change). 60s in-memory cache.
-  //    Falls back to bundled persona if Supabase row missing or stale > 24h.
-  //    NO REDEPLOY NEEDED for persona edits.
-  let systemPrompt: string = buildSystemPrompt(contextDigest + memoryContext, currentLocation, turnRequiresTools);
-  try {
-    mark("memory");
-    const livePersona = await livePullerFetch();
-    if (livePersona) systemPrompt = livePersona;
-  } catch { /* fallback to bundled */ }
-
-  // ── COMMITMENT AUTO-SURFACE — cross-surface parity with TUI + Telegram.
-  // If any commitment is due in the next hour (queried from local Arthur
-  // data file, which exists when dashboard runs against the same DB), prepend
-  // a reminder. In cloud Fly container the file doesn't exist; silent no-op.
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const dynamicRequire = eval('require');
-    const pm = dynamicRequire('os').homedir() + '/arthur/lib/agentic/project-memory';
-    const projectMemory = dynamicRequire(pm);
-    const due = projectMemory.dueSoon(3_600_000);
-    if (due && due.length > 0) {
-      systemPrompt += `\n\n[arthur reminder — ${due.length} commitment(s) due in next hour: ${due.map((c: any) => c.what.slice(0, 80)).join('; ')}]`;
-    }
-  } catch { /* dashboard running in cloud container — file unreachable, OK */ }
-
-  mark("persona");
-  const messages: OpenAIMessage[] = [
-    { role: "system", content: systemPrompt },
-    ...history.map((h): OpenAIMessage => {
-      if (h.role === "tool") {
-        // Tool results stored as a single message — re-expand as assistant tool call if needed
-        return { role: "assistant", content: h.content };
+    // 1c. Semantic memory retrieval — top-3 similar past turns from the corpus.
+    // Uses Supabase backend (arthur_corpus_embeddings table, pgvector similarity).
+    // Embeds via Ollama nomic-embed-text if OLLAMA_EMBED_URL is set, otherwise
+    // skips gracefully (empty hits, no crash). Non-blocking — fires in parallel
+    // with location resolution above but awaited before system prompt is built.
+    let memoryContext = "";
+    try {
+      mark("location");
+      const { retrieveSimilar: retrieveMemory } = await import("@/lib/memory");
+      const memHits = await retrieveMemory(prompt, 3, {
+        embeddingsSource: "supabase",
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
+        supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+        embedUrl: process.env.OLLAMA_EMBED_URL || undefined,
+      });
+      if (memHits.length > 0) {
+        memoryContext = "\n\nRELEVANT PAST CONTEXT (semantic memory, ranked by similarity):\n" +
+          memHits.map((h, i) =>
+            `[${i + 1}] (score ${h.score}${h.timestamp ? `, ${h.timestamp.slice(0, 10)}` : ""})\n` +
+            `Q: ${h.input.slice(0, 200)}\n` +
+            `A: ${h.output_preview.slice(0, 300)}`
+          ).join("\n\n");
       }
-      return {
-        role: h.role as OpenAIMessage["role"],
-        content: h.content,
-        ...(h.tool_calls ? { tool_calls: h.tool_calls as OpenAIToolCall[] } : {}),
-      };
-    }),
-    { role: "user", content: prompt.slice(0, 8000) },
-  ];
+    } catch { /* memory retrieval is non-critical — never block chat */ }
+
+    // 2. Build messages array
+    // Decide once whether this turn needs tools, and build the system prompt
+    // with or without tool definitions. Chat-only providers (Cerebras/Groq)
+    // leak tool-call syntax as text when given tool definitions they can't honor.
+    const turnRequiresTools = promptNeedsTools([{ role: "user", content: prompt }]);
+
+    // ── LIVE PERSONA PULL — fetch latest persona from Supabase arthur_persona_live
+    //    table (pushed by ~/arthur/lib/integration/persona-pusher.js on Daniel's
+    //    Mac on every persona.ts mtime change). 60s in-memory cache.
+    //    Falls back to bundled persona if Supabase row missing or stale > 24h.
+    //    NO REDEPLOY NEEDED for persona edits.
+    systemPrompt = buildSystemPrompt(contextDigest + memoryContext, currentLocation, turnRequiresTools);
+    try {
+      mark("memory");
+      const livePersona = await livePullerFetch();
+      if (livePersona) systemPrompt = livePersona;
+    } catch { /* fallback to bundled */ }
+
+    // ── COMMITMENT AUTO-SURFACE — cross-surface parity with TUI + Telegram.
+    // If any commitment is due in the next hour (queried from local Arthur
+    // data file, which exists when dashboard runs against the same DB), prepend
+    // a reminder. In cloud Fly container the file doesn't exist; silent no-op.
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const dynamicRequire = eval('require');
+      const pm = dynamicRequire('os').homedir() + '/arthur/lib/agentic/project-memory';
+      const projectMemory = dynamicRequire(pm);
+      const due = projectMemory.dueSoon(3_600_000);
+      if (due && due.length > 0) {
+        systemPrompt += `\n\n[arthur reminder — ${due.length} commitment(s) due in next hour: ${due.map((c: any) => c.what.slice(0, 80)).join('; ')}]`;
+      }
+    } catch { /* dashboard running in cloud container — file unreachable, OK */ }
+
+    mark("persona");
+    messages = [
+      { role: "system", content: systemPrompt },
+      ...history.map((h): OpenAIMessage => {
+        if (h.role === "tool") {
+          // Tool results stored as a single message — re-expand as assistant tool call if needed
+          return { role: "assistant", content: h.content };
+        }
+        return {
+          role: h.role as OpenAIMessage["role"],
+          content: h.content,
+          ...(h.tool_calls ? { tool_calls: h.tool_calls as OpenAIToolCall[] } : {}),
+        };
+      }),
+      { role: "user", content: prompt.slice(0, 8000) },
+    ];
+  };
+
 
   // 3. Pre-LLM work: persist the user turn, run the implicit-correction detector,
   //    and pull orchestrator enrichment. Extracted into one function so the
@@ -2312,9 +2323,13 @@ export async function POST(req: NextRequest) {
         try {
           // First byte goes out before ANY dependency is touched, so the UI paints
           // immediately even if Supabase or the orchestrator is slow.
+          // First byte goes out before ANY Supabase/network work — buildTurn()
+          // (history, location, memory, persona) now runs inside the stream, so
+          // time-to-first-byte no longer waits on it.
           mark("streamOpen");
           send({ type: "status", text: "thinking", session_id: sessionId, phases: _phases });
 
+          await buildTurn();
           await runPreWork();
 
           // Tool rounds run server-side (the answer can't exist before they do),
@@ -2396,7 +2411,8 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Non-streaming path: same pre-work, run inline as before.
+  // Non-streaming path: same work, run inline as before.
+  await buildTurn();
   await runPreWork();
 
   // 4. Tool-call loop (max 4 rounds)
