@@ -49,22 +49,38 @@ interface LLMResponse {
 // System prompt
 // ─────────────────────────────────────────────────────────────────────────────
 
-// IP geolocation cache (prevents hammering ipapi on every request)
-const _ipGeoCache = new Map<string, { city: string; region: string; ts: number }>();
+// IP geolocation cache (prevents hammering ipapi on every request).
+// `city: null` is a NEGATIVE entry — a lookup that failed. Only successes used to
+// be cached, so once ipapi started returning 429 (measured 2026-08-09: 429 on
+// every call, ~400ms each) every chat turn re-hit it and paid that latency
+// forever for a result that could never arrive. Negative entries are cached on a
+// shorter TTL so a recovered/reset quota is picked up within the hour.
+const _ipGeoCache = new Map<string, { city: string | null; region: string; ts: number }>();
+const GEO_TTL_OK_MS = 3600 * 1000;   // 1h for a good answer
+const GEO_TTL_FAIL_MS = 600 * 1000;  // 10min before retrying a failure
 
 async function inferLocationFromIP(ip: string): Promise<{ city: string; region: string } | null> {
   if (!ip || ip === "127.0.0.1" || ip.startsWith("::1")) return null;
   const cached = _ipGeoCache.get(ip);
-  if (cached && Date.now() - cached.ts < 3600 * 1000) return { city: cached.city, region: cached.region };
+  if (cached) {
+    const ttl = cached.city ? GEO_TTL_OK_MS : GEO_TTL_FAIL_MS;
+    if (Date.now() - cached.ts < ttl) {
+      return cached.city ? { city: cached.city, region: cached.region } : null;
+    }
+  }
+  const miss = (): null => {
+    _ipGeoCache.set(ip, { city: null, region: "", ts: Date.now() });
+    return null;
+  };
   try {
     const r = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`, { signal: AbortSignal.timeout(3000) });
-    if (!r.ok) return null;
+    if (!r.ok) return miss();
     const j = await r.json() as { city?: string; region?: string; region_code?: string; error?: boolean };
-    if (j.error || !j.city) return null;
+    if (j.error || !j.city) return miss();
     const region = j.region_code || j.region || "";
     _ipGeoCache.set(ip, { city: j.city, region, ts: Date.now() });
     return { city: j.city, region };
-  } catch { return null; }
+  } catch { return miss(); }
 }
 
 // buildSystemPrompt delegates to the canonical persona module so all chat
