@@ -46,22 +46,51 @@ function cosine(a: number[], b: number[]): number {
 // Embedding
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function embedQuery(text: string, opts: RetrieveOptions): Promise<number[] | null> {
-  const url   = opts.embedUrl   ?? "http://localhost:11434/api/embeddings";
+/** Thrown when the embedder itself is unusable — distinct from "no hits". */
+export class MemoryEmbedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "MemoryEmbedError";
+  }
+}
+
+// FAIL LOUD. This used to default to http://localhost:11434 and return null on
+// any failure, which retrieveSimilar turned into an empty result set. On Fly that
+// host does not resolve, so dashboard recall returned zero hits on every single
+// turn and nothing ever errored — indistinguishable from "the corpus had no
+// match". A clean zero from a filter is a suspect, not a result.
+//
+// There is now no localhost default and no null return: an unset or unreachable
+// embedder throws, so a broken embedder can never masquerade as an empty corpus.
+async function embedQuery(text: string, opts: RetrieveOptions): Promise<number[]> {
+  const url = opts.embedUrl;
+  if (!url) {
+    throw new MemoryEmbedError(
+      "embedUrl is not set (OLLAMA_EMBED_URL missing). Refusing to silently return zero hits."
+    );
+  }
   const model = opts.embedModel ?? "nomic-embed-text:latest";
+  let res: Response;
   try {
-    const res = await fetch(url, {
+    res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ model, prompt: text.slice(0, 2000) }),
-      signal: AbortSignal.timeout(10000),
+      // Modal scales to zero; a cold start pulls the model. Generous timeout so a
+      // cold embedder is slow, not "empty".
+      signal: AbortSignal.timeout(30000),
     });
-    if (!res.ok) return null;
-    const data = await res.json() as { embedding?: number[] };
-    return Array.isArray(data.embedding) ? data.embedding : null;
-  } catch {
-    return null;
+  } catch (e) {
+    throw new MemoryEmbedError(`embedder unreachable at ${url}: ${e instanceof Error ? e.message : String(e)}`);
   }
+  if (!res.ok) {
+    throw new MemoryEmbedError(`embedder ${url} returned HTTP ${res.status}`);
+  }
+  const data = await res.json() as { embedding?: number[] };
+  if (!Array.isArray(data.embedding) || data.embedding.length === 0) {
+    throw new MemoryEmbedError(`embedder ${url} returned no embedding`);
+  }
+  return data.embedding;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -163,17 +192,16 @@ export async function retrieveSimilar(
   opts: RetrieveOptions = {}
 ): Promise<MemoryHit[]> {
   const source = opts.embeddingsSource ?? "supabase";
-  try {
-    const queryVec = await embedQuery(query, opts);
-    if (!queryVec) return [];
+  // NOTE: no blanket try/catch here any more. A MemoryEmbedError means the
+  // embedder is broken and must surface to the caller; swallowing it here is
+  // exactly how recall stayed silently dead. Genuine "no similar rows" still
+  // returns [] from retrieveFromSupabase.
+  const queryVec = await embedQuery(query, opts);
 
-    if (source === "supabase") {
-      return retrieveFromSupabase(queryVec, k, opts);
-    }
-
-    // file backend not available in dashboard (no local FS access on Fly)
-    return [];
-  } catch {
-    return [];
+  if (source === "supabase") {
+    return retrieveFromSupabase(queryVec, k, opts);
   }
+
+  // file backend not available in dashboard (no local FS access on Fly)
+  return [];
 }

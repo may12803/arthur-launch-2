@@ -2152,6 +2152,9 @@ export async function POST(req: NextRequest) {
   // on Supabase at all. Both paths call it exactly once.
   let systemPrompt: string = "";
   let messages: OpenAIMessage[] = [];
+  // Hoisted: assigned inside buildTurn(), read by the done event outside it.
+  let memoryError: string | null = null;
+  let memoryHits = 0;
   const buildTurn = async () => {
     // 1. Fetch context digest + history in parallel
     mark("preHistory");
@@ -2204,7 +2207,8 @@ export async function POST(req: NextRequest) {
         supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
         embedUrl: process.env.OLLAMA_EMBED_URL || undefined,
       });
-      if (memHits.length > 0) {
+        memoryHits = memHits.length;
+    if (memHits.length > 0) {
         memoryContext = "\n\nRELEVANT PAST CONTEXT (semantic memory, ranked by similarity):\n" +
           memHits.map((h, i) =>
             `[${i + 1}] (score ${h.score}${h.timestamp ? `, ${h.timestamp.slice(0, 10)}` : ""})\n` +
@@ -2212,7 +2216,13 @@ export async function POST(req: NextRequest) {
             `A: ${h.output_preview.slice(0, 300)}`
           ).join("\n\n");
       }
-    } catch { /* memory retrieval is non-critical — never block chat */ }
+    } catch (e) {
+      // Chat still proceeds — but the failure is LOUD, not swallowed. Recall was
+      // dead for weeks because this catch turned a broken embedder into a silent
+      // empty result set that looked exactly like "no relevant memories".
+      memoryError = e instanceof Error ? e.message : String(e);
+      console.error(`[chat/memory] RECALL FAILED — ${memoryError}`);
+    }
 
     // 2. Build messages array
     // Decide once whether this turn needs tools, and build the system prompt
@@ -2389,6 +2399,8 @@ export async function POST(req: NextRequest) {
             tokens: Math.round(text.length / 4),
             tool_calls: toolNames.length,
             phases: _phases,
+            memory_error: memoryError,
+            memory_hits: memoryHits,
           });
           console.log(`[chat/phases] ${JSON.stringify(_phases)} firstByte=${_phases.streamOpen ?? "?"} total=${Date.now() - _requestStart}`);
         } catch (e) {
