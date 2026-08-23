@@ -6,8 +6,14 @@ primary_region = 'ord'
   # NEXT_PUBLIC_* must be baked into the client bundle at build time.
   # Fly runtime secrets are NOT available during `bun run build`.
   [build.args]
-    NEXT_PUBLIC_SUPABASE_URL = "https://ycqhiysewapmuuywdlyi.supabase.co"
-    NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljcWhpeXNld2FwbXV1eXdkbHlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjkyNTQsImV4cCI6MjA5MDMwNTI1NH0.YihgU6_ZJLK4-jPX9NzrgZMAdxmA7FLPM1a0ePqR3YY"
+    # Consolidated onto the arthur project 2026-08-23. These were the OLLDAE project, and
+    # because they are build args rather than runtime secrets, `flyctl secrets set` could never
+    # move them — the old URL was compiled into /app/.next/server (3 files, api/chat/route.js
+    # among them, the main writer of arthur_dashboard_conversations). Changing the secret alone
+    # would have looked like a repoint and changed nothing.
+    # [[learned_arthurs_brain_is_forked_across_two_supabase_projects]]
+    NEXT_PUBLIC_SUPABASE_URL = "https://taogykblgsjtcjkyzise.supabase.co"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhb2d5a2JsZ3NqdGNqa3l6aXNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1OTA1NzAsImV4cCI6MjEwMTE2NjU3MH0.PYJRJHxfMVYCLRqk_jNPSliwecGY15Fy3PqwR5AmFGg"
 
 [http_service]
   internal_port = 3000
