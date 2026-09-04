@@ -342,7 +342,11 @@ async function callNim(messages: OpenAIMessage[], withTools: boolean, toolDefs: 
   if (!key) return null;
   try {
     const body: Record<string, unknown> = {
-      model: "meta/llama-3.3-70b-instruct",
+      // Replaced 2026-09-04: meta/llama-3.3-70b-instruct returns HTTP 410 "reached its end of
+      // life on 2026-08-26", so this tier — the cheapest tool-capable rung — had been dead in
+      // production. nemotron-3-super-120b-a12b was measured live against the API the same day:
+      // correct tool_calls in ~1.3s at $0, the fastest of the 7 NIM models that still answer.
+      model: process.env.NIM_MODEL || "nvidia/nemotron-3-super-120b-a12b",
       messages,
       max_tokens: 1500,
       temperature: 0.6,
