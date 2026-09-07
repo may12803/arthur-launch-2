@@ -94,7 +94,7 @@ function buildSystemPrompt(contextDigest: string, currentLocation?: string | nul
     // (which lack native tool_use protocol) from hallucinating tool-call syntax
     // when given tool definitions in their system prompt.
     tools: toolsEnabled
-      ? ["query_inbox", "send_email", "query_calendar_events", "create_calendar_event", "query_legal", "query_brain_graph", "query_memory", "list_recent_actions", "get_cash_balance", "get_weather", "web_search", "live_sports_score", "scrape_url", "validate_email", "convert_currency", "apilayer", "composio_execute", "pipedream_workflow", "propose_project_concepts", "build_new_project", "audit_and_rebuild_site", "get_build_status"]
+      ? ["browser_operate", "query_inbox", "send_email", "query_calendar_events", "create_calendar_event", "query_legal", "query_brain_graph", "query_memory", "list_recent_actions", "get_cash_balance", "get_weather", "web_search", "live_sports_score", "scrape_url", "validate_email", "convert_currency", "apilayer", "composio_execute", "pipedream_workflow", "propose_project_concepts", "build_new_project", "audit_and_rebuild_site", "get_build_status"]
       : [],
   });
 }
@@ -167,6 +167,9 @@ ${contextDigest}`;
 // ─────────────────────────────────────────────────────────────────────────────
 
 const TOOL_DEFINITIONS = [
+  {
+    type:"function",function:{name:"browser_operate",description:"Operate Arthur's persistent browser shown beside this chat. Use for requests to open, navigate, inspect, click, type, go back/forward, or refresh a web page. Continue using the returned session_id for later actions.",parameters:{type:"object",properties:{session_id:{type:"string"},action:{type:"string",enum:["open","navigate","click","type","read","back","forward","refresh"]},url:{type:"string"},selector:{type:"string"},text:{type:"string"}},required:["action"]}}
+  },
   {
     type: "function",
     function: {
@@ -1296,6 +1299,7 @@ async function executeTool(name: string, argsStr: string): Promise<string> {
   try { args = JSON.parse(argsStr || "{}"); } catch { /* empty args */ }
 
   switch (name) {
+    case "browser_operate": {const {operateBrowser}=await import('@/lib/arthur-browser-runtime');return JSON.stringify(await operateBrowser(args as never));}
     case "get_cash_balance":  return toolGetCashBalance();
     case "query_inbox":       return toolQueryInbox(args as Parameters<typeof toolQueryInbox>[0]);
     case "query_legal":       return toolQueryLegal(args as Parameters<typeof toolQueryLegal>[0]);
@@ -1830,7 +1834,7 @@ function promptNeedsTools(messages: OpenAIMessage[]): boolean {
     "weather", "temperature", "forecast", "rain", "snow", "humid", "wind",
     "graph", "brain index", "knowledge graph",
     "what have you done", "recent activity", "what did you do",
-    "audit", "look up", "fetch", "pull up", "show me", "find me", "get me",
+    "audit", "look up", "fetch", "pull up", "show me", "find me", "get me", "browse", "browser", "navigate", "click", "open website", "open the site", "fill in",
     "calendar", "event", "invite", "meeting", "schedule",
     // Web-search-bait — questions where stale training data lies
     "who is", "who's", "what is the president", "current price", "stock price", "stock", "shares",
@@ -2383,6 +2387,7 @@ export async function POST(req: NextRequest) {
               toolNames.push(name);
               send({ type: "tool", name });
               const out = await executeTool(name, tc.function?.arguments ?? "{}");
+              if(name==="browser_operate"){try{send({type:"browser",state:JSON.parse(out)})}catch{}}
               thread.push({ role: "tool", content: out, tool_call_id: tc.id, name });
             }
           }

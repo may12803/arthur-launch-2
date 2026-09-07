@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { MessageList, Message, Attachment } from './MessageList';
 import { ChatInput, PendingAttachment } from './ChatInput';
+import {ArthurBrowser,type BrowserState} from './ArthurBrowser';
 
 function uid(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -69,6 +70,7 @@ export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurface
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [prefillText, setPrefillText] = useState<string | undefined>(undefined);
+  const [browser,setBrowser]=useState<BrowserState|null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Stable per-session client id. If parent supplies sessionId (from URL),
@@ -193,11 +195,12 @@ export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurface
               const line = buf.slice(0, nl).trim();
               buf = buf.slice(nl + 1);
               if (!line.startsWith('data:')) continue;
-              let ev: { type?: string; text?: string; name?: string } & Record<string, unknown>;
+              let ev: { type?: string; text?: string; name?: string;state?:BrowserState } & Record<string, unknown>;
               try { ev = JSON.parse(line.slice(5).trim()); } catch { continue; }
               if (ev.type === 'status') { place(); }
               else if (ev.type === 'tool') { place(); paint(acc || `_${String(ev.name)}…_`); }
               else if (ev.type === 'delta') { place(); acc += ev.text || ''; paint(acc); }
+              else if (ev.type === 'browser' && ev.state) { setBrowser(ev.state); }
               else if (ev.type === 'done') { done = ev as unknown as DoneMeta; }
               else if (ev.type === 'error') { acc = acc || `Error: ${String(ev.error)}`; place(); paint(acc); }
             }
@@ -354,11 +357,12 @@ export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurface
     <div
       style={{
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
         height: '100%',
         position: 'relative',
       }}
     >
+      <div style={{display:'flex',flexDirection:'column',flex:1,minWidth:0}}>
       {/* ── Messages area ─────────────────────────────────────────────────── */}
       <div
         ref={scrollRef}
@@ -392,6 +396,8 @@ export function ChatSurface({ voiceActive, onOpenVoice, sessionId }: ChatSurface
         prefillText={prefillText}
         onPrefillConsumed={() => setPrefillText(undefined)}
       />
+      </div>
+      {browser&&<ArthurBrowser state={browser} onChange={setBrowser} onClose={()=>setBrowser(null)}/>}
     </div>
   );
 }
