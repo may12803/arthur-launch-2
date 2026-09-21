@@ -173,9 +173,18 @@ async function listEventsForCalendar(
  * google_refresh_token, fetches every calendar for each, and returns a
  * merged + per-account-deduped list of events with account_email set.
  */
+/**
+ * Lists events across every connected Google account.
+ *
+ * `problems` is an optional sink for per-account failures. Every skip in here used to be a bare
+ * `continue`, so a revoked refresh token produced an empty array indistinguishable from a genuinely
+ * empty calendar — and seven endpoints consumed that silence as "no events" (2026-09-21). Callers
+ * that care about the difference pass an array and inspect it; existing callers are unaffected.
+ */
 export async function listAllCalendarEvents(
   start: string,
-  end: string
+  end: string,
+  problems?: string[]
 ): Promise<GCalEvent[]> {
   const db = getSupabaseAdmin();
 
@@ -189,8 +198,11 @@ export async function listAllCalendarEvents(
 
   if (error) {
     console.error("[google/calendar] account query failed:", error.message);
+    problems?.push(`account query failed: ${error.message}`);
     return [];
   }
+
+  if (!accounts?.length) problems?.push("no active gmail accounts with a refresh token");
 
   const allEvents: GCalEvent[] = [];
 
@@ -202,10 +214,16 @@ export async function listAllCalendarEvents(
         ? (process.env.GOOGLE_REFRESH_TOKEN ?? "")
         : rawToken;
 
-    if (!refreshToken) continue;
+    if (!refreshToken) {
+      problems?.push(`${acct.email as string}: no refresh token (env sentinel unresolved)`);
+      continue;
+    }
 
     const token = await exchangeRefreshToken(refreshToken);
-    if (!token) continue;
+    if (!token) {
+      problems?.push(`${acct.email as string}: refresh token rejected (invalid_grant — needs re-consent)`);
+      continue;
+    }
 
     const accountEmail = acct.email as string;
 

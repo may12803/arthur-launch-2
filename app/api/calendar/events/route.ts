@@ -54,9 +54,15 @@ export async function GET(req: NextRequest) {
   const db = getSupabaseAdmin();
   const merged: MergedEvent[] = [];
 
+  // Every source below is wrapped in try/catch-and-continue, so a total outage returned [] with a
+  // 200 and callers could not tell it apart from a quiet week. Health travels in response headers
+  // rather than the body, because the body contract is a bare array that seven callers depend on.
+  const sourceHealth: Record<string, string> = {};
+  const gcalProblems: string[] = [];
+
   // 1. Google Calendar — ALL connected accounts
   try {
-    const gcalEvents = await listAllCalendarEvents(startDate.toISOString(), endDate.toISOString());
+    const gcalEvents = await listAllCalendarEvents(startDate.toISOString(), endDate.toISOString(), gcalProblems);
     for (const ev of gcalEvents) {
       if (ev.status === "cancelled") continue;
       const isAllDay = !ev.start?.dateTime;
@@ -87,8 +93,10 @@ export async function GET(req: NextRequest) {
         gcal_cal_id:  ev.account_email ?? null,
       });
     }
+    sourceHealth.google = gcalProblems.length ? `error(${gcalProblems.join("; ")})` : `ok(${gcalEvents.length})`;
   } catch (e) {
     console.error("[calendar/events] gcal error:", (e as Error).message);
+    sourceHealth.google = `throw(${(e as Error).message})`;
   }
 
   // 2. iCloud CalDAV (optional — only runs if APPLE_APP_PASSWORD is set)
@@ -106,8 +114,10 @@ export async function GET(req: NextRequest) {
         source:   "icloud",
       });
     }
+    sourceHealth.icloud = `ok(${icloudEvents.length})`;
   } catch (e) {
     console.error("[calendar/events] icloud error:", (e as Error).message);
+    sourceHealth.icloud = `throw(${(e as Error).message})`;
   }
 
   // 3. Email extractions in range — tracking (delivery_eta_iso), tickets (event_start_iso), reservations (reservation_check_in_iso)
@@ -236,5 +246,15 @@ export async function GET(req: NextRequest) {
   // Sort by start
   deduped.sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
 
-  return NextResponse.json(deduped);
+  const degraded = Object.values(sourceHealth).some(v => v.startsWith("error") || v.startsWith("throw"));
+  if (degraded) {
+    console.error("[calendar/events] DEGRADED —", JSON.stringify(sourceHealth));
+  }
+  return NextResponse.json(deduped, {
+    headers: {
+      "X-Calendar-Sources":  Object.entries(sourceHealth).map(([k, v]) => `${k}=${v}`).join("; "),
+      "X-Calendar-Degraded": degraded ? "true" : "false",
+      "X-Calendar-Count":    String(deduped.length),
+    },
+  });
 }
