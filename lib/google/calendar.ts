@@ -221,7 +221,7 @@ export async function listAllCalendarEvents(
 
     const token = await exchangeRefreshToken(refreshToken);
     if (!token) {
-      problems?.push(`${acct.email as string}: refresh token rejected (invalid_grant — needs re-consent)`);
+      problems?.push(`${acct.email as string}: refresh token rejected (invalid_grant - needs re-consent)`);
       continue;
     }
 

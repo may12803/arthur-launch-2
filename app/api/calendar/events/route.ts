@@ -246,13 +246,18 @@ export async function GET(req: NextRequest) {
   // Sort by start
   deduped.sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
 
+  // Header values are ByteString: any code point above 255 throws and takes the whole response
+  // down with a 500. Diagnostic text is exactly where a stray em dash or an emoji from an upstream
+  // error message shows up, so strip to ASCII rather than trusting the source (2026-09-21: an em
+  // dash in this very diagnostic 500'd the route on first deploy).
+  const asciiHeader = (v: string) => v.replace(/[^\x20-\x7E]/g, "-").slice(0, 900);
   const degraded = Object.values(sourceHealth).some(v => v.startsWith("error") || v.startsWith("throw"));
   if (degraded) {
     console.error("[calendar/events] DEGRADED —", JSON.stringify(sourceHealth));
   }
   return NextResponse.json(deduped, {
     headers: {
-      "X-Calendar-Sources":  Object.entries(sourceHealth).map(([k, v]) => `${k}=${v}`).join("; "),
+      "X-Calendar-Sources":  asciiHeader(Object.entries(sourceHealth).map(([k, v]) => `${k}=${v}`).join("; ")),
       "X-Calendar-Degraded": degraded ? "true" : "false",
       "X-Calendar-Count":    String(deduped.length),
     },
