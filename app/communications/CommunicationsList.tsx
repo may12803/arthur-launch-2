@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase/client';
 import { Search, Loader2 } from 'lucide-react';
 import CommunicationDetail from './CommunicationDetail';
 
@@ -54,14 +53,16 @@ export default function CommunicationsList() {
   const fetchComms = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('arthur_communications')
-        .select('*')
-        .order('ts', { ascending: false })
-        .limit(200);
-
-      if (error) throw error;
-      setRows(data || []);
+      // Reads through /api/communications (service_role, behind authGate) rather than querying
+      // Supabase directly from the browser. The direct anon-key call started returning 401 on
+      // 2026-09-22 when the security review revoked anon's grants on arthur_communications -- a
+      // table of every inbound SMS, fax, voicemail and email, which anon could previously read.
+      // The grant is staying revoked; this page uses the server route that already existed.
+      const res = await fetch('/api/communications?limit=200', { cache: 'no-store' });
+      if (!res.ok) throw new Error(`/api/communications returned ${res.status}`);
+      const json = await res.json();
+      if (json.error) throw new Error(json.error);
+      setRows(json.rows || []);
     } catch (err: any) {
       setError(err.message);
     } finally {

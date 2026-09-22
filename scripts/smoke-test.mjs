@@ -66,7 +66,15 @@ const report = {
   routes: [],
 };
 
-const browser = await chromium.launch();
+// Playwright pins one Chromium build number and refuses to start without that exact one, even
+// when a newer complete build sits in the same cache. A dependency bump therefore breaks this
+// probe -- and this is the script CLAUDE.md names for verifying any UI change, so it failing
+// closed on a tooling detail means UI changes ship unverified. Honor an explicit override.
+// PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH is the conventional name; playwright-core 1.59.1 does not
+// read it itself, so it is applied here.
+const CHROMIUM_PATH = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined;
+if (CHROMIUM_PATH) console.log(`using chromium override: ${CHROMIUM_PATH}`);
+const browser = await chromium.launch(CHROMIUM_PATH ? { executablePath: CHROMIUM_PATH } : {});
 const ctx = await browser.newContext({
   viewport: { width: 1440, height: 900 },
   extraHTTPHeaders: { Authorization: basicAuth },
