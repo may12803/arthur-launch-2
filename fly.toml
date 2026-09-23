@@ -14,6 +14,10 @@ primary_region = 'ord'
     # [[learned_arthurs_brain_is_forked_across_two_supabase_projects]]
     NEXT_PUBLIC_SUPABASE_URL = "https://taogykblgsjtcjkyzise.supabase.co"
     NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhb2d5a2JsZ3NqdGNqa3l6aXNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1OTA1NzAsImV4cCI6MjEwMTE2NjU3MH0.PYJRJHxfMVYCLRqk_jNPSliwecGY15Fy3PqwR5AmFGg"
+    # LOVELEEDAY client project (eydcfgoklajcztpoprsl) — the /client/* portal authenticates here,
+    # a SEPARATE project from the arthur admin project above. Anon key is public/RLS-gated.
+    NEXT_PUBLIC_SUPABASE_LOVELEEDAY_URL = "https://eydcfgoklajcztpoprsl.supabase.co"
+    NEXT_PUBLIC_SUPABASE_LOVELEEDAY_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5ZGNmZ29rbGFqY3p0cG9wcnNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxNzQ5MTQsImV4cCI6MjEwNTc1MDkxNH0.FIBRkQTnpmX1zrddcCKGIPheB7c1EWnZDFrh2e87xOI"
 
 [http_service]
   internal_port = 3000
