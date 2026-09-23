@@ -9,9 +9,11 @@ import { SiteFooter } from "./SiteFooter";
 
 const NAV = [
   { href: "/client", label: "Dashboard" },
+  { href: "/client/documents", label: "Documents" },
   { href: "/client/team", label: "Team" },
   { href: "/client/contracts", label: "Contracts" },
   { href: "/client/billing", label: "Billing" },
+  { href: "/client/access", label: "Access history", adminOnly: true },
   { href: "/client/account", label: "Account" },
 ];
 
@@ -20,13 +22,16 @@ const NAV = [
 // where the site puts "Start a project".
 export function PortalShell({
   tenantName,
+  role,
   children,
 }: {
   tenantName: string;
+  role?: string;
   children: ReactNode;
 }) {
   const activePath = usePathname() || "/client";
-  const links = NAV.map((item) => {
+  const isAdmin = role === "owner" || role === "admin";
+  const links = NAV.filter((item) => !item.adminOnly || isAdmin).map((item) => {
     const active = item.href === "/client" ? activePath === "/client" : activePath.startsWith(item.href);
     return (
       <Link

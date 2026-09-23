@@ -10,5 +10,5 @@ import { PortalShell } from "@/components/client-portal/PortalShell";
 // through this layout is authenticated, AAL2, and has an accepted tenant.
 export default async function ClientPortalLayout({ children }: { children: ReactNode }) {
   const ctx = await requireClientPortal();
-  return <PortalShell tenantName={ctx.tenantName}>{children}</PortalShell>;
+  return <PortalShell tenantName={ctx.tenantName} role={ctx.role}>{children}</PortalShell>;
 }
