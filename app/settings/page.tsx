@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { MfaSettings } from "@/components/settings/MfaSettings";
 
 // v2 Design System — dark, chartreuse accent (#d4ff3d), glass morphism
 const D = {
@@ -37,6 +39,7 @@ const D = {
 const TABS = [
   { id: "general",       label: "General" },
   { id: "email",         label: "Email" },
+  { id: "security",      label: "Security" },
   { id: "notifications", label: "Notifications" },
   { id: "integrations",  label: "Integrations" },
   { id: "api",           label: "API" },
@@ -265,14 +268,18 @@ function DeleteModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState("general");
+function SettingsPageInner() {
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") || "general";
+  const forceEnroll = searchParams.get("enroll") === "1";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const renderContent = () => {
     switch (activeTab) {
       case "general":       return <ProfileSection />;
       case "email":         return <PlaceholderSection title="Email Accounts" />;
+      case "security":      return <MfaSettings autoEnroll={forceEnroll} />;
       case "notifications": return <PlaceholderSection title="Notifications" />;
       case "integrations":  return <IntegrationsSection />;
       case "api":           return <PlaceholderSection title="API Keys" />;
@@ -328,5 +335,13 @@ export default function SettingsPage() {
       </div>
       {showDeleteModal && <DeleteModal onClose={() => setShowDeleteModal(false)} />}
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={null}>
+      <SettingsPageInner />
+    </Suspense>
   );
 }

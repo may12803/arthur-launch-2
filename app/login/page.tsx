@@ -36,9 +36,18 @@ export default function LoginPage() {
         body: JSON.stringify({ password }),
       });
       if (res.ok) {
+        const data = await res.json().catch(() => ({} as { mfaRedirect?: string | null }));
         const params = new URLSearchParams(window.location.search);
         const next = params.get('next');
         const safe = next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard';
+        // An MFA challenge or forced enrollment always takes priority over
+        // wherever the user was headed — it carries `next` along so the
+        // challenge/enroll screen can forward them afterward.
+        if (data && typeof data.mfaRedirect === 'string' && data.mfaRedirect) {
+          const sep = data.mfaRedirect.includes('?') ? '&' : '?';
+          window.location.href = `${data.mfaRedirect}${sep}next=${encodeURIComponent(safe)}`;
+          return;
+        }
         window.location.href = safe;
         return;
       }
