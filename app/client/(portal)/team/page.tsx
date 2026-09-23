@@ -9,8 +9,7 @@ type TeamMember = {
   user_id: string;
   email: string | null;
   role: string;
-  accepted_at: string | null;
-  created_at: string;
+  accepted: boolean;
 };
 
 type InviteRow = {
@@ -26,10 +25,10 @@ export default async function TeamPage() {
   const supabase = await getLoveleedayServer();
   const isAdmin = ctx.role === "owner" || ctx.role === "admin";
 
-  // Best effort: a `list_tenant_team` RPC (join memberships -> auth.users for
-  // a friendly email) isn't part of the shipped schema yet — see the SQL
-  // proposal in the task report. Fall back to the raw membership rows
-  // (no email) so the page still works today.
+  // `list_tenant_team(p_tenant uuid)` is a SECURITY DEFINER RPC granted to
+  // authenticated — it joins memberships -> auth.users so this page can show
+  // real emails instead of truncated user ids. Fall back to the raw
+  // membership rows (no email) only if the RPC call itself fails.
   let members: TeamMember[] = [];
   let emailLookupUnavailable = false;
   const rpcResult = await supabase.rpc("list_tenant_team", { p_tenant: ctx.tenantId });
@@ -39,10 +38,10 @@ export default async function TeamPage() {
     emailLookupUnavailable = true;
     const { data } = await supabase
       .from("memberships")
-      .select("user_id, role, accepted_at, created_at")
+      .select("user_id, role, accepted_at")
       .eq("tenant_id", ctx.tenantId)
       .order("created_at", { ascending: true });
-    members = (data || []).map((m) => ({ ...m, email: null }));
+    members = (data || []).map((m) => ({ user_id: m.user_id, role: m.role, email: null, accepted: !!m.accepted_at }));
   }
 
   let invites: InviteRow[] = [];
@@ -71,8 +70,7 @@ export default async function TeamPage() {
         <h2 className="font-serif text-h3 text-text-active mb-4">Members</h2>
         {emailLookupUnavailable && (
           <p className="text-small text-text-muted mb-3">
-            Email addresses aren&apos;t available yet for existing members — showing user IDs until the
-            proposed `list_tenant_team` lookup is applied.
+            Couldn&apos;t look up member emails right now — showing user IDs instead.
           </p>
         )}
         <div className="flex flex-col gap-2">
@@ -86,9 +84,7 @@ export default async function TeamPage() {
                   {m.email || `User ${m.user_id.slice(0, 8)}`}
                   {m.user_id === ctx.userId && <span className="text-text-muted font-normal"> (you)</span>}
                 </div>
-                <div className="text-[12.5px] text-text-muted">
-                  {m.accepted_at ? `Joined ${new Date(m.accepted_at).toLocaleDateString()}` : "Not yet accepted"}
-                </div>
+                <div className="text-[12.5px] text-text-muted">{m.accepted ? "Active" : "Invitation pending"}</div>
               </div>
               <StatusBadge status={m.role} />
             </div>

@@ -4,15 +4,17 @@ import { useState, useEffect, useCallback, FormEvent } from "react";
 import { loveleeday } from "@/lib/supabase/loveleeday";
 import { Card, PortalButton, FormField, inputClass } from "@/components/client-portal/ui";
 
-type Preview = { tenant_name: string; role: string; email: string | null; expires_at: string } | null;
+type Preview = { tenant_name: string; role: string; expired: boolean } | null;
 
-// `get_invite_preview(token)` is a proposed SECURITY DEFINER RPC (see the
-// task report — not applied) that would let this page show the inviting
-// company + role before the visitor signs up. `invites` has no anon/public
-// SELECT policy today (only invites_admin_manage, scoped to an accepted
-// owner/admin of the tenant), so until that RPC exists this call fails
-// silently and the page falls back to generic copy — it never blocks the
-// actual accept flow, which goes through accept_invite() below.
+// `get_invite_preview(p_token text)` is a SECURITY DEFINER RPC granted to
+// anon, so this call works before the visitor has any session — it shows
+// the inviting company + role, and flags an expired token, before the
+// signup form ever renders. `invites` itself still has no anon/public
+// SELECT policy (only invites_admin_manage, scoped to an accepted
+// owner/admin of the tenant); the RPC is the sanctioned narrow read. A
+// failed call (network blip, bad deploy) falls back to generic copy — it
+// never blocks the actual accept flow, which goes through accept_invite()
+// below regardless of whether the preview loaded.
 async function fetchPreview(token: string): Promise<Preview> {
   const { data, error } = await loveleeday.rpc("get_invite_preview", { p_token: token });
   if (error || !data) return null;
@@ -47,7 +49,6 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     fetchPreview(token).then((p) => {
       setPreview(p);
       setPreviewChecked(true);
-      if (p?.email) setEmail(p.email);
     });
     loveleeday.auth.getUser().then(({ data }) => {
       setAuthedEmail(data.user?.email ?? null);
@@ -120,6 +121,16 @@ export default function InvitePage({ params }: { params: { token: string } }) {
         </div>
 
         <Card className="p-8">
+          {preview?.expired ? (
+            <>
+              <h1 className="font-serif text-h3 text-text-active mb-1">This invite has expired</h1>
+              <p className="text-small text-text-muted">
+                Your invite to join {preview.tenant_name} on Loveleeday as {preview.role} is no longer
+                valid. Ask your contact there to send a new one.
+              </p>
+            </>
+          ) : (
+            <>
           <h1 className="font-serif text-h3 text-text-active mb-1">You&apos;re invited</h1>
           <p className="text-small text-text-muted mb-6">
             {preview
@@ -195,6 +206,8 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                   {submitting ? "Working…" : mode === "signup" ? "Create account & join" : "Sign in & join"}
                 </PortalButton>
               </form>
+            </>
+          )}
             </>
           )}
         </Card>
