@@ -17,8 +17,30 @@ export async function getApiContext() {
     .not("accepted_at", "is", null)
     .limit(1)
     .maybeSingle<{ tenant_id: string; role: string }>();
-  if (!m) return { supabase, error: NextResponse.json({ error: "Two-factor sign-in and company access are required." }, { status: 403 }) } as const;
-  return { supabase, userId: userData.user.id, tenantId: m.tenant_id, role: m.role, error: null } as const;
+  if (m) return { supabase, userId: userData.user.id, tenantId: m.tenant_id, role: m.role, error: null } as const;
+  // LOVELEEDAY staff act in a client's account only through a live, logged grant.
+  const { data: g } = await supabase
+    .from("staff_grants")
+    .select("tenant_id")
+    .eq("staff_user_id", userData.user.id)
+    .is("revoked_at", null)
+    .gt("expires_at", new Date().toISOString())
+    .order("expires_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ tenant_id: string }>();
+  if (g) return { supabase, userId: userData.user.id, tenantId: g.tenant_id, role: "staff", error: null } as const;
+  return { supabase, error: NextResponse.json({ error: "Two-factor sign-in and company access are required." }, { status: 403 }) } as const;
+}
+
+// Behind Fly's proxy req.url is the container bind address; links sent to
+// people are built from the forwarded public host (portal.loveleedaystudios.com
+// or arthur-online.fly.dev), never 0.0.0.0.
+export function publicOrigin(req: NextRequest): string {
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  if (host && !/^(0\.0\.0\.0|127\.0\.0\.1|localhost)(:|$)/.test(host)) {
+    return `${req.headers.get("x-forwarded-proto") || "https"}://${host}`;
+  }
+  return process.env.PORTAL_ORIGIN || "https://portal.loveleedaystudios.com";
 }
 
 export function clientIp(req: NextRequest): string | null {

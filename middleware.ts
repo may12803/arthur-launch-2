@@ -52,6 +52,10 @@ const PUBLIC_PREFIXES = [
   // this area's own session + MFA gate instead.
   "/client",
   "/api/client",
+  // Outside-sharing recipients have no account: the share page and its API
+  // are gated by the link token + an emailed one-time code instead.
+  "/share/",
+  "/api/share/",
 ];
 
 const PROXIED_PREFIXES = [
@@ -178,8 +182,17 @@ async function checkMfaRedirect(req: NextRequest, res: NextResponse): Promise<st
   }
 }
 
+// portal.loveleedaystudios.com is the client-facing address. It serves only the
+// client portal and outside-share pages; the admin app never answers on it.
+const PORTAL_HOST = "portal.loveleedaystudios.com";
+const PORTAL_ALLOWED = ["/client", "/api/client", "/share/", "/api/share/", "/brand/", "/_next/", "/favicon.ico"];
+
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
+  const host = (req.headers.get("x-forwarded-host") || req.headers.get("host") || "").split(":")[0].toLowerCase();
+  if (host === PORTAL_HOST && !PORTAL_ALLOWED.some((p) => path === p || path.startsWith(p.endsWith("/") ? p : p + "/") || path === p.replace(/\/$/, ""))) {
+    return NextResponse.redirect(new URL("/client", `https://${PORTAL_HOST}`), 308);
+  }
   let response = NextResponse.next({ request: { headers: req.headers } });
 
   // Step 1: Auth gate — session cookie, Basic, or Bearer

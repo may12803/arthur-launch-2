@@ -15,6 +15,7 @@ const NAV = [
   { href: "/client/billing", label: "Billing" },
   { href: "/client/access", label: "Access history", adminOnly: true },
   { href: "/client/account", label: "Account" },
+  { href: "/client/staff", label: "Staff console", staffOnly: true },
 ];
 
 // loveleedaystudios.com's sticky white header, carrying the portal's
@@ -31,7 +32,8 @@ export function PortalShell({
 }) {
   const activePath = usePathname() || "/client";
   const isAdmin = role === "owner" || role === "admin";
-  const links = NAV.filter((item) => !item.adminOnly || isAdmin).map((item) => {
+  const isStaff = role === "staff";
+  const links = NAV.filter((item) => (!item.adminOnly || isAdmin) && (!item.staffOnly || isStaff)).map((item) => {
     const active = item.href === "/client" ? activePath === "/client" : activePath.startsWith(item.href);
     return (
       <Link
