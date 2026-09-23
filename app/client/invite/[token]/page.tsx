@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, FormEvent } from "react";
 import { loveleeday } from "@/lib/supabase/loveleeday";
 import { PortalButton, FormField, inputClass } from "@/components/client-portal/ui";
 import { AuthShell } from "@/components/client-portal/AuthShell";
+import { isSsoSession } from "@/lib/client-portal/sso";
 
 type Preview = { tenant_name: string; role: string; expired: boolean } | null;
 
@@ -67,7 +68,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
       return;
     }
     const { data: aal } = await loveleeday.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aal && aal.nextLevel !== "aal2") {
+    if (aal && aal.nextLevel !== "aal2" && !isSsoSession(aal.currentAuthenticationMethods)) {
       window.location.href = "/client/mfa/enroll";
       return;
     }

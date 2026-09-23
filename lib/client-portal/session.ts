@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
+import { isSsoSession } from "./sso";
 
 export type TenantRole = "owner" | "admin" | "member" | "viewer";
-
 export type ClientPortalContext = {
   userId: string;
   email: string | null;
@@ -41,8 +41,11 @@ export async function requireClientPortal(): Promise<ClientPortalContext> {
 
   // MFA is mandatory for every client-portal screen (task spec: "Every
   // screen must be MFA-gated except the invite/login pages").
+  // A SAML SSO session is exempt: the client's identity provider owns the
+  // second factor, and the database's require_mfa_aal2 policy accepts the
+  // sso/saml method on the same terms.
   const { data: aal, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (!aalError && aal) {
+  if (!aalError && aal && !isSsoSession(aal.currentAuthenticationMethods)) {
     if (aal.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
       redirect("/client/mfa/challenge");
     }
