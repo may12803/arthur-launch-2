@@ -62,7 +62,12 @@ export function StatusBadge({ status }: { status: string }) {
     suspended: "bad",
     declined: "bad",
   };
-  return <span className={cn("ll-pill", tone[status])}>{status}</span>;
+  // Written for the client reading it, not for our pipeline.
+  const label: Record<string, string> = {
+    sent: "Awaiting your signature",
+    void: "Withdrawn",
+  };
+  return <span className={cn("ll-pill", tone[status])}>{label[status] ?? status}</span>;
 }
 
 export function EmptyState({ title, body }: { title: string; body: string }) {

@@ -5,7 +5,7 @@ import { SiteFooter } from "./SiteFooter";
 // Shell for /client/login, /client/invite/[token], the MFA pages and
 // no-access. Built from loveleedaystudios.com's own parts so a client moving
 // from the marketing site into the portal never feels a seam: the site's
-// sticky white header (brand + ink CTA pill), a #f5f5f7 `.page-hero` band
+// sticky white header (brand + a quiet link home), a #f5f5f7 `.page-hero` band
 // carrying the eyebrow + 48px headline, the form in a `.brief-form` panel,
 // and the site's dark footer.
 export function AuthShell({
@@ -31,8 +31,9 @@ export function AuthShell({
             <Wordmark />
           </a>
           <nav className="ll-nav-links" aria-label="Main navigation">
-            <a href="https://loveleedaystudios.com/studio.html#project-brief" className="ll-nav-cta">
-              Start a project ↗
+            {/* A client mid-sign-in needs a way home, not a sales pitch. */}
+            <a href="https://loveleedaystudios.com/">
+              loveleedaystudios.com ↗
             </a>
           </nav>
         </div>

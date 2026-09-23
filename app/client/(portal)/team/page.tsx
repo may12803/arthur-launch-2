@@ -2,6 +2,7 @@ import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { Card, Eyebrow, PageTitle, Muted, StatusBadge } from "@/components/client-portal/ui";
 import { InviteForm } from "@/components/client-portal/InviteForm";
+import { formatDate } from "@/lib/client-portal/format";
 
 export const dynamic = "force-dynamic";
 
@@ -104,7 +105,7 @@ export default async function TeamPage() {
                 <div>
                   <div className="text-[14px] text-text-active font-medium">{inv.email}</div>
                   <div className="text-[12.5px] text-text-muted">
-                    Expires {new Date(inv.expires_at).toLocaleDateString()}
+                    Expires {formatDate(inv.expires_at)}
                   </div>
                 </div>
                 <StatusBadge status={inv.role} />

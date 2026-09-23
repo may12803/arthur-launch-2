@@ -6,7 +6,7 @@ import { PortalButton, FormField, inputClass } from "@/components/client-portal/
 import { AuthShell } from "@/components/client-portal/AuthShell";
 import { isSsoSession } from "@/lib/client-portal/sso";
 
-type Preview = { tenant_name: string; role: string; expired: boolean } | null;
+type Preview = { tenant_name: string; role: string; expired: boolean; email_hint?: string | null } | null;
 
 // `get_invite_preview(p_token text)` is a SECURITY DEFINER RPC granted to
 // anon, so this call works before the visitor has any session — it shows
@@ -164,6 +164,12 @@ export default function InvitePage({ params }: { params: { token: string } }) {
         </div>
       ) : (
         <>
+          {preview?.email_hint && (
+            <p className="ll-note mb-5">
+              This invitation is for <span className="text-[var(--ink)]">{preview.email_hint}</span>. Use that
+              address, since the invite only works for it.
+            </p>
+          )}
           <div className="ll-tabs mb-6" role="group" aria-label="Account">
             <button type="button" aria-pressed={mode === "signup"} onClick={() => setMode("signup")}>
               New account

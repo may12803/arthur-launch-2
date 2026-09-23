@@ -105,29 +105,35 @@ function EnrollForm() {
               {error ? <span className="ll-feedback warn">{error}</span> : "Setting up…"}
             </p>
           ) : (
-            <form onSubmit={onVerify} className="flex flex-col gap-4">
-              <div className="bg-white p-3 rounded-lg w-[176px] h-[176px] flex items-center justify-center border border-[var(--line)]">
-                {/* Supabase returns the QR as an inline SVG data URI. */}
-                <img src={enroll.qrSvg} alt="Scan with your authenticator app" width={150} height={150} />
+            <form onSubmit={onVerify} className="flex flex-col gap-5">
+              <div className="flex flex-col gap-3">
+                <span className="ll-label">1 · Scan this code with your authenticator app</span>
+                <div className="bg-white p-3 rounded-lg w-[176px] h-[176px] flex items-center justify-center border border-[var(--line)]">
+                  {/* Supabase returns the QR as an inline SVG data URI. */}
+                  <img src={enroll.qrSvg} alt="Scan with your authenticator app" width={150} height={150} />
+                </div>
+                <span className="ll-note">Can&apos;t scan it? Enter this setup key in the app instead:</span>
+                <div className="font-mono text-[12px] text-[#36475c] bg-[#fafbfd] border border-[#dce3ed] rounded-lg px-3 py-2 break-all select-all">
+                  {enroll.secret}
+                </div>
               </div>
-              <div className="font-mono text-[12px] text-[#36475c] bg-[#fafbfd] border border-[#dce3ed] rounded-lg px-3 py-2 break-all">
-                {enroll.secret}
+              <div className="ll-field">
+                <label htmlFor="enroll-code">2 · Enter the 6-digit code the app shows</label>
+                <input
+                  id="enroll-code"
+                  autoFocus
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
+                  className={`${inputClass} text-center tracking-[0.4em] !text-[20px] font-mono`}
+                  placeholder="000000"
+                />
               </div>
-              <label htmlFor="enroll-code" className="ll-label">
-                6-digit code from your app
-              </label>
-              <input
-                id="enroll-code"
-                autoFocus
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
-                className={`${inputClass} text-center tracking-[0.4em] !text-[20px] font-mono !w-[180px]`}
-              />
               {error && <p className="ll-feedback warn">{error}</p>}
-              <PortalButton type="submit" disabled={verifying || code.length < 6}>
+              <PortalButton type="submit" disabled={verifying || code.length < 6} className="w-full">
                 {verifying ? "Verifying…" : "Verify and enable"}
               </PortalButton>
             </form>
