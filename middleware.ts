@@ -46,6 +46,12 @@ const PUBLIC_PREFIXES = [
   "/static/",
   "/images/",
   "/fonts/",
+  // LOVELEEDAY client portal — a separate Supabase project + auth system
+  // from Daniel's admin session above. Carved out of the admin gate
+  // entirely; app/client/(portal)/layout.tsx (requireClientPortal()) is
+  // this area's own session + MFA gate instead.
+  "/client",
+  "/api/client",
 ];
 
 const PROXIED_PREFIXES = [
