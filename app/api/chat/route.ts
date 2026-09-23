@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { authGate, rateLimit } from "@/lib/_auth";
 import { buildPersona } from "@/lib/persona/arthur-system-prompt";
 import { sanitizeArthurReply } from "@/lib/sanitizer";
+import { createTaintGuard, lastUserText, type TaintGuard } from "@/lib/untrusted";
 import { streamChat } from "@/lib/router-stream";
 import { fetchLivePersona as livePullerFetch } from "@/lib/persona/live-puller";
 
@@ -1294,7 +1295,14 @@ async function toolGetBuildStatus(args: { build_id?: string }): Promise<string> 
 // Tool dispatch
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function executeTool(name: string, argsStr: string): Promise<string> {
+async function executeTool(name: string, argsStr: string, guard?: TaintGuard): Promise<string> {
+  const blocked = guard?.check(name);
+  if (blocked) return blocked;
+  const out = await runTool(name, argsStr);
+  return guard ? guard.after(name, out) : out;
+}
+
+async function runTool(name: string, argsStr: string): Promise<string> {
   let args: Record<string, unknown> = {};
   try { args = JSON.parse(argsStr || "{}"); } catch { /* empty args */ }
 
@@ -2371,6 +2379,7 @@ export async function POST(req: NextRequest) {
           // Tool rounds run server-side (the answer can't exist before they do),
           // but each one is announced so the UI is never silent.
           const thread: OpenAIMessage[] = [...messages];
+          const guard = createTaintGuard(lastUserText(thread));
           const toolNames: string[] = [];
           for (let round = 0; round < 3; round++) {
             if (!promptNeedsTools(thread)) break;
@@ -2386,7 +2395,7 @@ export async function POST(req: NextRequest) {
               const name = tc.function?.name ?? "unknown";
               toolNames.push(name);
               send({ type: "tool", name });
-              const out = await executeTool(name, tc.function?.arguments ?? "{}");
+              const out = await executeTool(name, tc.function?.arguments ?? "{}", guard);
               if(name==="browser_operate"){try{send({type:"browser",state:JSON.parse(out)})}catch{}}
               thread.push({ role: "tool", content: out, tool_call_id: tc.id, name });
             }
@@ -2461,6 +2470,7 @@ export async function POST(req: NextRequest) {
   const allToolCalls: OpenAIToolCall[] = [];
   const allToolResults: Array<{ name: string; result: string }> = [];
   let roundMessages = [...messages];
+  const guard = createTaintGuard(lastUserText(roundMessages));
 
   for (let round = 0; round < MAX_ROUNDS; round++) {
     const withTools = round < MAX_ROUNDS - 1; // last round: no tools to force text output
@@ -2503,7 +2513,7 @@ export async function POST(req: NextRequest) {
       const fnName = tc.function?.name ?? "unknown";
       const fnArgs = tc.function?.arguments ?? "{}";
       console.log(`[chat/tool] round=${round} tool=${fnName} args=${fnArgs.slice(0, 120)}`);
-      const toolResult = await executeTool(fnName, fnArgs);
+      const toolResult = await executeTool(fnName, fnArgs, guard);
       allToolResults.push({ name: fnName, result: toolResult });
       toolResultMessages.push({
         role: "tool",
