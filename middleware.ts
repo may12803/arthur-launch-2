@@ -249,6 +249,6 @@ export const config = {
   // All paths except static assets and API routes that are explicitly public.
   // The middleware itself handles which of these require auth.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|images/|fonts/|static/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|images/|fonts/|static/|brand/).*)",
   ],
 };

@@ -20,7 +20,7 @@ export default async function AccountPage() {
       <Eyebrow>Company</Eyebrow>
       <PageTitle>Account</PageTitle>
       <Muted className="mb-8 max-w-[60ch]">
-        Details for your Loveleeday account. Reach out to your contact to change any of this.
+        Details for your LOVELEEDAY account. Reach out to your contact to change any of this.
       </Muted>
 
       <Card className="p-6">

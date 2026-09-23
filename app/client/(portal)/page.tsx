@@ -36,7 +36,7 @@ export default async function ClientDashboardPage() {
       <Eyebrow>{ctx.tenantName}</Eyebrow>
       <PageTitle>Deliverables</PageTitle>
       <Muted className="mb-8 max-w-[60ch]">
-        Everything Loveleeday has prepared for {ctx.tenantName} — studies, portfolios, and
+        Everything LOVELEEDAY has prepared for {ctx.tenantName} — studies, portfolios, and
         compliance documents — lives here.
       </Muted>
 
@@ -49,7 +49,7 @@ export default async function ClientDashboardPage() {
       {!error && (!deliverables || deliverables.length === 0) && (
         <EmptyState
           title="Nothing here yet"
-          body="Loveleeday hasn't published a deliverable to this account yet. Check back soon, or reach out to your contact if you were expecting something."
+          body="LOVELEEDAY hasn't published a deliverable to this account yet. Check back soon, or reach out to your contact if you were expecting something."
         />
       )}
 
@@ -59,7 +59,7 @@ export default async function ClientDashboardPage() {
             <Link key={d.id} href={`/client/deliverables/${d.slug}`}>
               <Card className="p-5 flex items-center justify-between gap-4 hover:border-accent-orange transition-colors">
                 <div className="min-w-0">
-                  <div className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-text-muted mb-1.5">
+                  <div className="ll-eyebrow mb-1.5">
                     {KIND_LABEL[d.kind] || d.kind}
                   </div>
                   <div className="font-serif text-[17px] text-text-active truncate">{d.title}</div>

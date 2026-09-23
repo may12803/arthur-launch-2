@@ -43,7 +43,7 @@ export default async function BillingPage() {
         <Card className="p-10 text-center">
           <p className="font-serif text-h3 text-text-active mb-2">No billing set up yet</p>
           <Muted className="mx-auto max-w-[46ch]">
-            Loveleeday hasn&apos;t connected billing for {ctx.tenantName} yet. Reach out to your contact if
+            LOVELEEDAY hasn&apos;t connected billing for {ctx.tenantName} yet. Reach out to your contact if
             you were expecting to manage a subscription here.
           </Muted>
         </Card>

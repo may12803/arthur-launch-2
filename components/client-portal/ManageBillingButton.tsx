@@ -30,7 +30,7 @@ export function ManageBillingButton() {
       <PortalButton onClick={onClick} disabled={loading}>
         {loading ? "Opening…" : "Manage billing"}
       </PortalButton>
-      {error && <p className="text-small text-red-600">{error}</p>}
+      {error && <p className="ll-feedback warn">{error}</p>}
     </div>
   );
 }

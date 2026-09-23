@@ -53,12 +53,12 @@ export default async function ContractsPage() {
     <div>
       <Eyebrow>Legal</Eyebrow>
       <PageTitle>Contracts</PageTitle>
-      <Muted className="mb-8 max-w-[60ch]">Sign and manage your agreements with Loveleeday.</Muted>
+      <Muted className="mb-8 max-w-[60ch]">Sign and manage your agreements with LOVELEEDAY.</Muted>
 
       {contracts.length === 0 ? (
         <EmptyState
           title="No contracts yet"
-          body="Loveleeday hasn't sent a contract to this account yet. Check back once one is on its way."
+          body="LOVELEEDAY hasn't sent a contract to this account yet. Check back once one is on its way."
         />
       ) : (
         <div className="flex flex-col gap-3">

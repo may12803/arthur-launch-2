@@ -1,0 +1,140 @@
+/* LOVELEEDAY client portal — scoped brand theme, /client route group only.
+   ============================================================================
+   Source of truth is the LIVE loveleedaystudios.com, which serves the static
+   site at ~/Projects/loveleeday/concepts/studio/site — its assets/site.css
+   :root is copied here verbatim (white, ink #1d1d1f, muted #7d8088, blue
+   #0066cc/#0071e3, hairline #e4e5e9, system fonts). NOT the unused Next.js
+   app in ~/Projects/loveleeday/src (cream/navy/teal/Manrope is not live).
+
+   Everything is under `.ll-portal`, the wrapper app/client/layout.tsx puts
+   around every /client/* page, so nothing leaks onto the admin app. */
+
+.ll-portal {
+  --ink: #1d1d1f;
+  --muted: #7d8088;
+  --blue: #0066cc;
+  --blue-action: #0071e3;
+  --line: #e4e5e9;
+  --sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --content: 1080px;
+  --gutter: 40px;
+  --header-height: 72px;
+
+  /* Repoint the app's Tailwind tokens so every existing utility class in the
+     portal pages lands on the site's palette with zero className churn. The
+     site has one typeface — serif/sans/mono all resolve to the system stack
+     (mono keeps a monospace for TOTP secrets). */
+  --font-lora: var(--sans);
+  --font-inter: var(--sans);
+  --font-geist-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  --bg-base: #fff;
+  --glass-bg: #fff;
+  --glass-bg-strong: #f5f5f7;
+  --glass-bg-faint: #fafbfd;
+  --glass-border: var(--line);
+  --glass-shadow: none;
+  --line-separator: var(--line);
+
+  --text-main: #303238;
+  --text-active: var(--ink);
+  --text-muted: var(--muted);
+
+  --accent-orange: var(--blue-action);
+  --accent-orange-soft: #edf3fc;
+  --accent-text-on: #fff;
+
+  --radius-panel: 16px;
+  --radius-pill: 32px;
+
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+}
+
+.ll-portal ::selection { background: #d6eaff; }
+.ll-portal :focus-visible { outline: 3px solid #2787e8; outline-offset: 5px; }
+
+/* Tailwind v4 here has no @config, so tailwind.config.ts's token utilities
+   are never generated. The portal pages use these, so they're defined here,
+   scoped, against the site palette. The site has one typeface: headings are
+   system sans at weight 500 with tight tracking. */
+.ll-portal .font-serif { font-family: var(--sans); font-weight: 500; letter-spacing: -.03em; }
+.ll-portal .text-text-active { color: var(--ink); }
+.ll-portal .text-text-main { color: #303238; }
+.ll-portal .text-text-muted { color: var(--muted); }
+.ll-portal .text-accent-orange { color: var(--blue); }
+.ll-portal .hover\:text-text-active:hover { color: var(--ink); }
+.ll-portal .border-line-separator { border-color: var(--line); }
+.ll-portal .hover\:border-accent-orange:hover { border-color: #b9d3f0; }
+.ll-portal .text-h3 { font-size: 22px; line-height: 1.3; }
+.ll-portal .text-body { font-size: 15px; line-height: 1.75; }
+.ll-portal .text-small { font-size: 13px; line-height: 1.6; }
+
+/* ── Site header (.nav in site.css) ─────────────────────────────────────── */
+.ll-wrap { width: min(var(--content), calc(100% - var(--gutter) * 2)); margin-inline: auto; }
+.ll-nav { position: sticky; top: 0; z-index: 20; background: #ffffffed; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid #00000012; }
+.ll-nav-inner { height: var(--header-height); display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.ll-brand { font-size: 13px; letter-spacing: .12em; font-weight: 650; display: flex; align-items: center; gap: 8px; flex-shrink: 0; color: var(--ink); }
+.ll-nav-links { display: flex; align-items: center; gap: 32px; font-size: 12px; color: #606066; }
+.ll-nav-links a:hover { color: var(--ink); }
+.ll-nav-cta { border-radius: 32px; background: var(--ink); color: #fff !important; padding: 12px 20px; font-size: 12px; white-space: nowrap; border: 0; }
+.ll-nav-cta:disabled { opacity: .55; }
+
+/* The mark is Daniel's heart, applied as a mask over currentColor — the exact
+   PNG embedded in site.css, extracted to public/brand/mark-mask.png. */
+.ll-mark { display: inline-block; flex: none; background: currentColor; -webkit-mask: url(/brand/mark-mask.png) center/contain no-repeat; mask: url(/brand/mark-mask.png) center/contain no-repeat; }
+
+/* ── Type (site.css .eyebrow / h2 / .page-hero) ─────────────────────────── */
+.ll-eyebrow { display: block; font-size: 10px; line-height: 1.6; letter-spacing: .16em; font-weight: 600; text-transform: uppercase; color: #777980; }
+.ll-title { font-size: clamp(40px, 4.6vw, 60px); line-height: 1.06; letter-spacing: -.05em; font-weight: 500; color: var(--ink); margin-top: 16px; }
+.ll-title span { color: #8c8e95; }
+.ll-lead { font-size: 17px; line-height: 1.75; color: var(--muted); max-width: 440px; margin-top: 16px; }
+.ll-hero { background: #f5f5f7; }
+
+/* ── Forms (site.css .brief-form / .field / .primary) ───────────────────── */
+.ll-panel { border: 1px solid var(--line); border-radius: 16px; background: #fff; padding: 32px; }
+.ll-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.ll-field label, .ll-label { font-size: 11px; line-height: 1.5; color: #7a8492; }
+.ll-input { min-width: 0; width: 100%; font: inherit; font-size: 14px; line-height: 1.5; color: #36475c; background: #fafbfd; border: 1px solid #dce3ed; border-radius: 8px; padding: 12px; }
+.ll-input:focus, .ll-input:focus-visible { outline: 2px solid #82b6ed; outline-offset: 2px; border-color: #dce3ed; box-shadow: none; }
+.ll-primary { display: inline-flex; align-items: center; justify-content: center; gap: 16px; border: 0; border-radius: 32px; padding: 14px 22px; background: var(--blue-action); color: #fff; font-size: 12px; line-height: 1.5; cursor: pointer; }
+.ll-primary[disabled] { opacity: .55; cursor: not-allowed; }
+.ll-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 16px; border: 1px solid var(--line); border-radius: 32px; padding: 13px 21px; background: #fff; color: var(--ink); font-size: 12px; line-height: 1.5; cursor: pointer; }
+.ll-danger { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #f1c9c4; border-radius: 32px; padding: 13px 21px; background: #fff; color: #b3261e; font-size: 12px; line-height: 1.5; cursor: pointer; }
+.ll-secondary[disabled], .ll-danger[disabled] { opacity: .55; cursor: not-allowed; }
+.ll-text-link { color: var(--blue); font-size: 12px; line-height: 1.5; }
+.ll-feedback { font-size: 12px; line-height: 1.7; }
+.ll-feedback.warn { color: #8a4b1d; }
+.ll-feedback.ok { color: #2f6b4f; }
+.ll-note { font-size: 11px; color: #959daa; line-height: 1.7; }
+
+/* Segmented choice — site.css .question-tabs */
+.ll-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.ll-tabs button { border: 1px solid #e8ebf0; border-radius: 24px; padding: 8px 12px; background: #fff; color: #818692; font-size: 11px; line-height: 1.5; min-height: 36px; }
+.ll-tabs button[aria-pressed=true] { background: #f0f5fc; color: #3970af; border-color: #d8e6f8; }
+
+/* Status pill — site.css .pill */
+.ll-pill { display: inline-flex; align-items: center; font-size: 10px; line-height: 1.5; padding: 4px 12px; border: 1px solid #dfe3ea; border-radius: 24px; color: #748095; text-transform: capitalize; white-space: nowrap; }
+.ll-pill.good { color: #2f6b4f; border-color: #cfe3d8; background: #f3faf6; }
+.ll-pill.wait { color: #8a4b1d; border-color: #eedcc8; background: #fdf8f2; }
+.ll-pill.bad { color: #b3261e; border-color: #f1c9c4; background: #fdf4f3; }
+
+/* ── Footer (site.css .site-footer, legal row) ──────────────────────────── */
+.ll-footer { background: #14110e; color: #615a51; padding-block: 32px; font-size: 11px; line-height: 1.7; }
+.ll-footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 32px; flex-wrap: wrap; }
+.ll-footer .ll-brand { color: #fff; }
+.ll-footer a { color: #8e867c; }
+.ll-footer a:hover { color: #fff; }
+.ll-footer-legal { display: flex; gap: 24px; flex-wrap: wrap; }
+
+@media (max-width: 700px) {
+  .ll-portal { --gutter: 16px; --header-height: 60px; }
+  .ll-brand { font-size: 10px; letter-spacing: .1em; }
+  .ll-nav-links { gap: 16px; }
+  .ll-title { font-size: 38px; }
+  .ll-lead { font-size: 16px; }
+  .ll-panel { padding: 24px; }
+}

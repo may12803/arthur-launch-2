@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, FormEvent } from "react";
 import { loveleeday } from "@/lib/supabase/loveleeday";
-import { Card, PortalButton, FormField, inputClass } from "@/components/client-portal/ui";
+import { PortalButton, FormField, inputClass } from "@/components/client-portal/ui";
+import { AuthShell } from "@/components/client-portal/AuthShell";
 
 type Preview = { tenant_name: string; role: string; expired: boolean } | null;
 
@@ -107,111 +108,103 @@ export default function InvitePage({ params }: { params: { token: string } }) {
 
   if (checkingSession || !previewChecked) {
     return (
-      <div className="min-h-screen bg-bg-base flex items-center justify-center p-6 font-sans">
-        <p className="text-small text-text-muted">Loading…</p>
-      </div>
+      <AuthShell eyebrow="Invitation" headline="Opening your" muted="invitation.">
+        <p className="ll-note">Loading…</p>
+      </AuthShell>
+    );
+  }
+
+  if (preview?.expired) {
+    return (
+      <AuthShell
+        eyebrow="Invitation"
+        headline="This invite"
+        muted="has expired."
+        lead="Invites carry a short window on purpose. Ask your contact to send a fresh link."
+      >
+        <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Link no longer valid</h2>
+        <p className="ll-note mt-2">
+          Your invite to join {preview.tenant_name} as {preview.role} can&apos;t be used any more. Ask your
+          contact there to send a new one.
+        </p>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-bg-base flex items-center justify-center p-6 font-sans">
-      <div className="w-full max-w-[440px]">
-        <div className="text-center mb-7">
-          <div className="font-serif italic text-[28px] text-text-active">loveleeday</div>
-        </div>
-
-        <Card className="p-8">
-          {preview?.expired ? (
-            <>
-              <h1 className="font-serif text-h3 text-text-active mb-1">This invite has expired</h1>
-              <p className="text-small text-text-muted">
-                Your invite to join {preview.tenant_name} on Loveleeday as {preview.role} is no longer
-                valid. Ask your contact there to send a new one.
-              </p>
-            </>
-          ) : (
-            <>
-          <h1 className="font-serif text-h3 text-text-active mb-1">You&apos;re invited</h1>
-          <p className="text-small text-text-muted mb-6">
-            {preview
-              ? `Join ${preview.tenant_name} on Loveleeday as ${preview.role}.`
-              : "Join your company's Loveleeday account."}
+    <AuthShell
+      eyebrow="Invitation"
+      headline={preview ? `Join ${preview.tenant_name}` : "You've been"}
+      muted={preview ? "on LOVELEEDAY." : "invited."}
+      lead={
+        preview
+          ? `You've been invited as ${preview.role}. Create your account to see the deliverables, contracts and billing for this engagement.`
+          : "Create your account to join your company's LOVELEEDAY client portal."
+      }
+      footer={<p className="ll-note">Two-factor authentication is set up right after, for every account.</p>}
+    >
+      {awaitingConfirmation ? (
+        <>
+          <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Check your email</h2>
+          <p className="ll-note mt-2">
+            We sent a confirmation link to {email}. Confirm it, then open this invite link again to finish joining.
           </p>
+        </>
+      ) : authedEmail ? (
+        <div className="flex flex-col gap-5">
+          <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Accept invite</h2>
+          <p className="ll-note -mt-3">
+            Signed in as <span className="text-[var(--ink)]">{authedEmail}</span>.
+          </p>
+          {error && <p className="ll-feedback warn">{error}</p>}
+          <PortalButton onClick={finishAccept} disabled={submitting} className="w-full">
+            {submitting ? "Joining…" : "Accept invite"}
+          </PortalButton>
+        </div>
+      ) : (
+        <>
+          <div className="ll-tabs mb-6" role="group" aria-label="Account">
+            <button type="button" aria-pressed={mode === "signup"} onClick={() => setMode("signup")}>
+              New account
+            </button>
+            <button type="button" aria-pressed={mode === "signin"} onClick={() => setMode("signin")}>
+              I have an account
+            </button>
+          </div>
 
-          {awaitingConfirmation && (
-            <p className="text-small text-text-main">
-              Check {email} for a confirmation link, then open this invite link again to finish joining.
-            </p>
-          )}
-
-          {!awaitingConfirmation && authedEmail && (
-            <div className="flex flex-col gap-4">
-              <p className="text-small text-text-main">
-                Signed in as <span className="font-medium">{authedEmail}</span>.
-              </p>
-              {error && <p className="text-small text-red-600">{error}</p>}
-              <PortalButton onClick={finishAccept} disabled={submitting}>
-                {submitting ? "Joining…" : "Accept invite"}
-              </PortalButton>
-            </div>
-          )}
-
-          {!awaitingConfirmation && !authedEmail && (
-            <>
-              <div className="flex gap-1 mb-5 bg-[var(--glass-bg-faint)] rounded-[var(--radius-pill)] p-1 w-fit">
-                <button
-                  type="button"
-                  onClick={() => setMode("signup")}
-                  className={`px-3.5 py-1.5 text-[12.5px] font-medium rounded-[var(--radius-pill)] ${
-                    mode === "signup" ? "bg-accent-orange text-accent-text-on" : "text-text-muted"
-                  }`}
-                >
-                  New account
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMode("signin")}
-                  className={`px-3.5 py-1.5 text-[12.5px] font-medium rounded-[var(--radius-pill)] ${
-                    mode === "signin" ? "bg-accent-orange text-accent-text-on" : "text-text-muted"
-                  }`}
-                >
-                  I have an account
-                </button>
-              </div>
-
-              <form onSubmit={onSubmit} className="flex flex-col gap-4">
-                <FormField label="Email" htmlFor="invite-email">
-                  <input
-                    id="invite-email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={inputClass}
-                  />
-                </FormField>
-                <FormField label="Password" htmlFor="invite-password">
-                  <input
-                    id="invite-password"
-                    type="password"
-                    required
-                    minLength={8}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={inputClass}
-                  />
-                </FormField>
-                {error && <p className="text-small text-red-600">{error}</p>}
-                <PortalButton type="submit" disabled={submitting || !email || !password}>
-                  {submitting ? "Working…" : mode === "signup" ? "Create account & join" : "Sign in & join"}
-                </PortalButton>
-              </form>
-            </>
-          )}
-            </>
-          )}
-        </Card>
-      </div>
-    </div>
+          <form onSubmit={onSubmit} className="flex flex-col gap-5">
+            <FormField label="Email" htmlFor="invite-email">
+              <input
+                id="invite-email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+                placeholder="name@company.com"
+              />
+            </FormField>
+            <FormField label={mode === "signup" ? "Choose a password" : "Password"} htmlFor="invite-password">
+              <input
+                id="invite-password"
+                type="password"
+                required
+                minLength={8}
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass}
+                placeholder={mode === "signup" ? "At least 8 characters" : undefined}
+              />
+            </FormField>
+            {error && <p className="ll-feedback warn">{error}</p>}
+            <PortalButton type="submit" disabled={submitting || !email || !password} className="w-full mt-1">
+              {submitting ? "Working…" : mode === "signup" ? "Create account and join ↗" : "Sign in and join ↗"}
+            </PortalButton>
+          </form>
+        </>
+      )}
+    </AuthShell>
   );
 }

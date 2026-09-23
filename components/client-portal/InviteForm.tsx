@@ -67,7 +67,7 @@ export function InviteForm() {
             <option value="admin">Admin</option>
           </select>
         </FormField>
-        {error && <p className="text-small text-red-600">{error}</p>}
+        {error && <p className="ll-feedback warn">{error}</p>}
         {inviteLink && (
           <div className="text-small text-text-main">
             Invite created. Share this link:{" "}

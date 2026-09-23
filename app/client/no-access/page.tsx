@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
-import { Card } from "@/components/client-portal/ui";
+import { AuthShell } from "@/components/client-portal/AuthShell";
 import { SignOutButton } from "@/components/client-portal/SignOutButton";
 
 export const dynamic = "force-dynamic";
@@ -11,17 +11,17 @@ export default async function NoAccessPage() {
   if (!data.user) redirect("/client/login");
 
   return (
-    <div className="min-h-screen bg-bg-base flex items-center justify-center p-6 font-sans">
-      <Card className="p-8 w-full max-w-[440px] text-center">
-        <div className="font-serif italic text-[19px] text-text-active mb-6">loveleeday</div>
-        <p className="font-serif text-h3 text-text-active mb-2">No active company access</p>
-        <p className="text-small text-text-muted leading-relaxed mb-6">
-          {data.user.email} is signed in, but isn&apos;t an accepted member of a Loveleeday account yet.
-          If you were sent an invite link, use that link to join. Otherwise, ask your contact to send
-          you one.
-        </p>
-        <SignOutButton />
-      </Card>
-    </div>
+    <AuthShell
+      eyebrow="Client portal"
+      headline="No active"
+      muted="company access."
+      lead="You're signed in, but this account isn't an accepted member of a LOVELEEDAY client company yet."
+    >
+      <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Signed in as {data.user.email}</h2>
+      <p className="ll-note mt-2 mb-6">
+        If you were sent an invite link, open that link to join. Otherwise, ask your contact to send you one.
+      </p>
+      <SignOutButton />
+    </AuthShell>
   );
 }

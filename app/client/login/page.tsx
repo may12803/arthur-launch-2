@@ -3,7 +3,8 @@
 import { useState, FormEvent, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { loveleeday } from "@/lib/supabase/loveleeday";
-import { Card, FormField, PortalButton, inputClass } from "@/components/client-portal/ui";
+import { FormField, PortalButton, inputClass } from "@/components/client-portal/ui";
+import { AuthShell } from "@/components/client-portal/AuthShell";
 
 function safeNext(raw: string | null): string {
   return raw && raw.startsWith("/client") && !raw.startsWith("//") ? raw : "/client";
@@ -47,51 +48,47 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base flex items-center justify-center p-6 font-sans">
-      <div className="w-full max-w-[420px]">
-        <div className="text-center mb-7">
-          <div className="font-serif italic text-[28px] text-text-active">loveleeday</div>
-          <p className="text-small text-text-muted mt-1">Client portal</p>
-        </div>
-
-        <Card className="p-8">
-          <h1 className="font-serif text-h3 text-text-active mb-1">Sign in</h1>
-          <p className="text-small text-text-muted mb-6">Access your Loveleeday account.</p>
-
-          <form onSubmit={onSubmit} className="flex flex-col gap-4">
-            <FormField label="Email" htmlFor="login-email">
-              <input
-                id="login-email"
-                type="email"
-                required
-                autoFocus
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={inputClass}
-              />
-            </FormField>
-            <FormField label="Password" htmlFor="login-password">
-              <input
-                id="login-password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={inputClass}
-              />
-            </FormField>
-            {error && <p className="text-small text-red-600">{error}</p>}
-            <PortalButton type="submit" disabled={loading || !email || !password} className="w-full mt-1">
-              {loading ? "Signing in…" : "Sign in"}
-            </PortalButton>
-          </form>
-        </Card>
-
-        <p className="text-small text-text-muted text-center mt-5">
-          New to Loveleeday? Use the invite link your contact sent you to create your account.
+    <AuthShell
+      headline="Your work,"
+      muted="in one place."
+      lead="Deliverables, contracts and billing for your LOVELEEDAY engagement — every figure sourced, every change dated."
+      footer={
+        <p className="ll-note">
+          New here? Use the invite link your contact sent you to create your account.
         </p>
-      </div>
-    </div>
+      }
+    >
+      <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Sign in</h2>
+      <p className="ll-note mt-1 mb-6">Two-factor verification follows your password.</p>
+
+      <form onSubmit={onSubmit} className="flex flex-col gap-5">
+        <FormField label="Email" htmlFor="login-email">
+          <input
+            id="login-email"
+            type="email"
+            required
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={inputClass}
+          />
+        </FormField>
+        <FormField label="Password" htmlFor="login-password">
+          <input
+            id="login-password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={inputClass}
+          />
+        </FormField>
+        {error && <p className="ll-feedback warn">{error}</p>}
+        <PortalButton type="submit" disabled={loading || !email || !password} className="w-full mt-1">
+          {loading ? "Signing in…" : "Sign in"}
+        </PortalButton>
+      </form>
+    </AuthShell>
   );
 }
 

@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignOutButton } from "./SignOutButton";
+import { Wordmark } from "./LogoMark";
+import { SiteFooter } from "./SiteFooter";
 
 const NAV = [
   { href: "/client", label: "Dashboard" },
@@ -13,6 +15,9 @@ const NAV = [
   { href: "/client/account", label: "Account" },
 ];
 
+// loveleedaystudios.com's sticky white header, carrying the portal's
+// sections where the site carries System / Uses / Studio, and the ink pill
+// where the site puts "Start a project".
 export function PortalShell({
   tenantName,
   children,
@@ -21,39 +26,44 @@ export function PortalShell({
   children: ReactNode;
 }) {
   const activePath = usePathname() || "/client";
+  const links = NAV.map((item) => {
+    const active = item.href === "/client" ? activePath === "/client" : activePath.startsWith(item.href);
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        aria-current={active ? "page" : undefined}
+        className={`whitespace-nowrap py-3 ${active ? "text-[var(--ink)] font-medium" : ""}`}
+      >
+        {item.label}
+      </Link>
+    );
+  });
+
   return (
-    <div className="min-h-screen bg-bg-base font-sans">
-      <header className="border-b border-line-separator">
-        <div className="mx-auto max-w-[1120px] px-6 py-4 flex items-center justify-between gap-4">
+    <div className="min-h-screen flex flex-col">
+      <header className="ll-nav">
+        <div className="ll-wrap ll-nav-inner">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="font-serif italic text-[19px] font-medium text-text-active whitespace-nowrap">
-              loveleeday
-            </div>
-            <span className="text-line-separator">/</span>
-            <div className="text-[13px] text-text-muted truncate">{tenantName}</div>
+            <Link href="/client" aria-label="LOVELEEDAY client portal home">
+              <Wordmark />
+            </Link>
+            <span className="text-[12px] text-[#c4c6cc]" aria-hidden="true">/</span>
+            <span className="text-[12px] text-[#606066] truncate">{tenantName}</span>
           </div>
-          <SignOutButton />
+          <nav className="ll-nav-links" aria-label="Portal navigation">
+            <div className="hidden md:flex items-center gap-8">{links}</div>
+            <SignOutButton />
+          </nav>
         </div>
-        <nav className="mx-auto max-w-[1120px] px-6 flex gap-1 overflow-x-auto">
-          {NAV.map((item) => {
-            const active = item.href === "/client" ? activePath === "/client" : activePath.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`px-3.5 py-2.5 text-[13px] font-medium whitespace-nowrap border-b-2 transition-colors ${
-                  active
-                    ? "border-accent-orange text-text-active"
-                    : "border-transparent text-text-muted hover:text-text-main"
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="md:hidden border-t border-[#00000010]">
+          <nav className="ll-wrap ll-nav-links !gap-6 overflow-x-auto" aria-label="Portal sections">
+            {links}
+          </nav>
+        </div>
       </header>
-      <main className="mx-auto max-w-[1120px] px-6 py-10">{children}</main>
+      <main className="ll-wrap flex-1 py-16 md:py-20">{children}</main>
+      <SiteFooter />
     </div>
   );
 }

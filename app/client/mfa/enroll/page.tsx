@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, FormEvent, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { loveleeday } from "@/lib/supabase/loveleeday";
-import { Card, PortalButton, inputClass } from "@/components/client-portal/ui";
+import { PortalButton, inputClass } from "@/components/client-portal/ui";
+import { AuthShell } from "@/components/client-portal/AuthShell";
 
 function safeNext(raw: string | null): string {
   return raw && raw.startsWith("/client") && !raw.startsWith("//") ? raw : "/client";
@@ -91,32 +92,28 @@ function EnrollForm() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base flex items-center justify-center p-6 font-sans">
-      <div className="w-full max-w-[440px]">
-        <div className="text-center mb-7">
-          <div className="font-serif italic text-[28px] text-text-active">loveleeday</div>
-        </div>
-        <Card className="p-8">
-          <h1 className="font-serif text-h3 text-text-active mb-1">Set up two-factor authentication</h1>
-          <p className="text-small text-text-muted mb-6">
-            Required for every Loveleeday account. Scan this with an authenticator app (Google
-            Authenticator, 1Password, Authy).
-          </p>
+    <AuthShell
+      eyebrow="Two-factor authentication"
+      headline="Secure your"
+      muted="account."
+      lead="Required for every LOVELEEDAY account. Scan the code with an authenticator app — Google Authenticator, 1Password or Authy — then enter the 6-digit code it shows."
+    >
+          <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)] mb-5">Scan and verify</h2>
 
           {loading || starting || !enroll ? (
-            <p className="text-small text-text-muted">
-              {error ? <span className="text-red-600">{error}</span> : "Setting up…"}
+            <p className="ll-note">
+              {error ? <span className="ll-feedback warn">{error}</span> : "Setting up…"}
             </p>
           ) : (
             <form onSubmit={onVerify} className="flex flex-col gap-4">
-              <div className="bg-white p-3 rounded-[var(--radius-panel)] w-[176px] h-[176px] flex items-center justify-center border border-glass-border">
+              <div className="bg-white p-3 rounded-lg w-[176px] h-[176px] flex items-center justify-center border border-[var(--line)]">
                 {/* Supabase returns the QR as an inline SVG data URI. */}
                 <img src={enroll.qrSvg} alt="Scan with your authenticator app" width={150} height={150} />
               </div>
-              <div className="font-mono text-[12px] text-text-active bg-[var(--glass-bg-faint)] border border-glass-border rounded-[var(--radius-panel)] px-3 py-2 break-all">
+              <div className="font-mono text-[12px] text-[#36475c] bg-[#fafbfd] border border-[#dce3ed] rounded-lg px-3 py-2 break-all">
                 {enroll.secret}
               </div>
-              <label htmlFor="enroll-code" className="text-[13px] font-medium text-text-main">
+              <label htmlFor="enroll-code" className="ll-label">
                 6-digit code from your app
               </label>
               <input
@@ -127,17 +124,15 @@ function EnrollForm() {
                 maxLength={6}
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
-                className={`${inputClass} text-center tracking-[0.4em] text-[20px] font-mono w-[160px]`}
+                className={`${inputClass} text-center tracking-[0.4em] !text-[20px] font-mono !w-[180px]`}
               />
-              {error && <p className="text-small text-red-600">{error}</p>}
+              {error && <p className="ll-feedback warn">{error}</p>}
               <PortalButton type="submit" disabled={verifying || code.length < 6}>
                 {verifying ? "Verifying…" : "Verify and enable"}
               </PortalButton>
             </form>
           )}
-        </Card>
-      </div>
-    </div>
+    </AuthShell>
   );
 }
 

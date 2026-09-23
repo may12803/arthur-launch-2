@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, FormEvent, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loveleeday } from "@/lib/supabase/loveleeday";
-import { Card, PortalButton, inputClass } from "@/components/client-portal/ui";
+import { PortalButton, inputClass } from "@/components/client-portal/ui";
+import { AuthShell } from "@/components/client-portal/AuthShell";
 
 function safeNext(raw: string | null): string {
   return raw && raw.startsWith("/client") && !raw.startsWith("//") ? raw : "/client";
@@ -96,21 +97,19 @@ function ChallengeForm() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base flex items-center justify-center p-6 font-sans">
-      <div className="w-full max-w-[420px]">
-        <div className="text-center mb-7">
-          <div className="font-serif italic text-[28px] text-text-active">loveleeday</div>
-        </div>
-        <Card className="p-8">
-          <h1 className="font-serif text-h3 text-text-active mb-1">Two-factor verification</h1>
-          <p className="text-small text-text-muted mb-6">
-            Enter the 6-digit code from your authenticator app.
-          </p>
+    <AuthShell
+      eyebrow="Two-factor verification"
+      headline="One more"
+      muted="step."
+      lead="Every LOVELEEDAY account is protected by a second factor. Enter the current code from your authenticator app."
+    >
+          <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Verification code</h2>
+          <p className="ll-note mt-1 mb-6">The 6-digit code from your authenticator app.</p>
 
           {loading ? (
-            <p className="text-small text-text-muted">Loading…</p>
+            <p className="ll-note">Loading…</p>
           ) : (
-            <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            <form aria-label="Verification code" onSubmit={onSubmit} className="flex flex-col gap-4">
               <input
                 autoFocus
                 inputMode="numeric"
@@ -118,17 +117,15 @@ function ChallengeForm() {
                 maxLength={6}
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
-                className={`${inputClass} text-center tracking-[0.4em] text-[20px] font-mono`}
+                className={`${inputClass} text-center tracking-[0.4em] !text-[20px] font-mono`}
               />
-              {error && <p className="text-small text-red-600">{error}</p>}
+              {error && <p className="ll-feedback warn">{error}</p>}
               <PortalButton type="submit" disabled={verifying || code.length < 6} className="w-full">
                 {verifying ? "Verifying…" : "Verify"}
               </PortalButton>
             </form>
           )}
-        </Card>
-      </div>
-    </div>
+    </AuthShell>
   );
 }
 
