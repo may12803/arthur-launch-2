@@ -117,7 +117,7 @@
 .ll-tabs button[aria-pressed=true] { background: #f0f5fc; color: #3970af; border-color: #d8e6f8; }
 
 /* Status pill — site.css .pill */
-.ll-pill { display: inline-flex; align-items: center; font-size: 10px; line-height: 1.5; padding: 4px 12px; border: 1px solid #dfe3ea; border-radius: 24px; color: #748095; text-transform: capitalize; white-space: nowrap; }
+.ll-pill { display: inline-flex; align-items: center; font-size: 10px; line-height: 1.5; padding: 4px 12px; border: 1px solid #dfe3ea; border-radius: 24px; color: #748095; white-space: nowrap; }
 .ll-pill.good { color: #2f6b4f; border-color: #cfe3d8; background: #f3faf6; }
 .ll-pill.wait { color: #8a4b1d; border-color: #eedcc8; background: #fdf8f2; }
 .ll-pill.bad { color: #b3261e; border-color: #f1c9c4; background: #fdf4f3; }

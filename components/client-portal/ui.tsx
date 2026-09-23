@@ -67,7 +67,8 @@ export function StatusBadge({ status }: { status: string }) {
     sent: "Awaiting your signature",
     void: "Withdrawn",
   };
-  return <span className={cn("ll-pill", tone[status])}>{label[status] ?? status}</span>;
+  const text = label[status] ?? status.charAt(0).toUpperCase() + status.slice(1);
+  return <span className={cn("ll-pill", tone[status])}>{text}</span>;
 }
 
 export function EmptyState({ title, body }: { title: string; body: string }) {
