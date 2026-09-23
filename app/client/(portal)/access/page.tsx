@@ -1,6 +1,7 @@
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { Card, Eyebrow, PageTitle, Muted, EmptyState } from "@/components/client-portal/ui";
+import { LocalTime } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
 
@@ -13,10 +14,6 @@ const VERBS: Record<string, string> = {
   "invite.accepted": "Joined the account",
   "tenant.created": "Account created",
 };
-
-function when(at: string): string {
-  return new Date(at).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
-}
 
 // Owners and admins see every recorded action on their company's documents
 // and account. The database only returns rows for this company, and only to a
@@ -78,7 +75,7 @@ export default async function AccessHistoryPage() {
                 const ip = typeof r.meta?.ip === "string" ? r.meta.ip : null;
                 return (
                   <tr key={r.id} className="border-t border-line-separator text-[13.5px]">
-                    <td className="py-3 pr-4 whitespace-nowrap text-text-muted" style={{ fontVariantNumeric: "tabular-nums" }}>{when(r.at)}</td>
+                    <td className="py-3 pr-4 whitespace-nowrap text-text-muted" style={{ fontVariantNumeric: "tabular-nums" }}><LocalTime iso={r.at} /></td>
                     <td className="py-3 pr-4 text-text-active">{r.actor ? emails.get(r.actor) || "Former member" : "LOVELEEDAY"}</td>
                     <td className="py-3 pr-4 text-text-active">
                       {VERBS[r.action] || r.action}
