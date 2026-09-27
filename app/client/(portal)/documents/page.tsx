@@ -3,7 +3,7 @@ import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { Card, Eyebrow, PageTitle, Muted, EmptyState } from "@/components/client-portal/ui";
 import { DocumentUpload, DeleteDocumentButton } from "@/components/client-portal/DocumentUpload";
 import { ShareControls, SharingSwitch, type ShareRow } from "@/components/client-portal/ShareControls";
-import { formatDate } from "@/lib/client-portal/format";
+import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
 
@@ -76,7 +76,7 @@ export default async function DocumentsPage() {
               <div className="min-w-0">
                 <div className="text-[15px] text-text-active truncate">{d.name}</div>
                 <div className="text-[12.5px] text-text-muted mt-1">
-                  {formatSize(d.size_bytes)} · {d.by_staff || !d.created_by ? "LOVELEEDAY" : emails.get(d.created_by) || "Former member"} · {formatDate(d.created_at)}
+                  {formatSize(d.size_bytes)} · {d.by_staff || !d.created_by ? "LOVELEEDAY" : emails.get(d.created_by) || "Former member"} · <LocalDate iso={d.created_at} />
                 </div>
               </div>
               <div className="flex items-center gap-5 flex-shrink-0">

@@ -19,7 +19,7 @@ function publicOrigin(req: NextRequest): string {
   if (host && !/^(0\.0\.0\.0|127\.0\.0\.1|localhost)(:|$)/.test(host)) {
     return `${req.headers.get("x-forwarded-proto") || "https"}://${host}`;
   }
-  return process.env.NEXT_PUBLIC_SITE_URL || "https://arthur-online.fly.dev";
+  return process.env.PORTAL_ORIGIN || "https://portal.loveleedaystudios.com";
 }
 
 export async function GET(req: NextRequest) {

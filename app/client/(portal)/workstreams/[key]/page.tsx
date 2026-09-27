@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { Card, Eyebrow, PageTitle, Muted } from "@/components/client-portal/ui";
 import { display, gradeTone, loadWorkstreams, ORDER, STATUS_LABEL, STATUS_TONE, type WsGrade } from "@/lib/client-portal/workstreams";
-import { formatDate } from "@/lib/client-portal/format";
+import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +54,7 @@ export default async function WorkstreamPage({ params }: { params: Promise<{ key
                   ) : (
                     <span><span className="block text-[15px] font-medium text-[var(--ink)]">{t.title}</span>{t.detail && <span className="block text-[13px] text-[var(--muted)] line-clamp-2">{t.detail}</span>}</span>
                   )}
-                  <span className="text-[12px] text-[var(--muted)]">{s === "done" ? (t.done_at ? formatDate(t.done_at) : "") : t.kind === "fix" ? <span className="rounded-full bg-[#fdecea] px-2.5 py-0.5 text-[11px] font-medium text-[#a1291f]">Fix now</span> : null}</span>
+                  <span className="text-[12px] text-[var(--muted)]">{s === "done" ? (t.done_at ? <LocalDate iso={t.done_at} /> : "") : t.kind === "fix" ? <span className="rounded-full bg-[#fdecea] px-2.5 py-0.5 text-[11px] font-medium text-[#a1291f]">Fix now</span> : null}</span>
                 </Link>
               ))}
             </Card>

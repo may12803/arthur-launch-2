@@ -4,8 +4,8 @@ import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { Card, Eyebrow, Muted } from "@/components/client-portal/ui";
 import { STATUS_LABEL, STATUS_TONE, type Workstream, type WsTask } from "@/lib/client-portal/workstreams";
-import { formatDate } from "@/lib/client-portal/format";
 import { DecisionForm } from "./DecisionForm";
+import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
 
@@ -64,9 +64,9 @@ export default async function TaskPage({ params }: { params: Promise<{ id: strin
           <div className={table || facts.length ? "mt-7" : ""}><Eyebrow>What we recommend</Eyebrow><p className="mt-2 text-[15px] leading-[1.65] text-[#303238]">{t.recommendation || t.detail || "We'll walk you through it."}</p></div>
         </Card>
         <Card className="p-6">
-          {canDecide ? <DecisionForm taskId={t.id} /> : <><Eyebrow>Status</Eyebrow><p className="mt-2 text-[15px] text-[var(--ink)]">{STATUS_LABEL[t.status]}{t.done_at ? ` · ${formatDate(t.done_at)}` : ""}</p></>}
+          {canDecide ? <DecisionForm taskId={t.id} /> : <><Eyebrow>Status</Eyebrow><p className="mt-2 text-[15px] text-[var(--ink)]">{STATUS_LABEL[t.status]}{t.done_at ? <> · <LocalDate iso={t.done_at} /></> : null}</p></>}
           {decisions && decisions.length > 0 && (
-            <div className="mt-6"><Eyebrow>Decisions</Eyebrow>{decisions.map((d) => <p key={d.created_at} className="mt-2 text-[13.5px] text-[#303238]">{DECISION_LABEL[d.decision]} · {formatDate(d.created_at)}{d.note && <span className="block text-[var(--muted)]">“{d.note}”</span>}</p>)}</div>
+            <div className="mt-6"><Eyebrow>Decisions</Eyebrow>{decisions.map((d) => <p key={d.created_at} className="mt-2 text-[13.5px] text-[#303238]">{DECISION_LABEL[d.decision]} · <LocalDate iso={d.created_at} />{d.note && <span className="block text-[var(--muted)]">“{d.note}”</span>}</p>)}</div>
           )}
           <div className="mt-7"><Eyebrow>What happens next</Eyebrow>
             <ol className="mt-3 grid gap-3">{steps.map(([a, b], i) => <li key={a} className="grid grid-cols-[26px_1fr] gap-3"><span className={`grid h-[26px] w-[26px] place-items-center rounded-full text-[12px] font-medium ${i === 0 ? "bg-[var(--ink)] text-white" : "bg-[#eef0f3] text-[var(--ink)]"}`}>{i + 1}</span><span><span className="block text-[14.5px] text-[var(--ink)]">{a}</span><span className="block text-[13px] text-[var(--muted)]">{b}</span></span></li>)}</ol>

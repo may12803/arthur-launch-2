@@ -51,6 +51,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Only owners and admins can invite teammates." }, { status: 403 });
   }
 
+  // One live invite per person: a resend replaces the earlier link instead of stacking another.
+  const { error: clearError } = await supabase
+    .from("invites")
+    .delete()
+    .eq("tenant_id", membership.tenant_id)
+    .eq("email", email)
+    .is("accepted_at", null);
+  if (clearError) {
+    return NextResponse.json({ error: clearError.message }, { status: 400 });
+  }
+
   const { data: invite, error: insertError } = await supabase
     .from("invites")
     .insert({ tenant_id: membership.tenant_id, email, role })

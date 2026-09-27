@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { Card, Eyebrow, PageTitle, Muted } from "@/components/client-portal/ui";
 import { display, gradePoints, gradeTone, loadWorkstreams } from "@/lib/client-portal/workstreams";
-import { formatDate } from "@/lib/client-portal/format";
+import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +45,7 @@ export default async function ProgressPage() {
           {done.map((t, i) => (
             <div key={t.id} className={`grid gap-2 px-5 py-4 md:grid-cols-[170px_1fr] ${i ? "border-t border-[var(--line)]" : ""}`}>
               <span className="justify-self-start rounded-full bg-[#e6f4ea] px-2.5 py-0.5 text-[11px] font-medium text-[#1e6b3a]">✓ {name[t.workstream_id]}</span>
-              <span><span className="block text-[15px] text-[var(--ink)]">{t.outcome}</span>{t.was && <span className="block text-[13px] text-[var(--muted)]">Was: {t.was}.</span>}{t.proof && <span className="block text-[12.5px] text-[#1e6b3a]">Proof: {t.proof}{t.done_at ? ` · ${formatDate(t.done_at)}` : ""}</span>}</span>
+              <span><span className="block text-[15px] text-[var(--ink)]">{t.outcome}</span>{t.was && <span className="block text-[13px] text-[var(--muted)]">Was: {t.was}.</span>}{t.proof && <span className="block text-[12.5px] text-[#1e6b3a]">Proof: {t.proof}{t.done_at ? <> · <LocalDate iso={t.done_at} /></> : null}</span>}</span>
             </div>
           ))}
         </Card>

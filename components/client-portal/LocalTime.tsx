@@ -14,3 +14,11 @@ export function LocalTime({ iso }: { iso: string }) {
   useEffect(() => setText(fmt()), [iso]); // eslint-disable-line react-hooks/exhaustive-deps
   return <time dateTime={iso} title={fmt("UTC")}>{text}</time>;
 }
+
+// Date only ("Sep 23, 2026"), in the viewer's time zone for the same reason.
+export function LocalDate({ iso }: { iso: string }) {
+  const fmt = (tz?: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: tz });
+  const [text, setText] = useState(() => fmt("UTC"));
+  useEffect(() => setText(fmt()), [iso]); // eslint-disable-line react-hooks/exhaustive-deps
+  return <time dateTime={iso}>{text}</time>;
+}

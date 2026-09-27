@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { Card, Eyebrow, Muted } from "@/components/client-portal/ui";
-import { formatDate } from "@/lib/client-portal/format";
 import { CONN_LABEL, METHOD_LABEL, type Connector, type TenantConnection } from "@/lib/client-portal/connections";
 import { ConnectPanel } from "./ConnectPanel";
+import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +37,7 @@ export default async function ConnectorPage({ params }: { params: Promise<{ key:
             <div className="mt-6 rounded-xl bg-[#f5f5f7] p-4">
               <Eyebrow>{m?.error ? "What needs attention" : "How we know it works"}</Eyebrow>
               <p className={`mt-1 text-[14px] ${m?.error ? "text-[#a1291f]" : "text-[#1e6b3a]"}`}>{m?.error || m?.proof || m?.note}</p>
-              {m?.last_probe_at && <p className="mt-1 text-[12px] text-[var(--muted)]">Checked {formatDate(m.last_probe_at)}</p>}
+              {m?.last_probe_at && <p className="mt-1 text-[12px] text-[var(--muted)]">Checked <LocalDate iso={m.last_probe_at} /></p>}
             </div>
           )}
         </Card>

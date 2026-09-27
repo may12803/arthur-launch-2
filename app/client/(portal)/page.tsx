@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { Card, Eyebrow, PageTitle, Muted, StatusBadge, EmptyState } from "@/components/client-portal/ui";
-import { formatDate } from "@/lib/client-portal/format";
+import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +66,7 @@ export default async function ClientDashboardPage() {
                   </div>
                   <div className="font-serif text-[17px] text-text-active truncate">{d.title}</div>
                   <div className="text-[12.5px] text-text-muted mt-1">
-                    Updated {formatDate(d.updated_at)}
+                    Updated <LocalDate iso={d.updated_at} />
                   </div>
                 </div>
                 <StatusBadge status={d.status} />

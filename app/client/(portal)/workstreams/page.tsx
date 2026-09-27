@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { Card, Eyebrow, PageTitle, Muted, EmptyState } from "@/components/client-portal/ui";
 import { averageGrade, display, gradeTone, loadWorkstreams } from "@/lib/client-portal/workstreams";
-import { formatDate } from "@/lib/client-portal/format";
+import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
 
@@ -91,7 +91,7 @@ export default async function WorkstreamsPage() {
               <div key={t.id} className={`grid gap-2 px-5 py-4 md:grid-cols-[150px_1fr_auto] ${i ? "border-t border-[var(--line)]" : ""}`}>
                 <span className="justify-self-start rounded-full bg-[#e6f4ea] px-2.5 py-0.5 text-[11px] font-medium text-[#1e6b3a]">✓ {wsName[t.workstream_id]?.name}</span>
                 <span><span className="block text-[14.5px] text-[var(--ink)]">{t.outcome}</span><span className="block text-[12.5px] text-[var(--muted)]">{t.was && `Was: ${t.was}. `}{t.proof && `Proof: ${t.proof}.`}</span></span>
-                <span className="text-[12px] text-[var(--muted)]">{t.done_at ? formatDate(t.done_at) : ""}</span>
+                <span className="text-[12px] text-[var(--muted)]">{t.done_at ? <LocalDate iso={t.done_at} /> : ""}</span>
               </div>
             ))}
           </Card>

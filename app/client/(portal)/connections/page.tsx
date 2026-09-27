@@ -2,8 +2,8 @@ import Link from "next/link";
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { Card, Eyebrow, PageTitle, Muted } from "@/components/client-portal/ui";
-import { formatDate } from "@/lib/client-portal/format";
 import { CONN_LABEL, METHOD_LABEL, type Connector, type TenantConnection } from "@/lib/client-portal/connections";
+import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,7 @@ export default async function ConnectionsPage() {
                     <Card className="flex h-full flex-col gap-2 p-5 transition-colors hover:border-[#c9ccd3]">
                       <span className="flex items-start justify-between gap-3"><span className="text-[16px] font-medium text-[var(--ink)]">{c.name}</span><span className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-medium ${CONN_LABEL[s][1]}`}>{CONN_LABEL[s][0]}</span></span>
                       <span className="text-[13px] leading-[1.55] text-[var(--muted)]">{m?.proof || m?.error || m?.note || c.uses}</span>
-                      <span className="mt-auto flex flex-wrap justify-between gap-2 pt-1 text-[12px] text-[var(--muted)]"><span>{m?.managed_by === "loveleeday" ? "Managed by LOVELEEDAY" : METHOD_LABEL[c.method]}</span>{m?.last_probe_at && <span>Checked {formatDate(m.last_probe_at)}</span>}</span>
+                      <span className="mt-auto flex flex-wrap justify-between gap-2 pt-1 text-[12px] text-[var(--muted)]"><span>{m?.managed_by === "loveleeday" ? "Managed by LOVELEEDAY" : METHOD_LABEL[c.method]}</span>{m?.last_probe_at && <span>Checked <LocalDate iso={m.last_probe_at} /></span>}</span>
                     </Card>
                   </Link>
                 );

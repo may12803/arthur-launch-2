@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { Eyebrow, PageTitle, Muted, StatusBadge, Card } from "@/components/client-portal/ui";
-import { formatDate } from "@/lib/client-portal/format";
+import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +51,7 @@ export default async function DeliverablePage({ params }: { params: { slug: stri
         <div>
           <Eyebrow>{data.kind}</Eyebrow>
           <PageTitle>{data.title}</PageTitle>
-          <Muted>Last updated {formatDate(data.updated_at)}</Muted>
+          <Muted>Last updated <LocalDate iso={data.updated_at} /></Muted>
         </div>
         <StatusBadge status={data.status} />
       </div>
@@ -63,7 +63,8 @@ export default async function DeliverablePage({ params }: { params: { slug: stri
             title={data.title}
             className="w-full border-0"
             style={{ height: "80vh" }}
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            sandbox="allow-scripts allow-popups allow-forms"
+            referrerPolicy="no-referrer"
           />
         </Card>
       )}

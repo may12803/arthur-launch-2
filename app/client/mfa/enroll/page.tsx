@@ -6,6 +6,7 @@ import { loveleeday } from "@/lib/supabase/loveleeday";
 import { PortalButton, inputClass } from "@/components/client-portal/ui";
 import { AuthShell } from "@/components/client-portal/AuthShell";
 import { MfaHelp } from "@/components/client-portal/MfaHelp";
+import { isSsoSession } from "@/lib/client-portal/sso";
 
 function safeNext(raw: string | null): string {
   return raw && raw.startsWith("/client") && !raw.startsWith("//") ? raw : "/client";
@@ -54,6 +55,11 @@ function EnrollForm() {
       return;
     }
     const { data: aal } = await loveleeday.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aal && isSsoSession(aal.currentAuthenticationMethods)) {
+      // Company sign-in already carries the company's own second factor; the server gate exempts it too.
+      window.location.href = next;
+      return;
+    }
     if (aal && aal.nextLevel === "aal2" && aal.currentLevel === "aal2") {
       // Already fully enrolled and verified — nothing to do here.
       window.location.href = next;
