@@ -193,6 +193,11 @@ export async function middleware(req: NextRequest) {
   if (host === PORTAL_HOST && !PORTAL_ALLOWED.some((p) => path === p || path.startsWith(p.endsWith("/") ? p : p + "/") || path === p.replace(/\/$/, ""))) {
     return NextResponse.redirect(new URL("/client", `https://${PORTAL_HOST}`), 308);
   }
+  // The portal has one address. Its pages on the Fly hostname send people to it, so a session is never
+  // started on a domain whose cookies the real portal can't see.
+  if (host.endsWith(".fly.dev") && (path === "/client" || path.startsWith("/client/"))) {
+    return NextResponse.redirect(new URL(path + req.nextUrl.search, `https://${PORTAL_HOST}`), 308);
+  }
   let response = NextResponse.next({ request: { headers: req.headers } });
 
   // Step 1: Auth gate — session cookie, Basic, or Bearer
