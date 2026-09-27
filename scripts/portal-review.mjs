@@ -72,6 +72,12 @@ if (page.url().includes("/mfa/enroll")) {
   const secret = (await page.locator(".select-all").innerText()).trim();
   await page.fill("#enroll-code", totp(secret));
   await page.click('button[type="submit"]');
+  // Setup now ends on a backup-codes screen that needs an explicit "saved" before it continues.
+  const saved = page.getByText("I've saved these somewhere safe");
+  if (await saved.waitFor({ timeout: 8000 }).then(() => true, () => false)) {
+    await page.locator('input[type="checkbox"]').check();
+    await page.getByRole("button", { name: "Continue" }).click();
+  }
   await page.waitForURL(/\/client($|\?)/, { timeout: 20000 });
   console.log("ENROLLED");
 } else if (page.url().includes("/mfa/challenge")) {
