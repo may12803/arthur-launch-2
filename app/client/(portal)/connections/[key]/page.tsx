@@ -15,7 +15,7 @@ export default async function ConnectorPage({ params }: { params: Promise<{ key:
   const supabase = await getLoveleedayServer();
   const [{ data: c }, { data: m }] = await Promise.all([
     supabase.from("connectors").select("*").eq("key", key).maybeSingle<Connector>(),
-    supabase.from("tenant_connections").select("connector_key, status, access, managed_by, note, proof, error, last_probe_at, updated_at").eq("connector_key", key).maybeSingle<TenantConnection>(),
+    supabase.from("tenant_connections").select("connector_key, status, access, managed_by, note, proof, error, last_probe_at, updated_at").eq("tenant_id", ctx.tenantId).eq("connector_key", key).maybeSingle<TenantConnection>(),
   ]);
   if (!c) notFound();
   const s = m?.status ?? "not_connected";

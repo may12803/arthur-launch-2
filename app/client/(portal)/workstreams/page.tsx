@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // The one page: every area graded start → now, the decisions that matter most, finished work at the bottom.
 export default async function WorkstreamsPage() {
   const ctx = await requireClientPortal();
-  const { workstreams, tasks, error } = await loadWorkstreams();
+  const { workstreams, tasks, error } = await loadWorkstreams(ctx.tenantId);
   if (error) return <Card className="p-5 border-red-200"><p className="text-small text-red-700">Couldn&apos;t load workstreams: {error}</p></Card>;
   if (!workstreams.length) return <EmptyState title="No workstreams yet" body="When LOVELEEDAY starts improving an area of your business, it appears here with its grade and every task." />;
 

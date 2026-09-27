@@ -38,6 +38,7 @@ export async function requireClientPortal(): Promise<ClientPortalContext> {
     .select("tenant_id, role, tenants(name, plan, status)")
     .eq("user_id", user.id)
     .not("accepted_at", "is", null)
+    .order("accepted_at")
     .limit(1)
     .maybeSingle<MembershipRow>();
 

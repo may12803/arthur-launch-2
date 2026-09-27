@@ -39,7 +39,7 @@ export function DocumentUpload() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="relative flex flex-col gap-3">
       <input
         ref={input}
         id="document-file"

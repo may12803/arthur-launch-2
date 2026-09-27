@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { loveleeday } from "@/lib/supabase/loveleeday";
 import { PortalButton, inputClass } from "@/components/client-portal/ui";
 import { AuthShell } from "@/components/client-portal/AuthShell";
+import { MfaHelp } from "@/components/client-portal/MfaHelp";
 
 function safeNext(raw: string | null): string {
   return raw && raw.startsWith("/client") && !raw.startsWith("//") ? raw : "/client";
@@ -120,11 +121,15 @@ function ChallengeForm() {
                 className={`${inputClass} text-center tracking-[0.4em] !text-[20px] font-mono`}
               />
               {error && <p className="ll-feedback warn">{error}</p>}
-              <PortalButton type="submit" disabled={verifying || code.length < 6} className="w-full">
+              <PortalButton type="submit" disabled={verifying || code.length < 6 || !factorId || !challengeId} className="w-full">
                 {verifying ? "Verifying…" : "Verify"}
               </PortalButton>
+              {(!factorId || !challengeId) && (
+                <PortalButton type="button" variant="secondary" onClick={() => bootstrap()} className="w-full">Try again</PortalButton>
+              )}
             </form>
           )}
+          <MfaHelp />
     </AuthShell>
   );
 }

@@ -26,7 +26,13 @@ export function StaffConsole({ tenants }: { tenants: StaffTenant[] }) {
   }
 
   async function classify(id: string, cls: string) {
-    await fetch("/api/client/staff", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ tenant: id, data_class: cls }) });
+    setError("");
+    const res = await fetch("/api/client/staff", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ tenant: id, data_class: cls }) });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || "Couldn't change the classification.");
+      return;
+    }
     window.location.reload();
   }
 

@@ -12,7 +12,7 @@ export default async function ConnectionsPage() {
   const supabase = await getLoveleedayServer();
   const [{ data: catalog }, { data: mine }] = await Promise.all([
     supabase.from("connectors").select("*").order("sort").returns<Connector[]>(),
-    supabase.from("tenant_connections").select("connector_key, status, access, managed_by, note, proof, error, last_probe_at, updated_at").returns<TenantConnection[]>(),
+    supabase.from("tenant_connections").select("connector_key, status, access, managed_by, note, proof, error, last_probe_at, updated_at").eq("tenant_id", ctx.tenantId).returns<TenantConnection[]>(),
   ]);
   const by = Object.fromEntries((mine ?? []).map((m) => [m.connector_key, m]));
   const live = (mine ?? []).filter((m) => m.status === "live").length;

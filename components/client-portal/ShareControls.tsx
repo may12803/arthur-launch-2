@@ -83,10 +83,17 @@ export function ShareControls({ documentId, shares, maxDays }: { documentId: str
 export function SharingSwitch({ enabled, regulated }: { enabled: boolean; regulated: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   async function toggle() {
     setBusy(true);
-    await fetch("/api/client/settings/sharing", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ enabled: !enabled }) });
+    setError("");
+    const res = await fetch("/api/client/settings/sharing", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ enabled: !enabled }) });
     setBusy(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || "Couldn't change sharing. Nothing was changed.");
+      return;
+    }
     router.refresh();
   }
   return (
@@ -97,6 +104,7 @@ export function SharingSwitch({ enabled, regulated }: { enabled: boolean; regula
           {regulated ? "Your account is classified as regulated data: links last at most 7 days. " : "Links last at most 30 days. "}
           Turning sharing off revokes every outside link at once.
         </p>
+        {error && <p className="ll-feedback warn mt-2">{error}</p>}
       </div>
       <PortalButton variant="secondary" onClick={toggle} disabled={busy}>{busy ? "Saving…" : enabled ? "Turn off" : "Turn on"}</PortalButton>
     </div>

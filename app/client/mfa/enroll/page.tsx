@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { loveleeday } from "@/lib/supabase/loveleeday";
 import { PortalButton, inputClass } from "@/components/client-portal/ui";
 import { AuthShell } from "@/components/client-portal/AuthShell";
+import { MfaHelp } from "@/components/client-portal/MfaHelp";
 
 function safeNext(raw: string | null): string {
   return raw && raw.startsWith("/client") && !raw.startsWith("//") ? raw : "/client";
@@ -145,6 +146,7 @@ function EnrollForm() {
               </PortalButton>
             </form>
           )}
+          <MfaHelp />
     </AuthShell>
   );
 }

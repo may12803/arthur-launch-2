@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 
 export default async function WorkstreamPage({ params }: { params: Promise<{ key: string }> }) {
   const { key } = await params;
-  await requireClientPortal();
-  const { supabase, workstreams, tasks } = await loadWorkstreams();
+  const ctx = await requireClientPortal();
+  const { supabase, workstreams, tasks } = await loadWorkstreams(ctx.tenantId);
   const w = workstreams.find((x) => x.key === key);
   if (!w) notFound();
   const { data: dims } = await supabase.from("workstream_grades").select("workstream_id, dimension, grade_start, grade_now, grade_target, sort").eq("workstream_id", w.id).order("sort").returns<WsGrade[]>();

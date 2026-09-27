@@ -16,13 +16,17 @@ export default async function TaskPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const ctx = await requireClientPortal();
   const supabase = await getLoveleedayServer();
-  const { data: t } = await supabase.from("workstream_tasks").select("*").eq("id", id).maybeSingle<WsTask>();
+  const { data: t } = await supabase.from("workstream_tasks").select("*").eq("id", id).eq("tenant_id", ctx.tenantId).maybeSingle<WsTask>();
   if (!t) notFound();
   const [{ data: w }, { data: decisions }] = await Promise.all([
     supabase.from("workstreams").select("key, name").eq("id", t.workstream_id).maybeSingle<Pick<Workstream, "key" | "name">>(),
     supabase.from("workstream_decisions").select("decision, note, created_at").eq("task_id", t.id).order("created_at", { ascending: false }).returns<Decision[]>(),
   ]);
   const canDecide = t.status !== "done" && ["owner", "admin", "member", "staff"].includes(ctx.role ?? "");
+  // Evidence is a table ({columns, rows}) from the review pipelines, or loose facts ({source, finding, page}) from probes.
+  const ev = t.evidence as Record<string, unknown> | null;
+  const table = ev && Array.isArray(ev.columns) && Array.isArray(ev.rows) ? (ev as unknown as NonNullable<WsTask["evidence"]>) : null;
+  const facts = ev && !table ? Object.entries(ev).filter(([, v]) => typeof v === "string" || typeof v === "number") : [];
   const steps = [
     ["You approve", "The task moves to In progress."],
     ["We make the change", "Usually the same day."],
@@ -41,17 +45,23 @@ export default async function TaskPage({ params }: { params: Promise<{ id: strin
 
       <div className="mt-10 grid items-start gap-7 md:grid-cols-[1.35fr_1fr]">
         <Card className="p-6">
-          {t.evidence && (
+          {table && (
             <>
               <Eyebrow>The evidence</Eyebrow>
               <table className="mt-3 w-full text-[13.5px]">
-                <thead><tr>{t.evidence.columns.map((c) => <th key={c} className="border-b border-[var(--line)] py-2 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8c8e95]">{c}</th>)}</tr></thead>
-                <tbody>{t.evidence.rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j} className={`border-b border-[#eef0f3] py-2 ${j === r.length - 1 ? "font-medium text-[#a1291f]" : ""}`}>{c}</td>)}</tr>)}</tbody>
+                <thead><tr>{table.columns.map((c) => <th key={c} className="border-b border-[var(--line)] py-2 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8c8e95]">{c}</th>)}</tr></thead>
+                <tbody>{table.rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j} className={`border-b border-[#eef0f3] py-2 ${j === r.length - 1 ? "font-medium text-[#a1291f]" : ""}`}>{c}</td>)}</tr>)}</tbody>
               </table>
-              {t.evidence.note && <p className="mt-3 text-[13px] text-[var(--muted)]">{t.evidence.note}</p>}
+              {table.note && <p className="mt-3 text-[13px] text-[var(--muted)]">{table.note}</p>}
             </>
           )}
-          <div className={t.evidence ? "mt-7" : ""}><Eyebrow>What we recommend</Eyebrow><p className="mt-2 text-[15px] leading-[1.65] text-[#303238]">{t.recommendation || t.detail || "We'll walk you through it."}</p></div>
+          {facts.length > 0 && (
+            <>
+              <Eyebrow>The evidence</Eyebrow>
+              <dl className="mt-3 grid gap-2 text-[13.5px]">{facts.map(([k, v]) => <div key={k} className="grid grid-cols-[88px_1fr] gap-3 border-b border-[#eef0f3] pb-2"><dt className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8c8e95]">{k}</dt><dd className="break-words text-[#303238]">{String(v)}</dd></div>)}</dl>
+            </>
+          )}
+          <div className={table || facts.length ? "mt-7" : ""}><Eyebrow>What we recommend</Eyebrow><p className="mt-2 text-[15px] leading-[1.65] text-[#303238]">{t.recommendation || t.detail || "We'll walk you through it."}</p></div>
         </Card>
         <Card className="p-6">
           {canDecide ? <DecisionForm taskId={t.id} /> : <><Eyebrow>Status</Eyebrow><p className="mt-2 text-[15px] text-[var(--ink)]">{STATUS_LABEL[t.status]}{t.done_at ? ` · ${formatDate(t.done_at)}` : ""}</p></>}

@@ -18,11 +18,11 @@ export type WsTask = {
 export type WsGrade = { workstream_id: string; dimension: string; grade_start: string | null; grade_now: string | null; grade_target: string | null; sort: number };
 export type CoverageArea = { grp: string; area: string; status: "reviewed" | "partial" | "none"; note: string | null; rank: number | null; sort: number };
 
-export async function loadWorkstreams() {
+export async function loadWorkstreams(tenantId: string) {
   const supabase = await getLoveleedayServer();
   const [ws, tasks] = await Promise.all([
-    supabase.from("workstreams").select("id, key, name, summary, grade_start, grade_now, grade_target, review_slug, sort").order("sort").returns<Workstream[]>(),
-    supabase.from("workstream_tasks").select("id, workstream_id, title, detail, recommendation, status, kind, evidence, outcome, was, proof, rank, done_at, updated_at").order("rank").returns<WsTask[]>(),
+    supabase.from("workstreams").select("id, key, name, summary, grade_start, grade_now, grade_target, review_slug, sort").eq("tenant_id", tenantId).order("sort").returns<Workstream[]>(),
+    supabase.from("workstream_tasks").select("id, workstream_id, title, detail, recommendation, status, kind, evidence, outcome, was, proof, rank, done_at, updated_at").eq("tenant_id", tenantId).order("rank").returns<WsTask[]>(),
   ]);
   return { supabase, workstreams: ws.data ?? [], tasks: tasks.data ?? [], error: ws.error?.message || tasks.error?.message || null };
 }

@@ -29,6 +29,7 @@ export default async function ClientDashboardPage() {
   const { data: deliverables, error } = await supabase
     .from("deliverables")
     .select("id, kind, title, slug, status, updated_at")
+    .eq("tenant_id", ctx.tenantId)
     .order("updated_at", { ascending: false })
     .returns<DeliverableRow[]>();
 

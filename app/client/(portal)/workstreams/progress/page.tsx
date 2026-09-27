@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // Every grade from the first review to today, and every finished task, newest first, with Was and Proof.
 export default async function ProgressPage() {
   const ctx = await requireClientPortal();
-  const { workstreams, tasks } = await loadWorkstreams();
+  const { workstreams, tasks } = await loadWorkstreams(ctx.tenantId);
   const name = Object.fromEntries(workstreams.map((w) => [w.id, w.name]));
   const done = tasks.filter((t) => t.status === "done").sort((a, b) => String(b.done_at).localeCompare(String(a.done_at)));
   const pos = (g: string | null) => `${Math.max(0, gradePoints(g)) / 12 * 100}%`;
