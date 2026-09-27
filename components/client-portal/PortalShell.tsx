@@ -8,7 +8,8 @@ import { Wordmark } from "./LogoMark";
 import { SiteFooter } from "./SiteFooter";
 
 const NAV = [
-  { href: "/client", label: "Dashboard" },
+  { href: "/client/workstreams", label: "Workstreams" },
+  { href: "/client", label: "Deliverables" },
   { href: "/client/documents", label: "Documents" },
   { href: "/client/team", label: "Team" },
   { href: "/client/contracts", label: "Contracts" },
