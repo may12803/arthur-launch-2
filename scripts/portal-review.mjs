@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// Live review crawl of the client portal: signs in as the staff account, enrolls a
+// Live review crawl of the client portal: signs in as the dedicated QA account, enrolls a
 // throwaway TOTP factor, then visits every reachable /client page at desktop and
 // phone widths and records console errors, failed requests, overflow and odd text.
-// Usage: arthur-cred run --use loveleeday-portal-staff -- node scripts/portal-review.mjs <outdir>
+// Usage: arthur-cred run --use loveleeday-portal-qa -- node scripts/portal-review.mjs <outdir>
+// Never crawl as Daniel's own login: the throwaway factors wiped his session on 2026-09-27.
 // The throwaway factor id is printed as FACTOR= so the caller can delete it afterwards.
 import { chromium } from "playwright";
 import crypto from "node:crypto";
