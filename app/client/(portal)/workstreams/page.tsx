@@ -53,7 +53,7 @@ export default async function WorkstreamsPage() {
           <Card>
             {needs.slice(0, 5).map((t, i) => (
               <Link key={t.id} href={`/client/workstreams/task/${t.id}`} className={`grid gap-3 px-5 py-4 md:grid-cols-[150px_1fr_auto] md:items-center ${i ? "border-t border-[var(--line)]" : ""}`}>
-                <span className={`justify-self-start rounded-full px-2.5 py-0.5 text-[11px] font-medium ${t.kind === "fix" ? "bg-[#fdecea] text-[#a1291f]" : "bg-[#edf3fc] text-[#2d6aa8]"}`}>{wsName[t.workstream_id]?.name}</span>
+                <span className={`self-start justify-self-start rounded-full px-2.5 py-0.5 text-[11px] font-medium ${t.kind === "fix" ? "bg-[#fdecea] text-[#a1291f]" : "bg-[#edf3fc] text-[#2d6aa8]"}`}>{wsName[t.workstream_id]?.name}</span>
                 <span><span className="block text-[15px] font-medium text-[var(--ink)]">{t.title}</span>{t.detail && <span className="block text-[13px] text-[var(--muted)] line-clamp-1">{t.detail}</span>}</span>
                 <span className="ll-primary justify-self-start !px-4 !py-2 text-[12.5px]">Review</span>
               </Link>
@@ -89,7 +89,7 @@ export default async function WorkstreamsPage() {
           <Card>
             {recent.map((t, i) => (
               <div key={t.id} className={`grid gap-2 px-5 py-4 md:grid-cols-[150px_1fr_auto] ${i ? "border-t border-[var(--line)]" : ""}`}>
-                <span className="justify-self-start rounded-full bg-[#e6f4ea] px-2.5 py-0.5 text-[11px] font-medium text-[#1e6b3a]">✓ {wsName[t.workstream_id]?.name}</span>
+                <span className="self-start justify-self-start rounded-full bg-[#e6f4ea] px-2.5 py-0.5 text-[11px] font-medium text-[#1e6b3a]">✓ {wsName[t.workstream_id]?.name}</span>
                 <span><span className="block text-[14.5px] text-[var(--ink)]">{t.outcome}</span><span className="block text-[12.5px] text-[var(--muted)]">{t.was && `Was: ${t.was}. `}{t.proof && `Proof: ${t.proof}.`}</span></span>
                 <span className="text-[12px] text-[var(--muted)]">{t.done_at ? <LocalDate iso={t.done_at} /> : ""}</span>
               </div>
