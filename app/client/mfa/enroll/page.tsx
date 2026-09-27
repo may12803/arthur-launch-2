@@ -26,9 +26,16 @@ function EnrollForm() {
   const startEnroll = useCallback(async () => {
     setError("");
     setStarting(true);
+    // A setup abandoned earlier leaves an unverified factor behind; clear it so a retry starts clean.
+    const { data: existing } = await loveleeday.auth.mfa.listFactors();
+    for (const f of existing?.all ?? []) {
+      if (f.factor_type === "totp" && f.status === "unverified") {
+        await loveleeday.auth.mfa.unenroll({ factorId: f.id });
+      }
+    }
     const { data, error: enrollError } = await loveleeday.auth.mfa.enroll({
       factorType: "totp",
-      friendlyName: `Authenticator ${new Date().toLocaleDateString()}`,
+      friendlyName: `Authenticator ${new Date().toISOString()}`,
     });
     setStarting(false);
     if (enrollError) {
