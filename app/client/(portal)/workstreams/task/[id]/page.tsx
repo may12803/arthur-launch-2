@@ -16,7 +16,7 @@ export default async function TaskPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const ctx = await requireClientPortal();
   const supabase = await getLoveleedayServer();
-  const { data: t } = await supabase.from("workstream_tasks").select("*").eq("id", id).eq("tenant_id", ctx.tenantId).maybeSingle<WsTask>();
+  const { data: t } = await supabase.from("workstream_tasks").select("*").eq("id", id).eq("tenant_id", ctx.tenantId).eq("internal", false).maybeSingle<WsTask>();
   if (!t) notFound();
   const [{ data: w }, { data: decisions }] = await Promise.all([
     supabase.from("workstreams").select("key, name").eq("id", t.workstream_id).maybeSingle<Pick<Workstream, "key" | "name">>(),

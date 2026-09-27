@@ -22,7 +22,7 @@ export async function loadWorkstreams(tenantId: string) {
   const supabase = await getLoveleedayServer();
   const [ws, tasks] = await Promise.all([
     supabase.from("workstreams").select("id, key, name, summary, grade_start, grade_now, grade_target, review_slug, sort").eq("tenant_id", tenantId).order("sort").returns<Workstream[]>(),
-    supabase.from("workstream_tasks").select("id, workstream_id, title, detail, recommendation, status, kind, evidence, outcome, was, proof, rank, done_at, updated_at").eq("tenant_id", tenantId).order("rank").returns<WsTask[]>(),
+    supabase.from("workstream_tasks").select("id, workstream_id, title, detail, recommendation, status, kind, evidence, outcome, was, proof, rank, done_at, updated_at").eq("tenant_id", tenantId).eq("internal", false).order("rank").returns<WsTask[]>(),
   ]);
   return { supabase, workstreams: ws.data ?? [], tasks: tasks.data ?? [], error: ws.error?.message || tasks.error?.message || null };
 }
