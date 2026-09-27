@@ -6,6 +6,8 @@ import { loveleeday } from "@/lib/supabase/loveleeday";
 import { PortalButton, inputClass } from "@/components/client-portal/ui";
 import { AuthShell } from "@/components/client-portal/AuthShell";
 import { MfaHelp } from "@/components/client-portal/MfaHelp";
+import { BackupCodes } from "@/components/client-portal/BackupCodes";
+import { friendlyAuthError, sendToSignIn } from "@/lib/client-portal/auth-errors";
 import { isSsoSession } from "@/lib/client-portal/sso";
 
 function safeNext(raw: string | null): string {
@@ -13,6 +15,7 @@ function safeNext(raw: string | null): string {
 }
 
 type Enroll = { factorId: string; qrSvg: string; secret: string } | null;
+const PENDING_KEY = "ll-mfa-pending-setup";
 
 function EnrollForm() {
   const params = useSearchParams();
@@ -25,27 +28,45 @@ function EnrollForm() {
   const [code, setCode] = useState("");
   const [verifying, setVerifying] = useState(false);
 
-  const startEnroll = useCallback(async () => {
+  const [codes, setCodes] = useState<string[] | null>(null);
+
+  const startEnroll = useCallback(async (fresh = false) => {
     setError("");
     setStarting(true);
-    // A setup abandoned earlier leaves an unverified factor behind; clear it so a retry starts clean.
-    const { data: existing } = await loveleeday.auth.mfa.listFactors();
-    for (const f of existing?.all ?? []) {
-      if (f.factor_type === "totp" && f.status === "unverified") {
-        await loveleeday.auth.mfa.unenroll({ factorId: f.id });
-      }
+    const { data: existing, error: listError } = await loveleeday.auth.mfa.listFactors();
+    if (listError) {
+      setStarting(false);
+      const f = friendlyAuthError(listError.message);
+      if (f.signedOut) return sendToSignIn(`/client/mfa/enroll?next=${encodeURIComponent(next)}`);
+      setError(f.text);
+      return;
     }
+    // Reloading must not change the code: a person may already have scanned it. Reuse this tab's pending
+    // setup while its factor still exists; only then clear leftovers from abandoned attempts.
+    let pending: Enroll = null;
+    try { pending = JSON.parse(sessionStorage.getItem(PENDING_KEY) || "null"); } catch {}
+    const unverified = (existing?.all ?? []).filter((f) => f.factor_type === "totp" && f.status === "unverified");
+    if (!fresh && pending && unverified.some((f) => f.id === pending!.factorId)) {
+      setEnroll(pending);
+      setStarting(false);
+      return;
+    }
+    for (const f of unverified) await loveleeday.auth.mfa.unenroll({ factorId: f.id });
     const { data, error: enrollError } = await loveleeday.auth.mfa.enroll({
       factorType: "totp",
       friendlyName: `Authenticator ${new Date().toISOString()}`,
     });
     setStarting(false);
     if (enrollError) {
-      setError(enrollError.message);
+      const f = friendlyAuthError(enrollError.message);
+      if (f.signedOut) return sendToSignIn(`/client/mfa/enroll?next=${encodeURIComponent(next)}`);
+      setError(f.text);
       return;
     }
-    setEnroll({ factorId: data.id, qrSvg: data.totp.qr_code, secret: data.totp.secret });
-  }, []);
+    const e = { factorId: data.id, qrSvg: data.totp.qr_code, secret: data.totp.secret };
+    try { sessionStorage.setItem(PENDING_KEY, JSON.stringify(e)); } catch {}
+    setEnroll(e);
+  }, [next]);
 
   const bootstrap = useCallback(async () => {
     setLoading(true);
@@ -86,20 +107,27 @@ function EnrollForm() {
     const { data: challenge, error: challengeError } = await loveleeday.auth.mfa.challenge({
       factorId: enroll.factorId,
     });
-    if (challengeError) {
-      setError(challengeError.message);
-      setVerifying(false);
-      return;
-    }
-    const { error: verifyError } = await loveleeday.auth.mfa.verify({
-      factorId: enroll.factorId,
-      challengeId: challenge.id,
-      code: code.trim(),
-    });
+    const failed = challengeError || null;
+    const { error: verifyError } = failed
+      ? { error: failed }
+      : await loveleeday.auth.mfa.verify({ factorId: enroll.factorId, challengeId: challenge!.id, code: code.trim() });
     if (verifyError) {
-      setError(verifyError.message || "That code didn't match. Try again.");
+      const f = friendlyAuthError(verifyError.message);
       setVerifying(false);
       setCode("");
+      if (f.signedOut) return sendToSignIn(`/client/mfa/enroll?next=${encodeURIComponent(next)}`);
+      if (/factor.*not found|expired/i.test(verifyError.message)) {
+        try { sessionStorage.removeItem(PENDING_KEY); } catch {}
+        await startEnroll(true);
+      }
+      setError(f.text);
+      return;
+    }
+    try { sessionStorage.removeItem(PENDING_KEY); } catch {}
+    const { data: newCodes } = await loveleeday.rpc("mfa_recovery_codes_generate");
+    if (Array.isArray(newCodes) && newCodes.length) {
+      setCodes(newCodes as string[]);
+      setVerifying(false);
       return;
     }
     window.location.href = next;
@@ -110,11 +138,13 @@ function EnrollForm() {
       eyebrow="Two-factor authentication"
       headline="Secure your"
       muted="account."
-      lead="Required for every LOVELEEDAY account. Scan the code with an authenticator app — Google Authenticator, 1Password or Authy — then enter the 6-digit code it shows."
+      lead="One-time setup, required for every LOVELEEDAY account. Scan the code once with an authenticator app (Google Authenticator, 1Password or Authy). After this, you'll sign in with your password and the 6-digit code from the app."
     >
-          <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)] mb-5">Scan and verify</h2>
+          <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)] mb-5">{codes ? "Two-factor is on" : "Scan once and verify"}</h2>
 
-          {loading || starting || !enroll ? (
+          {codes ? (
+            <BackupCodes codes={codes} onDone={() => { window.location.href = next; }} />
+          ) : loading || starting || !enroll ? (
             <p className="ll-note">
               {error ? <span className="ll-feedback warn">{error}</span> : "Setting up…"}
             </p>

@@ -6,6 +6,7 @@ import { loveleeday } from "@/lib/supabase/loveleeday";
 import { FormField, PortalButton, inputClass } from "@/components/client-portal/ui";
 import { AuthShell } from "@/components/client-portal/AuthShell";
 import { emailDomain } from "@/lib/client-portal/sso";
+import { friendlyAuthError } from "@/lib/client-portal/auth-errors";
 
 function safeNext(raw: string | null): string {
   return raw && raw.startsWith("/client") && !raw.startsWith("//") ? raw : "/client";
@@ -54,7 +55,7 @@ function LoginForm() {
 
     const { error: signInError } = await loveleeday.auth.signInWithPassword({ email, password });
     if (signInError) {
-      setError(signInError.message || "That email and password didn't match.");
+      setError(friendlyAuthError(signInError.message).text);
       setLoading(false);
       return;
     }
@@ -148,6 +149,7 @@ function LoginForm() {
         <PortalButton type="submit" disabled={loading || !email || !password} className="w-full mt-1">
           {loading ? "Signing in…" : "Sign in"}
         </PortalButton>
+        <a href="/client/forgot" className="ll-note underline self-center">Forgot your password?</a>
       </form>
       )}
     </AuthShell>

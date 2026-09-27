@@ -6,6 +6,7 @@ import { loveleeday } from "@/lib/supabase/loveleeday";
 import { PortalButton, inputClass } from "@/components/client-portal/ui";
 import { AuthShell } from "@/components/client-portal/AuthShell";
 import { MfaHelp } from "@/components/client-portal/MfaHelp";
+import { friendlyAuthError, sendToSignIn } from "@/lib/client-portal/auth-errors";
 
 function safeNext(raw: string | null): string {
   return raw && raw.startsWith("/client") && !raw.startsWith("//") ? raw : "/client";
@@ -22,6 +23,8 @@ function ChallengeForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
+  const [useBackup, setUseBackup] = useState(false);
+  const [backup, setBackup] = useState("");
 
   const bootstrap = useCallback(async () => {
     setLoading(true);
@@ -50,7 +53,9 @@ function ChallengeForm() {
 
     const { data: factorsData, error: factorsError } = await loveleeday.auth.mfa.listFactors();
     if (factorsError) {
-      setError(factorsError.message);
+      const f = friendlyAuthError(factorsError.message);
+      if (f.signedOut) return sendToSignIn(next);
+      setError(f.text);
       setLoading(false);
       return;
     }
@@ -64,7 +69,9 @@ function ChallengeForm() {
       factorId: verifiedTotp.id,
     });
     if (challengeError) {
-      setError(challengeError.message);
+      const f = friendlyAuthError(challengeError.message);
+      if (f.signedOut) return sendToSignIn(next);
+      setError(f.text);
       setLoading(false);
       return;
     }
@@ -89,12 +96,38 @@ function ChallengeForm() {
       code: code.trim(),
     });
     if (verifyError) {
-      setError(verifyError.message || "That code didn't match. Try again.");
+      const f = friendlyAuthError(verifyError.message);
+      if (f.signedOut) return sendToSignIn(next);
+      setError(f.text);
       setVerifying(false);
       setCode("");
+      // A challenge is single-use and expires; get a fresh one so the next attempt can succeed.
+      bootstrap();
       return;
     }
     window.location.href = next;
+  }
+
+  async function onBackup(e: FormEvent) {
+    e.preventDefault();
+    if (verifying) return;
+    setError("");
+    setVerifying(true);
+    const { data: ok, error: rpcError } = await loveleeday.rpc("mfa_recovery_redeem", { p_code: backup.trim() });
+    setVerifying(false);
+    if (rpcError) {
+      const f = friendlyAuthError(rpcError.message);
+      if (f.signedOut) return sendToSignIn(next);
+      setError(f.text);
+      return;
+    }
+    if (!ok) {
+      setError("That backup code didn't match, or it's already been used.");
+      return;
+    }
+    // The code removed the lost authenticator; set up the new phone now.
+    await loveleeday.auth.refreshSession();
+    window.location.href = `/client/mfa/enroll?next=${encodeURIComponent(next)}`;
   }
 
   return (
@@ -107,7 +140,24 @@ function ChallengeForm() {
           <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Verification code</h2>
           <p className="ll-note mt-1 mb-6">The 6-digit code from your authenticator app.</p>
 
-          {loading ? (
+          {useBackup ? (
+            <form aria-label="Backup code" onSubmit={onBackup} className="flex flex-col gap-4">
+              <p className="ll-note">Enter one of the backup codes you saved when you set up two-factor. It works once, then you&apos;ll set up your new phone.</p>
+              <input
+                autoFocus
+                autoComplete="off"
+                value={backup}
+                onChange={(e) => setBackup(e.target.value)}
+                placeholder="XXXXX-XXXXX"
+                className={`${inputClass} text-center tracking-[0.2em] !text-[18px] font-mono uppercase`}
+              />
+              {error && <p className="ll-feedback warn">{error}</p>}
+              <PortalButton type="submit" disabled={verifying || backup.replace(/[^0-9a-f]/gi, "").length < 10} className="w-full">
+                {verifying ? "Checking…" : "Use backup code"}
+              </PortalButton>
+              <button type="button" className="ll-note underline" onClick={() => { setUseBackup(false); setError(""); }}>Use my authenticator app instead</button>
+            </form>
+          ) : loading ? (
             <p className="ll-note">Loading…</p>
           ) : (
             <form aria-label="Verification code" onSubmit={onSubmit} className="flex flex-col gap-4">
@@ -127,6 +177,7 @@ function ChallengeForm() {
               {(!factorId || !challengeId) && (
                 <PortalButton type="button" variant="secondary" onClick={() => bootstrap()} className="w-full">Try again</PortalButton>
               )}
+              <button type="button" className="ll-note underline" onClick={() => { setUseBackup(true); setError(""); }}>Lost your phone? Use a backup code</button>
             </form>
           )}
           <MfaHelp />

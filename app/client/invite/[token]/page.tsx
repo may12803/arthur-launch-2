@@ -5,6 +5,7 @@ import { loveleeday } from "@/lib/supabase/loveleeday";
 import { PortalButton, FormField, inputClass } from "@/components/client-portal/ui";
 import { AuthShell } from "@/components/client-portal/AuthShell";
 import { isSsoSession } from "@/lib/client-portal/sso";
+import { friendlyAuthError } from "@/lib/client-portal/auth-errors";
 
 type Preview = { tenant_name: string; role: string; expired: boolean; email_hint?: string | null } | null;
 
@@ -82,16 +83,26 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     setError("");
 
     if (mode === "signup") {
-      const { data, error: signUpError } = await loveleeday.auth.signUp({ email, password });
-      if (signUpError) {
-        setError(signUpError.message);
+      // Accounts are created on the server against this invite (public sign-up is off), then signed in here.
+      const res = await fetch("/api/client/invite/signup", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token, email, password }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(j.error || "We couldn't create your account. Try again.");
         setSubmitting(false);
         return;
       }
-      if (!data.session) {
-        // Email confirmation is required before a session exists — the
-        // invite is still pending, come back to this same link afterward.
-        setAwaitingConfirmation(true);
+      if (j.exists) {
+        setError("You already have an account with that email. Choose \"I have an account\" and sign in.");
+        setSubmitting(false);
+        return;
+      }
+      const { error: signInError } = await loveleeday.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setError(friendlyAuthError(signInError.message).text);
         setSubmitting(false);
         return;
       }
@@ -197,7 +208,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 id="invite-password"
                 type="password"
                 required
-                minLength={8}
+                minLength={mode === "signup" ? 12 : undefined}
                 autoComplete={mode === "signup" ? "new-password" : "current-password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
