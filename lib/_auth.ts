@@ -76,17 +76,15 @@ export function hasValidBasicAuth(req: NextRequest): boolean {
  * Mirrors checkSessionCookie() in middleware.ts (node:crypto vs edge crypto.subtle).
  */
 export function hasValidSessionCookie(req: NextRequest): boolean {
-  const token = req.cookies.get("arthur_session")?.value;
-  if (!token) return false;
+  // v2.<expiryMs>.<hmac> — same format middleware.ts verifies with Web Crypto.
+  const m = req.cookies.get("arthur_session")?.value?.match(/^v2\.(\d{13})\.([0-9a-f]{64})$/);
+  if (!m || Number(m[1]) < Date.now()) return false;
   const user = process.env.ARTHUR_ONLINE_USER || "daniel";
   const pass = process.env.ARTHUR_ONLINE_PASSWORD;
   if (!pass) return false;
   const secret = process.env.ARTHUR_SECRET || pass;
-  const expected = crypto
-    .createHash("sha256")
-    .update(`${user}:${pass}:${secret}`)
-    .digest("hex");
-  return token === expected;
+  const expected = crypto.createHmac("sha256", `${user}:${pass}:${secret}`).update(`v2.${m[1]}`).digest();
+  return crypto.timingSafeEqual(expected, Buffer.from(m[2], "hex"));
 }
 
 /**

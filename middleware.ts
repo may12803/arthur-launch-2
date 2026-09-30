@@ -126,21 +126,21 @@ function checkBearerAuth(req: NextRequest): boolean {
 
 // Session token derived from server-only secrets (mirror of /api/login's
 // node:crypto computation). Edge runtime uses Web Crypto.
-async function expectedSessionToken(): Promise<string | null> {
-  const user = process.env.ARTHUR_ONLINE_USER || "daniel";
-  const pass = process.env.ARTHUR_ONLINE_PASSWORD;
-  if (!pass) return null;
-  const secret = process.env.ARTHUR_SECRET || pass;
-  const data = new TextEncoder().encode(`${user}:${pass}:${secret}`);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
+// Cookie format v2.<expiryMs>.<hmac>: the expiry is signed, so a copied cookie dies on schedule.
 async function checkSessionCookie(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get("arthur_session")?.value;
-  if (!token) return false;
-  const expected = await expectedSessionToken();
-  return !!expected && token === expected;
+  const m = token?.match(/^v2\.(\d{13})\.([0-9a-f]{64})$/);
+  if (!m || Number(m[1]) < Date.now()) return false;
+  const user = process.env.ARTHUR_ONLINE_USER || "daniel";
+  const pass = process.env.ARTHUR_ONLINE_PASSWORD;
+  if (!pass) return false;
+  const secret = process.env.ARTHUR_SECRET || pass;
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(`${user}:${pass}:${secret}`), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = [...new Uint8Array(await crypto.subtle.sign("HMAC", key, enc.encode(`v2.${m[1]}`)))].map(b => b.toString(16).padStart(2, "0")).join("");
+  let diff = 0;
+  for (let i = 0; i < 64; i++) diff |= sig.charCodeAt(i) ^ m[2].charCodeAt(i);
+  return diff === 0;
 }
 
 function wantsHtml(req: NextRequest): boolean {

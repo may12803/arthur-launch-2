@@ -7,12 +7,28 @@ export const runtime = "nodejs";
 // Session token derived from server-only secrets — an attacker can't forge it
 // without ARTHUR_ONLINE_PASSWORD + ARTHUR_SECRET. Mirror of middleware's edge
 // computation (crypto.subtle) so the cookie validates on every request.
+// v2 carries its own expiry, so a copied cookie stops working after SESSION_DAYS instead of
+// living until the password changes (sim lab, 2026-09-30). Verified in middleware + lib/_auth.
+const SESSION_DAYS = 30;
 function sessionToken(user: string, pass: string): string {
   const secret = process.env.ARTHUR_SECRET || pass;
-  return crypto.createHash("sha256").update(`${user}:${pass}:${secret}`).digest("hex");
+  const exp = Date.now() + SESSION_DAYS * 86_400_000;
+  const sig = crypto.createHmac("sha256", `${user}:${pass}:${secret}`).update(`v2.${exp}`).digest("hex");
+  return `v2.${exp}.${sig}`;
 }
 
+const attempts = new Map<string, number[]>();
+function tooMany(ip: string) {
+  const now = Date.now(), recent = (attempts.get(ip) ?? []).filter((t) => now - t < 15 * 60_000);
+  recent.push(now);
+  attempts.set(ip, recent);
+  return recent.length > 10;
+}
+const sameText = (a: string, b: string) => crypto.timingSafeEqual(crypto.createHash("sha256").update(a).digest(), crypto.createHash("sha256").update(b).digest());
+
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("fly-client-ip") || (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "unknown";
+  if (tooMany(ip)) return NextResponse.json({ error: "Too many tries. Wait 15 minutes." }, { status: 429 });
   let body: { username?: string; password?: string } = {};
   try { body = await req.json(); } catch {}
 
@@ -24,7 +40,7 @@ export async function POST(req: NextRequest) {
 
   const user = (body.username || expectedUser).trim();
   const pass = body.password || "";
-  if (user !== expectedUser || pass !== expectedPass) {
+  if (!sameText(user, expectedUser) || !sameText(pass, expectedPass)) {
     return NextResponse.json({ error: "That password didn't match." }, { status: 401 });
   }
 
