@@ -39,7 +39,8 @@ export default function LoginPage() {
         const data = await res.json().catch(() => ({} as { mfaRedirect?: string | null }));
         const params = new URLSearchParams(window.location.search);
         const next = params.get('next');
-        const safe = next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard';
+        // Same-site paths only. Browsers read a backslash as a slash, so /\evil.com is //evil.com: off-site.
+        const safe = next && /^\/(?![/\\])/.test(next) && !next.includes('\\') ? next : '/dashboard';
         // An MFA challenge or forced enrollment always takes priority over
         // wherever the user was headed — it carries `next` along so the
         // challenge/enroll screen can forward them afterward.

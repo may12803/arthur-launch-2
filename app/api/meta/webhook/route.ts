@@ -70,13 +70,16 @@ interface MetaWebhookPayload {
 export async function POST(req: NextRequest) {
   // Validate Meta signature when APP_SECRET is configured
   const rawBody = await req.text();
+  // Fails closed: this route is reachable without the admin gate, so an unset secret means no one is verified.
   const appSecret = process.env.META_APP_SECRET;
-  if (appSecret) {
-    const sig = req.headers.get("x-hub-signature-256");
-    if (!verifyMetaSignature(rawBody, sig, appSecret)) {
-      console.warn("[meta/webhook] signature mismatch — dropping request");
-      return new NextResponse("Forbidden", { status: 403 });
-    }
+  if (!appSecret) {
+    console.error("[meta/webhook] META_APP_SECRET not set — refusing unverifiable request");
+    return new NextResponse("Not configured", { status: 503 });
+  }
+  const sig = req.headers.get("x-hub-signature-256");
+  if (!verifyMetaSignature(rawBody, sig, appSecret)) {
+    console.warn("[meta/webhook] signature mismatch — dropping request");
+    return new NextResponse("Forbidden", { status: 403 });
   }
 
   let payload: MetaWebhookPayload;

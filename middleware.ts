@@ -56,6 +56,13 @@ const PUBLIC_PREFIXES = [
   // are gated by the link token + an emailed one-time code instead.
   "/share/",
   "/api/share/",
+  // Signed webhooks: each handler verifies its sender and fails closed (Telnyx Ed25519, Stripe
+  // constructEvent, Meta HMAC, inbound-email bearer). The admin gate in front of them returned 401
+  // to every real delivery; no inbound SMS was recorded after 2026-04-30 (sim lab, 2026-09-30).
+  "/api/inbound/",
+  "/api/stripe/webhook",
+  "/api/meta/webhook",
+  "/api/email/inbound",
 ];
 
 const PROXIED_PREFIXES = [
@@ -76,7 +83,8 @@ const MFA_EXEMPT_PATHS = ["/mfa/challenge", "/settings/security", "/api/logout"]
 
 function isPublic(path: string): boolean {
   if (PUBLIC_PATHS.includes(path)) return true;
-  if (PUBLIC_PREFIXES.some(p => path.startsWith(p))) return true;
+  // Prefix match at a path boundary: "/client" covers /client and /client/..., never /clientX.
+  if (PUBLIC_PREFIXES.some(p => path === p.replace(/\/$/, "") || path.startsWith(p.endsWith("/") ? p : p + "/"))) return true;
   return false;
 }
 
