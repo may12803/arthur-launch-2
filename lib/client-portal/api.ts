@@ -34,12 +34,13 @@ export async function getApiContext() {
 
 // Behind Fly's proxy req.url is the container bind address; links sent to
 // people are built from the forwarded public host (portal.loveleedaystudios.com
-// or arthur-online.fly.dev), never 0.0.0.0.
+// or arthur-online.fly.dev), never 0.0.0.0. The host is client-controlled, so
+// only known hosts are accepted; anything else would let a forged Host header
+// put another domain into a link we email (red team F-05, 2026-10-02).
+const PUBLIC_HOSTS = new Set(["portal.loveleedaystudios.com", "arthur-online.fly.dev"]);
 export function publicOrigin(req: NextRequest): string {
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
-  if (host && !/^(0\.0\.0\.0|127\.0\.0\.1|localhost)(:|$)/.test(host)) {
-    return `${req.headers.get("x-forwarded-proto") || "https"}://${host}`;
-  }
+  const host = (req.headers.get("x-forwarded-host") || req.headers.get("host") || "").split(",")[0].trim().toLowerCase();
+  if (PUBLIC_HOSTS.has(host)) return `https://${host}`;
   return process.env.PORTAL_ORIGIN || "https://portal.loveleedaystudios.com";
 }
 
