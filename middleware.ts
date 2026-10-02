@@ -27,22 +27,14 @@ const PUBLIC_PATHS = [
   "/favicon.ico",
   "/robots.txt",
   "/sitemap.xml",
-  // Brain/skill/benchmark data files (public metadata, not sensitive)
-  "/brain-graph-full.json",
-  "/brain-snapshot.json",
-  "/brain-files.json",
-  "/brain-index.json",
-  "/brain-utilization.json",
-  "/skills.json",
-  "/principles.json",
-  "/benchmarks.json",
-  "/employees.json",
+  // Brain/skill/benchmark/employee data files are NOT public: brain-files.json carried the full text of
+  // 439 internal brain files (finance, legal, security). Every page that reads them is behind this gate,
+  // so the browser fetches them with the admin session (red team F-10, 2026-10-02).
 ];
 
 const PUBLIC_PREFIXES = [
   "/_next/",
   "/api/webhooks/",
-  "/api/employees/",
   "/static/",
   "/images/",
   "/fonts/",
