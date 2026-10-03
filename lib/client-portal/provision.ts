@@ -6,12 +6,13 @@ export type RpcResult = { data: unknown; error: { message: string } | null };
 export type StaffClient = { rpc(fn: string, args?: Record<string, unknown>): PromiseLike<RpcResult> };
 export type AdminAuth = {
   inviteUserByEmail(email: string, opts: { redirectTo?: string }): Promise<{ data: { user: { id: string } | null } | null; error: { message: string } | null }>;
+  deleteUser(id: string): Promise<{ error: { message: string } | null }>;
   listUsers(p: { page: number; perPage: number }): Promise<{ data: { users: { id: string; email?: string | null }[] } | null; error: { message: string } | null }>;
 };
 
 export type ProvisionResult =
-  | { ok: true; tenantId: string; ownerId: string; invited: boolean }
-  | { ok: false; status: number; error: string };
+  | { ok: true; tenantId: string; ownerId: string; invited: boolean; pendingOwnerAcceptance: boolean }
+  | { ok: false; status: number; error: string; orphanedUserId?: string };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SLUG = /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/;
@@ -56,13 +57,24 @@ export async function provisionTenant(
   }
   if (!ownerId) return { ok: false, status: 502, error: "Couldn't invite the owner. Try again." };
 
-  const res = await staff.rpc("staff_provision_tenant", { p_name: name, p_slug: slug, p_owner: ownerId });
+  // The database requires the owner id to be the user of this email (no arbitrary existing ids) and audits who it was.
+  const res = await staff.rpc("staff_provision_tenant", { p_name: name, p_slug: slug, p_owner: ownerId, p_owner_email: email });
   if (res.error) {
+    // Compensate: the Auth user exists only because THIS request invited it, and no tenant took it, so remove it.
+    // A pre-existing account (invited === false) is never deleted.
+    let orphan: string | undefined;
+    if (invited) {
+      const del = await admin.deleteUser(ownerId).catch((e: unknown) => ({ error: { message: String(e) } }));
+      if (del.error) orphan = ownerId;
+    }
     const m = res.error.message;
-    if (/slug already/i.test(m)) return { ok: false, status: 409, error: "That slug is already in use." };
-    if (/staff only/i.test(m)) return { ok: false, status: 403, error: "Only LOVELEEDAY staff can add a client." };
-    if (/must be|slug must/i.test(m)) return { ok: false, status: 400, error: m.charAt(0).toUpperCase() + m.slice(1) + "." };
-    return { ok: false, status: 500, error: "Something went wrong. Try again." };
+    const fail = (status: number, error: string): ProvisionResult => ({ ok: false, status, error, ...(orphan ? { orphanedUserId: orphan } : {}) });
+    if (/slug already/i.test(m)) return fail(409, "That slug is already in use.");
+    if (/staff only/i.test(m)) return fail(403, "Only LOVELEEDAY staff can add a client.");
+    if (/owner must be/i.test(m)) return fail(400, "The owner must be the user of the invited email.");
+    if (/must be|slug must/i.test(m)) return fail(400, m.charAt(0).toUpperCase() + m.slice(1) + ".");
+    return fail(500, "Something went wrong. Try again.");
   }
-  return { ok: true, tenantId: String(res.data), ownerId, invited };
+  // An invited-but-failed run leaves nothing; an existing account is added as a PENDING owner until they accept.
+  return { ok: true, tenantId: String(res.data), ownerId, invited, pendingOwnerAcceptance: !invited };
 }

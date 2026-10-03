@@ -3,7 +3,7 @@
 -- restrictive require_mfa_aal2). Not run against production.
 create role anon nologin; create role authenticated nologin;
 create schema auth; create schema private;
-create table auth.users (id uuid primary key, email text);
+create table auth.users (id uuid primary key, email text, invited_at timestamptz, last_sign_in_at timestamptz);
 create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb $$;
 create function auth.uid() returns uuid language sql stable as $$ select nullif(auth.jwt() ->> 'sub', '')::uuid $$;
 grant usage on schema auth to authenticated; grant usage on schema public to authenticated, anon;
@@ -33,9 +33,12 @@ create policy require_mfa_aal2 on public.tenants as restrictive for all to authe
 create policy require_mfa_aal2 on public.memberships as restrictive for all to authenticated using ((select public.session_is_strong())) with check ((select public.session_is_strong()));
 create policy require_mfa_aal2 on public.audit_log as restrictive for all to authenticated using ((select public.session_is_strong())) with check ((select public.session_is_strong()));
 
-insert into auth.users values ('00000000-0000-0000-0000-00000000000a', 'staff@l.test'), ('00000000-0000-0000-0000-00000000000b', 'plain@l.test'),
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-00000000000a', 'staff@l.test'), ('00000000-0000-0000-0000-00000000000b', 'plain@l.test'),
   ('00000000-0000-0000-0000-00000000000c', 'newowner@x.test'), ('00000000-0000-0000-0000-00000000000d', 'otherowner@y.test');
 insert into private.staff values ('00000000-0000-0000-0000-00000000000a');
+-- newowner was just invited by the route; otherowner is a long-standing account
+update auth.users set invited_at = now() where email = 'newowner@x.test';
+update auth.users set last_sign_in_at = now() - interval '30 days' where email = 'otherowner@y.test';
 -- a pre-existing, unrelated tenant owned by "otherowner"
 insert into public.tenants (id, name, slug) values ('11111111-1111-1111-1111-111111111111', 'Other Co', 'other-co');
 insert into public.memberships (tenant_id, user_id, role, accepted_at) values ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-00000000000d', 'owner', now());
@@ -47,7 +50,7 @@ grant execute on function public.as_user(text, text) to authenticated;
 -- SCENARIOS
 do $$ declare t uuid; begin
   perform public.as_user('00000000-0000-0000-0000-00000000000a', 'aal2');
-  t := public.staff_provision_tenant('Harbor Bar', 'Harbor-Bar', '00000000-0000-0000-0000-00000000000c');
+  t := public.staff_provision_tenant('Harbor Bar', 'Harbor-Bar', '00000000-0000-0000-0000-00000000000c', 'NewOwner@x.test');
   insert into public.res values ('staff_provisions', 'ok');
   reset role;
 end $$;
@@ -56,11 +59,11 @@ select 'RESULT|owner_membership|' || role from public.memberships m join public.
 select 'RESULT|audit_row|' || action from public.audit_log where target like 'tenant:%' and action = 'tenant.provisioned';
 select 'RESULT|' || k || '|' || v from public.res;
 
-create function public.try_provision(uid text, aal text, slug text, key text) returns void language plpgsql as $$
+create function public.try_provision(uid text, aal text, slug text, key text, owner text default '00000000-0000-0000-0000-00000000000c', email text default 'newowner@x.test') returns void language plpgsql as $$
 begin
   perform public.as_user(uid, aal);
   begin
-    perform public.staff_provision_tenant('Another', slug, '00000000-0000-0000-0000-00000000000c');
+    perform public.staff_provision_tenant('Another', slug, owner::uuid, email);
     insert into public.res values (key, 'allowed');
   exception when others then insert into public.res values (key, 'refused:' || sqlerrm);
   end;
@@ -71,7 +74,18 @@ select public.try_provision('00000000-0000-0000-0000-00000000000a', 'aal1', 'wea
 select public.try_provision('00000000-0000-0000-0000-00000000000a', 'aal2', 'harbor-bar', 'dup_slug');
 select public.try_provision('00000000-0000-0000-0000-00000000000a', 'aal2', 'Bad Slug!', 'bad_slug');
 select 'RESULT|' || k || '|' || v from public.res where k in ('nonstaff', 'weak_session', 'dup_slug', 'bad_slug');
-select 'RESULT|anon_exec|' || has_function_privilege('anon', 'public.staff_provision_tenant(text,text,uuid)', 'execute');
+select 'RESULT|anon_exec|' || has_function_privilege('anon', 'public.staff_provision_tenant(text,text,uuid,text)', 'execute');
+
+-- P5: staff cannot name an arbitrary existing user as owner. Wrong email for the id, or no email, is refused.
+select public.try_provision('00000000-0000-0000-0000-00000000000a', 'aal2', 'arbitrary-owner', 'arbitrary_owner', '00000000-0000-0000-0000-00000000000d', 'newowner@x.test');
+select public.try_provision('00000000-0000-0000-0000-00000000000a', 'aal2', 'no-email', 'no_email', '00000000-0000-0000-0000-00000000000d', '');
+select 'RESULT|' || k || '|' || v from public.res where k in ('arbitrary_owner', 'no_email');
+-- A pre-existing account whose email IS given becomes a PENDING owner (no access until accepted), with its own audit action.
+select public.try_provision('00000000-0000-0000-0000-00000000000a', 'aal2', 'pending-co', 'existing_owner', '00000000-0000-0000-0000-00000000000d', 'OtherOwner@y.test');
+select 'RESULT|existing_owner|' || v from public.res where k = 'existing_owner';
+select 'RESULT|pending_accepted_at|' || coalesce(m.accepted_at::text, 'null') from public.memberships m join public.tenants t on t.id = m.tenant_id where t.slug = 'pending-co';
+select 'RESULT|pending_audit|' || a.action || '|' || (a.meta ->> 'owner_state') || '|' || (a.meta ->> 'owner_email') from public.audit_log a join public.tenants t on t.id = a.tenant_id where t.slug = 'pending-co';
+select 'RESULT|fresh_audit_state|' || (a.meta ->> 'owner_state') from public.audit_log a join public.tenants t on t.id = a.tenant_id where t.slug = 'harbor-bar';
 
 -- isolation: the new owner (aal2) sees only their own tenant; the other owner never sees the new one
 do $$ begin

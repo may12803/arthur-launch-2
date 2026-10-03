@@ -21,6 +21,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } }).auth.admin;
   const result = await provisionTenant(staff, admin, body, `${publicOrigin(req)}/client/login`);
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
-  return NextResponse.json({ ok: true, tenant: result.tenantId, owner: result.ownerId, invited: result.invited });
+  if (!result.ok) {
+    // An orphaned auth user (compensating delete failed) is surfaced to staff so it can be removed by hand; never silent.
+    if (result.orphanedUserId) console.error("provision: orphaned auth user after failed provisioning", result.orphanedUserId);
+    return NextResponse.json({ error: result.error, ...(result.orphanedUserId ? { orphanedUserId: result.orphanedUserId } : {}) }, { status: result.status });
+  }
+  return NextResponse.json({ ok: true, tenant: result.tenantId, owner: result.ownerId, invited: result.invited, pendingOwnerAcceptance: result.pendingOwnerAcceptance });
 }
