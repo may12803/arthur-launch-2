@@ -25,7 +25,16 @@ export async function POST(req: NextRequest) {
   if (String(invite.email).toLowerCase() !== email) return NextResponse.json({ error: "Use the email address this invitation was sent to." }, { status: 403 });
 
   const r = await fetch(`${url}/auth/v1/admin/users`, { method: "POST", headers: H, body: JSON.stringify({ email, password, email_confirm: true }) });
-  if (r.ok) return NextResponse.json({ ok: true });
+  if (r.ok) {
+    // P24: the invite was checked before the account existed. Re-read it now so a token consumed or expired in between is reported
+    // with a recovery path instead of a silent account that has no membership.
+    const again = await fetch(q, { headers: H, cache: "no-store" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
+    const still = Array.isArray(again) ? again[0] : null;
+    if (!still || new Date(still.expires_at) <= new Date()) {
+      return NextResponse.json({ created: true, error: "Your account was created, but this invitation is no longer valid. Sign in, then ask for a new invitation." }, { status: 410 });
+    }
+    return NextResponse.json({ ok: true });
+  }
   const t = await r.text();
   if (r.status === 422 || /already (been )?registered|exists/i.test(t)) return NextResponse.json({ exists: true });
   if (/pwned|leaked|weak/i.test(t)) return NextResponse.json({ error: "That password has appeared in a data breach. Choose a different one." }, { status: 400 });

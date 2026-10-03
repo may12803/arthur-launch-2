@@ -3,7 +3,7 @@ import { getApiContext } from "@/lib/client-portal/api";
 
 export const runtime = "nodejs";
 
-const INVITABLE_ROLES = new Set(["admin", "member", "viewer"]);
+import { INVITABLE_ROLES } from "@/lib/client-portal/roles";
 
 // Creates a pending row in `invites`. Relies entirely on the invites table's
 // existing RLS policy (invites_admin_manage: ALL for an owner/admin whose

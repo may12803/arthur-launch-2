@@ -66,11 +66,11 @@ create function public.as_user(uid text, aal text) returns void language plpgsql
 begin perform set_config('request.jwt.claims', json_build_object('sub', uid, 'aal', aal)::text, true); set local role authenticated; end $$;
 grant execute on function public.as_user(text, text) to authenticated;
 
-create function public.try_provision(uid text, aal text, nm text, slug text, email text, key text, request_key text default 'fixture-key-1') returns void language plpgsql as $$
+create function public.try_provision(uid text, aal text, nm text, slug text, email text, key text, request_key text default 'auto') returns void language plpgsql as $$
 begin
   perform public.as_user(uid, aal);
   begin
-    insert into public.res values (key, (public.staff_provision_tenant(nm, slug, email, request_key))::text);
+    insert into public.res values (key, (public.staff_provision_tenant(nm, slug, email, case when request_key = 'auto' then 'key-' || lower(trim(slug)) else request_key end))::text);
   exception when others then insert into public.res values (key, 'refused:' || sqlerrm);
   end;
   reset role;
@@ -170,3 +170,44 @@ select public.try_provision('00000000-0000-0000-0000-00000000000a','aal2','Harbo
 select 'RESULT|wrong_key|' || v from public.res where k='wrong_key';
 select public.try_provision('00000000-0000-0000-0000-00000000000a','aal2','Harbor Bar','harbor-bar','newowner@x.test','missing_key',null);
 select 'RESULT|missing_key|' || v from public.res where k='missing_key';
+
+-- ROUND 4 (P16): role ordering includes admin; unknown roles refuse; nothing is lowered.
+insert into auth.users (id,email,email_confirmed_at) values ('00000000-0000-0000-0000-0000000000a1','v@x.test',now()),('00000000-0000-0000-0000-0000000000a2','adm@x.test',now()),('00000000-0000-0000-0000-0000000000a3','own@x.test',now()),('00000000-0000-0000-0000-0000000000a4','weird@x.test',now());
+insert into public.tenants (name,slug) values ('Role Co','role-co');
+insert into public.memberships (tenant_id,user_id,role,accepted_at) values
+ ((select id from public.tenants where slug='role-co'),'00000000-0000-0000-0000-0000000000a1','viewer',now()),
+ ((select id from public.tenants where slug='role-co'),'00000000-0000-0000-0000-0000000000a2','admin',now()),
+ ((select id from public.tenants where slug='role-co'),'00000000-0000-0000-0000-0000000000a3','owner',now()),
+ ((select id from public.tenants where slug='role-co'),'00000000-0000-0000-0000-0000000000a4','member',now());
+insert into public.invites (tenant_id,email,role,token) values
+ ((select id from public.tenants where slug='role-co'),'v@x.test','admin','r4-viewer-admin'),
+ ((select id from public.tenants where slug='role-co'),'adm@x.test','owner','r4-admin-owner'),
+ ((select id from public.tenants where slug='role-co'),'own@x.test','admin','r4-owner-admin'),
+ ((select id from public.tenants where slug='role-co'),'weird@x.test','superuser','r4-weird');
+select public.try_accept('00000000-0000-0000-0000-0000000000a1','r4-viewer-admin','r4a');
+select public.try_accept('00000000-0000-0000-0000-0000000000a2','r4-admin-owner','r4b');
+select public.try_accept('00000000-0000-0000-0000-0000000000a3','r4-owner-admin','r4c');
+select public.try_accept('00000000-0000-0000-0000-0000000000a4','r4-weird','r4d');
+select 'RESULT|r4_roles|' || string_agg(m.role, ',' order by m.user_id) from public.memberships m where m.tenant_id=(select id from public.tenants where slug='role-co');
+select 'RESULT|r4_unknown_role|' || v from public.res where k='r4d';
+select 'RESULT|r4_weird_invite_unconsumed|' || (accepted_at is null)::text from public.invites where token='r4-weird';
+select 'RESULT|r4_rank|' || public.role_rank('viewer') || public.role_rank('member') || public.role_rank('admin') || public.role_rank('owner') || coalesce(public.role_rank('x')::text, 'null');
+
+-- ROUND 4 (P17): another staff user cannot replay the operation; one key cannot create two businesses; no plaintext key stored.
+insert into auth.users (id,email) values ('00000000-0000-0000-0000-0000000000b1','staff2@l.test');
+insert into private.staff values ('00000000-0000-0000-0000-0000000000b1');
+select public.try_provision('00000000-0000-0000-0000-0000000000b1','aal2','Harbor Bar','harbor-bar','newowner@x.test','r4_other_staff_replay','key-harbor-bar');
+select public.try_provision('00000000-0000-0000-0000-00000000000a','aal2','Key Reuse','key-reuse-co','keyreuse@x.test','r4_key_reuse','key-harbor-bar');
+select 'RESULT|r4_other_staff_replay|' || v from public.res where k='r4_other_staff_replay';
+select 'RESULT|r4_key_reuse|' || v from public.res where k='r4_key_reuse';
+select 'RESULT|r4_key_reuse_created_nothing|' || count(*) from public.tenants where slug='key-reuse-co';
+select 'RESULT|r4_no_plaintext_key|' || count(*) from public.tenants where provisioning_key is not null;
+select 'RESULT|r4_digest_shape|' || (provisioning_key_digest ~ '^[0-9a-f]{64}$')::text || '|' || (provisioning_key_digest <> 'key-harbor-bar')::text from public.tenants where slug='harbor-bar';
+
+-- ROUND 4 (P18): a retry touches only the invite this operation created, even when a newer live owner invite exists for the same email.
+select public.try_provision('00000000-0000-0000-0000-00000000000a','aal2','Race Co','race-co','race@x.test','r4_first');
+update public.invites set expires_at = now() - interval '2 days' where tenant_id=(select id from public.tenants where slug='race-co');
+insert into public.invites (tenant_id,email,role,token) values ((select id from public.tenants where slug='race-co'),'race@x.test','owner','r4-newer-live');
+select public.try_provision('00000000-0000-0000-0000-00000000000a','aal2','Race Co','race-co','race@x.test','r4_retry');
+select 'RESULT|r4_retry_exact_invite|' || ((b.v::jsonb ->> 'invite_id') = (a.v::jsonb ->> 'invite_id'))::text || '|' || ((b.v::jsonb ->> 'token') <> 'r4-newer-live')::text || '|' || (b.v::jsonb ->> 'accepted') from public.res a, public.res b where a.k='r4_first' and b.k='r4_retry';
+select 'RESULT|r4_renewed_audit|' || count(*) from public.audit_log where action='tenant.provision_invite_renewed';

@@ -33,6 +33,7 @@ export async function provisionTenant(
   if (res.error) {
     const m = res.error.message;
     if (/staff only/i.test(m)) return { ok: false, status: 403, error: "Only LOVELEEDAY staff can add a client." };
+    if (/key already used/i.test(m)) return { ok: false, status: 409, error: "That request key was already used for another business. Use a new key." };
     if (/slug already/i.test(m)) return { ok: false, status: 409, error: "That slug is already in use." };
     if (/must be|not valid/i.test(m)) return { ok: false, status: 400, error: m.charAt(0).toUpperCase() + m.slice(1) + "." };
     // Unknown outcome (for example a lost response). Nothing was created outside the transaction, so repeating the request is safe.

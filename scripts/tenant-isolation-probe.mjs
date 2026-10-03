@@ -35,6 +35,17 @@ const NAMES = { url: "PROBE_URL", anon: "PROBE_ANON_KEY", email: "PROBE_A_EMAIL"
 const missing = Object.keys(NAMES).filter((k) => !cfg[k]);
 if (missing.length) { console.error(`missing required config: ${missing.map((k) => NAMES[k]).join(", ")} (see header)`); process.exit(2); }
 
+// P23: the probe performs writes (own-tenant controls). It must never run against production, and it must prove the target is the probe
+// fixture before its first write: (1) hard refusal of the production project ref, (2) the target-side marker below.
+const PRODUCTION_REFS = ["eydcfgoklajcztpoprsl"];
+{
+  const host = new URL(cfg.url).hostname, ref = host.split(".")[0];
+  if (PRODUCTION_REFS.includes(ref) || process.env.PROBE_BASE_IS_PRODUCTION) { console.error(`refusing: ${host} is the production project`); process.exit(2); }
+  const apiRef = (() => { try { return JSON.parse(Buffer.from(cfg.anon.split(".")[1], "base64url").toString()).ref; } catch { return null; } })();
+  if (apiRef !== ref) { console.error(`refusing: the anon key belongs to project ${apiRef}, the URL to ${ref}`); process.exit(2); }
+  console.error(`probe target: ${host}`);
+}
+
 // Every client-data table and the column that carries its tenant. `tenants` is keyed by its own id.
 // Anything exposed by PostgREST with a tenant_id column that is NOT listed here fails the probe (coverage check).
 const TABLES = {
@@ -82,48 +93,40 @@ const leak = (where, detail, n = 1) => leaks.push({ where, detail, rows: n });
 const fail = (where, detail) => failures.push({ where, detail });
 const short = (x) => JSON.stringify(x)?.slice(0, 140);
 
-// Authenticated own-tenant reads. Every table must answer 200, show tenant A its OWN rows (so an absent table, a missing
-// SELECT grant or a broken session cannot look like isolation), show no other tenant's rows, and show NOTHING when aimed at B.
+// P19 (root cause): the old probe paged every row and decided "done" from `page.length < 1000`, so any server-side page cap below 1000
+// (PostgREST max-rows) ended the scan early and a later foreign row went unseen. Paging is gone. The leak test is a FILTER the database
+// evaluates over the whole table: rows whose tenant column is not A, and rows whose tenant column is null. Any returned row is a leak and
+// the answer does not depend on page size, ordering or caps. Own rows are proven with a separate `eq.A` read.
+//
+// Authenticated own-tenant reads. Every table must answer 200 + array, show tenant A its OWN rows (so an absent table, a missing SELECT
+// grant or a broken session cannot look like isolation), show NO row of any other tenant or with no tenant, and show nothing aimed at B.
 async function readTablesOwn(label, token) {
   let n = 0;
   for (const [t, col] of Object.entries(TABLES)) {
     n++;
-    let ownSeen = false;
-    for (let offset = 0; ; offset += 1000) {
-      const all = await j(`/rest/v1/${t}?select=${col}&order=${col}.asc&limit=1000&offset=${offset}`, { token });
-      if (all.status !== 200 || !Array.isArray(all.data)) { fail(`${label} GET ${t} (page ${offset})`, `expected 200 + array, got ${all.status} ${short(all.data)}`); break; }
-      ownSeen ||= all.data.some((row) => row[col] === cfg.A);
-      const bad = all.data.filter((row) => row[col] !== cfg.A);
-      if (bad.length) leak(`${label} GET ${t} (page ${offset})`, `${bad.length} row(s) of tenant ${[...new Set(bad.map((x) => x[col]))].join(",")}`, bad.length);
-      if (all.data.length < 1000) break;
+    const own = await j(`/rest/v1/${t}?select=${col}&${col}=eq.${cfg.A}&limit=1`, { token });
+    if (own.status !== 200 || !Array.isArray(own.data)) fail(`${label} GET ${t} (own)`, `expected 200 + array, got ${own.status} ${short(own.data)}`);
+    else if (!own.data.length) fail(`${label} GET ${t}`, "tenant A sees none of its own rows; table, grant, session or fixture is broken");
+    for (const [what, filter] of [["not-A", `${col}=neq.${cfg.A}`], ["null-tenant", `${col}=is.null`], ["aimed-at-B", `${col}=eq.${cfg.B}`]]) {
+      const r = await j(`/rest/v1/${t}?select=${col}&${filter}&limit=50`, { token });
+      if (r.status !== 200 || !Array.isArray(r.data)) fail(`${label} GET ${t} (${what})`, `expected 200 + array, got ${r.status} ${short(r.data)}`);
+      else if (r.data.length) leak(`${label} GET ${t} (${what})`, `${r.data.length}+ row(s) of tenant ${[...new Set(r.data.map((x) => x[col]))].join(",") || "(none)"}`, r.data.length);
     }
-    if (!ownSeen) fail(`${label} GET ${t}`, "tenant A sees none of its own rows; table, grant, session or fixture is broken");
-    const aimed = await j(`/rest/v1/${t}?select=${col}&${col}=eq.${cfg.B}`, { token });
-    if (aimed.status !== 200 || !Array.isArray(aimed.data)) fail(`${label} GET ${t} (aimed-at-B)`, `expected 200 + array, got ${aimed.status} ${short(aimed.data)}`);
-    else if (aimed.data.length) leak(`${label} GET ${t} (aimed-at-B)`, `${aimed.data.length} B row(s)`, aimed.data.length);
   }
   return n;
 }
 
 // anon / aal1: nothing at all may come back. A denial is 200 with no rows, or 401/403; anything else (404 absent table, 5xx) is inconclusive.
+// One unfiltered read with limit=1 is enough: any returned row at all is a leak, whatever the page size.
 async function readTablesDenied(label, token) {
   let n = 0;
   for (const [t, col] of Object.entries(TABLES)) {
     n++;
-    for (let offset = 0; ; offset += 1000) {
-      const r = await j(`/rest/v1/${t}?select=${col}&order=${col}.asc&limit=1000&offset=${offset}`, { token });
-      if (r.status === 200 && Array.isArray(r.data)) {
-        if (r.data.length) leak(`${label} GET ${t} (page ${offset})`, `${r.data.length} row(s) visible without a strong session`, r.data.length);
-        if (r.data.length < 1000) break;
-      } else {
-        if (r.status !== 401 && r.status !== 403) fail(`${label} GET ${t}`, `expected empty 200 or 401/403, got ${r.status} ${short(r.data)}`);
-        break;
-      }
+    for (const [what, filter] of [["any", ""], ["aimed-at-B", `&${col}=eq.${cfg.B}`], ["aimed-at-A", `&${col}=eq.${cfg.A}`]]) {
+      const r = await j(`/rest/v1/${t}?select=${col}${filter}&limit=1`, { token });
+      if (r.status === 200 && Array.isArray(r.data)) { if (r.data.length) leak(`${label} GET ${t} (${what})`, `${r.data.length} row(s) visible without a strong session`, r.data.length); }
+      else if (r.status !== 401 && r.status !== 403) fail(`${label} GET ${t} (${what})`, `expected empty 200 or 401/403, got ${r.status} ${short(r.data)}`);
     }
-    const aimed = await j(`/rest/v1/${t}?select=${col}&${col}=eq.${cfg.B}`, { token });
-    if (aimed.status === 200 && Array.isArray(aimed.data)) { if (aimed.data.length) leak(`${label} GET ${t} (aimed-at-B)`, `${aimed.data.length} row(s) visible`, aimed.data.length); }
-    else if (aimed.status !== 401 && aimed.status !== 403) fail(`${label} GET ${t}`, `expected empty 200 or 401/403, got ${aimed.status} ${short(aimed.data)}`);
-
   }
   return n;
 }
@@ -160,15 +163,58 @@ async function fixtureCheck(staffToken) {
   return { b_rows: r.data.rows, b_rows_missing: empty };
 }
 
-// Each RPC aimed at tenant B must be DENIED (a 2xx that returns/does something is a leak). 404 (function absent) and 5xx are inconclusive.
-async function rpcs(token) {
-  const rpc = (fn, args) => j(`/rest/v1/rpc/${fn}`, { token, method: "POST", body: args });
+// P20 (root cause): the RPC list used to be hand-written, so a SECURITY DEFINER function nobody listed was never tested while every planned
+// check passed. The inventory now comes from the target database (staff_probe_function_inventory reads pg_proc), and EVERY function in
+// public that `authenticated` or `anon` may execute must be classified below. An unclassified one fails the probe until someone decides how
+// it is tested. Classes:
+//   tenant   takes a tenant or an object id. Needs an own-object CONTROL that succeeds, then the same call aimed at B must be denied.
+//   staff    staff-only. A tenant admin (aal2) must be denied.
+//   gated    gated by a token or server secret. A bogus token/secret, as A and as anon, must not return data.
+//   helper   returns the caller's own state (is_staff, session_is_strong, is_tenant_member, role_rank): must say "no" for A where it matters.
+const CLASSES = {
+  tenant: ["list_tenant_team", "document_download", "document_upload", "document_delete", "share_create", "share_revoke", "workstream_decide",
+    "tenant_set_external_sharing", "connection_request", "connection_set_key", "connection_disconnect", "is_tenant_member"],
+  staff: ["staff_list_tenants", "staff_open_access", "staff_close_access", "staff_set_data_class", "staff_provision_tenant", "staff_probe_inventory",
+    "staff_probe_fixture", "staff_probe_target", "staff_probe_function_inventory", "staff_probe_reset_fixture"],
+  gated: ["accept_invite", "get_invite_preview", "share_preview", "share_issue_code", "share_redeem", "connection_record", "connection_secret", "connections_for_probe"],
+  helper: ["is_staff", "session_is_strong", "role_rank"],
+};
+const CLASS_OF = Object.fromEntries(Object.entries(CLASSES).flatMap(([c, names]) => names.map((n) => [n, c])));
+const BOGUS = "probe-bogus-0123456789abcdef";
+const BOGUS_UUID = "00000000-0000-4000-8000-0000000000ff";
+// Dummy arguments built from the function's real identity arguments, so a signature the probe does not know cannot silently 404.
+function dummyArgs(argString) {
+  const out = {};
+  for (const part of argString.split(",").map((s) => s.trim()).filter(Boolean)) {
+    const [name, ...type] = part.split(" "); const ty = type.join(" ");
+    out[name] = /^uuid/.test(ty) ? BOGUS_UUID : /^(integer|int|bigint)/.test(ty) ? 1 : /^boolean/.test(ty) ? false : /^jsonb/.test(ty) ? { k: "v" } : BOGUS;
+  }
+  return out;
+}
+const hasData = (d) => d !== null && d !== undefined && d !== false && !(Array.isArray(d) && d.length === 0) && !(typeof d === "object" && !Array.isArray(d) && Object.keys(d).length === 0);
+
+async function rpcs(token, staffToken) {
+  const rpc = (fn, args, t = token) => j(`/rest/v1/rpc/${fn}`, { token: t, method: "POST", body: args });
+  const handled = new Set();
   let n = 0;
+  // fixture state is restored before and after (P22), so a rerun always starts from the same place
+  const reset = async (when) => { const r = await rpc("staff_probe_reset_fixture", {}, staffToken); if (r.status < 200 || r.status >= 300) fail(`rpc reset fixture (${when})`, `${r.status} ${short(r.data)}`); };
+  await reset("before");
+
+  const inv = await rpc("staff_probe_function_inventory", {}, staffToken);
+  const fns = inv.status === 200 && Array.isArray(inv.data) ? inv.data : null;
+  if (!fns || !fns.length) { fail("rpc inventory", `staff_probe_function_inventory did not answer (${inv.status} ${short(inv.data)}); the RPC list cannot be proven`); return { n: 0, exposed: 0 }; }
+  const exposed = fns.filter((f) => f.auth_exec || f.anon_exec);
+  for (const f of exposed) if (!CLASS_OF[f.name]) fail("rpc coverage", `public.${f.name}(${f.args}) is executable (auth=${f.auth_exec}, anon=${f.anon_exec}, secdef=${f.secdef}) but not classified in the probe`);
+  for (const name of CLASSES.tenant) if (!exposed.some((f) => f.name === name)) fail("rpc coverage", `classified tenant function ${name} is not exposed by the target database`);
+
+  // ---- controls: own objects of tenant A, created fresh each run ----
   const uploadArgs = { p_tenant: cfg.A, p_name: "probe-rpc.txt", p_content_type: "text/plain", p_data_b64: "cHJvYmU=" };
   const upload = await rpc("document_upload", uploadArgs);
-  n++;
   const ownDoc = upload.status === 200 && typeof upload.data === "string" ? upload.data : null;
   if (!ownDoc) fail("rpc control document_upload", `own upload failed: ${upload.status} ${short(upload.data)}`);
+  const upload2 = await rpc("document_upload", { ...uploadArgs, p_name: "probe-rpc-2.txt" });
+  const ownDoc2 = upload2.status === 200 && typeof upload2.data === "string" ? upload2.data : null;
   const taskRows = await j(`/rest/v1/workstream_tasks?select=id&tenant_id=eq.${cfg.A}&limit=1`, { token });
   const ownTask = taskRows.status === 200 ? taskRows.data?.[0]?.id : null;
   if (!ownTask) fail("rpc control workstream_decide", `own task unavailable: ${taskRows.status} ${short(taskRows.data)}`);
@@ -176,35 +222,67 @@ async function rpcs(token) {
   const shares = ownDoc ? await j(`/rest/v1/document_shares?select=id&document_id=eq.${ownDoc}&limit=1`, { token }) : null;
   const ownShare = shares?.status === 200 ? shares.data?.[0]?.id : null;
   if (!ownShare || shareCreate?.status !== 200) fail("rpc control share_revoke", `own share creation failed: ${shareCreate?.status} ${short(shareCreate?.data)}`);
-  const calls = [
-    ["list_tenant_team", { p_tenant: cfg.A }, { p_tenant: cfg.B }, (d) => Array.isArray(d) && d.length > 0],
-    ["document_download", { p_id: ownDoc }, { p_id: cfg.doc }, (d) => Array.isArray(d) && d.length > 0],
-    ["share_revoke", { p_share: ownShare }, { p_share: cfg.share }, (d, s) => s < 300],
-    ["workstream_decide", { p_task: ownTask, p_decision: "approve" }, { p_task: cfg.task, p_decision: "approve" }, (d, s) => s < 300],
-    ["document_upload", uploadArgs, { ...uploadArgs, p_tenant: cfg.B }, (d, s) => s < 300],
-    ["tenant_set_external_sharing", { p_tenant: cfg.A, p_enabled: true }, { p_tenant: cfg.B, p_enabled: true }, (d, s) => s < 300],
-    ["connection_request", { p_tenant: cfg.A, p_connector: "probe", p_kind: "request" }, { p_tenant: cfg.B, p_connector: "probe", p_kind: "request" }, (d, s) => s < 300],
-  ];
-  for (const [fn, ownArgs, otherArgs, isLeak] of calls) {
-    n++;
-    const control = fn === "document_upload" ? upload : await rpc(fn, ownArgs);
-    if (control.status < 200 || control.status >= 300 || (fn === "list_tenant_team" || fn === "document_download") && !isLeak(control.data, control.status)) {
-      fail(`rpc control ${fn}`, `own object failed: ${control.status} ${short(control.data)}`);
-      continue;
-    }
+
+  // [fn, own args (the control), args aimed at B, is this response a leak/success]
+  const ok2xx = (d, s) => s < 300;
+  const tenantCalls = {
+    list_tenant_team: [{ p_tenant: cfg.A }, { p_tenant: cfg.B }, (d) => Array.isArray(d) && d.length > 0],
+    document_download: [{ p_id: ownDoc }, { p_id: cfg.doc }, (d) => Array.isArray(d) && d.length > 0],
+    document_upload: [uploadArgs, { ...uploadArgs, p_tenant: cfg.B }, ok2xx],
+    document_delete: [{ p_id: ownDoc2 }, { p_id: cfg.doc }, ok2xx],
+    share_create: [{ p_document: ownDoc, p_email: "probe2@probe.test", p_days: 1 }, { p_document: cfg.doc, p_email: "probe@probe.test", p_days: 1 }, ok2xx],
+    share_revoke: [{ p_share: ownShare }, { p_share: cfg.share }, ok2xx],
+    workstream_decide: [{ p_task: ownTask, p_decision: "not_now" }, { p_task: cfg.task, p_decision: "not_now" }, ok2xx],
+    tenant_set_external_sharing: [{ p_tenant: cfg.A, p_enabled: true }, { p_tenant: cfg.B, p_enabled: false }, ok2xx],
+    connection_request: [{ p_tenant: cfg.A, p_connector: "probe", p_kind: "request" }, { p_tenant: cfg.B, p_connector: "probe", p_kind: "request" }, ok2xx],
+    connection_set_key: [{ p_tenant: cfg.A, p_connector: "probe", p_payload: { k: "v" } }, { p_tenant: cfg.B, p_connector: "probe", p_payload: { k: "v" } }, ok2xx],
+    connection_disconnect: [{ p_tenant: cfg.A, p_connector: "probe" }, { p_tenant: cfg.B, p_connector: "probe" }, ok2xx],
+    is_tenant_member: [{ p_tenant: cfg.A }, { p_tenant: cfg.B }, (d) => d === true],
+  };
+  for (const fn of CLASSES.tenant) {
+    if (!exposed.some((f) => f.name === fn)) continue;
+    n++; handled.add(fn);
+    const [ownArgs, otherArgs, isLeak] = tenantCalls[fn];
+    const control = await rpc(fn, ownArgs);
+    const controlOk = control.status >= 200 && control.status < 300 && (fn === "is_tenant_member" ? control.data === true : fn === "list_tenant_team" || fn === "document_download" ? isLeak(control.data, control.status) : true);
+    if (!controlOk) { fail(`rpc control ${fn}`, `own object failed: ${control.status} ${short(control.data)}`); continue; }
     const r = await rpc(fn, otherArgs);
     if (isLeak(r.data, r.status)) leak(`rpc ${fn}`, `status ${r.status}, body ${short(r.data)}`);
     else if (r.status === 404 || r.status >= 500 || r.status === 0) fail(`rpc ${fn}`, `inconclusive: status ${r.status} ${short(r.data)}`);
   }
-  n++;
-  const staff = await rpc("staff_list_tenants", {});
-  if (staff.status >= 200 && staff.status < 300) leak("rpc staff_list_tenants", `unexpected success: ${staff.status}`);
-  else if (staff.status === 404 || staff.status >= 500 || staff.status === 0) fail("rpc staff_list_tenants", `inconclusive: ${staff.status} ${short(staff.data)}`);
+  // ---- staff-only: a tenant admin must be refused ----
+  for (const f of exposed.filter((x) => CLASS_OF[x.name] === "staff")) {
+    n++; handled.add(f.name);
+    const r = await rpc(f.name, dummyArgs(f.args));
+    if (r.status >= 200 && r.status < 300) leak(`rpc ${f.name}`, `tenant admin got ${r.status} from a staff-only function`);
+    else if (r.status === 404 || r.status >= 500 || r.status === 0 || (r.status === 400 && !/staff only|permission|not allowed|only/i.test(JSON.stringify(r.data)))) fail(`rpc ${f.name}`, `inconclusive denial: ${r.status} ${short(r.data)}`);
+  }
+  // ---- token / secret gated: a bogus token must not return data, as A or as anon ----
+  for (const f of exposed.filter((x) => CLASS_OF[x.name] === "gated")) {
+    n++; handled.add(f.name);
+    for (const [who, t] of [["A", token], ["anon", cfg.anon]]) {
+      if (who === "anon" && !f.anon_exec) continue;
+      const r = await rpc(f.name, dummyArgs(f.args), t);
+      if (r.status >= 200 && r.status < 300 && hasData(r.data)) leak(`rpc ${f.name} (${who})`, `bogus token/secret returned ${short(r.data)}`);
+      else if (r.status === 404 || r.status >= 500 || r.status === 0) fail(`rpc ${f.name} (${who})`, `inconclusive: ${r.status} ${short(r.data)}`);
+    }
+  }
+  // ---- helpers: the caller's own state ----
+  for (const f of exposed.filter((x) => CLASS_OF[x.name] === "helper")) {
+    n++; handled.add(f.name);
+    const r = await rpc(f.name, dummyArgs(f.args));
+    if (r.status < 200 || r.status >= 300) fail(`rpc ${f.name}`, `helper failed: ${r.status} ${short(r.data)}`);
+    else if (f.name === "is_staff" && r.data !== false) leak("rpc is_staff", `a tenant admin is reported as staff: ${short(r.data)}`);
+    else if (f.name === "session_is_strong" && r.data !== true) fail("rpc session_is_strong", `aal2 session not reported strong: ${short(r.data)}`);
+  }
+  for (const f of exposed) if (!handled.has(f.name) && CLASS_OF[f.name]) fail("rpc coverage", `${f.name} is classified but was not exercised`);
+  // ---- cleanup of the controls' objects ----
   if (ownDoc) {
     const cleanup = await rpc("document_delete", { p_id: ownDoc });
     if (cleanup.status < 200 || cleanup.status >= 300) fail("rpc cleanup", `own document cleanup failed: ${cleanup.status} ${short(cleanup.data)}`);
   }
-  return n;
+  await reset("after");
+  return { n, exposed: exposed.length };
 }
 
 function sessionCookie(session) {
@@ -245,6 +323,21 @@ async function routes(session) {
   n++;
   const own = await hit("GET", `/api/client/documents/${ownId}`);
   if (own.status !== 200) fail("route control", `A's OWN document returned ${own.status}, expected exactly 200; route results are not trustworthy`);
+  // P21: an own-tenant success control for EVERY B-targeted route, so a route that always answers 403/404 cannot pass its negative test.
+  // Share create (own document) -> own share id read as A -> revoke it; decide on A's own task ("not_now" leaves the task state unchanged).
+  n++;
+  const shareOwn = await hit("POST", `/api/client/documents/${ownId}/share`, { email: "x@probe.test", days: 1 });
+  if (shareOwn.status !== 200) fail("route control share", `A's OWN share creation returned ${shareOwn.status}, expected 200`);
+  const shRows = await j(`/rest/v1/document_shares?select=id&document_id=eq.${ownId}&limit=1`, { token: session.access_token });
+  const ownShareId = shRows.status === 200 ? shRows.data?.[0]?.id : null;
+  n++;
+  if (!ownShareId) fail("route control share revoke", "A's own share is not visible; revoke control cannot run");
+  else { const rv = await hit("DELETE", `/api/client/shares/${ownShareId}`); if (rv.status !== 200) fail("route control share revoke", `A's OWN share revoke returned ${rv.status}, expected 200`); }
+  n++;
+  const tk = await j(`/rest/v1/workstream_tasks?select=id&tenant_id=eq.${cfg.A}&limit=1`, { token: session.access_token });
+  const ownTaskId = tk.status === 200 ? tk.data?.[0]?.id : null;
+  if (!ownTaskId) fail("route control decide", "A's own task is not visible; decide control cannot run");
+  else { const dc = await hit("POST", "/api/client/workstreams/decide", { task: ownTaskId, decision: "not_now" }); if (dc.status !== 200) fail("route control decide", `A's OWN decision returned ${dc.status}, expected 200`); }
   // active-tenant check (red team P1): naming a company the caller does not belong to must be refused on the same route.
   n++;
   const wrong = await hit("GET", `/api/client/documents/${ownId}`, undefined, { "x-tenant-id": cfg.B });
@@ -259,17 +352,23 @@ async function routes(session) {
 const out = { target: new URL(cfg.url).hostname, tenant_a: cfg.A, tenant_b: cfg.B, mode: "full" };
 const { aal1, aal2 } = await signIn();
 const staff = await signIn(cfg.sEmail, cfg.sPass, cfg.sTotp);
+// P23, target-side marker: refuse before the first write unless the database itself says it is the two-tenant probe fixture.
+{
+  const t = await j("/rest/v1/rpc/staff_probe_target", { token: staff.aal2.access_token, method: "POST", body: {} });
+  if (t.status !== 200 || t.data?.fixture_only !== true) { console.error(`refusing: target database is not the probe fixture (${t.status} ${short(t.data)})`); process.exit(2); }
+}
 out.fixture_b = await fixtureCheck(staff.aal2.access_token);
 out.tables_checked = await readTablesOwn("A(aal2)", aal2.access_token);
 { const c = await coverage(staff.aal2.access_token); out.exposed_tables_seen = c.n; out.inventory_source = c.source; }
-out.rpcs_checked = await rpcs(aal2.access_token);
+const rp = await rpcs(aal2.access_token, staff.aal2.access_token);
+out.rpcs_checked = rp.n; out.rpcs_exposed = rp.exposed;
 out.routes_checked = await routes(aal2);
 out.unauthenticated_checked = (await readTablesDenied("anon", cfg.anon)) + (await readTablesDenied("A(aal1, no MFA)", aal1));
 out.session_aal = JSON.parse(Buffer.from(aal2.access_token.split(".")[1], "base64url").toString()).aal;
 if (out.session_aal !== "aal2") fail("session", `expected aal2, got ${out.session_aal}`);
 out.inventory_from_target_db = out.inventory_source === "target-db:staff_probe_inventory";
 // Nothing may be skipped: the planned number of checks must equal the number that ran.
-out.expected = { tables: nTables, rpcs: 9, routes: 9, unauthenticated: nTables * 2 };
+out.expected = { tables: nTables, rpcs: out.rpcs_exposed, routes: 12, unauthenticated: nTables * 2 };
 for (const [k, got] of [["tables", out.tables_checked], ["rpcs", out.rpcs_checked], ["routes", out.routes_checked], ["unauthenticated", out.unauthenticated_checked]]) {
   if (got !== out.expected[k]) fail("completeness", `${k}: ran ${got}, expected ${out.expected[k]} (a check was skipped)`);
 }
