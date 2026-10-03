@@ -66,11 +66,11 @@ create function public.as_user(uid text, aal text) returns void language plpgsql
 begin perform set_config('request.jwt.claims', json_build_object('sub', uid, 'aal', aal)::text, true); set local role authenticated; end $$;
 grant execute on function public.as_user(text, text) to authenticated;
 
-create function public.try_provision(uid text, aal text, nm text, slug text, email text, key text) returns void language plpgsql as $$
+create function public.try_provision(uid text, aal text, nm text, slug text, email text, key text, request_key text default 'fixture-key-1') returns void language plpgsql as $$
 begin
   perform public.as_user(uid, aal);
   begin
-    insert into public.res values (key, (public.staff_provision_tenant(nm, slug, email))::text);
+    insert into public.res values (key, (public.staff_provision_tenant(nm, slug, email, request_key))::text);
   exception when others then insert into public.res values (key, 'refused:' || sqlerrm);
   end;
   reset role;
@@ -132,7 +132,7 @@ select public.try_provision('00000000-0000-0000-0000-00000000000a', 'aal2', 'Nop
 select public.try_provision('00000000-0000-0000-0000-00000000000a', 'aal2', 'Nope', 'good-slug', 'not-an-email', 'bad_email');
 select 'RESULT|' || k || '|' || v from public.res where k in ('nonstaff', 'weak_session', 'dup_slug_other_owner', 'dup_slug_preexisting', 'bad_slug', 'bad_email');
 select 'RESULT|refused_created_nothing|' || count(*) from public.tenants where slug in ('plain-try', 'weak-try', 'good-slug');
-select 'RESULT|anon_exec|' || has_function_privilege('anon', 'public.staff_provision_tenant(text,text,text)', 'execute');
+select 'RESULT|anon_exec|' || has_function_privilege('anon', 'public.staff_provision_tenant(text,text,text,text)', 'execute');
 
 -- 7. an expired, unaccepted invite is renewed in place by a retry (the resend path)
 update public.invites set expires_at = now() - interval '1 day' where tenant_id = (select id from public.tenants where slug = 'fresh-co');
@@ -152,3 +152,21 @@ do $$ begin
   reset role;
 end $$;
 select 'RESULT|' || k || '|' || v from public.res where k like '%sees%';
+
+-- P12: upgrade active member and preserve pending owner.
+insert into auth.users (id,email,email_confirmed_at) values ('00000000-0000-0000-0000-000000000090','upgrade@x.test',now()), ('00000000-0000-0000-0000-000000000091','retain@x.test',now());
+insert into public.tenants (name,slug) values ('Upgrade Co','upgrade-co'), ('Retain Co','retain-co');
+insert into public.memberships (tenant_id,user_id,role,accepted_at) values
+ ((select id from public.tenants where slug='upgrade-co'),'00000000-0000-0000-0000-000000000090','member',now()),
+ ((select id from public.tenants where slug='retain-co'),'00000000-0000-0000-0000-000000000091','owner',null);
+insert into public.invites (tenant_id,email,role,token) values
+ ((select id from public.tenants where slug='upgrade-co'),'upgrade@x.test','owner','upgrade-token'),
+ ((select id from public.tenants where slug='retain-co'),'retain@x.test','member','retain-token');
+select public.try_accept('00000000-0000-0000-0000-000000000090','upgrade-token','upgrade_accept');
+select public.try_accept('00000000-0000-0000-0000-000000000091','retain-token','retain_accept');
+select 'RESULT|upgrade_role|' || m.role || '|' || (a.meta->>'role_before') || '|' || (a.meta->>'role_after') from public.memberships m join public.tenants t on t.id=m.tenant_id join public.audit_log a on a.tenant_id=t.id and a.action='invite.accepted' where t.slug='upgrade-co';
+select 'RESULT|retain_role|' || m.role || '|' || (m.accepted_at is not null)::text || '|' || (a.meta->>'role_before') || '|' || (a.meta->>'role_after') from public.memberships m join public.tenants t on t.id=m.tenant_id join public.audit_log a on a.tenant_id=t.id and a.action='invite.accepted' where t.slug='retain-co';
+select public.try_provision('00000000-0000-0000-0000-00000000000a','aal2','Harbor Bar','harbor-bar','newowner@x.test','wrong_key','different-key');
+select 'RESULT|wrong_key|' || v from public.res where k='wrong_key';
+select public.try_provision('00000000-0000-0000-0000-00000000000a','aal2','Harbor Bar','harbor-bar','newowner@x.test','missing_key',null);
+select 'RESULT|missing_key|' || v from public.res where k='missing_key';

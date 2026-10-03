@@ -6,7 +6,7 @@ import { provisionTenant } from "@/lib/client-portal/provision";
 
 export const runtime = "nodejs";
 
-// Staff add a client business: the database creates the tenant + an owner invite in one transaction (idempotent by slug; the database
+// Staff add a client business: the database creates the tenant + an owner invite in one transaction (idempotent by client supplied key; the database
 // checks staff and MFA), then the invite email goes out after the commit. No service-role key and no auth user creation are involved.
 // If the email fails, the tenant and invite exist; repeating the same request resends. The owner joins via accept_invite.
 export async function POST(req: NextRequest) {
