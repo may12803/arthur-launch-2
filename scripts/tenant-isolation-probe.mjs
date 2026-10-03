@@ -88,14 +88,19 @@ async function readTablesOwn(label, token) {
   let n = 0;
   for (const [t, col] of Object.entries(TABLES)) {
     n++;
-    const all = await j(`/rest/v1/${t}?select=${col}&limit=1000`, { token });
-    const aimed = await j(`/rest/v1/${t}?select=${col}&${col}=eq.${cfg.B}`, { token });
-    for (const [kind, r] of [["unfiltered", all], ["aimed-at-B", aimed]]) {
-      if (r.status !== 200 || !Array.isArray(r.data)) { fail(`${label} GET ${t} (${kind})`, `expected 200 + array, got ${r.status} ${short(r.data)}`); continue; }
-      const bad = r.data.filter((row) => row[col] !== cfg.A);
-      if (bad.length) leak(`${label} GET ${t} (${kind})`, `${bad.length} row(s) of tenant ${[...new Set(bad.map((x) => x[col]))].join(",")}`, bad.length);
+    let ownSeen = false;
+    for (let offset = 0; ; offset += 1000) {
+      const all = await j(`/rest/v1/${t}?select=${col}&order=${col}.asc&limit=1000&offset=${offset}`, { token });
+      if (all.status !== 200 || !Array.isArray(all.data)) { fail(`${label} GET ${t} (page ${offset})`, `expected 200 + array, got ${all.status} ${short(all.data)}`); break; }
+      ownSeen ||= all.data.some((row) => row[col] === cfg.A);
+      const bad = all.data.filter((row) => row[col] !== cfg.A);
+      if (bad.length) leak(`${label} GET ${t} (page ${offset})`, `${bad.length} row(s) of tenant ${[...new Set(bad.map((x) => x[col]))].join(",")}`, bad.length);
+      if (all.data.length < 1000) break;
     }
-    if (all.status === 200 && Array.isArray(all.data) && !all.data.some((row) => row[col] === cfg.A)) fail(`${label} GET ${t}`, "tenant A sees none of its own rows; table, grant, session or fixture is broken");
+    if (!ownSeen) fail(`${label} GET ${t}`, "tenant A sees none of its own rows; table, grant, session or fixture is broken");
+    const aimed = await j(`/rest/v1/${t}?select=${col}&${col}=eq.${cfg.B}`, { token });
+    if (aimed.status !== 200 || !Array.isArray(aimed.data)) fail(`${label} GET ${t} (aimed-at-B)`, `expected 200 + array, got ${aimed.status} ${short(aimed.data)}`);
+    else if (aimed.data.length) leak(`${label} GET ${t} (aimed-at-B)`, `${aimed.data.length} B row(s)`, aimed.data.length);
   }
   return n;
 }
@@ -105,10 +110,20 @@ async function readTablesDenied(label, token) {
   let n = 0;
   for (const [t, col] of Object.entries(TABLES)) {
     n++;
-    for (const r of [await j(`/rest/v1/${t}?select=${col}&limit=1000`, { token }), await j(`/rest/v1/${t}?select=${col}&${col}=eq.${cfg.B}`, { token })]) {
-      if (r.status === 200 && Array.isArray(r.data)) { if (r.data.length) leak(`${label} GET ${t}`, `${r.data.length} row(s) visible without a strong session`, r.data.length); }
-      else if (r.status !== 401 && r.status !== 403) fail(`${label} GET ${t}`, `expected empty 200 or 401/403, got ${r.status} ${short(r.data)}`);
+    for (let offset = 0; ; offset += 1000) {
+      const r = await j(`/rest/v1/${t}?select=${col}&order=${col}.asc&limit=1000&offset=${offset}`, { token });
+      if (r.status === 200 && Array.isArray(r.data)) {
+        if (r.data.length) leak(`${label} GET ${t} (page ${offset})`, `${r.data.length} row(s) visible without a strong session`, r.data.length);
+        if (r.data.length < 1000) break;
+      } else {
+        if (r.status !== 401 && r.status !== 403) fail(`${label} GET ${t}`, `expected empty 200 or 401/403, got ${r.status} ${short(r.data)}`);
+        break;
+      }
     }
+    const aimed = await j(`/rest/v1/${t}?select=${col}&${col}=eq.${cfg.B}`, { token });
+    if (aimed.status === 200 && Array.isArray(aimed.data)) { if (aimed.data.length) leak(`${label} GET ${t} (aimed-at-B)`, `${aimed.data.length} row(s) visible`, aimed.data.length); }
+    else if (aimed.status !== 401 && aimed.status !== 403) fail(`${label} GET ${t}`, `expected empty 200 or 401/403, got ${aimed.status} ${short(aimed.data)}`);
+
   }
   return n;
 }
@@ -147,27 +162,48 @@ async function fixtureCheck(staffToken) {
 
 // Each RPC aimed at tenant B must be DENIED (a 2xx that returns/does something is a leak). 404 (function absent) and 5xx are inconclusive.
 async function rpcs(token) {
-  const calls = [
-    ["list_tenant_team", { p_tenant: cfg.B }, (d) => Array.isArray(d) && d.length > 0],
-    ["document_download", { p_id: cfg.doc }, (d) => Array.isArray(d) && d.length > 0],
-    ["share_revoke", { p_share: cfg.share }, (d, s) => s < 300],
-    ["workstream_decide", { p_task: cfg.task, p_decision: "approve" }, (d, s) => s < 300],
-    ["document_upload", { p_tenant: cfg.B, p_name: "probe.txt", p_content_type: "text/plain", p_data_b64: "cHJvYmU=" }, (d, s) => s < 300],
-    ["tenant_set_external_sharing", { p_tenant: cfg.B, p_enabled: true }, (d, s) => s < 300],
-    ["connection_request", { p_tenant: cfg.B, p_connector: "probe", p_kind: "request" }, (d, s) => s < 300],
-    ["staff_list_tenants", {}, (d, s) => s < 300],
-  ];
+  const rpc = (fn, args) => j(`/rest/v1/rpc/${fn}`, { token, method: "POST", body: args });
   let n = 0;
-  for (const [fn, args, isLeak] of calls) {
-    n++;
-    const r = await j(`/rest/v1/rpc/${fn}`, { token, method: "POST", body: args });
-    if (isLeak(r.data, r.status)) leak(`rpc ${fn}`, `status ${r.status}, body ${short(r.data)}`);
-    else if (r.status === 404 || r.status >= 500 || r.status === 0) fail(`rpc ${fn}`, `inconclusive: status ${r.status} ${short(r.data)} (function absent or erroring, not a denial)`);
-  }
-  // positive control: the same RPC aimed at A's own tenant must work, otherwise every denial above proves nothing.
+  const uploadArgs = { p_tenant: cfg.A, p_name: "probe-rpc.txt", p_content_type: "text/plain", p_data_b64: "cHJvYmU=" };
+  const upload = await rpc("document_upload", uploadArgs);
   n++;
-  const own = await j("/rest/v1/rpc/list_tenant_team", { token, method: "POST", body: { p_tenant: cfg.A } });
-  if (own.status !== 200 || !Array.isArray(own.data) || !own.data.length) fail("rpc control", `list_tenant_team on A's own tenant returned ${own.status} ${short(own.data)}`);
+  const ownDoc = upload.status === 200 && typeof upload.data === "string" ? upload.data : null;
+  if (!ownDoc) fail("rpc control document_upload", `own upload failed: ${upload.status} ${short(upload.data)}`);
+  const taskRows = await j(`/rest/v1/workstream_tasks?select=id&tenant_id=eq.${cfg.A}&limit=1`, { token });
+  const ownTask = taskRows.status === 200 ? taskRows.data?.[0]?.id : null;
+  if (!ownTask) fail("rpc control workstream_decide", `own task unavailable: ${taskRows.status} ${short(taskRows.data)}`);
+  const shareCreate = ownDoc ? await rpc("share_create", { p_document: ownDoc, p_email: "probe@probe.test", p_days: 1 }) : null;
+  const shares = ownDoc ? await j(`/rest/v1/document_shares?select=id&document_id=eq.${ownDoc}&limit=1`, { token }) : null;
+  const ownShare = shares?.status === 200 ? shares.data?.[0]?.id : null;
+  if (!ownShare || shareCreate?.status !== 200) fail("rpc control share_revoke", `own share creation failed: ${shareCreate?.status} ${short(shareCreate?.data)}`);
+  const calls = [
+    ["list_tenant_team", { p_tenant: cfg.A }, { p_tenant: cfg.B }, (d) => Array.isArray(d) && d.length > 0],
+    ["document_download", { p_id: ownDoc }, { p_id: cfg.doc }, (d) => Array.isArray(d) && d.length > 0],
+    ["share_revoke", { p_share: ownShare }, { p_share: cfg.share }, (d, s) => s < 300],
+    ["workstream_decide", { p_task: ownTask, p_decision: "approve" }, { p_task: cfg.task, p_decision: "approve" }, (d, s) => s < 300],
+    ["document_upload", uploadArgs, { ...uploadArgs, p_tenant: cfg.B }, (d, s) => s < 300],
+    ["tenant_set_external_sharing", { p_tenant: cfg.A, p_enabled: true }, { p_tenant: cfg.B, p_enabled: true }, (d, s) => s < 300],
+    ["connection_request", { p_tenant: cfg.A, p_connector: "probe", p_kind: "request" }, { p_tenant: cfg.B, p_connector: "probe", p_kind: "request" }, (d, s) => s < 300],
+  ];
+  for (const [fn, ownArgs, otherArgs, isLeak] of calls) {
+    n++;
+    const control = fn === "document_upload" ? upload : await rpc(fn, ownArgs);
+    if (control.status < 200 || control.status >= 300 || (fn === "list_tenant_team" || fn === "document_download") && !isLeak(control.data, control.status)) {
+      fail(`rpc control ${fn}`, `own object failed: ${control.status} ${short(control.data)}`);
+      continue;
+    }
+    const r = await rpc(fn, otherArgs);
+    if (isLeak(r.data, r.status)) leak(`rpc ${fn}`, `status ${r.status}, body ${short(r.data)}`);
+    else if (r.status === 404 || r.status >= 500 || r.status === 0) fail(`rpc ${fn}`, `inconclusive: status ${r.status} ${short(r.data)}`);
+  }
+  n++;
+  const staff = await rpc("staff_list_tenants", {});
+  if (staff.status >= 200 && staff.status < 300) leak("rpc staff_list_tenants", `unexpected success: ${staff.status}`);
+  else if (staff.status === 404 || staff.status >= 500 || staff.status === 0) fail("rpc staff_list_tenants", `inconclusive: ${staff.status} ${short(staff.data)}`);
+  if (ownDoc) {
+    const cleanup = await rpc("document_delete", { p_id: ownDoc });
+    if (cleanup.status < 200 || cleanup.status >= 300) fail("rpc cleanup", `own document cleanup failed: ${cleanup.status} ${short(cleanup.data)}`);
+  }
   return n;
 }
 
