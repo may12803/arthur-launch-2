@@ -1,38 +1,25 @@
-// Staff-only provisioning of a client business. Pure and dependency-injected so it is testable without
-// a network: `staff` is the caller's own session client (database enforces staff + MFA), `admin` is the
-// service-role Auth admin API (server only) used solely to invite the owner. Nothing here sends mail itself.
+// Staff-only provisioning of a client business through the portal's own invite/accept mechanism.
+// The database creates the tenant + an owner invite in ONE transaction (staff_provision_tenant) and is idempotent by slug, so there is
+// no auth user creation, no membership and nothing to compensate: a lost response is simply retried. The invite email is sent AFTER the
+// commit; if sending fails the tenant and invite still exist and staff re-run the same request to resend. The owner joins through
+// accept_invite(p_token), whether their account is new or existing. Dependency-injected so it is testable without a network.
 
 export type RpcResult = { data: unknown; error: { message: string } | null };
 export type StaffClient = { rpc(fn: string, args?: Record<string, unknown>): PromiseLike<RpcResult> };
-export type AdminAuth = {
-  inviteUserByEmail(email: string, opts: { redirectTo?: string }): Promise<{ data: { user: { id: string } | null } | null; error: { message: string } | null }>;
-  deleteUser(id: string): Promise<{ error: { message: string } | null }>;
-  listUsers(p: { page: number; perPage: number }): Promise<{ data: { users: { id: string; email?: string | null }[] } | null; error: { message: string } | null }>;
-};
+export type SendInvite = (msg: { to: string; tenantName: string; link: string }) => Promise<boolean>;
 
 export type ProvisionResult =
-  | { ok: true; tenantId: string; ownerId: string; invited: boolean; pendingOwnerAcceptance: boolean }
-  | { ok: false; status: number; error: string; orphanedUserId?: string };
+  | { ok: true; tenantId: string; inviteId: string; created: boolean; accepted: boolean; emailSent: boolean }
+  | { ok: false; status: number; error: string };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SLUG = /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/;
 
-async function findUserByEmail(admin: AdminAuth, email: string): Promise<string | null> {
-  for (let page = 1; page <= 10; page++) {
-    const { data } = await admin.listUsers({ page, perPage: 1000 });
-    const users = data?.users ?? [];
-    const hit = users.find((u) => (u.email || "").toLowerCase() === email);
-    if (hit) return hit.id;
-    if (users.length < 1000) break;
-  }
-  return null;
-}
-
 export async function provisionTenant(
   staff: StaffClient,
-  admin: AdminAuth,
+  sendInvite: SendInvite,
   input: { name?: unknown; slug?: unknown; ownerEmail?: unknown },
-  redirectTo?: string,
+  origin: string,
 ): Promise<ProvisionResult> {
   const name = String(input.name ?? "").trim();
   const slug = String(input.slug ?? "").trim().toLowerCase();
@@ -41,40 +28,21 @@ export async function provisionTenant(
   if (!SLUG.test(slug)) return { ok: false, status: 400, error: "Slug must be 3 to 40 lowercase letters, digits or hyphens." };
   if (!EMAIL.test(email)) return { ok: false, status: 400, error: "Enter a valid owner email address." };
 
-  // Staff gate and duplicate check first, so a refused request never creates an auth user.
-  const taken = await staff.rpc("staff_slug_taken", { p_slug: slug });
-  if (taken.error) return /staff only/i.test(taken.error.message) ? { ok: false, status: 403, error: "Only LOVELEEDAY staff can add a client." } : { ok: false, status: 500, error: "Something went wrong. Try again." };
-  if (taken.data === true) return { ok: false, status: 409, error: "That slug is already in use." };
-
-  let ownerId: string | null = null;
-  let invited = false;
-  const inv = await admin.inviteUserByEmail(email, { redirectTo });
-  if (inv.data?.user?.id && !inv.error) {
-    ownerId = inv.data.user.id;
-    invited = true;
-  } else if (/already|registered|exists/i.test(inv.error?.message || "")) {
-    ownerId = await findUserByEmail(admin, email);
-  }
-  if (!ownerId) return { ok: false, status: 502, error: "Couldn't invite the owner. Try again." };
-
-  // The database requires the owner id to be the user of this email (no arbitrary existing ids) and audits who it was.
-  const res = await staff.rpc("staff_provision_tenant", { p_name: name, p_slug: slug, p_owner: ownerId, p_owner_email: email });
+  const res = await staff.rpc("staff_provision_tenant", { p_name: name, p_slug: slug, p_owner_email: email });
   if (res.error) {
-    // Compensate: the Auth user exists only because THIS request invited it, and no tenant took it, so remove it.
-    // A pre-existing account (invited === false) is never deleted.
-    let orphan: string | undefined;
-    if (invited) {
-      const del = await admin.deleteUser(ownerId).catch((e: unknown) => ({ error: { message: String(e) } }));
-      if (del.error) orphan = ownerId;
-    }
     const m = res.error.message;
-    const fail = (status: number, error: string): ProvisionResult => ({ ok: false, status, error, ...(orphan ? { orphanedUserId: orphan } : {}) });
-    if (/slug already/i.test(m)) return fail(409, "That slug is already in use.");
-    if (/staff only/i.test(m)) return fail(403, "Only LOVELEEDAY staff can add a client.");
-    if (/owner must be/i.test(m)) return fail(400, "The owner must be the user of the invited email.");
-    if (/must be|slug must/i.test(m)) return fail(400, m.charAt(0).toUpperCase() + m.slice(1) + ".");
-    return fail(500, "Something went wrong. Try again.");
+    if (/staff only/i.test(m)) return { ok: false, status: 403, error: "Only LOVELEEDAY staff can add a client." };
+    if (/slug already/i.test(m)) return { ok: false, status: 409, error: "That slug is already in use." };
+    if (/must be|not valid/i.test(m)) return { ok: false, status: 400, error: m.charAt(0).toUpperCase() + m.slice(1) + "." };
+    // Unknown outcome (for example a lost response). Nothing was created outside the transaction, so repeating the request is safe.
+    return { ok: false, status: 500, error: "Something went wrong. Repeat the request; it is safe to retry." };
   }
-  // An invited-but-failed run leaves nothing; an existing account is added as a PENDING owner until they accept.
-  return { ok: true, tenantId: String(res.data), ownerId, invited, pendingOwnerAcceptance: !invited };
+  const d = res.data as { tenant_id?: string; invite_id?: string; token?: string; created?: boolean; accepted?: boolean } | null;
+  if (!d?.tenant_id || !d.invite_id || !d.token) return { ok: false, status: 500, error: "Something went wrong. Repeat the request; it is safe to retry." };
+
+  let emailSent = false;
+  if (!d.accepted) {
+    emailSent = await sendInvite({ to: email, tenantName: name, link: `${origin}/client/invite/${d.token}` }).catch(() => false);
+  }
+  return { ok: true, tenantId: d.tenant_id, inviteId: d.invite_id, created: d.created === true, accepted: d.accepted === true, emailSent };
 }

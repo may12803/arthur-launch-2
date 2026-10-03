@@ -1,30 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getLoveleedayRouteClient } from "@/lib/supabase/loveleeday-server";
 import { publicOrigin } from "@/lib/client-portal/api";
+import { sendPortalMail } from "@/lib/client-portal/mailer";
 import { provisionTenant } from "@/lib/client-portal/provision";
 
 export const runtime = "nodejs";
 
-// Staff add a client business: invite the owner by email, then create the tenant + owner membership +
-// audit row through staff_provision_tenant (SECURITY DEFINER; the database checks staff and MFA).
-// The service-role key is used only here, server side, only for the Auth invite; it never reaches the client.
+// Staff add a client business: the database creates the tenant + an owner invite in one transaction (idempotent by slug; the database
+// checks staff and MFA), then the invite email goes out after the commit. No service-role key and no auth user creation are involved.
+// If the email fails, the tenant and invite exist; repeating the same request resends. The owner joins via accept_invite.
 export async function POST(req: NextRequest) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_LOVELEEDAY_URL;
-  const service = process.env.LOVELEEDAY_SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !service) return NextResponse.json({ error: "Provisioning is unavailable right now." }, { status: 503 });
-
   const staff = await getLoveleedayRouteClient();
   const { data: userData } = await staff.auth.getUser();
   if (!userData.user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } }).auth.admin;
-  const result = await provisionTenant(staff, admin, body, `${publicOrigin(req)}/client/login`);
-  if (!result.ok) {
-    // An orphaned auth user (compensating delete failed) is surfaced to staff so it can be removed by hand; never silent.
-    if (result.orphanedUserId) console.error("provision: orphaned auth user after failed provisioning", result.orphanedUserId);
-    return NextResponse.json({ error: result.error, ...(result.orphanedUserId ? { orphanedUserId: result.orphanedUserId } : {}) }, { status: result.status });
-  }
-  return NextResponse.json({ ok: true, tenant: result.tenantId, owner: result.ownerId, invited: result.invited, pendingOwnerAcceptance: result.pendingOwnerAcceptance });
+  const result = await provisionTenant(
+    staff,
+    ({ to, tenantName, link }) =>
+      sendPortalMail(to, `You're invited to ${tenantName} on LOVELEEDAY`, [
+        `You've been invited to join ${tenantName} on LOVELEEDAY as its owner.`,
+        `Open this link to create your account or sign in, and accept: ${link}`,
+        "The link works only for this email address and expires in 7 days.",
+      ]),
+    body,
+    publicOrigin(req),
+  );
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
+  return NextResponse.json({ ok: true, tenant: result.tenantId, invite: result.inviteId, created: result.created, accepted: result.accepted, emailSent: result.emailSent });
 }

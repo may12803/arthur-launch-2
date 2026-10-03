@@ -1,55 +1,49 @@
 -- NOT APPLIED to prod. Staff-only path to add a client business.
--- public.create_tenant needs auth.uid() = the new owner, so staff cannot call it for someone else.
--- These two functions are SECURITY DEFINER, staff + MFA only, and leave create_tenant untouched.
--- RLS policies are NOT modified here.
 --
--- Owner authority (red team PORTAL-1 P5): staff cannot name an arbitrary existing auth user as owner. The caller must give the
--- owner's email AND the user id, and the id must be that email's user. Two cases:
---   * freshly invited (auth.users.invited_at within the last hour, never signed in): the invite email is the owner's consent;
---     membership is created accepted, audited as 'tenant.provisioned'.
---   * a pre-existing account: membership is created PENDING (accepted_at null, invisible to the portal until the person accepts)
---     and audited as 'tenant.provisioned_pending_owner'. Nobody becomes owner of a company they did not agree to join.
--- Every provisioning writes an audit row carrying the actor, owner id, owner email and which case applied.
+-- Design (red team PORTAL-2 P7/P8/P9): provisioning no longer creates auth users or memberships. In ONE transaction it creates the
+-- tenant, an `invites` row (role owner, the owner's email, the table's own token + 7 day expiry) and an audit row. The owner joins
+-- through the portal's existing accept_invite(p_token) flow, which already binds the token to the invited, confirmed email and
+-- activates the membership, for a new account and an existing account alike. Because nothing outside the transaction is created,
+-- there is nothing to compensate and nothing to delete: a lost response is retried safely.
+--   * Idempotent by slug: a retry for the same slug AND owner email returns the existing tenant/invite (never a duplicate). An expired,
+--     unaccepted invite is renewed in place. The same slug with a different owner email is refused as 'slug already in use'.
+--   * No consent heuristic: invited_at / last_sign_in_at are never read. Only the owner's own accept_invite grants access.
+-- SECURITY DEFINER, staff + MFA only. create_tenant and RLS policies are untouched.
 
+drop function if exists public.staff_slug_taken(text);
 drop function if exists public.staff_provision_tenant(text, text, uuid);
+drop function if exists public.staff_provision_tenant(text, text, uuid, text);
 
-create or replace function public.staff_slug_taken(p_slug text)
-returns boolean language plpgsql stable security definer set search_path = '' as $$
-begin
-  if not public.session_is_strong() or not public.is_staff() then raise exception 'staff only'; end if;
-  return exists (select 1 from public.tenants where slug = lower(trim(p_slug)));
-end $$;
-
-create or replace function public.staff_provision_tenant(p_name text, p_slug text, p_owner uuid, p_owner_email text)
-returns uuid language plpgsql security definer set search_path = '' as $$
+create or replace function public.staff_provision_tenant(p_name text, p_slug text, p_owner_email text)
+returns jsonb language plpgsql security definer set search_path = '' as $$
 declare
-  v_tenant uuid; v_slug text := lower(trim(coalesce(p_slug, ''))); v_name text := trim(coalesce(p_name, ''));
-  v_email text; v_invited timestamptz; v_signed_in timestamptz; v_fresh boolean;
+  v_slug text := lower(trim(coalesce(p_slug, ''))); v_name text := trim(coalesce(p_name, ''));
+  v_email text := lower(trim(coalesce(p_owner_email, '')));
+  v_tenant uuid; v_inv public.invites%rowtype; v_created boolean := false;
 begin
   if not public.session_is_strong() or not public.is_staff() then raise exception 'staff only'; end if;
   if length(v_name) < 2 or length(v_name) > 120 then raise exception 'business name must be 2 to 120 characters'; end if;
   if v_slug !~ '^[a-z0-9](?:[a-z0-9-]{1,38})[a-z0-9]$' then raise exception 'slug must be 3 to 40 lowercase letters, digits or hyphens'; end if;
-  select email, invited_at, last_sign_in_at into v_email, v_invited, v_signed_in from auth.users where id = p_owner;
-  if not found then raise exception 'owner not found'; end if;
-  if lower(trim(coalesce(p_owner_email, ''))) = '' or lower(v_email) <> lower(trim(p_owner_email)) then
-    raise exception 'owner must be the user of the invited email';
-  end if;
-  v_fresh := v_invited is not null and v_invited > now() - interval '1 hour' and v_signed_in is null;
-  if exists (select 1 from public.tenants where slug = v_slug) then raise exception 'slug already in use'; end if;
+  if v_email !~ '^[^\s@]+@[^\s@]+\.[^\s@]+$' then raise exception 'owner email is not valid'; end if;
 
-  insert into public.tenants (name, slug) values (v_name, v_slug) returning id into v_tenant;
-  insert into public.memberships (tenant_id, user_id, role, accepted_at, invited_by)
-  values (v_tenant, p_owner, 'owner', case when v_fresh then now() else null end, auth.uid());
-  insert into public.audit_log (tenant_id, actor, action, target, meta)
-  values (v_tenant, auth.uid(), case when v_fresh then 'tenant.provisioned' else 'tenant.provisioned_pending_owner' end, 'tenant:' || v_tenant::text,
-          jsonb_build_object('name', v_name, 'slug', v_slug, 'owner_id', p_owner, 'owner_email', v_email,
-                             'owner_state', case when v_fresh then 'freshly_invited' else 'existing_account_pending_acceptance' end));
-  return v_tenant;
-exception when unique_violation then
-  raise exception 'slug already in use';
+  perform pg_advisory_xact_lock(hashtext('provision:' || v_slug));
+  select id into v_tenant from public.tenants where slug = v_slug;
+  if found then
+    select * into v_inv from public.invites where tenant_id = v_tenant and role = 'owner' and lower(email::text) = v_email order by created_at limit 1;
+    if not found then raise exception 'slug already in use'; end if;
+    if v_inv.accepted_at is null and v_inv.expires_at <= now() then
+      update public.invites set expires_at = now() + interval '7 days' where id = v_inv.id returning * into v_inv;
+    end if;
+  else
+    insert into public.tenants (name, slug) values (v_name, v_slug) returning id into v_tenant;
+    insert into public.invites (tenant_id, email, role) values (v_tenant, v_email, 'owner') returning * into v_inv;
+    insert into public.audit_log (tenant_id, actor, action, target, meta)
+    values (v_tenant, auth.uid(), 'tenant.provisioned', 'tenant:' || v_tenant::text,
+            jsonb_build_object('name', v_name, 'slug', v_slug, 'owner_email', v_email, 'invite_id', v_inv.id));
+    v_created := true;
+  end if;
+  return jsonb_build_object('tenant_id', v_tenant, 'invite_id', v_inv.id, 'token', v_inv.token, 'created', v_created, 'accepted', v_inv.accepted_at is not null);
 end $$;
 
-revoke all on function public.staff_slug_taken(text) from public, anon;
-revoke all on function public.staff_provision_tenant(text, text, uuid, text) from public, anon;
-grant execute on function public.staff_slug_taken(text) to authenticated;
-grant execute on function public.staff_provision_tenant(text, text, uuid, text) to authenticated;
+revoke all on function public.staff_provision_tenant(text, text, text) from public, anon;
+grant execute on function public.staff_provision_tenant(text, text, text) to authenticated;
