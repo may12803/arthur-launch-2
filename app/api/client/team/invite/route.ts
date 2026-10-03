@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getLoveleedayRouteClient } from "@/lib/supabase/loveleeday-server";
+import { getApiContext } from "@/lib/client-portal/api";
 
 export const runtime = "nodejs";
 
@@ -30,24 +30,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Role must be admin, member, or viewer." }, { status: 400 });
   }
 
-  const supabase = await getLoveleedayRouteClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) {
-    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  }
-
-  const { data: membership, error: membershipError } = await supabase
-    .from("memberships")
-    .select("tenant_id, role, accepted_at")
-    .eq("user_id", userData.user.id)
-    .not("accepted_at", "is", null)
-    .limit(1)
-    .maybeSingle<{ tenant_id: string; role: string; accepted_at: string }>();
-
-  if (membershipError || !membership) {
-    return NextResponse.json({ error: "No active company membership found." }, { status: 403 });
-  }
-  if (membership.role !== "owner" && membership.role !== "admin") {
+  const ctx = await getApiContext();
+  if (ctx.error) return ctx.error;
+  const { supabase } = ctx;
+  if (ctx.role !== "owner" && ctx.role !== "admin") {
     return NextResponse.json({ error: "Only owners and admins can invite teammates." }, { status: 403 });
   }
 
@@ -55,7 +41,7 @@ export async function POST(req: NextRequest) {
   const { error: clearError } = await supabase
     .from("invites")
     .delete()
-    .eq("tenant_id", membership.tenant_id)
+    .eq("tenant_id", ctx.tenantId)
     .eq("email", email)
     .is("accepted_at", null);
   if (clearError) {
@@ -64,7 +50,7 @@ export async function POST(req: NextRequest) {
 
   const { data: invite, error: insertError } = await supabase
     .from("invites")
-    .insert({ tenant_id: membership.tenant_id, email, role })
+    .insert({ tenant_id: ctx.tenantId, email, role })
     .select("id, email, role, token, expires_at")
     .single();
 

@@ -12,8 +12,20 @@
 -- Only invites is written from a user session (app/api/client/team/invite/route.ts: delete + insert, gated by invites_admin_manage).
 -- SECURITY DEFINER functions run as owner, so none of this affects them.
 
-revoke all on all tables in schema public from anon;
-revoke truncate, trigger, references on all tables in schema public from authenticated;
+-- SCOPE (red team PORTAL-1 P6): every statement below names the 16 portal tables explicitly. Nothing here touches any other
+-- table in `public`, so a non-portal table that legitimately serves anon keeps its grants. Read-only inventory of production
+-- (eydcfgoklajcztpoprsl) on 2026-10-03: `public` holds exactly these 16 relations and no others, so nothing else is anon-exposed there.
+-- Re-run that inventory immediately before applying; if a table has appeared, it is untouched by this migration.
+revoke all on
+  public.audit_log, public.connectors, public.contracts, public.coverage_areas, public.deliverables, public.document_shares,
+  public.documents, public.invites, public.memberships, public.staff_grants, public.tenant_connections, public.tenants,
+  public.workstream_decisions, public.workstream_grades, public.workstream_tasks, public.workstreams
+from anon;
+revoke truncate, trigger, references on
+  public.audit_log, public.connectors, public.contracts, public.coverage_areas, public.deliverables, public.document_shares,
+  public.documents, public.invites, public.memberships, public.staff_grants, public.tenant_connections, public.tenants,
+  public.workstream_decisions, public.workstream_grades, public.workstream_tasks, public.workstreams
+from authenticated;
 
 -- Read-only for signed-in users on everything except invites (RLS still decides which rows).
 revoke insert, update, delete on
@@ -22,15 +34,19 @@ revoke insert, update, delete on
   public.workstream_decisions, public.workstream_grades, public.workstream_tasks, public.workstreams
 from authenticated;
 
--- Future tables created in public must opt in to grants instead of inheriting them.
-alter default privileges in schema public revoke all on tables from anon;
-alter default privileges in schema public revoke all on tables from authenticated;
+-- (The earlier draft also changed schema-wide DEFAULT PRIVILEGES for anon/authenticated. Removed: that is not scoped to the
+-- portal tables. New portal tables should be created with explicit grants; consider default privileges as a separate decision.)
 
--- Guard so the next table cannot ship without RLS: fails the migration if any public table has RLS off.
+-- Guard: fails the migration if any PORTAL table has RLS off. Other public tables are reported, not blocked.
 do $$
-declare t text;
+declare t text; o text;
 begin
   select string_agg(c.relname, ', ') into t from pg_class c join pg_namespace n on n.oid = c.relnamespace
+   where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity
+     and c.relname in ('audit_log','connectors','contracts','coverage_areas','deliverables','document_shares','documents','invites',
+       'memberships','staff_grants','tenant_connections','tenants','workstream_decisions','workstream_grades','workstream_tasks','workstreams');
+  if t is not null then raise exception 'portal tables without RLS: %', t; end if;
+  select string_agg(c.relname, ', ') into o from pg_class c join pg_namespace n on n.oid = c.relnamespace
    where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity;
-  if t is not null then raise exception 'tables without RLS: %', t; end if;
+  if o is not null then raise warning 'non-portal public tables without RLS (not changed by this migration): %', o; end if;
 end $$;

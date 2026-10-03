@@ -1,24 +1,35 @@
 #!/usr/bin/env node
 // Tenant-isolation probe for the LOVELEEDAY client portal (bar 7: "a cross-tenant read returns 0 rows under RLS").
 // Signs in as a user of tenant A (password + TOTP -> aal2, the same path the portal uses) and tries to read tenant B
-// through (1) PostgREST tables, (2) SECURITY DEFINER RPCs, (3) the portal's own /api/client routes (if PROBE_BASE set).
+// through (1) PostgREST tables, (2) SECURITY DEFINER RPCs, (3) the portal's own /api/client routes.
 // Also checks anon and an aal1 (password-only) session see nothing.
-// Output: one JSON line {tables_checked, rpcs_checked, routes_checked, unauthenticated_checked, leaked_rows, pass, ...}. Exit 1 on leak.
 //
-// Env (JSON in PROBE_CONFIG or individual vars):
+// A pass means every planned check RAN and returned the expected answer. The probe fails (exit 1) on a leak, on any
+// inconclusive result (non-200 own read, 404/5xx where a denial was expected, missing OpenAPI definition, no own rows
+// in a table, route positive control not exactly 200), and on any skipped check. It cannot pass vacuously.
+// Output: one JSON line {mode, complete, tables_checked, rpcs_checked, routes_checked, unauthenticated_checked, expected, leaked_rows, failures, pass, ...}.
+// Exit 1 on leak/failure, 2 on missing config.
+//
+// Env: ALL REQUIRED (a missing one is exit 2, never a silent skip).
 //   PROBE_URL, PROBE_ANON_KEY            Supabase project (MUST be a branch/test db; production has no probe users)
 //   PROBE_A_EMAIL, PROBE_A_PASSWORD, PROBE_A_TOTP   tenant A user
 //   PROBE_A_TENANT, PROBE_B_TENANT       uuids
+//   PROBE_DB_INVENTORY | PROBE_DB_INVENTORY_FILE   json {table:[columns]} of every public table (see coverage()); required
+//                                        unless the OpenAPI schema is readable (it is not with a publishable/anon key)
 //   PROBE_B_DOC, PROBE_B_SHARE, PROBE_B_TASK        uuids of tenant B rows to aim route/RPC calls at
-//   PROBE_BASE                           portal base URL (e.g. http://localhost:3000) for route checks; optional
-// Fixture: scripts/tenant-isolation-fixture.sql. Falsifiability: disable RLS on any table (or add a USING(true) policy) and
-// re-run: leaked_rows > 0, exit 1.
+//   PROBE_BASE                           portal base URL (e.g. http://localhost:3000), running the code under test
+// Fixture: scripts/tenant-isolation-fixture.sql (ids: tenant A aaaaaaaa-1111-4000-8000-00000000000a / B bbbbbbbb-1111-...,
+// docs ...-4444-..., shares ...-5555-..., tasks ...-3333-...). Falsifiability: disable RLS on any table (or add a USING(true)
+// policy) and re-run: leaked_rows > 0, exit 1; drop a table/grant or point at the wrong project: failures > 0, exit 1.
 import crypto from "node:crypto";
 
 const E = process.env;
 const cfg = { url: E.PROBE_URL, anon: E.PROBE_ANON_KEY, email: E.PROBE_A_EMAIL, pass: E.PROBE_A_PASSWORD, totp: E.PROBE_A_TOTP,
   A: E.PROBE_A_TENANT, B: E.PROBE_B_TENANT, doc: E.PROBE_B_DOC, share: E.PROBE_B_SHARE, task: E.PROBE_B_TASK, base: E.PROBE_BASE };
-for (const k of ["url", "anon", "email", "pass", "totp", "A", "B"]) if (!cfg[k]) { console.error(`missing config: ${k} (see header)`); process.exit(2); }
+const NAMES = { url: "PROBE_URL", anon: "PROBE_ANON_KEY", email: "PROBE_A_EMAIL", pass: "PROBE_A_PASSWORD", totp: "PROBE_A_TOTP", A: "PROBE_A_TENANT",
+  B: "PROBE_B_TENANT", doc: "PROBE_B_DOC", share: "PROBE_B_SHARE", task: "PROBE_B_TASK", base: "PROBE_BASE" };
+const missing = Object.keys(NAMES).filter((k) => !cfg[k]);
+if (missing.length) { console.error(`missing required config: ${missing.map((k) => NAMES[k]).join(", ")} (see header)`); process.exit(2); }
 
 // Every client-data table and the column that carries its tenant. `tenants` is keyed by its own id.
 // Anything exposed by PostgREST with a tenant_id column that is NOT listed here fails the probe (coverage check).
@@ -28,6 +39,7 @@ const TABLES = {
   tenants: "id", workstream_decisions: "tenant_id", workstream_grades: "tenant_id", workstream_tasks: "tenant_id", workstreams: "tenant_id",
 };
 const GLOBAL_OK = new Set(["connectors"]); // shared platform catalog, no client data
+const nTables = Object.keys(TABLES).length;
 
 function totp(secret) {
   const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -60,37 +72,70 @@ async function signIn() {
   return { aal1: aal1.access_token, aal2: v.data };
 }
 
-const leaks = [];
+const leaks = [];     // cross-tenant data or action observed
+const failures = [];  // inconclusive: the check could not prove isolation (never a pass)
 const leak = (where, detail, n = 1) => leaks.push({ where, detail, rows: n });
+const fail = (where, detail) => failures.push({ where, detail });
+const short = (x) => JSON.stringify(x)?.slice(0, 140);
 
-// Rows whose tenant key is not tenant A are a leak. Fetch unfiltered (what a malicious client would do) AND aimed at B.
-async function readTables(label, token, allowedTenant, own = true) {
+// Authenticated own-tenant reads. Every table must answer 200, show tenant A its OWN rows (so an absent table, a missing
+// SELECT grant or a broken session cannot look like isolation), show no other tenant's rows, and show NOTHING when aimed at B.
+async function readTablesOwn(label, token) {
   let n = 0;
   for (const [t, col] of Object.entries(TABLES)) {
     n++;
     const all = await j(`/rest/v1/${t}?select=${col}&limit=1000`, { token });
     const aimed = await j(`/rest/v1/${t}?select=${col}&${col}=eq.${cfg.B}`, { token });
     for (const [kind, r] of [["unfiltered", all], ["aimed-at-B", aimed]]) {
-      if (own && r.status === 200 && Array.isArray(r.data)) {
-        const bad = r.data.filter((row) => row[col] !== allowedTenant);
-        if (bad.length) leak(`${label} GET ${t} (${kind})`, `${bad.length} row(s) of tenant ${[...new Set(bad.map((x) => x[col]))].join(",")}`, bad.length);
-      }
+      if (r.status !== 200 || !Array.isArray(r.data)) { fail(`${label} GET ${t} (${kind})`, `expected 200 + array, got ${r.status} ${short(r.data)}`); continue; }
+      const bad = r.data.filter((row) => row[col] !== cfg.A);
+      if (bad.length) leak(`${label} GET ${t} (${kind})`, `${bad.length} row(s) of tenant ${[...new Set(bad.map((x) => x[col]))].join(",")}`, bad.length);
     }
-    if (own === false) { /* anon / aal1: nothing at all should come back */
-      for (const r of [all, aimed]) if (r.status === 200 && r.data.length) leak(`${label} GET ${t}`, `${r.data.length} row(s) visible without a strong session`, r.data.length);
+    if (all.status === 200 && Array.isArray(all.data) && !all.data.some((row) => row[col] === cfg.A)) fail(`${label} GET ${t}`, "tenant A sees none of its own rows; table, grant, session or fixture is broken");
+  }
+  return n;
+}
+
+// anon / aal1: nothing at all may come back. A denial is 200 with no rows, or 401/403; anything else (404 absent table, 5xx) is inconclusive.
+async function readTablesDenied(label, token) {
+  let n = 0;
+  for (const [t, col] of Object.entries(TABLES)) {
+    n++;
+    for (const r of [await j(`/rest/v1/${t}?select=${col}&limit=1000`, { token }), await j(`/rest/v1/${t}?select=${col}&${col}=eq.${cfg.B}`, { token })]) {
+      if (r.status === 200 && Array.isArray(r.data)) { if (r.data.length) leak(`${label} GET ${t}`, `${r.data.length} row(s) visible without a strong session`, r.data.length); }
+      else if (r.status !== 401 && r.status !== 403) fail(`${label} GET ${t}`, `expected empty 200 or 401/403, got ${r.status} ${short(r.data)}`);
     }
   }
   return n;
 }
 
+// Table inventory. Supabase serves the OpenAPI schema only to a secret key, so the normal source is a database-derived
+// inventory (PROBE_DB_INVENTORY json, or PROBE_DB_INVENTORY_FILE) produced by:
+//   select jsonb_object_agg(table_name, cols) from (select table_name, jsonb_agg(column_name) cols
+//     from information_schema.columns where table_schema='public' group by table_name) s;
+// The OpenAPI document is used instead when it is readable. With neither source the probe FAILS: no inventory is not
+// "no tables to worry about". Every listed table must exist in the inventory, and any public table the probe does not
+// list (and that is not the shared catalog) fails it, whether or not it has a tenant_id column.
 async function coverage(token) {
+  let inv = null, source = null;
   const spec = await j("/rest/v1/", { token });
-  const defs = spec.data?.definitions || {};
-  const missing = Object.entries(defs).filter(([name, d]) => !(name in TABLES) && !GLOBAL_OK.has(name) && d.properties && ("tenant_id" in d.properties)).map(([name]) => name);
-  for (const m of missing) leak("coverage", `exposed table ${m} has a tenant_id column but is not in the probe's TABLES list`);
-  return Object.keys(defs).length;
+  if (spec.status === 200 && spec.data?.definitions && Object.keys(spec.data.definitions).length) {
+    inv = Object.fromEntries(Object.entries(spec.data.definitions).map(([k, d]) => [k, Object.keys(d.properties || {})])); source = "openapi";
+  } else if (E.PROBE_DB_INVENTORY || E.PROBE_DB_INVENTORY_FILE) {
+    try { inv = JSON.parse(E.PROBE_DB_INVENTORY || (await import("node:fs")).readFileSync(E.PROBE_DB_INVENTORY_FILE, "utf8")); source = "database"; } catch (e) { fail("coverage", `PROBE_DB_INVENTORY unreadable: ${e.message}`); }
+  }
+  if (!inv || typeof inv !== "object" || !Object.keys(inv).length) {
+    fail("coverage", `no table inventory: OpenAPI unavailable (status ${spec.status}) and PROBE_DB_INVENTORY not given; cannot prove every exposed table is covered`);
+    return { n: 0, source: null };
+  }
+  for (const t of Object.keys(TABLES)) if (!(t in inv)) fail("coverage", `listed table ${t} is not in the ${source} inventory (absent or not exposed)`);
+  for (const name of Object.keys(inv)) {
+    if (!(name in TABLES) && !GLOBAL_OK.has(name)) fail("coverage", `public table ${name}${inv[name].includes("tenant_id") ? " (has tenant_id)" : ""} is not in the probe's TABLES list`);
+  }
+  return { n: Object.keys(inv).length, source };
 }
 
+// Each RPC aimed at tenant B must be DENIED (a 2xx that returns/does something is a leak). 404 (function absent) and 5xx are inconclusive.
 async function rpcs(token) {
   const calls = [
     ["list_tenant_team", { p_tenant: cfg.B }, (d) => Array.isArray(d) && d.length > 0],
@@ -104,11 +149,15 @@ async function rpcs(token) {
   ];
   let n = 0;
   for (const [fn, args, isLeak] of calls) {
-    if (Object.values(args).some((v) => v === undefined)) continue;
     n++;
     const r = await j(`/rest/v1/rpc/${fn}`, { token, method: "POST", body: args });
-    if (isLeak(r.data, r.status)) leak(`rpc ${fn}`, `status ${r.status}, body ${JSON.stringify(r.data).slice(0, 120)}`);
+    if (isLeak(r.data, r.status)) leak(`rpc ${fn}`, `status ${r.status}, body ${short(r.data)}`);
+    else if (r.status === 404 || r.status >= 500 || r.status === 0) fail(`rpc ${fn}`, `inconclusive: status ${r.status} ${short(r.data)} (function absent or erroring, not a denial)`);
   }
+  // positive control: the same RPC aimed at A's own tenant must work, otherwise every denial above proves nothing.
+  n++;
+  const own = await j("/rest/v1/rpc/list_tenant_team", { token, method: "POST", body: { p_tenant: cfg.A } });
+  if (own.status !== 200 || !Array.isArray(own.data) || !own.data.length) fail("rpc control", `list_tenant_team on A's own tenant returned ${own.status} ${short(own.data)}`);
   return n;
 }
 
@@ -120,9 +169,12 @@ function sessionCookie(session) {
   return out.length === 1 ? `${name}=${value}` : out.join("; ");
 }
 
+// Routes: aimed at B each must answer 403/404 (or a 400 whose body says "not allowed"/"not found"); 2xx = tenant A acted
+// on B; 401/5xx/other 400 = inconclusive (a broken session or route also "denies"). The positive control uploads a
+// document as A, downloads it (exactly 200) and deletes it: that proves the session and the routes work, and cleans up.
 async function routes(session) {
-  if (!cfg.base) return 0;
   const cookie = sessionCookie(session);
+  const hit = (method, path, body, headers = {}) => fetch(cfg.base + path, { method, headers: { cookie, ...(body instanceof FormData ? {} : { "content-type": "application/json" }), ...headers }, body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined, redirect: "manual" });
   const calls = [
     ["GET", `/api/client/documents/${cfg.doc}`], ["DELETE", `/api/client/documents/${cfg.doc}`],
     ["POST", `/api/client/documents/${cfg.doc}/share`, { email: "x@probe.test", days: 1 }],
@@ -131,35 +183,52 @@ async function routes(session) {
   ];
   let n = 0;
   for (const [method, path, body] of calls) {
-    if (path.includes("undefined")) continue;
     n++;
-    const r = await fetch(cfg.base + path, { method, headers: { cookie, "content-type": "application/json" }, body: body ? JSON.stringify(body) : undefined, redirect: "manual" });
+    const r = await hit(method, path, body);
+    const text = r.status === 400 ? await r.text() : "";
     if (r.status >= 200 && r.status < 300) leak(`route ${method} ${path}`, `status ${r.status} (tenant A acted on tenant B)`);
+    else if (r.status === 400 ? !/not allowed|not found/i.test(text) : r.status !== 403 && r.status !== 404) fail(`route ${method} ${path}`, `expected a denial (403/404), got ${r.status} ${text.slice(0, 80)}`);
   }
-  // control: the same route on A's OWN row must work, otherwise a 4xx proves nothing (a broken session also "passes").
-  const own = await fetch(`${cfg.base}/api/client/documents/${E.PROBE_A_DOC || "aaaaaaaa-4444-4000-8000-00000000000a"}`, { headers: { cookie }, redirect: "manual" });
-  if (own.status === 401 || own.status === 403) leak("route control", `A cannot reach its OWN document (status ${own.status}); route results are not trustworthy`);
+  // positive control: A's own document, end to end (exactly 200 each), so a broken session cannot pass as isolation.
+  const fd = new FormData(); fd.append("file", new Blob(["isolation probe"], { type: "text/plain" }), "probe-own.txt");
+  n++;
+  const up = await hit("POST", "/api/client/documents", fd);
+  const upBody = up.status === 200 ? await up.json().catch(() => null) : null;
+  const ownId = upBody?.id;
+  if (!ownId) { fail("route control", `A could not upload its OWN document (status ${up.status}); route results are not trustworthy`); return n; }
+  n++;
+  const own = await hit("GET", `/api/client/documents/${ownId}`);
+  if (own.status !== 200) fail("route control", `A's OWN document returned ${own.status}, expected exactly 200; route results are not trustworthy`);
+  // active-tenant check (red team P1): naming a company the caller does not belong to must be refused on the same route.
+  n++;
+  const wrong = await hit("GET", `/api/client/documents/${ownId}`, undefined, { "x-tenant-id": cfg.B });
+  if (wrong.status >= 200 && wrong.status < 300) leak("route active-tenant", `x-tenant-id=B accepted (status ${wrong.status})`);
+  else if (wrong.status !== 403) fail("route active-tenant", `x-tenant-id=B expected 403, got ${wrong.status}`);
+  n++;
+  const del = await hit("DELETE", `/api/client/documents/${ownId}`);
+  if (del.status !== 200) fail("route control", `cleanup of A's probe document returned ${del.status}`);
   return n;
 }
 
-const out = { target: new URL(cfg.url).hostname, tenant_a: cfg.A, tenant_b: cfg.B };
+const out = { target: new URL(cfg.url).hostname, tenant_a: cfg.A, tenant_b: cfg.B, mode: "full" };
 const { aal1, aal2 } = await signIn();
-let controlRows = 0;
-{ // positive control: A must see its own rows, or every "0 leaked" is a broken-session false green.
-  const own = await j(`/rest/v1/workstream_tasks?select=tenant_id&tenant_id=eq.${cfg.A}`, { token: aal2.access_token });
-  controlRows = Array.isArray(own.data) ? own.data.length : 0;
-  if (!controlRows) leak("control", "tenant A sees none of its own workstream_tasks; session or fixture is broken");
-}
-out.tables_checked = await readTables("A(aal2)", aal2.access_token, cfg.A);
-out.exposed_tables_seen = await coverage(aal2.access_token);
+out.tables_checked = await readTablesOwn("A(aal2)", aal2.access_token);
+{ const c = await coverage(aal2.access_token); out.exposed_tables_seen = c.n; out.inventory_source = c.source; }
 out.rpcs_checked = await rpcs(aal2.access_token);
 out.routes_checked = await routes(aal2);
-out.unauthenticated_checked = (await readTables("anon", cfg.anon, null, false)) + (await readTables("A(aal1, no MFA)", aal1, null, false));
-out.own_rows_control = controlRows;
+out.unauthenticated_checked = (await readTablesDenied("anon", cfg.anon)) + (await readTablesDenied("A(aal1, no MFA)", aal1));
 out.session_aal = JSON.parse(Buffer.from(aal2.access_token.split(".")[1], "base64url").toString()).aal;
+if (out.session_aal !== "aal2") fail("session", `expected aal2, got ${out.session_aal}`);
 out.openapi_visible = out.exposed_tables_seen > 0;
+// Nothing may be skipped: the planned number of checks must equal the number that ran.
+out.expected = { tables: nTables, rpcs: 9, routes: 9, unauthenticated: nTables * 2 };
+for (const [k, got] of [["tables", out.tables_checked], ["rpcs", out.rpcs_checked], ["routes", out.routes_checked], ["unauthenticated", out.unauthenticated_checked]]) {
+  if (got !== out.expected[k]) fail("completeness", `${k}: ran ${got}, expected ${out.expected[k]} (a check was skipped)`);
+}
+out.complete = !failures.some((f) => f.where === "completeness");
 out.leaked_rows = leaks.reduce((s, l) => s + l.rows, 0);
 out.leaks = leaks;
-out.pass = out.leaked_rows === 0;
+out.failures = failures;
+out.pass = out.leaked_rows === 0 && failures.length === 0;
 console.log(JSON.stringify(out));
 process.exit(out.pass ? 0 : 1);

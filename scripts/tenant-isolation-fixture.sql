@@ -21,6 +21,9 @@ insert into public.memberships (tenant_id, user_id, role, accepted_at) values
  ('aaaaaaaa-1111-4000-8000-00000000000a', 'aaaaaaaa-0000-4000-8000-00000000000a', 'admin', now()),
  ('bbbbbbbb-1111-4000-8000-00000000000b', 'bbbbbbbb-0000-4000-8000-00000000000b', 'admin', now()) on conflict do nothing;
 
+-- The shared connector catalog may be empty on a fresh branch; tenant_connections needs one connector to point at.
+insert into public.connectors (key, name, category, method, uses, never, read_scope) values ('probe', 'Probe connector', 'test', 'key', 'probe', 'probe', 'probe') on conflict do nothing;
+
 -- One row of every kind per tenant. Fixed ids (…a / …b) so the probe can aim route calls at B's rows.
 do $$
 declare t record; k text; ws uuid; tk uuid; d uuid; u uuid;
@@ -41,8 +44,11 @@ begin
     insert into public.documents (id, tenant_id, name, size_bytes, sha256) values (d, t.id, 'doc '||k, 1, 'x') on conflict do nothing;
     insert into public.document_shares (id, tenant_id, document_id, recipient_email, token_hash, expires_at)
       values ((case k when 'a' then 'aaaaaaaa-5555-4000-8000-00000000000a' else 'bbbbbbbb-5555-4000-8000-00000000000b' end)::uuid, t.id, d, k||'@x.test', 'h'||k, now() + interval '7 days') on conflict do nothing;
-    insert into public.tenant_connections (tenant_id, connector_key, status) select t.id, c.key, 'connected' from public.connectors c limit 1;
+    insert into public.tenant_connections (tenant_id, connector_key, status) select t.id, c.key, 'connected' from public.connectors c order by c.key limit 1 on conflict do nothing;
     insert into public.audit_log (tenant_id, action) values (t.id, 'probe.'||k);
     insert into public.invites (tenant_id, email, role) values (t.id, 'invitee-'||k||'@x.test', 'member');
+    -- A revoked, expired grant: gives nobody access, but gives the probe an own row to see in staff_grants for every tenant.
+    insert into public.staff_grants (id, tenant_id, staff_user_id, staff_email, reason, expires_at, revoked_at)
+      values ((case k when 'a' then 'aaaaaaaa-6666-4000-8000-00000000000a' else 'bbbbbbbb-6666-4000-8000-00000000000b' end)::uuid, t.id, u, 'staff-'||k||'@probe.test', 'probe fixture', now() - interval '1 day', now() - interval '1 day') on conflict do nothing;
   end loop;
 end $$;
