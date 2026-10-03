@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getLoveleedayRouteClient } from "@/lib/supabase/loveleeday-server";
+import { getApiContext } from "@/lib/client-portal/api";
 import { stripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -12,28 +12,15 @@ export const runtime = "nodejs";
 // Stripe customer; that's provisioned elsewhere when a tenant is set up for
 // billing.
 export async function POST(req: NextRequest) {
-  const supabase = await getLoveleedayRouteClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) {
-    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  }
-
-  const { data: membership, error: membershipError } = await supabase
-    .from("memberships")
-    .select("tenant_id")
-    .eq("user_id", userData.user.id)
-    .not("accepted_at", "is", null)
-    .limit(1)
-    .maybeSingle<{ tenant_id: string }>();
-
-  if (membershipError || !membership) {
-    return NextResponse.json({ error: "No active company membership found." }, { status: 403 });
-  }
+  const ctx = await getApiContext();
+  if (ctx.error) return ctx.error;
+  const { supabase } = ctx;
+  if (ctx.role === "staff") return NextResponse.json({ error: "Billing is for the company's own members." }, { status: 403 });
 
   const { data: tenant, error: tenantError } = await supabase
     .from("tenants")
     .select("stripe_customer_id")
-    .eq("id", membership.tenant_id)
+    .eq("id", ctx.tenantId)
     .maybeSingle<{ stripe_customer_id: string | null }>();
 
   if (tenantError || !tenant?.stripe_customer_id) {

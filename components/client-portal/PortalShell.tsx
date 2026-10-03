@@ -26,10 +26,12 @@ const NAV = [
 export function PortalShell({
   tenantName,
   role,
+  canSwitch,
   children,
 }: {
   tenantName: string;
   role?: string;
+  canSwitch?: boolean;
   children: ReactNode;
 }) {
   const activePath = usePathname() || "/client";
@@ -59,6 +61,7 @@ export function PortalShell({
             </Link>
             <span className="text-[12px] text-[#c4c6cc]" aria-hidden="true">/</span>
             <span className="text-[12px] text-[#606066] truncate">{tenantName}</span>
+            {canSwitch ? <Link href="/client/select-company" className="text-[12px] text-[#606066] underline whitespace-nowrap">Switch</Link> : null}
           </div>
           <nav className="ll-nav-links" aria-label="Portal navigation">
             <div className="hidden md:flex items-center gap-8">{links}</div>

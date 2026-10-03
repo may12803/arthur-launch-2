@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLoveleedayRouteClient } from "@/lib/supabase/loveleeday-server";
 import { rpcErrorResponse } from "@/lib/client-portal/api";
+import { ACTIVE_TENANT_COOKIE } from "@/lib/client-portal/active-tenant";
 import { sendPortalMail } from "@/lib/client-portal/mailer";
 
 export const runtime = "nodejs";
@@ -37,7 +38,10 @@ export async function POST(req: NextRequest) {
       `It ends on its own when the time is up. You can end it sooner, and see everything done during it, under Access history in your portal.`,
     ]);
   }
-  return NextResponse.json({ ok: true, grant: grantId, notified: admins.length });
+  const res = NextResponse.json({ ok: true, grant: grantId, notified: admins.length });
+  // Opening access makes that client the explicit active company for this staff browser.
+  res.cookies.set(ACTIVE_TENANT_COOKIE, String(body.tenant), { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 12 });
+  return res;
 }
 
 // Staff set a client's data classification (standard | regulated).

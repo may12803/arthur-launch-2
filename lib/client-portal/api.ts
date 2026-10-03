@@ -1,34 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies, headers } from "next/headers";
 import { getLoveleedayRouteClient } from "@/lib/supabase/loveleeday-server";
+import { ACTIVE_TENANT_COOKIE, ACTIVE_TENANT_HEADER, resolveActiveTenant } from "./active-tenant";
 
 export const MAX_DOCUMENT_BYTES = 20 * 1024 * 1024;
 
-// The caller's company and role for /api/client/* routes. The membership read
-// runs under the caller's own session, so the database's require_mfa_aal2 policy
-// answers the two-factor question: a password-only session finds no membership.
+// The caller's company and role for /api/client/* routes. The company is the explicit active tenant (x-tenant-id
+// header, else the lv_active_tenant cookie the screens use), validated against the caller's own accepted
+// memberships and live staff grants on EVERY call by the same resolver the screens use. There is no "first
+// membership": several companies and no valid selection is a 409, a selection the caller does not belong to is a 403.
+// The membership read runs under the caller's own session, so the database's require_mfa_aal2 policy answers the
+// two-factor question: a password-only session finds no membership.
 export async function getApiContext() {
   const supabase = await getLoveleedayRouteClient();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return { supabase, error: NextResponse.json({ error: "Not signed in." }, { status: 401 }) } as const;
-  const { data: m } = await supabase
-    .from("memberships")
-    .select("tenant_id, role")
-    .eq("user_id", userData.user.id)
-    .not("accepted_at", "is", null)
-    .limit(1)
-    .maybeSingle<{ tenant_id: string; role: string }>();
-  if (m) return { supabase, userId: userData.user.id, tenantId: m.tenant_id, role: m.role, error: null } as const;
-  // LOVELEEDAY staff act in a client's account only through a live, logged grant.
-  const { data: g } = await supabase
-    .from("staff_grants")
-    .select("tenant_id")
-    .eq("staff_user_id", userData.user.id)
-    .is("revoked_at", null)
-    .gt("expires_at", new Date().toISOString())
-    .order("expires_at", { ascending: false })
-    .limit(1)
-    .maybeSingle<{ tenant_id: string }>();
-  if (g) return { supabase, userId: userData.user.id, tenantId: g.tenant_id, role: "staff", error: null } as const;
+  const requested = (await headers()).get(ACTIVE_TENANT_HEADER) || (await cookies()).get(ACTIVE_TENANT_COOKIE)?.value || null;
+  const r = await resolveActiveTenant(supabase, userData.user.id, requested);
+  if (r.ok) return { supabase, userId: userData.user.id, tenantId: r.tenantId, role: r.role, error: null } as const;
+  if (r.reason === "ambiguous") return { supabase, error: NextResponse.json({ error: "Choose a company first.", code: "tenant_ambiguous" }, { status: 409 }) } as const;
+  if (r.reason === "not_member") return { supabase, error: NextResponse.json({ error: "You don't have access to that company.", code: "tenant_not_member" }, { status: 403 }) } as const;
   return { supabase, error: NextResponse.json({ error: "Two-factor sign-in and company access are required." }, { status: 403 }) } as const;
 }
 

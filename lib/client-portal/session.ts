@@ -1,6 +1,8 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { isSsoSession } from "./sso";
+import { ACTIVE_TENANT_COOKIE, resolveActiveTenant } from "./active-tenant";
 
 export type TenantRole = "owner" | "admin" | "member" | "viewer" | "staff";
 export type ClientPortalContext = {
@@ -11,12 +13,7 @@ export type ClientPortalContext = {
   tenantPlan: string | null;
   tenantStatus: string;
   role: TenantRole;
-};
-
-type MembershipRow = {
-  tenant_id: string;
-  role: string;
-  tenants: { name: string; plan: string | null; status: string } | null;
+  canSwitch: boolean;
 };
 
 /**
@@ -33,45 +30,33 @@ type MembershipRow = {
 export async function requireClientPortal(): Promise<ClientPortalContext> {
   const { supabase, user } = await requireStrongSession();
 
-  const { data: membership } = await supabase
-    .from("memberships")
-    .select("tenant_id, role, tenants(name, plan, status)")
-    .eq("user_id", user.id)
-    .not("accepted_at", "is", null)
-    .order("accepted_at")
-    .limit(1)
-    .maybeSingle<MembershipRow>();
-
-  if (!membership || !membership.tenants) {
-    // LOVELEEDAY staff enter a client's account only through a live, logged
-    // grant (opened on /client/staff); without one they land on that console.
-    const { data: grant } = await supabase
-      .from("staff_grants")
-      .select("tenant_id, tenants(name, plan, status)")
-      .eq("staff_user_id", user.id)
-      .is("revoked_at", null)
-      .gt("expires_at", new Date().toISOString())
-      .order("expires_at", { ascending: false })
-      .limit(1)
-      .maybeSingle<MembershipRow>();
-    if (grant?.tenants) {
-      return {
-        userId: user.id, email: user.email ?? null, tenantId: grant.tenant_id, tenantName: grant.tenants.name,
-        tenantPlan: grant.tenants.plan, tenantStatus: grant.tenants.status, role: "staff",
-      };
-    }
+  // One resolver for screens and API routes: the active company is the explicit lv_active_tenant selection,
+  // validated against this user's memberships/grants, never "the first membership".
+  const requested = (await cookies()).get(ACTIVE_TENANT_COOKIE)?.value || null;
+  const r = await resolveActiveTenant(supabase, user.id, requested);
+  if (!r.ok) {
+    if (r.reason === "ambiguous" || r.reason === "not_member") redirect("/client/select-company");
+    // LOVELEEDAY staff without a live, logged grant land on the staff console.
     const { data: staff } = await supabase.rpc("is_staff");
     redirect(staff ? "/client/staff" : "/client/no-access");
   }
 
+  const { data: tenant } = await supabase
+    .from("tenants")
+    .select("name, plan, status")
+    .eq("id", r.tenantId)
+    .maybeSingle<{ name: string; plan: string | null; status: string }>();
+  if (!tenant) redirect("/client/no-access");
+
   return {
     userId: user.id,
     email: user.email ?? null,
-    tenantId: membership.tenant_id,
-    tenantName: membership.tenants.name,
-    tenantPlan: membership.tenants.plan,
-    tenantStatus: membership.tenants.status,
-    role: (membership.role as TenantRole) ?? "member",
+    tenantId: r.tenantId,
+    tenantName: tenant.name,
+    tenantPlan: tenant.plan,
+    tenantStatus: tenant.status,
+    role: (r.role as TenantRole) ?? "member",
+    canSwitch: r.candidates.length > 1,
   };
 }
 
