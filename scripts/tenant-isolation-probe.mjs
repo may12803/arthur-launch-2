@@ -5,7 +5,7 @@
 // Also checks anon and an aal1 (password-only) session see nothing.
 //
 // A pass means every planned check RAN and returned the expected answer. The probe fails (exit 1) on a leak, on any
-// inconclusive result (non-200 own read, 404/5xx where a denial was expected, missing OpenAPI definition, no own rows
+// inconclusive result (non-200 own read, 404/5xx where a denial was expected, failed target inventory or B-fixture check, no own rows
 // in a table, route positive control not exactly 200), and on any skipped check. It cannot pass vacuously.
 // Output: one JSON line {mode, complete, tables_checked, rpcs_checked, routes_checked, unauthenticated_checked, expected, leaked_rows, failures, pass, ...}.
 // Exit 1 on leak/failure, 2 on missing config.
@@ -14,8 +14,10 @@
 //   PROBE_URL, PROBE_ANON_KEY            Supabase project (MUST be a branch/test db; production has no probe users)
 //   PROBE_A_EMAIL, PROBE_A_PASSWORD, PROBE_A_TOTP   tenant A user
 //   PROBE_A_TENANT, PROBE_B_TENANT       uuids
-//   PROBE_DB_INVENTORY | PROBE_DB_INVENTORY_FILE   json {table:[columns]} of every public table (see coverage()); required
-//                                        unless the OpenAPI schema is readable (it is not with a publishable/anon key)
+//   PROBE_STAFF_EMAIL, PROBE_STAFF_PASSWORD, PROBE_STAFF_TOTP   a STAFF user of the target (private.staff, MFA). Used ONLY for the
+//                                        privileged read-only checks: staff_probe_inventory() (table inventory read from the target
+//                                        database at probe time; never a file or env value) and staff_probe_fixture() (B's rows exist and
+//                                        PROBE_B_* belong to B). Needs supabase/loveleeday/20261003_probe_staff_rpcs.sql on the target.
 //   PROBE_B_DOC, PROBE_B_SHARE, PROBE_B_TASK        uuids of tenant B rows to aim route/RPC calls at
 //   PROBE_BASE                           portal base URL (e.g. http://localhost:3000), running the code under test
 // Fixture: scripts/tenant-isolation-fixture.sql (ids: tenant A aaaaaaaa-1111-4000-8000-00000000000a / B bbbbbbbb-1111-...,
@@ -25,9 +27,11 @@ import crypto from "node:crypto";
 
 const E = process.env;
 const cfg = { url: E.PROBE_URL, anon: E.PROBE_ANON_KEY, email: E.PROBE_A_EMAIL, pass: E.PROBE_A_PASSWORD, totp: E.PROBE_A_TOTP,
-  A: E.PROBE_A_TENANT, B: E.PROBE_B_TENANT, doc: E.PROBE_B_DOC, share: E.PROBE_B_SHARE, task: E.PROBE_B_TASK, base: E.PROBE_BASE };
+  A: E.PROBE_A_TENANT, B: E.PROBE_B_TENANT, doc: E.PROBE_B_DOC, share: E.PROBE_B_SHARE, task: E.PROBE_B_TASK, base: E.PROBE_BASE,
+  sEmail: E.PROBE_STAFF_EMAIL, sPass: E.PROBE_STAFF_PASSWORD, sTotp: E.PROBE_STAFF_TOTP };
 const NAMES = { url: "PROBE_URL", anon: "PROBE_ANON_KEY", email: "PROBE_A_EMAIL", pass: "PROBE_A_PASSWORD", totp: "PROBE_A_TOTP", A: "PROBE_A_TENANT",
-  B: "PROBE_B_TENANT", doc: "PROBE_B_DOC", share: "PROBE_B_SHARE", task: "PROBE_B_TASK", base: "PROBE_BASE" };
+  B: "PROBE_B_TENANT", doc: "PROBE_B_DOC", share: "PROBE_B_SHARE", task: "PROBE_B_TASK", base: "PROBE_BASE",
+  sEmail: "PROBE_STAFF_EMAIL", sPass: "PROBE_STAFF_PASSWORD", sTotp: "PROBE_STAFF_TOTP" };
 const missing = Object.keys(NAMES).filter((k) => !cfg[k]);
 if (missing.length) { console.error(`missing required config: ${missing.map((k) => NAMES[k]).join(", ")} (see header)`); process.exit(2); }
 
@@ -59,15 +63,15 @@ const j = async (path, { token, method = "GET", body, headers } = {}) => {
   return { status: r.status, data };
 };
 
-async function signIn() {
-  const p = await j("/auth/v1/token?grant_type=password", { method: "POST", body: { email: cfg.email, password: cfg.pass } });
+async function signIn(email = cfg.email, pass = cfg.pass, secret = cfg.totp) {
+  const p = await j("/auth/v1/token?grant_type=password", { method: "POST", body: { email, password: pass } });
   if (p.status !== 200) throw new Error(`password sign-in failed: ${p.status} ${JSON.stringify(p.data)}`);
   const aal1 = p.data;
   const f = await j("/auth/v1/factors", { token: aal1.access_token });
   const factor = (Array.isArray(f.data) ? f.data : (aal1.user?.factors || [])).find((x) => x.factor_type === "totp" && x.status === "verified") || aal1.user?.factors?.[0];
-  if (!factor) throw new Error("no verified TOTP factor for tenant A user");
+  if (!factor) throw new Error(`no verified TOTP factor for ${email}`);
   const ch = await j(`/auth/v1/factors/${factor.id}/challenge`, { token: aal1.access_token, method: "POST", body: {} });
-  const v = await j(`/auth/v1/factors/${factor.id}/verify`, { token: aal1.access_token, method: "POST", body: { challenge_id: ch.data?.id, code: totp(cfg.totp) } });
+  const v = await j(`/auth/v1/factors/${factor.id}/verify`, { token: aal1.access_token, method: "POST", body: { challenge_id: ch.data?.id, code: totp(secret) } });
   if (v.status !== 200) throw new Error(`mfa verify failed: ${v.status} ${JSON.stringify(v.data)}`);
   return { aal1: aal1.access_token, aal2: v.data };
 }
@@ -109,30 +113,36 @@ async function readTablesDenied(label, token) {
   return n;
 }
 
-// Table inventory. Supabase serves the OpenAPI schema only to a secret key, so the normal source is a database-derived
-// inventory (PROBE_DB_INVENTORY json, or PROBE_DB_INVENTORY_FILE) produced by:
-//   select jsonb_object_agg(table_name, cols) from (select table_name, jsonb_agg(column_name) cols
-//     from information_schema.columns where table_schema='public' group by table_name) s;
-// The OpenAPI document is used instead when it is readable. With neither source the probe FAILS: no inventory is not
-// "no tables to worry about". Every listed table must exist in the inventory, and any public table the probe does not
-// list (and that is not the shared catalog) fails it, whether or not it has a tenant_id column.
-async function coverage(token) {
-  let inv = null, source = null;
-  const spec = await j("/rest/v1/", { token });
-  if (spec.status === 200 && spec.data?.definitions && Object.keys(spec.data.definitions).length) {
-    inv = Object.fromEntries(Object.entries(spec.data.definitions).map(([k, d]) => [k, Object.keys(d.properties || {})])); source = "openapi";
-  } else if (E.PROBE_DB_INVENTORY || E.PROBE_DB_INVENTORY_FILE) {
-    try { inv = JSON.parse(E.PROBE_DB_INVENTORY || (await import("node:fs")).readFileSync(E.PROBE_DB_INVENTORY_FILE, "utf8")); source = "database"; } catch (e) { fail("coverage", `PROBE_DB_INVENTORY unreadable: ${e.message}`); }
+// P11: the table inventory is READ FROM THE TARGET DATABASE at probe time, by a staff-only SECURITY DEFINER RPC (catalog read), over the
+// same connection the rest of the probe uses. It is never a file, an env value or a cached document, so it cannot be stale or describe a
+// different project. Every one of the 16 named tables (15 below + the shared catalog) must exist, and ANY other relation in public fails the
+// probe, with or without a tenant_id column: an unlisted tenant table must be added to TABLES (and so be tested) before the probe can pass.
+async function coverage(staffToken) {
+  const r = await j("/rest/v1/rpc/staff_probe_inventory", { token: staffToken, method: "POST", body: {} });
+  const inv = r.status === 200 && r.data && typeof r.data === "object" && !Array.isArray(r.data) ? r.data : null;
+  if (!inv || !Object.keys(inv).length) { fail("coverage", `staff_probe_inventory did not return an inventory (status ${r.status} ${short(r.data)}); the table list cannot be proven`); return { n: 0, source: null }; }
+  for (const t of [...Object.keys(TABLES), ...GLOBAL_OK]) if (!(t in inv)) fail("coverage", `named table ${t} is not in the target database`);
+  for (const [name, d] of Object.entries(inv)) {
+    if (name in TABLES || GLOBAL_OK.has(name)) continue;
+    const tenantCol = (d.columns || []).includes("tenant_id");
+    fail("coverage", `public ${d.kind === "r" || d.kind === "p" ? "table" : "relation (kind " + d.kind + ")"} ${name}${tenantCol ? " (has tenant_id)" : ""} exists in the target database but is not in the probe's TABLES list`);
   }
-  if (!inv || typeof inv !== "object" || !Object.keys(inv).length) {
-    fail("coverage", `no table inventory: OpenAPI unavailable (status ${spec.status}) and PROBE_DB_INVENTORY not given; cannot prove every exposed table is covered`);
-    return { n: 0, source: null };
+  return { n: Object.keys(inv).length, source: "target-db:staff_probe_inventory" };
+}
+
+// P10: positive control for tenant B. A zero-row cross-tenant read only means isolation if B actually HAS rows there, and the ids the
+// route/RPC checks aim at must really be B's. Read with the staff privileged RPC (bypasses RLS, read-only); any missing row fails the probe.
+async function fixtureCheck(staffToken) {
+  const r = await j("/rest/v1/rpc/staff_probe_fixture", { token: staffToken, method: "POST", body: { p_tenant: cfg.B, p_doc: cfg.doc, p_share: cfg.share, p_task: cfg.task } });
+  if (r.status !== 200 || !r.data?.rows) { fail("fixture", `staff_probe_fixture did not answer (status ${r.status} ${short(r.data)}); tenant B's fixture is unconfirmed`); return null; }
+  const empty = Object.entries(r.data.rows).filter(([, n]) => !(n > 0)).map(([t]) => t);
+  for (const t of Object.keys(TABLES)) if (!(t in r.data.rows)) fail("fixture", `no B row count for ${t}`);
+  if (empty.length) fail("fixture", `tenant B has no rows in: ${empty.join(", ")} (a zero-row cross-tenant read there proves nothing)`);
+  for (const [label, got] of [["PROBE_B_DOC", r.data.doc_tenant], ["PROBE_B_SHARE", r.data.share_tenant], ["PROBE_B_TASK", r.data.task_tenant]]) {
+    if (!got) fail("fixture", `${label} does not exist in the target database`);
+    else if (got !== cfg.B) fail("fixture", `${label} belongs to tenant ${got}, not B (${cfg.B})`);
   }
-  for (const t of Object.keys(TABLES)) if (!(t in inv)) fail("coverage", `listed table ${t} is not in the ${source} inventory (absent or not exposed)`);
-  for (const name of Object.keys(inv)) {
-    if (!(name in TABLES) && !GLOBAL_OK.has(name)) fail("coverage", `public table ${name}${inv[name].includes("tenant_id") ? " (has tenant_id)" : ""} is not in the probe's TABLES list`);
-  }
-  return { n: Object.keys(inv).length, source };
+  return { b_rows: r.data.rows, b_rows_missing: empty };
 }
 
 // Each RPC aimed at tenant B must be DENIED (a 2xx that returns/does something is a leak). 404 (function absent) and 5xx are inconclusive.
@@ -212,14 +222,16 @@ async function routes(session) {
 
 const out = { target: new URL(cfg.url).hostname, tenant_a: cfg.A, tenant_b: cfg.B, mode: "full" };
 const { aal1, aal2 } = await signIn();
+const staff = await signIn(cfg.sEmail, cfg.sPass, cfg.sTotp);
+out.fixture_b = await fixtureCheck(staff.aal2.access_token);
 out.tables_checked = await readTablesOwn("A(aal2)", aal2.access_token);
-{ const c = await coverage(aal2.access_token); out.exposed_tables_seen = c.n; out.inventory_source = c.source; }
+{ const c = await coverage(staff.aal2.access_token); out.exposed_tables_seen = c.n; out.inventory_source = c.source; }
 out.rpcs_checked = await rpcs(aal2.access_token);
 out.routes_checked = await routes(aal2);
 out.unauthenticated_checked = (await readTablesDenied("anon", cfg.anon)) + (await readTablesDenied("A(aal1, no MFA)", aal1));
 out.session_aal = JSON.parse(Buffer.from(aal2.access_token.split(".")[1], "base64url").toString()).aal;
 if (out.session_aal !== "aal2") fail("session", `expected aal2, got ${out.session_aal}`);
-out.openapi_visible = out.exposed_tables_seen > 0;
+out.inventory_from_target_db = out.inventory_source === "target-db:staff_probe_inventory";
 // Nothing may be skipped: the planned number of checks must equal the number that ran.
 out.expected = { tables: nTables, rpcs: 9, routes: 9, unauthenticated: nTables * 2 };
 for (const [k, got] of [["tables", out.tables_checked], ["rpcs", out.rpcs_checked], ["routes", out.routes_checked], ["unauthenticated", out.unauthenticated_checked]]) {
