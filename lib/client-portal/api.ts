@@ -15,6 +15,9 @@ export async function getApiContext() {
     .select("tenant_id, role")
     .eq("user_id", userData.user.id)
     .not("accepted_at", "is", null)
+    // A person in more than one company must land in the same one every time, not whichever row Postgres returns first.
+    .order("created_at", { ascending: true })
+    .order("tenant_id", { ascending: true })
     .limit(1)
     .maybeSingle<{ tenant_id: string; role: string }>();
   if (m) return { supabase, userId: userData.user.id, tenantId: m.tenant_id, role: m.role, error: null } as const;
