@@ -6,9 +6,9 @@ export const dynamic = "force-dynamic";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between py-3.5 border-b border-line-separator last:border-0">
-      <span className="text-small text-text-muted">{label}</span>
-      <span className="text-[14px] text-text-active font-medium">{value}</span>
+    <div className="flex items-center justify-between gap-4 py-3.5 border-b border-line-separator last:border-0">
+      <span className="text-small text-text-muted shrink-0">{label}</span>
+      <span className="text-[14px] text-text-active font-medium min-w-0 break-all text-right">{value}</span>
     </div>
   );
 }
