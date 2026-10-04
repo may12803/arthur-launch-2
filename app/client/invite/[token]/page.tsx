@@ -27,6 +27,7 @@ async function fetchPreview(token: string): Promise<Preview> {
 
 function friendlyAcceptError(message: string): string {
   const m = message.toLowerCase();
+  if (m.includes("not found") && m.includes("used")) return "This invite can't be used: it may have expired, already been accepted, or been withdrawn. Ask your contact to send a new one.";
   if (m.includes("expired")) return "This invite has expired. Ask your contact to send a new one.";
   if (m.includes("not found") || m.includes("invalid")) return "This invite link isn't valid. Check that you copied the whole link.";
   if (m.includes("different email")) return "This invite was sent to a different email address than the account you're signed in with. Use the account the invite was sent to.";
