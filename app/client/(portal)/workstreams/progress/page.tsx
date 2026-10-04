@@ -42,6 +42,7 @@ export default async function ProgressPage() {
       <section className="mt-14">
         <h2 className="mb-4 text-[24px] font-medium tracking-[-0.03em] text-[var(--ink)]">Completed <span className="ml-2 text-[14px] font-normal tracking-normal text-[var(--muted)]">{done.length} · newest first</span></h2>
         <Card>
+          {done.length === 0 && <p className="px-5 py-6 text-[14px] text-[var(--muted)]">Nothing has been finished yet. Each task appears here with what was wrong, what changed and the proof, as soon as it is done.</p>}
           {done.map((t, i) => (
             <div key={t.id} className={`grid gap-2 px-5 py-4 md:grid-cols-[170px_1fr] ${i ? "border-t border-[var(--line)]" : ""}`}>
               <span className="self-start justify-self-start rounded-full bg-[#e6f4ea] px-2.5 py-0.5 text-[11px] font-medium text-[#1e6b3a]">✓ {name[t.workstream_id]}</span>

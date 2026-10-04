@@ -11,7 +11,16 @@ export default async function WorkstreamsPage() {
   const ctx = await requireClientPortal();
   const { workstreams, tasks, error } = await loadWorkstreams(ctx.tenantId);
   if (error) return <Card className="p-5 border-red-200"><p className="text-small text-red-700">Couldn&apos;t load workstreams: {error}</p></Card>;
-  if (!workstreams.length) return <EmptyState title="No workstreams yet" body="When LOVELEEDAY starts improving an area of your business, it appears here with its grade and every task." />;
+  if (!workstreams.length) {
+    return (
+      <div>
+        <Eyebrow>{ctx.tenantName} · Engagement</Eyebrow>
+        <PageTitle>Everything in motion.</PageTitle>
+        <Muted className="mb-8 max-w-[60ch]">Every area we&apos;re improving, graded when we started and graded now.</Muted>
+        <EmptyState title="No workstreams yet" body="When LOVELEEDAY starts improving an area of your business, it appears here with its grade and every task. Until then, your Deliverables and Documents are the places to look." />
+      </div>
+    );
+  }
 
   const done = tasks.filter((t) => t.status === "done");
   const needs = tasks.filter((t) => t.status === "needs_you").sort((a, b) => a.rank - b.rank);

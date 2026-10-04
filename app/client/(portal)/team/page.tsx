@@ -3,6 +3,7 @@ import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { Card, Eyebrow, PageTitle, Muted, StatusBadge } from "@/components/client-portal/ui";
 import { InviteForm } from "@/components/client-portal/InviteForm";
 import { LocalDate } from "@/components/client-portal/LocalTime";
+import { RevokeInvite } from "@/components/client-portal/RevokeInvite";
 
 export const dynamic = "force-dynamic";
 
@@ -105,10 +106,14 @@ export default async function TeamPage() {
                 <div>
                   <div className="text-[14px] text-text-active font-medium">{inv.email}</div>
                   <div className="text-[12.5px] text-text-muted">
-                    Expires <LocalDate iso={inv.expires_at} />
+                    {new Date(inv.expires_at).getTime() < Date.now() ? "Expired " : "Expires "}<LocalDate iso={inv.expires_at} />
+                    {new Date(inv.expires_at).getTime() < Date.now() && " · invite them again below"}
                   </div>
                 </div>
-                <StatusBadge status={inv.role} />
+                <div className="flex items-center gap-4">
+                  <StatusBadge status={inv.role} />
+                  <RevokeInvite id={inv.id} email={inv.email} />
+                </div>
               </div>
             ))}
           </div>

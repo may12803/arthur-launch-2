@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { Card, Eyebrow, PageTitle, Muted, StatusBadge } from "@/components/client-portal/ui";
 
@@ -29,6 +30,16 @@ export default async function AccountPage() {
         <Row label="Status" value={<StatusBadge status={ctx.tenantStatus} />} />
         <Row label="Your role" value={ctx.role} />
         <Row label="Signed in as" value={ctx.email || "—"} />
+      </Card>
+
+      <Card className="p-6 mt-6">
+        <h2 className="font-serif text-h3 text-text-active mb-2">Your sign-in</h2>
+        <Muted className="mb-4 max-w-[60ch]">
+          You sign in with your password and a 6-digit code from your authenticator app. To choose a new password we
+          email you a link; you will still need your authenticator code afterwards. Lost your phone or backup codes?
+          Email <a className="underline" href="mailto:daniel@loveleedaystudios.com?subject=Reset%20my%20two-factor">daniel@loveleedaystudios.com</a>.
+        </Muted>
+        <Link href="/client/forgot" className="ll-secondary inline-block">Change my password</Link>
       </Card>
     </div>
   );

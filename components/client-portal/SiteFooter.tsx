@@ -11,8 +11,9 @@ export function SiteFooter() {
         </a>
         <div className="ll-footer-legal">
           <span>&copy; 2026 LOVELEEDAY Studios</span>
-          <a href="https://loveleedaystudios.com/privacy.html">Privacy</a>
-          <a href="https://loveleedaystudios.com/principles.html">Principles</a>
+          <a href="/client/privacy">Privacy</a>
+          <a href="/client/terms">Terms</a>
+          <a href="https://loveleedaystudios.com/principles">Principles</a>
         </div>
       </div>
     </footer>

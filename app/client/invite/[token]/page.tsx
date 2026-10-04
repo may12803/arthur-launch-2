@@ -29,6 +29,8 @@ function friendlyAcceptError(message: string): string {
   const m = message.toLowerCase();
   if (m.includes("expired")) return "This invite has expired. Ask your contact to send a new one.";
   if (m.includes("not found") || m.includes("invalid")) return "This invite link isn't valid. Check that you copied the whole link.";
+  if (m.includes("different email")) return "This invite was sent to a different email address than the account you're signed in with. Use the account the invite was sent to.";
+  if (m.includes("confirm your email")) return "Confirm your email address first (check your inbox for our message), then open this invite again.";
   if (m.includes("already") || m.includes("accepted")) return "This invite has already been used. Try signing in instead.";
   return message || "Couldn't accept this invite.";
 }
@@ -75,6 +77,12 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     }
     window.location.href = "/client";
   }, [token]);
+
+  async function switchAccount() {
+    await loveleeday.auth.signOut();
+    setAuthedEmail(null);
+    setError("");
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -150,7 +158,9 @@ export default function InvitePage({ params }: { params: { token: string } }) {
       muted={preview ? "on LOVELEEDAY." : "invited."}
       lead={
         preview
-          ? `You've been invited as ${preview.role}. Create your account to see the deliverables, contracts and billing for this engagement.`
+          ? authedEmail
+            ? `You've been invited as ${preview.role}. Accept to add ${preview.tenant_name} to your account.`
+            : `You've been invited as ${preview.role}. Create your account, or sign in if you already have one, to see the deliverables, contracts and billing for this engagement.`
           : "Create your account to join your company's LOVELEEDAY client portal."
       }
       footer={<p className="ll-note">Two-factor authentication is set up right after, for every account.</p>}
@@ -172,6 +182,9 @@ export default function InvitePage({ params }: { params: { token: string } }) {
           <PortalButton onClick={finishAccept} disabled={submitting} className="w-full">
             {submitting ? "Joining…" : "Accept invite"}
           </PortalButton>
+          <button type="button" className="ll-note underline self-start text-left" onClick={switchAccount}>
+            Not {authedEmail}? Sign out and use a different account
+          </button>
         </div>
       ) : (
         <>
@@ -213,7 +226,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={inputClass}
-                placeholder={mode === "signup" ? "At least 8 characters" : undefined}
+                placeholder={mode === "signup" ? "At least 12 characters" : undefined}
               />
             </FormField>
             {error && <p className="ll-feedback warn">{error}</p>}

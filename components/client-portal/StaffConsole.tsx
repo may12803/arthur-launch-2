@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { FormField, PortalButton, inputClass } from "./ui";
+import { StaffAddClient } from "./StaffAddClient";
 
 export type StaffTenant = { id: string; name: string; data_class: string; grant_expires_at: string | null };
 
@@ -36,7 +37,21 @@ export function StaffConsole({ tenants }: { tenants: StaffTenant[] }) {
     window.location.reload();
   }
 
-  if (tenants.length === 0) return <p className="ll-note">There are no client accounts yet.</p>;
+  const addClient = (
+    <div className={tenants.length ? "border-t border-[var(--line)] pt-5 flex flex-col gap-4" : "flex flex-col gap-4"}>
+      <h2 className="text-[18px] font-medium tracking-[-0.02em] text-[var(--ink)]">Add a client business</h2>
+      <StaffAddClient />
+    </div>
+  );
+
+  if (tenants.length === 0) {
+    return (
+      <div className="flex flex-col gap-4">
+        <p className="ll-note">There are no client accounts yet. Add the first one below.</p>
+        {addClient}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -75,6 +90,8 @@ export function StaffConsole({ tenants }: { tenants: StaffTenant[] }) {
         ))}
         <p className="ll-note">Regulated turns outside sharing off, revokes live links, and caps links at 7 days and staff access at 4 hours.</p>
       </div>
+
+      {addClient}
     </div>
   );
 }

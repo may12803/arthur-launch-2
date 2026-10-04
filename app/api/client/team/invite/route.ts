@@ -60,3 +60,20 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ invite });
 }
+
+// Withdraws a pending invite. Authorized by the same invites_admin_manage policy as the insert, so a non-admin or an
+// admin of another company deletes nothing; the tenant filter below is belt and braces, not the control.
+export async function DELETE(req: NextRequest) {
+  const body = await req.json().catch(() => ({} as { id?: string }));
+  const id = String(body.id || "");
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  const ctx = await getApiContext();
+  if (ctx.error) return ctx.error;
+  if (ctx.role !== "owner" && ctx.role !== "admin") {
+    return NextResponse.json({ error: "Only owners and admins can withdraw invites." }, { status: 403 });
+  }
+  const { data, error } = await ctx.supabase.from("invites").delete().eq("id", id).eq("tenant_id", ctx.tenantId).is("accepted_at", null).select("id");
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (!data?.length) return NextResponse.json({ error: "That invite is no longer pending." }, { status: 404 });
+  return NextResponse.json({ ok: true });
+}
