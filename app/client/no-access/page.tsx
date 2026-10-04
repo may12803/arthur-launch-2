@@ -17,7 +17,7 @@ export default async function NoAccessPage() {
       muted="company access."
       lead="You're signed in, but this account isn't an accepted member of a LOVELEEDAY client company yet."
     >
-      <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Signed in as {data.user.email}</h2>
+      <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)] break-all">Signed in as {data.user.email}</h2>
       <p className="ll-note mt-2 mb-6">
         If you were sent an invite link, open that link to join. Otherwise, ask your contact to send you one.
       </p>

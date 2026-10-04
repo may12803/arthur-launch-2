@@ -101,10 +101,10 @@ export default async function TeamPage() {
             {invites.map((inv) => (
               <div
                 key={inv.id}
-                className="flex items-center justify-between py-3 border-b border-line-separator last:border-0"
+                className="flex flex-wrap items-center justify-between gap-2 py-3 border-b border-line-separator last:border-0"
               >
-                <div>
-                  <div className="text-[14px] text-text-active font-medium">{inv.email}</div>
+                <div className="min-w-0 max-w-full">
+                  <div className="text-[14px] break-all text-text-active font-medium">{inv.email}</div>
                   <div className="text-[12.5px] text-text-muted">
                     {new Date(inv.expires_at).getTime() < Date.now() ? "Expired " : "Expires "}<LocalDate iso={inv.expires_at} />
                     {new Date(inv.expires_at).getTime() < Date.now() && " · invite them again below"}
