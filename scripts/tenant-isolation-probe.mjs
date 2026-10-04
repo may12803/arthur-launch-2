@@ -173,8 +173,8 @@ async function fixtureCheck(staffToken) {
 //   helper   returns the caller's own state (is_staff, session_is_strong, is_tenant_member, role_rank): must say "no" for A where it matters.
 const CLASSES = {
   tenant: ["list_tenant_team", "document_download", "document_upload", "document_delete", "share_create", "share_revoke", "workstream_decide",
-    "tenant_set_external_sharing", "connection_request", "connection_set_key", "connection_disconnect", "is_tenant_member"],
-  staff: ["staff_list_tenants", "staff_open_access", "staff_close_access", "staff_set_data_class", "staff_provision_tenant", "staff_probe_inventory",
+    "tenant_set_external_sharing", "connection_request", "connection_set_key", "connection_disconnect", "is_tenant_member", "staff_close_access"],
+  staff: ["staff_list_tenants", "staff_open_access", "staff_set_data_class", "staff_provision_tenant", "staff_probe_inventory",
     "staff_probe_fixture", "staff_probe_target", "staff_probe_function_inventory", "staff_probe_reset_fixture"],
   gated: ["accept_invite", "get_invite_preview", "share_preview", "share_issue_code", "share_redeem", "connection_record", "connection_secret", "connections_for_probe"],
   helper: ["is_staff", "session_is_strong", "role_rank"],
@@ -218,6 +218,9 @@ async function rpcs(token, staffToken) {
   const taskRows = await j(`/rest/v1/workstream_tasks?select=id&tenant_id=eq.${cfg.A}&limit=1`, { token });
   const ownTask = taskRows.status === 200 ? taskRows.data?.[0]?.id : null;
   if (!ownTask) fail("rpc control workstream_decide", `own task unavailable: ${taskRows.status} ${short(taskRows.data)}`);
+  const grants = await j(`/rest/v1/staff_grants?select=id&tenant_id=eq.${cfg.A}&limit=1`, { token });
+  const ownGrant = grants.status === 200 ? grants.data?.[0]?.id : null;
+  if (!ownGrant) fail("rpc control staff_close_access", `own access grant unavailable: ${grants.status} ${short(grants.data)}`);
   const shareCreate = ownDoc ? await rpc("share_create", { p_document: ownDoc, p_email: "probe@probe.test", p_days: 1 }) : null;
   const shares = ownDoc ? await j(`/rest/v1/document_shares?select=id&document_id=eq.${ownDoc}&limit=1`, { token }) : null;
   const ownShare = shares?.status === 200 ? shares.data?.[0]?.id : null;
@@ -238,6 +241,8 @@ async function rpcs(token, staffToken) {
     connection_set_key: [{ p_tenant: cfg.A, p_connector: "probe", p_payload: { k: "v" } }, { p_tenant: cfg.B, p_connector: "probe", p_payload: { k: "v" } }, ok2xx],
     connection_disconnect: [{ p_tenant: cfg.A, p_connector: "probe" }, { p_tenant: cfg.B, p_connector: "probe" }, ok2xx],
     is_tenant_member: [{ p_tenant: cfg.A }, { p_tenant: cfg.B }, (d) => d === true],
+    // A tenant admin may close access grants of its OWN tenant; B's grant (fixture id ...-6666-...b) must be refused.
+    staff_close_access: [{ p_grant: ownGrant }, { p_grant: cfg.B.replace("-1111-", "-6666-") }, ok2xx],
   };
   for (const fn of CLASSES.tenant) {
     if (!exposed.some((f) => f.name === fn)) continue;
