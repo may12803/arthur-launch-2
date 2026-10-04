@@ -8,7 +8,7 @@ import { chromium } from "playwright";
 import crypto from "node:crypto";
 
 const BASE = process.env.PORTAL_BASE || "https://portal.loveleedaystudios.com";
-const EMAIL = process.env.LOVELEEDAY_PORTAL_STAFF_EMAIL, PASS = process.env.LOVELEEDAY_PORTAL_STAFF_PASSWORD;
+const EMAIL = process.env.LOVELEEDAY_PORTAL_QA_EMAIL, PASS = process.env.LOVELEEDAY_PORTAL_QA_PASSWORD;
 if (!EMAIL?.startsWith("portal-qa@")) { console.error("refusing: run this only as the QA login (loveleeday-portal-qa)"); process.exit(2); }
 
 function totp(secret) {

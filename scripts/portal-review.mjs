@@ -62,8 +62,8 @@ page.on("requestfailed", (r) => {
 
 current = "/client/login";
 await page.goto(BASE + "/client/login");
-await page.fill('input[type="email"]', process.env.LOVELEEDAY_PORTAL_STAFF_EMAIL);
-await page.fill('input[type="password"]', process.env.LOVELEEDAY_PORTAL_STAFF_PASSWORD);
+await page.fill('input[type="email"]', process.env.LOVELEEDAY_PORTAL_QA_EMAIL);
+await page.fill('input[type="password"]', process.env.LOVELEEDAY_PORTAL_QA_PASSWORD);
 await page.keyboard.press("Enter");
 await page.waitForURL(/mfa\/(enroll|challenge)|\/client$/, { timeout: 20000 });
 if (page.url().includes("/mfa/enroll")) {
