@@ -10,7 +10,7 @@ export type ApiKeyRow = { id: string; name: string; prefix: string; scopes: stri
 export type WebhookRow = { id: string; url: string; events: string[]; active: boolean; created_at: string };
 export type DeliveryRow = { id: string; endpoint_id: string; event: string; status: string; response_code: number | null; attempt: number | null; at: string };
 
-const SCOPE_LABEL: Record<string, string> = { "read:connections": "Connections and health", "read:data": "Synced data", "read:approvals": "Approvals", "read:audit": "Audit trail" };
+const SCOPE_LABEL: Record<string, string> = { "connections:read": "Connections and health", "records:read": "Synced records", "approvals:read": "Approvals", "records:write": "Submit records" };
 
 async function post(url: string, body: unknown) {
   try {
@@ -41,10 +41,10 @@ export function DeveloperView({ keys, webhooks, deliveries, canManage, errors }:
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [scopes, setScopes] = useState<string[]>(["read:connections"]);
+  const [scopes, setScopes] = useState<string[]>(["connections:read"]);
   const [revealKey, setRevealKey] = useState<string | null>(null);
   const [hookUrl, setHookUrl] = useState("");
-  const [events, setEvents] = useState<string[]>(["connection.failed"]);
+  const [events, setEvents] = useState<string[]>(["sync.failed"]);
   const [revealSecret, setRevealSecret] = useState<string | null>(null);
 
   const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);

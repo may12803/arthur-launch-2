@@ -57,7 +57,6 @@ export function DetailView({
   const [msg, setMsg] = useState<Msg>(null);
   const [vals, setVals] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState<"all" | "errors">("all");
-  const [creds, setCreds] = useState<{ public_key?: string; sftp?: { host: string; port: number; username: string; directory: string } } | null>(null);
 
   const limitH = parseIntervalHours(row?.stale_after);
   const ageH = row?.last_success_at ? (now - new Date(row.last_success_at).getTime()) / 3.6e6 : null;
@@ -86,17 +85,6 @@ export function DetailView({
     setMsg({ ok: false, text: String(r.json.error ?? "Sign-in could not start.") });
   }
 
-  async function loadCreds() {
-    setBusy(true); setMsg(null);
-    try {
-      const r = await fetch(`/api/client/connectors/${entry.key}/credentials`);
-      const j = (await r.json().catch(() => ({}))) as { error?: string; public_key?: string; sftp?: { host: string; port: number; username: string; directory: string } };
-      if (!r.ok) setMsg({ ok: false, text: j.error ?? "Could not load the connection details." });
-      else setCreds(j);
-    } catch (e) { setMsg({ ok: false, text: e instanceof Error ? e.message : "Could not load the connection details." }); }
-    setBusy(false);
-  }
-
   const fields = keyFieldsFor({ entry });
   const m = entry.authMethod;
 
@@ -121,11 +109,6 @@ export function DetailView({
         </div>
         {canManage && connected ? (
           <div className="flex flex-wrap gap-2.5">
-            {st.id === "paused" ? (
-              <button type="button" className="ll-secondary" disabled={busy} onClick={() => act("resume", undefined, "Syncing resumed.")}>Resume sync</button>
-            ) : (
-              <button type="button" className="ll-secondary" disabled={busy} onClick={() => act("pause", undefined, "Syncing paused. Nothing is being read.")}>Pause sync</button>
-            )}
             <button type="button" className="ll-danger" disabled={busy} onClick={() => { if (confirm(`Disconnect ${entry.name}? Any stored credential is deleted.`)) act("disconnect", undefined, "Disconnected. Any stored credential was deleted."); }}>Disconnect</button>
             {m === "oauth2_authcode" ? <button type="button" className="ll-primary" disabled={busy} onClick={startOAuth}>Re-authorize</button> : null}
           </div>
@@ -197,21 +180,9 @@ export function DetailView({
                   </form>
                 ) : m === "key_pair" ? (
                   <div className="grid gap-3">
-                    <p className="text-[13.5px] leading-[1.65] text-[#303238]">{entry.recommendedPath === "sftp_csv" || entry.key === "sftp-drop" ? "Drop files to a private folder on our SFTP endpoint, signed in with a key pair. We generate the pair and show you the connection details; the private key never leaves our encrypted store." : "Add the public key below to your read-only user. We keep the private half encrypted and never show it."}</p>
-                    {creds ? (
-                      <div className="grid gap-3">
-                        {creds.sftp ? (
-                          <dl className="grid grid-cols-[110px_minmax(0,1fr)] gap-x-4 gap-y-2 text-[13px]">
-                            {Object.entries({ Host: creds.sftp.host, Port: String(creds.sftp.port), "User name": creds.sftp.username, Folder: creds.sftp.directory }).map(([k, v]) => (<div key={k} className="contents"><dt className="text-[var(--muted)]">{k}</dt><dd className="cp-mono break-all">{v}</dd></div>))}
-                          </dl>
-                        ) : null}
-                        {creds.public_key ? <div><span className="cp-cap">Public key</span><pre className="cp-copy mt-1.5 whitespace-pre-wrap">{creds.public_key}</pre></div> : null}
-                      </div>
-                    ) : null}
-                    <div className="flex flex-wrap gap-2">
-                      <button type="button" className="ll-primary" disabled={busy} onClick={loadCreds}>{busy ? "Loading..." : creds ? "Refresh details" : "Show connection details"}</button>
-                      <button type="button" className="ll-secondary" disabled={busy} onClick={() => act("invited", undefined, "Thanks. We will confirm the first file or read and show the proof here.")}>I have set this up</button>
-                    </div>
+                    <p className="text-[13.5px] leading-[1.65] text-[#303238]">{entry.key === "sftp-drop" ? "Send files to a private folder on our SFTP endpoint, signed in with a key pair. We create the pair and the folder with you." : "You add a public key that we provide to a read-only user. The matching half stays with us, encrypted, and is never shown."}</p>
+                    <p className="text-[12.5px] text-[var(--muted)]">Setup is done with you rather than self-served. Request it and we will send the connection details to your owners and admins.</p>
+                    <button type="button" className="ll-primary justify-self-start" disabled={busy || st.id === "requested"} onClick={() => act("request", undefined, "Requested. We will set this up with you and show progress here.")}>{st.id === "requested" ? "Requested" : busy ? "Saving..." : "Request setup"}</button>
                   </div>
                 ) : (
                   <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); act("key", { payload: vals }, "Credential stored encrypted. A live read will confirm it and the proof will appear here."); }}>

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Pill } from "../cp";
 import type { EntityRow } from "./EntitiesView";
 
-export type ScopeMember = { user_id: string; label: string; role: string; entityIds: string[] };
+export type ScopeMember = { user_id: string; membershipId: string; label: string; role: string; entityIds: string[] };
 
 // Scoped membership (G09): a member can be limited to parts of the organization. Owners and admins always see the whole
 // company, so their scope is shown as such and cannot be narrowed. No scope rows means the whole company.
@@ -17,10 +17,10 @@ export function ScopeEditor({ members, entities, canEdit }: { members: ScopeMemb
   const [err, setErr] = useState<string | null>(null);
   const name = (id: string) => entities.find((e) => e.id === id)?.name ?? "Removed item";
 
-  async function save(userId: string) {
+  async function save(membershipId: string) {
     setBusy(true); setErr(null);
     try {
-      const r = await fetch("/api/client/entities", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "scope", user_id: userId, entity_ids: sel }) });
+      const r = await fetch("/api/client/entities", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "scope", membership_id: membershipId, entity_ids: sel }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) setErr(j.error ?? "That did not save.");
       else { setOpen(null); router.refresh(); }
@@ -60,7 +60,7 @@ export function ScopeEditor({ members, entities, canEdit }: { members: ScopeMemb
                   ))}
                 </div>
                 {err ? <p role="alert" className="mt-3 text-[13px] text-[#a1291f]">{err}</p> : null}
-                <button type="button" className="ll-primary mt-4" disabled={busy} onClick={() => save(m.user_id)}>{busy ? "Saving..." : "Save access"}</button>
+                <button type="button" className="ll-primary mt-4" disabled={busy} onClick={() => save(m.membershipId)}>{busy ? "Saving..." : "Save access"}</button>
               </div>
             ) : null}
           </div>

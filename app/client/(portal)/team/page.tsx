@@ -71,7 +71,7 @@ export default async function TeamPage() {
   const memberIdByUser = new Map((memRes.data ?? []).map((m) => [m.user_id, m.id]));
   const scopeMembers: ScopeMember[] = members.map((m) => {
     const mid = memberIdByUser.get(m.user_id);
-    return { user_id: m.user_id, label: m.email || `User ${m.user_id.slice(0, 8)}`, role: m.role, entityIds: (scopeRes.data ?? []).filter((s) => s.membership_id === mid).map((s) => s.entity_id) };
+    return { user_id: m.user_id, membershipId: mid ?? "", label: m.email || `User ${m.user_id.slice(0, 8)}`, role: m.role, entityIds: (scopeRes.data ?? []).filter((s) => s.membership_id === mid).map((s) => s.entity_id) };
   });
   const scopeErrors = [entRes.error && `Entities: ${entRes.error.message}`, memRes.error && `Memberships: ${memRes.error.message}`, scopeRes.error && `Scopes: ${scopeRes.error.message}`];
 

@@ -8,8 +8,6 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Hierarchy editor (G08) and scoped membership (G09). Owners and admins only; the RPCs re-check the role.
 //   action upsert -> entity_upsert, delete -> entity_delete, scope -> membership_scope_set
-// CONTRACT GAP: membership_scope_set(p_tenant, p_user, p_entity_ids uuid[]) is not listed in CONTRACT.md. The contract
-// defines membership_scopes but no RPC that writes it.
 export async function POST(req: NextRequest) {
   const ctx = await getApiContext();
   if (ctx.error) return ctx.error;
@@ -33,15 +31,15 @@ export async function POST(req: NextRequest) {
   if (action === "delete") {
     const id = clip(body.id, 64);
     if (!UUID.test(id)) return NextResponse.json({ error: "Unknown entity." }, { status: 400 });
-    const { error } = await ctx.supabase.rpc("entity_delete", { p_tenant: ctx.tenantId, p_id: id });
+    const { error } = await ctx.supabase.rpc("entity_delete", { p_id: id });
     if (error) return dbFail(error.message, "Could not delete");
     return NextResponse.json({ ok: true });
   }
   if (action === "scope") {
-    const user = clip(body.user_id, 64);
+    const membership = clip(body.membership_id, 64);
     const ids: string[] = Array.isArray(body.entity_ids) ? body.entity_ids.map((x: unknown) => clip(x, 64)) : [];
-    if (!UUID.test(user) || ids.some((i) => !UUID.test(i))) return NextResponse.json({ error: "Unknown member or entity." }, { status: 400 });
-    const { error } = await ctx.supabase.rpc("membership_scope_set", { p_tenant: ctx.tenantId, p_user: user, p_entity_ids: ids });
+    if (!UUID.test(membership) || ids.some((i) => !UUID.test(i))) return NextResponse.json({ error: "Unknown member or entity." }, { status: 400 });
+    const { error } = await ctx.supabase.rpc("membership_scope_set", { p_membership: membership, p_entities: ids });
     if (error) return dbFail(error.message, "Could not save access");
     return NextResponse.json({ ok: true });
   }

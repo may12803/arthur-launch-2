@@ -6,8 +6,57 @@
 // Status words follow the connector reality ladder: a connection reads "Live" only when its health is healthy AND data
 // moved inside its freshness window. A credential alone is "Connected", never "Live".
 
-import { CATALOG_SOURCES, type CatalogSource } from "./connector-catalog.generated";
+import { CONNECTOR_DEFINITIONS } from "../connectors/definitions";
+import type { ConnectorDefinition } from "../connectors/types";
+import { ADMIN_STEPS } from "./connector-admin-steps.generated";
 import type { Connector, ConnStatus } from "./connections";
+
+// What the screens need from a definition. Built from lib/connectors/definitions.generated.ts (the one source of truth);
+// only the customer-admin steps and approval wait, which the definitions do not carry, come from the small generated
+// admin-steps file. Research markers ("UNVERIFIED ...") are stripped so no customer reads our working notes.
+export type CatalogSource = {
+  key: string; name: string; vendor: string; category: string; authMethod: string; recommendedPath: string;
+  partnerRequired: boolean; gateUnverified: boolean; partnerProgram: string; selfServeDev: boolean; customerAdmin: string; timeToApproval: string;
+  scopes: string[]; objects: string[]; incremental: string; sandbox: boolean | null; logo: string | null;
+};
+
+function clean(s: unknown, max = 320): string {
+  if (typeof s !== "string") return "";
+  let t = s.replace(/\(?[^().;]*UNVERIFIED[^().;]*\)?;?/gi, "").replace(/\s{2,}/g, " ").replace(/\s+([.,;])/g, "$1").trim();
+  if (t.length > max) {
+    const cut = t.slice(0, max);
+    const stop = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("; "));
+    t = (stop > 80 ? cut.slice(0, stop) : cut.replace(/\s+\S*$/, "")) + (stop > 80 ? "." : "...");
+  }
+  return t;
+}
+
+// A research note becomes copy only when it reads as a statement; "none", "not found", "possibly ..." are notes to ourselves.
+function note(t: string): string {
+  const s = t.replace(/^[.\s(]+/, "").replace(/\)$/, "").trim();
+  if (!s || /^(none|n\/a|not |no |likely|possibly)/i.test(s) || /(source|not found|not stated|possibly|can vary)/i.test(s)) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function toSource(d: ConnectorDefinition): CatalogSource {
+  const partnerRequired = d.access_gate === "partner/license";
+  const steps = ADMIN_STEPS[d.key] ?? { admin: "", wait: "" };
+  return {
+    key: d.key, name: d.name, vendor: d.vendor, category: d.category, authMethod: d.auth_method, recommendedPath: d.recommended_path,
+    partnerRequired, gateUnverified: d.access_gate === "unverified",
+    partnerProgram: partnerRequired ? note(clean(d.partner_program, 140)) : "",
+    selfServeDev: d.access_gate === "self-serve",
+    customerAdmin: steps.admin, timeToApproval: steps.wait,
+    scopes: (d.scopes || []).map((s) => clean(String(s).split(" (")[0], 90)).filter((s) => /^[A-Za-z][A-Za-z0-9:._/ -]{1,70}$/.test(s)),
+    objects: (d.objects || []).map((s) => clean(String(s), 60)).filter(Boolean).slice(0, 14),
+    incremental: ((t) => (/^[A-Z][A-Za-z]/.test(t) ? t : ""))(clean(d.incremental_sync, 200)),
+    sandbox: typeof d.sandbox?.available === "boolean" ? d.sandbox.available : null,
+    // The Blackbaud icon on disk is the Black code-formatter's mark, the wrong brand; show initials instead.
+    logo: d.key.startsWith("blackbaud") ? null : d.logo || null,
+  };
+}
+
+const CATALOG_SOURCES: CatalogSource[] = CONNECTOR_DEFINITIONS.map(toSource);
 
 export type HealthValue = "unknown" | "healthy" | "stale" | "failing" | "not_running";
 
@@ -86,7 +135,7 @@ export type CatalogEntry = CatalogSource & {
   group: GroupId;
   categoryLabel: string;
   methods: MethodBadge[];
-  gate: { kind: "self_serve" | "partner"; label: string; detail: string };
+  gate: { kind: "self_serve" | "partner" | "confirm"; label: string; detail: string };
   legacy: Connector | null;
 };
 
@@ -99,20 +148,23 @@ export function groupOf(category: string): GroupId {
 export function methodBadges(authMethod: string, recommendedPath?: string): MethodBadge[] {
   const out: MethodBadge[] = [];
   if (authMethod === "oauth2_authcode") out.push("Sign in");
-  else if (authMethod === "none" || authMethod === "upload") out.push("File");
+  else if (authMethod === "none" || authMethod === "upload" || authMethod === "sftp") out.push("File");
   else if (authMethod === "invite") out.push("Invite");
   else out.push("Key");
   if (recommendedPath === "sftp_csv" && !out.includes("File")) out.push("File");
   return out;
 }
 
-export function accessGate(s: Pick<CatalogSource, "partnerRequired" | "partnerProgram" | "customerAdmin" | "timeToApproval" | "authMethod">): CatalogEntry["gate"] {
+export function accessGate(s: Pick<CatalogSource, "partnerRequired" | "partnerProgram" | "customerAdmin" | "timeToApproval" | "authMethod" | "gateUnverified">): CatalogEntry["gate"] {
   if (s.partnerRequired) {
     return {
       kind: "partner",
       label: "Needs vendor approval",
       detail: `${s.partnerProgram ? `${s.partnerProgram}. ` : ""}${s.timeToApproval ? `Typical wait: ${s.timeToApproval}.` : "The vendor reviews our access before your sign-in can complete."} We request it with you; nothing is read until it is granted.`,
     };
+  }
+  if (s.gateUnverified) {
+    return { kind: "confirm", label: "Requirements to confirm", detail: s.customerAdmin || "We confirm this vendor's current access requirements with you before connecting." };
   }
   return {
     kind: "self_serve",
@@ -140,7 +192,7 @@ export function buildCatalog(legacy: Connector[] = []): CatalogEntry[] {
     const authMethod = l.method === "oauth" ? "oauth2_authcode" : l.method === "key" ? "api_key" : "invite";
     const base: CatalogSource = {
       key: l.key, name: l.name, vendor: l.name, category: l.category, authMethod, recommendedPath: "direct",
-      partnerRequired: false, partnerProgram: "", selfServeDev: true, customerAdmin: l.invite_steps ?? "", timeToApproval: "",
+      partnerRequired: false, gateUnverified: false, partnerProgram: "", selfServeDev: true, customerAdmin: l.invite_steps ?? "", timeToApproval: "",
       scopes: l.read_scope ? [l.read_scope] : [], objects: [], incremental: "", sandbox: null, logo: null,
     };
     entries.push({
@@ -420,7 +472,7 @@ export function parseNumberValue(v: string): number | null {
   return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : null;
 }
 
-// ---- OAuth hooks (declared here, reconciled with lib/connectors/auth/oauth2.ts at merge) ----------------------------
+// ---- OAuth hooks (endpoints per system come from environment names; the exchange itself is lib/connectors/auth/oauth2.ts) ----------------------------
 
 export type OAuthEndpoints = { authorizeUrl: string; tokenUrl: string; clientId: string; clientSecret: string; scopes: string[] };
 
@@ -434,26 +486,8 @@ export function oauthEndpoints(key: string, env: Record<string, string | undefin
   return { authorizeUrl, tokenUrl, clientId, clientSecret, scopes: (env[`${p}SCOPES`] || "").split(/[ ,]+/).filter(Boolean) };
 }
 
-// ---- developer settings and notification vocabularies (shared by screens and routes) -------------------------------
+// ---- developer settings vocabularies (exactly what the database accepts, shared by screens and routes) -----------------
+// api_key_create accepts these four; the screen offers the three read scopes only, because the keys are described as read-only.
+export const API_KEY_SCOPES = ["connections:read", "records:read", "approvals:read"];
+export const WEBHOOK_EVENTS = ["sync.succeeded", "sync.failed", "connection.health_changed", "approval.proposed", "approval.decided", "record.ingested"];
 
-export const API_KEY_SCOPES = ["read:connections", "read:data", "read:approvals", "read:audit"];
-export const WEBHOOK_EVENTS = ["connection.synced", "connection.failed", "approval.created", "approval.decided", "upload.imported"];
-export const NOTIFY_EVENTS = ["connection_failing", "connection_stale", "approval_waiting", "weekly_digest"];
-
-export type TokenSet ={ access_token: string; refresh_token?: string; expires_at?: string; token_type?: string; scope?: string; rotated_at: string };
-
-export async function exchangeOAuthCode(ep: OAuthEndpoints, args: { code: string; redirectUri: string; codeVerifier: string }): Promise<TokenSet> {
-  const body = new URLSearchParams({ grant_type: "authorization_code", code: args.code, redirect_uri: args.redirectUri, code_verifier: args.codeVerifier, client_id: ep.clientId, client_secret: ep.clientSecret });
-  const res = await fetch(ep.tokenUrl, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" }, body });
-  const j = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-  if (!res.ok || typeof j.access_token !== "string") throw new Error(`The vendor refused the sign-in (${res.status}${typeof j.error === "string" ? `: ${j.error}` : ""}).`);
-  const expiresIn = typeof j.expires_in === "number" ? j.expires_in : null;
-  return {
-    access_token: j.access_token,
-    refresh_token: typeof j.refresh_token === "string" ? j.refresh_token : undefined,
-    expires_at: expiresIn ? new Date(Date.now() + expiresIn * 1000).toISOString() : undefined,
-    token_type: typeof j.token_type === "string" ? j.token_type : "Bearer",
-    scope: typeof j.scope === "string" ? j.scope : ep.scopes.join(" "),
-    rotated_at: new Date().toISOString(),
-  };
-}

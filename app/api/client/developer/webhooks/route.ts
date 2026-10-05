@@ -35,13 +35,13 @@ export async function POST(req: NextRequest) {
     if (!events.length) return NextResponse.json({ error: "Choose at least one event." }, { status: 400 });
     const { data, error } = await ctx.supabase.rpc("webhook_upsert", { p_tenant: ctx.tenantId, p_id: body.id ? clip(body.id, 64) : null, p_url: url, p_events: events, p_active: body.active !== false });
     if (error) return dbFail(error.message, "Could not save the webhook");
-    const d = (Array.isArray(data) ? data[0] : data) as { id?: string; secret?: string } | null;
-    return NextResponse.json({ ok: true, id: d?.id, secret: d?.secret ?? null }, { headers: { "cache-control": "no-store" } });
+    const d = (Array.isArray(data) ? data[0] : data) as { id?: string; signing_secret?: string } | null;
+    return NextResponse.json({ ok: true, id: d?.id, secret: d?.signing_secret ?? null }, { headers: { "cache-control": "no-store" } });
   }
   if (action === "delete") {
     const id = clip(body.id, 64);
     if (!id) return NextResponse.json({ error: "Unknown webhook." }, { status: 400 });
-    const { error } = await ctx.supabase.rpc("webhook_delete", { p_tenant: ctx.tenantId, p_id: id });
+    const { error } = await ctx.supabase.rpc("webhook_delete", { p_id: id });
     if (error) return dbFail(error.message, "Could not delete the webhook");
     return NextResponse.json({ ok: true });
   }

@@ -22,7 +22,10 @@ export async function POST(req: NextRequest) {
   const retention = Number(body.retention_days);
   if (!Number.isInteger(hours) || hours < 1 || hours > 720) return NextResponse.json({ error: "Session length must be between 1 and 720 hours." }, { status: 400 });
   if (!Number.isInteger(retention) || retention < 30 || retention > 3650) return NextResponse.json({ error: "Retention must be between 30 and 3650 days." }, { status: 400 });
-  const { error } = await ctx.supabase.rpc("tenant_security_set", { p_tenant: ctx.tenantId, p_sso_enforced: enforced, p_sso_domains: domains, p_session_hours: hours, p_retention_days: retention });
+  // SCIM is not customer-settable; carry the stored value through so saving other settings never flips it.
+  const cur = await ctx.supabase.from("tenant_security").select("scim_enabled").eq("tenant_id", ctx.tenantId).maybeSingle<{ scim_enabled: boolean }>();
+  if (cur.error) return dbFail(cur.error.message, "Could not read current settings");
+  const { error } = await ctx.supabase.rpc("tenant_security_set", { p_tenant: ctx.tenantId, p_sso_enforced: enforced, p_sso_domains: domains, p_scim_enabled: cur.data?.scim_enabled ?? false, p_session_hours: hours, p_retention_days: retention });
   if (error) return dbFail(error.message, "Could not save security settings");
   return NextResponse.json({ ok: true });
 }

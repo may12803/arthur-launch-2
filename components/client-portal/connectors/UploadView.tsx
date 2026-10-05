@@ -6,8 +6,8 @@ import { LocalTime } from "../LocalTime";
 import { Notice, Panel, PanelHead, Pill, TableWrap } from "../cp";
 
 export type UploadHistoryRow = { id: string; target_object: string; row_count: number | null; status: string; created_at: string };
-type Parsed = { fileName: string; size: number; sheet?: string; headers: string[]; rows: string[][] };
-type Result = { imported: number; skipped: number; row_count: number; errors: { row: number; field: string; message: string }[]; more_errors: number };
+type Parsed = { file: File; fileName: string; size: number; sheet?: string; headers: string[]; rows: string[][] };
+type Result = { imported: number; unchanged: number; skipped: number; row_count: number; errors: { row: number; field: string; message: string }[]; more_errors: number };
 
 const MAX_BYTES = 20 * 1024 * 1024;
 const fmtBytes = (n: number) => (n > 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1e3))} KB`);
@@ -17,7 +17,7 @@ async function readFile(file: File): Promise<Parsed> {
   const ext = file.name.toLowerCase().split(".").pop();
   if (ext === "csv" || ext === "tsv" || ext === "txt") {
     const { headers, rows } = parseCsv(await file.text());
-    return { fileName: file.name, size: file.size, headers, rows };
+    return { file, fileName: file.name, size: file.size, headers, rows };
   }
   if (ext === "xlsx" || ext === "xls") {
     const XLSX = await import("xlsx");
@@ -27,7 +27,7 @@ async function readFile(file: File): Promise<Parsed> {
     const grid = XLSX.utils.sheet_to_json<unknown[]>(wb.Sheets[name], { header: 1, raw: false, defval: "", blankrows: false });
     const rows = grid.map((r) => (r as unknown[]).map((c) => String(c ?? "")));
     const headers = (rows.shift() ?? []).map((h) => h.trim());
-    return { fileName: file.name, size: file.size, sheet: name, headers, rows };
+    return { file, fileName: file.name, size: file.size, sheet: name, headers, rows };
   }
   throw new Error("Upload a CSV or XLSX file.");
 }
@@ -98,7 +98,11 @@ export function UploadView({ history, historyError, canUpload, now }: { history:
     if (!parsed) return;
     setBusy(true); setErr(null);
     try {
-      const r = await fetch("/api/client/uploads", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ file_name: parsed.fileName, target_object: targetId, mapping, columns: parsed.headers, rows: parsed.rows }) });
+      const body = new FormData();
+      body.set("file", parsed.file);
+      body.set("target_object", targetId);
+      body.set("mapping", JSON.stringify(mapping));
+      const r = await fetch("/api/client/uploads", { method: "POST", body });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) setErr(j.error ?? "The import did not complete.");
       else { setResult(j as Result); setStep(4); }
@@ -241,7 +245,7 @@ export function UploadView({ history, historyError, canUpload, now }: { history:
           <div className="cp-panel-b grid gap-5">
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1">
               <div className="cp-stat"><span className="cp-cap">Rows in file</span><div className="n">{result.row_count.toLocaleString("en-US")}</div></div>
-              <div className="cp-stat"><span className="cp-cap">Imported</span><div className="n">{result.imported.toLocaleString("en-US")}</div><div className="d good">Recorded with this file as the source</div></div>
+              <div className="cp-stat"><span className="cp-cap">New rows</span><div className="n">{result.imported.toLocaleString("en-US")}</div><div className="d good">{result.unchanged ? `${result.unchanged.toLocaleString("en-US")} already present, unchanged` : "Recorded with this file as the source"}</div></div>
               <div className="cp-stat"><span className="cp-cap">Skipped</span><div className="n">{result.skipped.toLocaleString("en-US")}</div>{result.skipped ? <div className="d wait">Listed below</div> : null}</div>
             </div>
             {result.errors.length ? (

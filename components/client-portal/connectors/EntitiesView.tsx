@@ -50,7 +50,7 @@ export function EntitiesView({ entities, canEdit }: { entities: EntityRow[]; can
             <span className="flex gap-1.5">
               {CHILD_KINDS[e.kind].length ? <button type="button" className="ll-secondary cp-sm" onClick={() => setDraft({ parent_id: e.id, kind: CHILD_KINDS[e.kind][0], name: "", code: "" })}>Add below</button> : null}
               <button type="button" className="ll-secondary cp-sm" onClick={() => setDraft({ id: e.id, parent_id: e.parent_id, kind: e.kind, name: e.name, code: e.code ?? "" })}>Rename</button>
-              <button type="button" className="ll-danger cp-sm" disabled={busy} onClick={() => { if (confirm(children.length ? `Delete ${e.name} and detach ${count(e.id)} below it?` : `Delete ${e.name}?`)) call({ action: "delete", id: e.id }, `${e.name} was deleted.`); }}>Delete</button>
+              <button type="button" className="ll-danger cp-sm" disabled={busy || children.length > 0} title={children.length ? "Move or remove what is inside first" : undefined} onClick={() => { if (confirm(`Delete ${e.name}?`)) call({ action: "delete", id: e.id }, `${e.name} was deleted.`); }}>Delete</button>
             </span>
           ) : null}
         </div>

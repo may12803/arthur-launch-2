@@ -17,7 +17,7 @@ export default async function ApprovalsPage() {
         lead="We prepare the work and stop here. Nothing that moves money, sends a message or binds you leaves without a person saying yes. An approval closes only when the result is observed in your systems."
       />
       <ErrorBanner label="Approvals did not load" errors={[r.error && r.error.message]} />
-      <ApprovalsView approvals={r.data ?? []} canDecide={ctx.role !== "viewer"} />
+      <ApprovalsView approvals={r.data ?? []} role={ctx.role} />
     </div>
   );
 }

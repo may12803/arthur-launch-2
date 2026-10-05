@@ -21,15 +21,15 @@ export async function POST(req: NextRequest) {
     if (!scopes.length) return NextResponse.json({ error: "Choose at least one permission." }, { status: 400 });
     const { data, error } = await ctx.supabase.rpc("api_key_create", { p_tenant: ctx.tenantId, p_name: name, p_scopes: scopes });
     if (error) return dbFail(error.message, "Could not create the key");
-    const d = (Array.isArray(data) ? data[0] : data) as { id?: string; prefix?: string; key?: string; plaintext?: string } | string | null;
-    const plaintext = typeof d === "string" ? d : d?.key ?? d?.plaintext;
+    const d = (Array.isArray(data) ? data[0] : data) as { id?: string; prefix?: string; api_key?: string } | string | null;
+    const plaintext = typeof d === "string" ? d : d?.api_key;
     if (!plaintext) return NextResponse.json({ error: "The key was created but the database did not return it. Revoke it and create another." }, { status: 502 });
     return NextResponse.json({ ok: true, key: plaintext, id: typeof d === "object" && d ? d.id : undefined, prefix: typeof d === "object" && d ? d.prefix : plaintext.slice(0, 8) }, { headers: { "cache-control": "no-store" } });
   }
   if (action === "revoke") {
     const id = clip(body.id, 64);
     if (!id) return NextResponse.json({ error: "Unknown key." }, { status: 400 });
-    const { error } = await ctx.supabase.rpc("api_key_revoke", { p_tenant: ctx.tenantId, p_id: id });
+    const { error } = await ctx.supabase.rpc("api_key_revoke", { p_id: id });
     if (error) return dbFail(error.message, "Could not revoke the key");
     return NextResponse.json({ ok: true });
   }

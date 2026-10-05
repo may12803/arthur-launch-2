@@ -1,35 +1,10 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
 import { ago, computeDataHealth, type CatalogEntry, type ConnRow } from "@/lib/client-portal/connector-ui";
 import { Panel, PanelHead, Pill, Stat } from "../cp";
-
-const PREFS = [
-  { id: "connection_failing", label: "A connection starts failing", hint: "Sign-in expired, credential rejected or a sync errored." },
-  { id: "connection_stale", label: "A connection falls behind", hint: "No successful sync inside its freshness window." },
-  { id: "approval_waiting", label: "An approval is waiting on me", hint: "Money, send or legal items that need a person." },
-  { id: "weekly_digest", label: "Weekly summary", hint: "Data health and decisions made, every Monday." },
-];
 
 export function StatusView({ entries, conns, now, dbOk, errors }: { entries: CatalogEntry[]; conns: ConnRow[]; now: number; dbOk: boolean; errors?: (string | null)[] }) {
   const h = computeDataHealth(entries, conns, now);
   const lastAny = conns.map((c) => c.last_success_at).filter((x): x is string => !!x).sort().pop() ?? null;
-  const [events, setEvents] = useState<string[]>([]);
-  const [email, setEmail] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-
-  async function save() {
-    setBusy(true); setMsg(null);
-    try {
-      const r = await fetch("/api/client/status/prefs", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ events, email }) });
-      const j = await r.json().catch(() => ({}));
-      setMsg(r.ok ? { ok: true, text: "Saved." } : { ok: false, text: j.error ?? "That did not save." });
-    } catch (e) { setMsg({ ok: false, text: e instanceof Error ? e.message : "That did not save." }); }
-    setBusy(false);
-  }
-
   const rows = [
     { name: "Client portal", state: <Pill tone="good" dot>Operational</Pill>, note: "This page loaded, so the portal is answering." },
     { name: "Your data store", state: dbOk ? <Pill tone="good" dot>Reachable</Pill> : <Pill tone="bad" dot>Not reachable</Pill>, note: dbOk ? "The queries behind this page succeeded." : "A query on this page failed. See the message above." },
@@ -60,20 +35,8 @@ export function StatusView({ entries, conns, now, dbOk, errors }: { entries: Cat
       </Panel>
 
       <Panel>
-        <PanelHead title="Notify me" sub="Email, to the address you sign in with. Each person sets their own." />
-        <div className="cp-panel-b grid gap-4">
-          {PREFS.map((p) => (
-            <label key={p.id} className="flex items-start gap-3">
-              <input type="checkbox" className="mt-1" checked={events.includes(p.id)} onChange={() => setEvents(events.includes(p.id) ? events.filter((x) => x !== p.id) : [...events, p.id])} />
-              <span><span className="block text-[14px] text-[var(--ink)]">{p.label}</span><span className="block text-[12.5px] text-[var(--muted)]">{p.hint}</span></span>
-            </label>
-          ))}
-          <label className="flex items-center gap-3 border-t border-[#edf0f4] pt-4 text-[13.5px] text-[#303238]"><input type="checkbox" checked={email} onChange={(e) => setEmail(e.target.checked)} />Send these by email</label>
-          <div className="flex flex-wrap items-center gap-4">
-            <button type="button" className="ll-primary" disabled={busy} onClick={save}>{busy ? "Saving..." : "Save preferences"}</button>
-            {msg ? <span role="status" className={`text-[13px] ${msg.ok ? "text-[#1e6b3a]" : "text-[#a1291f]"}`}>{msg.text}</span> : null}
-          </div>
-        </div>
+        <PanelHead title="Notifications" />
+        <div className="cp-panel-b text-[13.5px] leading-[1.7] text-[#303238]">Email alerts for failing or stale connections are not self-serve yet. Until they are, the Data health page and this page are the live view, and they are computed each time you open them.</div>
       </Panel>
     </div>
   );

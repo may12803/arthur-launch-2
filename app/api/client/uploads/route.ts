@@ -1,78 +1,99 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiContext } from "@/lib/client-portal/api";
-import { UPLOAD_TARGETS, neutralizeCell, parseDateValue as parseDate, parseNumberValue as parseNumber } from "@/lib/client-portal/connector-ui";
-import { clip, dbFail, isMemberRole } from "@/lib/client-portal/connector-api";
+import { clientIp, getApiContext, MAX_DOCUMENT_BYTES } from "@/lib/client-portal/api";
+import { loveleedayAnon } from "@/lib/client-portal/anon";
+import { UPLOAD_TARGETS } from "@/lib/client-portal/connector-ui";
+import { connectorsServerSecret, dbFail, isMemberRole } from "@/lib/client-portal/connector-api";
+import { parseUpload, UploadError } from "@/lib/connectors/upload/parse";
+import { applyMapping, fileSha256, type FieldType, type TargetField } from "@/lib/connectors/upload/map";
 
 export const runtime = "nodejs";
 
-const MAX_ROWS = 50_000;
-const MAX_BYTES = 20 * 1024 * 1024;
-// Receives a parsed, mapped file. The browser reads CSV/XLSX locally; this route re-validates every cell on the server
-// (the client is never trusted), neutralizes formula-injection prefixes, and records the mapping and the clean rows
-// through connection_upload_mapping. Rows that fail validation are reported with their row number and are not imported.
+const CHUNK = 5000; // ingest_records takes at most 5000 records per call
+const FIELD_TYPE: Record<string, FieldType> = { date: "date", number: "number" };
+
+// Receives the original file with its column mapping. The server is the authority: it re-parses the file with the
+// connector library (formula-injection guard, size and row limits), re-validates every cell, then
+//   1. seals the file as a document (document_upload),
+//   2. records the mapping (connection_upload_mapping),
+//   3. ingests the clean rows idempotently under a sync run on the tenant's csv-excel-upload connection, so the same
+//      file uploaded twice adds nothing (ingest_records dedupes on connection, object, source_ref and content hash).
+// Rows that fail validation are reported with their row number and are not ingested.
 export async function POST(req: NextRequest) {
   const ctx = await getApiContext();
   if (ctx.error) return ctx.error;
   if (!isMemberRole(ctx.role)) return NextResponse.json({ error: "Viewers cannot upload data." }, { status: 403 });
-  if (Number(req.headers.get("content-length") || 0) > MAX_BYTES) return NextResponse.json({ error: "That file is larger than 20 MB. Split it by month and upload each part." }, { status: 413 });
+  const secret = connectorsServerSecret();
+  if (!secret) return NextResponse.json({ error: "Data import is not configured on the server yet." }, { status: 503 });
 
-  const body = await req.json().catch(() => null);
-  if (!body || typeof body !== "object") return NextResponse.json({ error: "The upload could not be read." }, { status: 400 });
-  const target = UPLOAD_TARGETS.find((t) => t.id === body.target_object);
+  let form: FormData;
+  try { form = await req.formData(); } catch { return NextResponse.json({ error: "Choose a file to upload." }, { status: 400 }); }
+  const file = form.get("file");
+  if (!(file instanceof File) || file.size === 0) return NextResponse.json({ error: "Choose a file to upload." }, { status: 400 });
+  if (file.size > MAX_DOCUMENT_BYTES) return NextResponse.json({ error: "That file is larger than 20 MB. Split it by month and upload each part." }, { status: 413 });
+
+  const target = UPLOAD_TARGETS.find((t) => t.id === form.get("target_object"));
   if (!target) return NextResponse.json({ error: "Choose what this file contains." }, { status: 400 });
-  const columns: string[] = Array.isArray(body.columns) ? body.columns.map((c: unknown) => clip(c, 120)) : [];
-  const rows: unknown[] = Array.isArray(body.rows) ? body.rows : [];
-  const mapping: Record<string, string> = body.mapping && typeof body.mapping === "object" ? body.mapping : {};
-  if (!columns.length || !rows.length) return NextResponse.json({ error: "The file has no rows to import." }, { status: 400 });
-  if (rows.length > MAX_ROWS) return NextResponse.json({ error: `Files are limited to ${MAX_ROWS.toLocaleString("en-US")} rows. Split this one and upload each part.` }, { status: 413 });
+  let byField: Record<string, string>;
+  try { byField = JSON.parse(String(form.get("mapping") || "{}")); } catch { return NextResponse.json({ error: "The column mapping could not be read." }, { status: 400 }); }
+  const mapping: Record<string, string> = {}; // header text -> target field, the shape the library wants
+  for (const [field, column] of Object.entries(byField)) if (typeof column === "string" && target.fields.some((f) => f.key === field)) mapping[column] = field;
+  const fields: TargetField[] = target.fields.map((f) => ({ name: f.key, type: FIELD_TYPE[f.type] ?? "string", required: !!f.required }));
 
-  const fieldIdx: { key: string; idx: number; type: string; required: boolean; label: string }[] = [];
-  for (const f of target.fields) {
-    const col = mapping[f.key];
-    const idx = col == null ? -1 : columns.indexOf(col);
-    if (idx < 0) {
-      if (f.required) return NextResponse.json({ error: `Map a column to "${f.label}" before importing.` }, { status: 400 });
-      continue;
-    }
-    fieldIdx.push({ key: f.key, idx, type: f.type, required: !!f.required, label: f.label });
+  const bytes = Buffer.from(await file.arrayBuffer());
+  let result;
+  try {
+    const table = parseUpload(bytes, file.name);
+    result = applyMapping({ table, mapping, fields, targetObject: target.id, fileSha256: fileSha256(bytes), sourceSystem: "csv-excel-upload" });
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof UploadError ? e.message : "That file could not be read." }, { status: 400 });
+  }
+  if (result.mappingErrors.length) return NextResponse.json({ error: result.mappingErrors.join(". ") + "." }, { status: 400 });
+  if (!result.records.length) return NextResponse.json({ error: "No row in the file passed validation, so nothing was imported.", errors: result.errors.slice(0, 50) }, { status: 400 });
+
+  // The upload connection: one per company, created on first use.
+  const findConn = () => ctx.supabase.from("tenant_connections").select("id").eq("tenant_id", ctx.tenantId).eq("connector_key", "csv-excel-upload").maybeSingle<{ id: string }>();
+  let conn = await findConn();
+  if (conn.error) return dbFail(conn.error.message, "Could not read the upload connection");
+  if (!conn.data) {
+    const made = await ctx.supabase.rpc("connection_request", { p_tenant: ctx.tenantId, p_connector: "csv-excel-upload", p_kind: "request" });
+    if (made.error) return dbFail(made.error.message, "Could not prepare the upload connection");
+    conn = await findConn();
+    if (conn.error || !conn.data) return NextResponse.json({ error: "The upload connection could not be prepared." }, { status: 500 });
   }
 
-  const clean: Record<string, string | number | null>[] = [];
-  const errors: { row: number; field: string; message: string }[] = [];
-  let skipped = 0;
-  rows.forEach((raw, i) => {
-    const r = Array.isArray(raw) ? raw : [];
-    const out: Record<string, string | number | null> = {};
-    let bad = false;
-    for (const f of fieldIdx) {
-      const v = String(r[f.idx] ?? "").trim();
-      if (!v) {
-        if (f.required) { bad = true; if (errors.length < 200) errors.push({ row: i + 2, field: f.label, message: "Required and empty" }); }
-        out[f.key] = null;
-        continue;
-      }
-      if (f.type === "date") {
-        const d = parseDate(v);
-        if (!d) { bad = true; if (errors.length < 200) errors.push({ row: i + 2, field: f.label, message: `"${v.slice(0, 30)}" is not a valid date` }); }
-        out[f.key] = d;
-      } else if (f.type === "number") {
-        const n = parseNumber(v);
-        if (n == null) { bad = true; if (errors.length < 200) errors.push({ row: i + 2, field: f.label, message: `"${v.slice(0, 30)}" is not a number` }); }
-        out[f.key] = n;
-      } else out[f.key] = neutralizeCell(v.slice(0, 500));
-    }
-    if (bad) skipped++; else clean.push(out);
-  });
+  const doc = await ctx.supabase.rpc("document_upload", { p_tenant: ctx.tenantId, p_name: file.name.slice(0, 255), p_content_type: file.type || "application/octet-stream", p_data_b64: bytes.toString("base64"), p_ip: clientIp(req) });
+  if (doc.error) return dbFail(doc.error.message, "Could not store the file");
+  const map = await ctx.supabase.rpc("connection_upload_mapping", { p_tenant: ctx.tenantId, p_document: doc.data as string, p_target_object: target.id, p_mapping: mapping, p_row_count: result.records.length });
+  if (map.error) return dbFail(map.error.message, "Could not save the mapping");
 
-  const { data, error } = await ctx.supabase.rpc("connection_upload_mapping", {
-    p_tenant: ctx.tenantId,
-    p_file_name: clip(body.file_name, 200) || "upload",
-    p_target_object: target.id,
-    p_mapping: mapping,
-    p_row_count: clean.length,
-    p_rows: clean,
-    p_skipped: skipped,
+  const anon = loveleedayAnon();
+  const run = await anon.rpc("sync_run_start", { p_secret: secret, p_connection: conn.data.id, p_object: target.id });
+  if (run.error) return dbFail(run.error.message, "Could not open an import run");
+  let created = 0;
+  try {
+    for (let i = 0; i < result.records.length; i += CHUNK) {
+      const slice = result.records.slice(i, i + CHUNK).map((r) => ({ object: r.object, source_ref: r.source_ref, payload: r.payload, observed_at: r.observed_at }));
+      const ing = await anon.rpc("ingest_records", { p_secret: secret, p_run: run.data as string, p_records: slice });
+      if (ing.error) throw new Error(ing.error.message);
+      created += Number(ing.data ?? 0);
+    }
+    await anon.rpc("sync_run_finish", { p_secret: secret, p_run: run.data as string, p_status: "succeeded", p_rows_read: result.records.length, p_rows_written: created, p_error: null, p_cursor_after: null });
+  } catch (e) {
+    const message = e instanceof Error ? e.message.slice(0, 300) : "ingest failed";
+    await anon.rpc("sync_run_finish", { p_secret: secret, p_run: run.data as string, p_status: "failed", p_rows_read: null, p_rows_written: null, p_error: message, p_cursor_after: null });
+    return NextResponse.json({ error: `The rows were validated and the mapping saved, but importing them failed: ${message}` }, { status: 502 });
+  }
+
+  return NextResponse.json({
+    ok: true,
+    upload_id: map.data ?? null,
+    document_id: doc.data ?? null,
+    row_count: result.rowsTotal,
+    imported: created,
+    unchanged: result.records.length - created,
+    skipped: result.rowsTotal - result.records.length,
+    warnings: result.warnings.length,
+    errors: result.errors.slice(0, 50).map((e) => ({ row: e.row, field: e.field ?? "", message: e.message })),
+    more_errors: Math.max(0, result.errors.length - 50),
   });
-  if (error) return dbFail(error.message, "Could not import the file");
-  return NextResponse.json({ ok: true, upload_id: data ?? null, row_count: rows.length, imported: clean.length, skipped, errors: errors.slice(0, 50), more_errors: Math.max(0, skipped - 50) });
 }

@@ -21,6 +21,11 @@ export type Approval = {
   created_at: string;
 };
 
+function canDecideGate(role: string, gate: string): boolean {
+  if (role === "owner" || role === "admin") return true;
+  return role === "member" && (gate === "send" || gate === "auto");
+}
+
 const GATES = [
   { id: "money", label: "Money", chip: "MNY", blurb: "Moves or commits money", tone: "wait" },
   { id: "send", label: "Send", chip: "SND", blurb: "Sends a message outside the company", tone: "info" },
@@ -52,13 +57,13 @@ function Card({ a, canDecide, open, onToggle, onDone }: { a: Approval; canDecide
   const gate = GATES.find((g) => g.id === a.gate)!;
   const pending = a.status === "pending";
 
-  async function decide(decision: "approved" | "rejected" | "edited") {
+  async function decide(decision: "approve" | "reject" | "edit") {
     setBusy(true); setErr(null);
     try {
-      const r = await fetch("/api/client/approvals", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: a.id, decision, reason: decision === "rejected" ? text : undefined, edit: decision === "edited" ? { note: text } : undefined }) });
+      const r = await fetch("/api/client/approvals", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: a.id, decision, reason: decision === "reject" ? text : undefined, edit: decision === "edit" ? { note: text } : undefined }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) { setErr(j.error ?? "That did not save."); setBusy(false); return; }
-      onDone(decision === "approved" ? "Approved. It closes only when the result is observed in your systems." : decision === "rejected" ? "Rejected. The reason is kept with the record." : "Your change was recorded and sent back for a new proposal.");
+      onDone(decision === "approve" ? "Approved. It closes only when the result is observed in your systems." : decision === "reject" ? "Rejected. The reason is kept with the record." : "Your change was recorded and sent back for a new proposal.");
       router.refresh();
     } catch (e) { setErr(e instanceof Error ? e.message : "That did not save."); }
     setBusy(false);
@@ -105,13 +110,13 @@ function Card({ a, canDecide, open, onToggle, onDone }: { a: Approval; canDecide
                 <div className="flex flex-wrap items-center gap-2.5">
                   {mode === "none" ? (
                     <>
-                      <button type="button" className="ll-primary !bg-[#2f6b4f]" disabled={busy} onClick={() => decide("approved")}>{busy ? "Saving..." : "Approve"}</button>
+                      <button type="button" className="ll-primary !bg-[#2f6b4f]" disabled={busy} onClick={() => decide("approve")}>{busy ? "Saving..." : "Approve"}</button>
                       <button type="button" className="ll-secondary" onClick={() => setMode("edit")}>Edit</button>
                       <button type="button" className="ll-danger" onClick={() => setMode("reject")}>Reject</button>
                     </>
                   ) : (
                     <>
-                      <button type="button" className={mode === "reject" ? "ll-danger" : "ll-primary"} disabled={busy || text.trim().length < 3} onClick={() => decide(mode === "reject" ? "rejected" : "edited")}>{busy ? "Saving..." : mode === "reject" ? "Reject with reason" : "Send change"}</button>
+                      <button type="button" className={mode === "reject" ? "ll-danger" : "ll-primary"} disabled={busy || text.trim().length < 3} onClick={() => decide(mode === "reject" ? "reject" : "edit")}>{busy ? "Saving..." : mode === "reject" ? "Reject with reason" : "Send change"}</button>
                       <button type="button" className="ll-secondary" disabled={busy} onClick={() => { setMode("none"); setText(""); }}>Cancel</button>
                     </>
                   )}
@@ -128,7 +133,7 @@ function Card({ a, canDecide, open, onToggle, onDone }: { a: Approval; canDecide
   );
 }
 
-export function ApprovalsView({ approvals, canDecide }: { approvals: Approval[]; canDecide: boolean }) {
+export function ApprovalsView({ approvals, role }: { approvals: Approval[]; role: string }) {
   const [view, setView] = useState<"pending" | "decided">("pending");
   const [gate, setGate] = useState<string>("all");
   const [openId, setOpenId] = useState<string | null>(approvals.find((a) => a.status === "pending")?.id ?? null);
@@ -159,7 +164,7 @@ export function ApprovalsView({ approvals, canDecide }: { approvals: Approval[];
 
       <div className="min-w-0 grid gap-8">
         {flash ? <Notice tone="good"><div>{flash}</div></Notice> : null}
-        {!canDecide ? <Notice tone="info"><div>You have read-only access. You can see every approval and its proof, but only owners, admins and members can decide.</div></Notice> : null}
+        {role === "viewer" ? <Notice tone="info"><div>You have read-only access. You can see every approval and its proof, but only owners, admins and members can decide.</div></Notice> : role === "member" ? <Notice tone="info"><div>Money and legal decisions need an owner or admin. You can decide send items.</div></Notice> : null}
         {!shown.length ? (
           <div className="rounded-2xl border border-[var(--line)] p-10 text-center">
             <p className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">{view === "pending" ? "Nothing is waiting on you" : "No decisions recorded yet"}</p>
@@ -174,7 +179,7 @@ export function ApprovalsView({ approvals, canDecide }: { approvals: Approval[];
             </h2>
             <div className="grid gap-3">
               {shown.filter((a) => a.gate === g.id).map((a) => (
-                <Card key={a.id} a={a} canDecide={canDecide} open={openId === a.id} onToggle={() => setOpenId(openId === a.id ? null : a.id)} onDone={setFlash} />
+                <Card key={a.id} a={a} canDecide={canDecideGate(role, a.gate)} open={openId === a.id} onToggle={() => setOpenId(openId === a.id ? null : a.id)} onDone={setFlash} />
               ))}
             </div>
           </div>
