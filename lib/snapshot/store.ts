@@ -118,7 +118,8 @@ export class SupabaseStore implements SnapshotStore {
 let singleton: SnapshotStore | null = null;
 export function getStore(env: Record<string, string | undefined> = process.env): SnapshotStore {
   if (singleton) return singleton;
-  const url = env.NEXT_PUBLIC_SUPABASE_LOVELEEDAY_URL;
+  // Direct process.env reference so Next inlines it at build: the URL is a fly.toml build arg, not a runtime secret.
+  const url = env.NEXT_PUBLIC_SUPABASE_LOVELEEDAY_URL ?? process.env.NEXT_PUBLIC_SUPABASE_LOVELEEDAY_URL;
   const key = env.LOVELEEDAY_SUPABASE_SERVICE_ROLE_KEY;
   if (url && key) singleton = new SupabaseStore(url, key);
   else if (env.NODE_ENV !== 'production' && env.SNAPSHOT_STORE === 'memory') singleton = new MemoryStore();
