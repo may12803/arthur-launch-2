@@ -173,11 +173,18 @@ async function fixtureCheck(staffToken) {
 //   helper   returns the caller's own state (is_staff, session_is_strong, is_tenant_member, role_rank): must say "no" for A where it matters.
 const CLASSES = {
   tenant: ["list_tenant_team", "document_download", "document_upload", "document_delete", "share_create", "share_revoke", "workstream_decide",
-    "tenant_set_external_sharing", "connection_request", "connection_set_key", "connection_disconnect", "is_tenant_member", "staff_close_access"],
+    "tenant_set_external_sharing", "connection_request", "connection_set_key", "connection_disconnect", "is_tenant_member", "staff_close_access",
+    // connector platform (20261005_10): client RPCs, each checks the caller's role in p_tenant
+    "connector_oauth_begin", "connection_upload_mapping", "entity_upsert", "entity_delete", "membership_scope_set", "approval_decide",
+    "api_key_create", "api_key_revoke", "webhook_upsert", "webhook_delete", "tenant_security_set", "audit_export"],
   staff: ["staff_list_tenants", "staff_open_access", "staff_set_data_class", "staff_provision_tenant", "staff_probe_inventory",
     "staff_probe_fixture", "staff_probe_target", "staff_probe_function_inventory", "staff_probe_reset_fixture"],
-  gated: ["accept_invite", "get_invite_preview", "share_preview", "share_issue_code", "share_redeem", "connection_record", "connection_secret", "connections_for_probe"],
-  helper: ["is_staff", "session_is_strong", "role_rank"],
+  gated: ["accept_invite", "get_invite_preview", "share_preview", "share_issue_code", "share_redeem", "connection_record", "connection_secret", "connections_for_probe",
+    // connector platform: server RPCs gated by the connectors-server secret
+    "oauth_state_consume", "connection_store_tokens", "connections_due", "sync_run_start", "sync_cursor_set", "sync_cursor_get", "sync_runs_recent",
+    "sync_run_finish", "ingest_records", "connection_health_record", "approval_propose", "api_key_verify", "ingested_records_since",
+    "workstream_task_propose", "approvals_approved", "approval_claim", "approval_record_proof"],
+  helper: ["is_staff", "session_is_strong", "role_rank", "is_tenant_admin", "entity_in_scope"],
 };
 const CLASS_OF = Object.fromEntries(Object.entries(CLASSES).flatMap(([c, names]) => names.map((n) => [n, c])));
 const BOGUS = "probe-bogus-0123456789abcdef";
