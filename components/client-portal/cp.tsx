@@ -96,7 +96,7 @@ export function textOn(hex: string): string {
     return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
   });
   const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return L > 0.36 ? "#111111" : "#ffffff";
+  return L > 0.179 ? "#111111" : "#ffffff";
 }
 
 export function Logo({ src, name, size = 40, plain = false }: { src?: string | null; name: string; size?: number; plain?: boolean }) {
