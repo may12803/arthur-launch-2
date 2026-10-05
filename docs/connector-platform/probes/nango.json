@@ -1,0 +1,19 @@
+{
+  "key": "nango",
+  "at": "2026-10-05T20:22:26.693Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "NANGO_LOGIN_EMAIL",
+    "NANGO_LOGIN_PASSWORD",
+    "NANGO_SECRET_KEY"
+  ],
+  "steps": [
+    "integrations: HTTP 200 1 record(s)",
+    "wrong-credential control: HTTP 401"
+  ],
+  "evidence": {
+    "object": "integrations",
+    "record_count": 1,
+    "via": "vendor list/token endpoint (no adapter)"
+  }
+}

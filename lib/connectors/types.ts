@@ -72,6 +72,15 @@ export interface ValidateResult {
   account?: string;
 }
 
+/** A catalog system whose auth is delegated to a Nango integration (long-tail path). Not an Adapter: Nango holds the tokens. */
+export interface ViaNangoEntry {
+  kind: 'via_nango';
+  /** Catalog definition key (data/connectors/systems/<key>.json). */
+  system_key: string;
+  /** Nango integration unique_key (provider_config_key). */
+  nango_integration_id: string;
+}
+
 export interface Adapter {
   key: string;
   objects: string[];

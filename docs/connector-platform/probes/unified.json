@@ -1,0 +1,19 @@
+{
+  "key": "unified",
+  "at": "2026-10-05T20:22:28.894Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "UNIFIED_API_KEY",
+    "UNIFIED_LOGIN_EMAIL",
+    "UNIFIED_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "integrations: HTTP 200 1040 record(s)",
+    "wrong-credential control: HTTP 401"
+  ],
+  "evidence": {
+    "object": "integrations",
+    "record_count": 1040,
+    "via": "vendor list/token endpoint (no adapter)"
+  }
+}
