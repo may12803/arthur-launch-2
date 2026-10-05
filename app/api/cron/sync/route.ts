@@ -49,11 +49,10 @@ async function handle(req: NextRequest) {
           if (latest.error || !latest.data) throw new Error("Could not read the connection sign-in.");
           return JSON.parse(String(latest.data)) as TokenSet;
         },
+        // One atomic compare-and-set in the database: the write lands only if the stored set is still the one this
+        // refresh started from, so two concurrent refreshes can never overwrite each other's rotated refresh token.
         compareAndSet: async (expectedRotatedAt: string, next: TokenSet): Promise<boolean> => {
-          const latest = await anon.rpc("connection_secret", { p_secret: secret, p_connection: c.id });
-          if (latest.error || !latest.data) throw new Error("Could not read the connection sign-in.");
-          if ((JSON.parse(String(latest.data)) as TokenSet).rotated_at !== expectedRotatedAt) return false;
-          const saved = await anon.rpc("connection_store_tokens", { p_secret: secret, p_connection: c.id, p_tokens: next, p_rotated_at: next.rotated_at });
+          const saved = await anon.rpc("connection_rotate_tokens", { p_secret: secret, p_connection: c.id, p_tokens: next, p_rotated_at: next.rotated_at, p_expected_rotated_at: expectedRotatedAt || null });
           if (saved.error) throw new Error("Could not save the renewed sign-in.");
           return saved.data === true;
         },
