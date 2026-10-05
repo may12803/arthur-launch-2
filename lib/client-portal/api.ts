@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies, headers } from "next/headers";
 import { getLoveleedayRouteClient } from "@/lib/supabase/loveleeday-server";
 import { ACTIVE_TENANT_COOKIE, ACTIVE_TENANT_HEADER, resolveActiveTenant } from "./active-tenant";
+import { tenantSessionAllowed } from "./sso";
 
 export const MAX_DOCUMENT_BYTES = 20 * 1024 * 1024;
 
@@ -17,7 +18,15 @@ export async function getApiContext() {
   if (!userData.user) return { supabase, error: NextResponse.json({ error: "Not signed in." }, { status: 401 }) } as const;
   const requested = (await headers()).get(ACTIVE_TENANT_HEADER) || (await cookies()).get(ACTIVE_TENANT_COOKIE)?.value || null;
   const r = await resolveActiveTenant(supabase, userData.user.id, requested);
-  if (r.ok) return { supabase, userId: userData.user.id, tenantId: r.tenantId, role: r.role, error: null } as const;
+  if (r.ok) {
+    try {
+      if (!await tenantSessionAllowed(supabase, r.tenantId))
+        return { supabase, error: NextResponse.json({ error: "Your company signs in with single sign-on." }, { status: 403 }) } as const;
+    } catch {
+      return { supabase, error: NextResponse.json({ error: "Sign-in rules could not be checked. Try again." }, { status: 503 }) } as const;
+    }
+    return { supabase, userId: userData.user.id, tenantId: r.tenantId, role: r.role, error: null } as const;
+  }
   if (r.reason === "ambiguous") return { supabase, error: NextResponse.json({ error: "Choose a company first.", code: "tenant_ambiguous" }, { status: 409 }) } as const;
   if (r.reason === "not_member") return { supabase, error: NextResponse.json({ error: "You don't have access to that company.", code: "tenant_not_member" }, { status: 403 }) } as const;
   return { supabase, error: NextResponse.json({ error: "Two-factor sign-in and company access are required." }, { status: 403 }) } as const;

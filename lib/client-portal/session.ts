@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
-import { isSsoSession } from "./sso";
+import { isSsoSession, tenantSessionAllowed } from "./sso";
 import { ACTIVE_TENANT_COOKIE, resolveActiveTenant } from "./active-tenant";
 
 export type TenantRole = "owner" | "admin" | "member" | "viewer" | "staff";
@@ -40,6 +40,8 @@ export async function requireClientPortal(): Promise<ClientPortalContext> {
     const { data: staff } = await supabase.rpc("is_staff");
     redirect(staff ? "/client/staff" : "/client/no-access");
   }
+
+  if (!await tenantSessionAllowed(supabase, r.tenantId)) redirect("/client/login?error=Your%20company%20signs%20in%20with%20single%20sign-on.");
 
   const { data: tenant } = await supabase
     .from("tenants")

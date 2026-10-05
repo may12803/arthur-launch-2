@@ -1,4 +1,4 @@
-import { TrustView } from "@/components/client-portal/connectors/TrustView";
+import { TrustView } from "./trust-view";
 
 export default function TrustPage() {
   return <TrustView />;

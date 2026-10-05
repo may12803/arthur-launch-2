@@ -43,12 +43,12 @@ echo "scratch cluster: $("$BIN/psql" -X -t -A -h "$TMP" -p "$PORT" -U postgres -
 out="$(psqlq -v ON_ERROR_STOP=1 -f "$ROOT/scripts/db-test-stubs.sql")" || { echo "$out"; echo "FAIL: stubs did not apply"; exit 1; }
 echo "PASS: stubs applied (roles, auth, vault, extensions)"; PASSES=$((PASSES + 1))
 
-for f in "$MIG"/20261005_00_*.sql "$MIG"/20261005_10_*.sql "$MIG"/20261005_11_*.sql "$MIG"/20261005_12_*.sql; do
+for f in "$MIG"/20261005_00_*.sql "$MIG"/20261005_10_*.sql "$MIG"/20261005_11_*.sql "$MIG"/20261005_12_*.sql "$MIG"/20261005_13_*.sql; do
   name="$(basename "$f")"
   out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$f")" || { echo "$out" | tail -5; echo "FAIL: migration $name did not apply on an empty database"; FAILS=$((FAILS + 1)); echo "RESULT: $PASSES passed, $FAILS failed"; exit 1; }
   echo "PASS: applied $name to an empty database"; PASSES=$((PASSES + 1))
 done
-for f in "$MIG"/20261005_00_*.sql "$MIG"/20261005_10_*.sql "$MIG"/20261005_11_*.sql "$MIG"/20261005_12_*.sql; do
+for f in "$MIG"/20261005_00_*.sql "$MIG"/20261005_10_*.sql "$MIG"/20261005_11_*.sql "$MIG"/20261005_12_*.sql "$MIG"/20261005_13_*.sql; do
   name="$(basename "$f")"
   out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$f")" || { echo "$out" | tail -5; echo "FAIL: migration $name is not idempotent (second apply failed)"; FAILS=$((FAILS + 1)); continue; }
   echo "PASS: re-applied $name (idempotent)"; PASSES=$((PASSES + 1))
@@ -98,6 +98,16 @@ if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$RB12")"; then
   if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$MIG"/20261005_12_*.sql)" && [ "$(psqlq -c "$dd_has_staff")" != "0" ]; then echo "PASS: 12 forward migration re-applies after its rollback"; PASSES=$((PASSES + 1)); else echo "$out" | tail -3; echo "FAIL: 12 forward migration does not re-apply after rollback"; FAILS=$((FAILS + 1)); fi
 else
   echo "$out" | tail -5; echo "FAIL: 12 rollback did not apply"; FAILS=$((FAILS + 1))
+fi
+
+RB13="$MIG/rollback/20261005_13_notifications_and_sso.sql"
+if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$RB13")"; then
+  if [ "$(psqlq -c "select count(*) from pg_class where oid = to_regclass('public.notification_prefs')")" = "0" ] && [ "$(psqlq -c "select count(*) from pg_proc where oid = to_regprocedure('public.sso_required_for_email(text)')")" = "0" ]; then
+    echo "PASS: 13 rollback removed notification preferences and SSO functions"; PASSES=$((PASSES + 1))
+  else echo "FAIL: 13 rollback left objects"; FAILS=$((FAILS + 1)); fi
+  if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$MIG"/20261005_13_*.sql)"; then echo "PASS: 13 forward migration re-applies after its rollback"; PASSES=$((PASSES + 1)); else echo "$out" | tail -3; echo "FAIL: 13 forward migration does not re-apply after rollback"; FAILS=$((FAILS + 1)); fi
+else
+  echo "$out" | tail -5; echo "FAIL: 13 rollback did not apply"; FAILS=$((FAILS + 1))
 fi
 
 echo "RESULT: $PASSES passed, $FAILS failed"
