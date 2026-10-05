@@ -11,14 +11,13 @@
   "auth": {
     "method": "oauth2_authcode",
     "scopes_needed_read": [
-      "https://www.googleapis.com/auth/gmail.readonly",
-      "https://www.googleapis.com/auth/drive.readonly",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
       "https://www.googleapis.com/auth/calendar.readonly",
-      "https://www.googleapis.com/auth/spreadsheets.readonly",
-      "narrower alternative: drive.file or drive.metadata.readonly (classification UNVERIFIED on page fetched)"
+      "https://www.googleapis.com/auth/spreadsheets.readonly"
     ],
     "token_lifetime": "access token ~1 hour (standard; not re-fetched this run)",
-    "refresh": "Offline refresh token via access_type=offline. Alternative for a customer's own domain: service account with domain-wide delegation (not re-verified this run)."
+    "refresh": "Offline refresh token via access_type=offline. Alternative for a customer's own domain: service account with domain-wide delegation (not re-verified this run).",
+    "scope_note": "Matches the loveleeday-connect consent screen (2026-10-05). gmail.readonly and drive.readonly are RESTRICTED scopes requiring CASA; not requested."
   },
   "access_requirements": {
     "self_serve_dev_account": true,

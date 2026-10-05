@@ -1519,11 +1519,9 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "source": "default_unverified"
     },
     "scopes": [
-      "https://www.googleapis.com/auth/gmail.readonly",
-      "https://www.googleapis.com/auth/drive.readonly",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
       "https://www.googleapis.com/auth/calendar.readonly",
-      "https://www.googleapis.com/auth/spreadsheets.readonly",
-      "narrower alternative: drive.file or drive.metadata.readonly (classification UNVERIFIED on page fetched)"
+      "https://www.googleapis.com/auth/spreadsheets.readonly"
     ],
     "build_status": "implemented",
     "logo": "/connectors/logos/googleworkspace.svg",
@@ -1540,7 +1538,6 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "unverified": [
       "rate_limits",
       "incremental_sync",
-      "scopes",
       "time_to_approval",
       "cost_to_us"
     ]
