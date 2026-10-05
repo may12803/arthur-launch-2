@@ -1,0 +1,15 @@
+{
+  "key": "blackbaud-raisers-edge-nxt",
+  "at": "2026-10-05T14:44:16.686Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "BLACKBAUD_CLIENT_ID",
+    "BLACKBAUD_CLIENT_SECRET",
+    "BLACKBAUD_LOGIN_EMAIL",
+    "BLACKBAUD_LOGIN_PASSWORD",
+    "BLACKBAUD_SUBSCRIPTION_KEY"
+  ],
+  "steps": [
+    "token endpoint (client_secret_basic): HTTP 400 error=invalid_grant"
+  ]
+}
