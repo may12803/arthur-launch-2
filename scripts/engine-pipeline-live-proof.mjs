@@ -28,7 +28,7 @@ if (mode === "seed") {
   const out = { run, seeded: {} };
   for (const who of ["A", "B"]) {
     const t = T[who], tag = `zz-iso-${who.toLowerCase()}`;
-    const conn = (await sql(`insert into public.tenant_connections (tenant_id, connector_key, status, note) values (${q(t)}, 'zz-engine-proof', 'connected', 'engine pipeline live proof (throwaway)')
+    const conn = (await sql(`insert into public.tenant_connections (tenant_id, connector_key, status, note) values (${q(t)}, 'csv-excel-upload', 'paused', 'engine pipeline live proof (throwaway, paused so no sync job touches it)')
       on conflict (tenant_id, connector_key) do update set updated_at = now() returning id`))[0].id;
     const payload = { name: name(who, run), amount: who === "A" ? 4242.42 : 8484.84, proposed_action: { title: `Engine proof task ${who} ${run}`, workstream_id: tag } };
     const json = JSON.stringify(payload), digest = crypto.createHash("sha256").update(json).digest("hex");
