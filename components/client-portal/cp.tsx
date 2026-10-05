@@ -85,10 +85,24 @@ export function PageHead({ eyebrow, title, muted, lead, actions }: { eyebrow: Re
 }
 
 const SWATCH = ["#2b4a6f", "#3d6b7a", "#6a5a8c", "#7a5a3f", "#4a6b52", "#8a4a4a", "#3a3f4a", "#2a6a8c"];
-export function Logo({ src, name, size = 40 }: { src?: string | null; name: string; size?: number }) {
+export function brandColor(src?: string | null): string {
+  return (src && (LOGO_COLORS as Record<string, string>)[src.split("/").pop() || ""]) || "#5B6472";
+}
+
+// Readable text colour for a solid brand background, chosen by relative luminance (WCAG).
+export function textOn(hex: string): string {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return L > 0.36 ? "#111111" : "#ffffff";
+}
+
+export function Logo({ src, name, size = 40, plain = false }: { src?: string | null; name: string; size?: number; plain?: boolean }) {
   if (src) {
     return (
-      <span className="cp-logo" style={{ width: size, height: size, ...logoTint(src) }}>
+      <span className="cp-logo" style={{ width: size, height: size, ...(plain ? { background: "#fff", borderColor: "#fff" } : logoTint(src)) }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt="" decoding="async" />
       </span>

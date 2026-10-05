@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { GROUPS, connState, findConnection, type CatalogEntry, type ConnRow, type GroupId } from "@/lib/client-portal/connector-ui";
-import { Logo, Pill } from "../cp";
+import { Logo, Pill, brandColor, textOn } from "../cp";
 import reads from "@/lib/client-portal/connector-reads.json";
 
 // Plain-language one-liner from the researched object list. Always read-only wording: nothing is written back.
@@ -72,29 +72,33 @@ export function CatalogView({ entries, conns, now, canManage, notReady = [] }: {
                     const row = findConnection(conns, e);
                     const st = connState(row, now);
                     const connected = st.id !== "none" && st.id !== "disconnected";
-                    const soon = !connected && e.gate.kind !== "partner" && notReady.includes(e.key);
+                    const soon = !connected && notReady.includes(e.key);
+                    const bg = brandColor(e.logo);
+                    const fg = textOn(bg);
                     return (
-                      <Link key={e.key} href={`/client/connections/${e.key}`} className="cp-card-link">
+                      <Link key={e.key} href={`/client/connections/${e.key}`} className="cp-card-link cp-card-brand" style={{ background: bg, borderColor: bg, color: fg }}>
                         <span className="flex items-start gap-3">
-                          <Logo src={e.logo} name={e.name} size={40} />
+                          <Logo src={e.logo} name={e.name} size={40} plain />
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[15px] font-medium text-[var(--ink)]">{e.name}</span>
-                            <span className="block truncate text-[11.5px] text-[var(--muted)]">{e.categoryLabel}</span>
+                            <span className="block truncate text-[15px] font-medium">{e.name}</span>
+                            <span className="block truncate text-[11.5px] opacity-85">{e.categoryLabel}</span>
                           </span>
                           {connected ? (
                             <Pill tone={st.tone} dot>
                               {st.label}
                             </Pill>
+                          ) : soon ? (
+                            <Pill tone="off">Coming soon</Pill>
                           ) : null}
                         </span>
-                        <span className="text-[13px] leading-[1.6] text-[#4a4f58]">{describe(e)}</span>
+                        <span className="text-[13px] leading-[1.6] opacity-95">{describe(e)}</span>
                         <span className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-1">
                           <span />
-                          <span className="text-[12px] text-[var(--blue)]">
-                            {connected ? (st.id === "failing" ? "Re-authorize" : "Manage") : canManage && !soon ? (e.gate.kind === "partner" ? "Request access" : "Connect") : "View"}
+                          <span className="text-[12px] font-medium underline underline-offset-2">
+                            {connected ? (st.id === "failing" ? "Re-authorize" : "Manage") : soon ? "View" : canManage ? "Connect" : "View"}
                           </span>
                         </span>
-                        {connected ? <span className="-mt-1 text-[11.5px] text-[var(--muted)]">{st.reason}</span> : null}
+                        {connected ? <span className="-mt-1 text-[11.5px] opacity-85">{st.reason}</span> : null}
                       </Link>
                     );
                   })}
