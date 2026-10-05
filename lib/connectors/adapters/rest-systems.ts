@@ -163,24 +163,25 @@ export const dropboxBusiness = makeRestAdapter({
 });
 
 // ---- Esri ArcGIS. Feature layer query; incremental via editor-tracking field (hosted layers only, per vendor JSON).
-// creds.service_url = full FeatureServer layer URL; creds.edit_field defaults to EditDate; token goes in the query string.
+// creds.service_url = full FeatureServer layer URL; creds.edit_field defaults to EditDate; token goes in the X-Esri-Authorization header, never the URL.
 const ESRI_PAGE = 1000;
 const esriTs = (d: number) => new Date(d).toISOString().replace('T', ' ').slice(0, 19);
 export const esriArcgis = makeRestAdapter({
   key: 'esri-arcgis',
+  guard: true,
   base(creds) {
     need(creds, 'service_url');
     if (!/^https:\/\/[^/]+\/.+\/(Feature|Map)Server\/\d+\/?$/.test(creds.service_url)) throw new Error('service_url must be a FeatureServer layer URL');
     return creds.service_url.replace(/\/$/, '');
   },
-  headers: () => ({ accept: 'application/json' }),
-  validate: { url: (b, creds) => `${b}?${qs({ f: 'json', token: creds.access_token })}`, account: (j) => j?.name },
+  headers: (creds) => ({ accept: 'application/json', ...(creds.access_token ? { 'x-esri-authorization': `Bearer ${creds.access_token}` } : {}) }),
+  validate: { url: (b) => `${b}?${qs({ f: 'json' })}`, account: (j) => j?.name },
   objects: {
     features: {
       req(c) {
         const field = c.creds.edit_field || 'EditDate';
         const where = c.hw ? `${field} > timestamp '${esriTs(Number(c.hw))}'` : '1=1';
-        const params = { where, outFields: '*', f: 'json', orderByFields: `${field} ASC`, resultOffset: offsetOf(c), resultRecordCount: ESRI_PAGE, token: c.creds.access_token };
+        const params = { where, outFields: '*', f: 'json', orderByFields: `${field} ASC`, resultOffset: offsetOf(c), resultRecordCount: ESRI_PAGE };
         return { url: `${c.base}/query?${qs(params)}` };
       },
       list: (j) => j?.features ?? [],
@@ -251,6 +252,7 @@ export const laserfiche = makeRestAdapter({
 const MC_PAGE = 1000;
 export const mailchimp = makeRestAdapter({
   key: 'mailchimp',
+  guard: true,
   base(creds) {
     need(creds, 'dc');
     if (!/^[a-z]{2,4}\d{1,3}$/.test(creds.dc)) throw new Error('invalid Mailchimp data center');
@@ -326,6 +328,7 @@ const sfObject = (name: string): RestObjectSpec => ({
 });
 export const salesforce = makeRestAdapter({
   key: 'salesforce',
+  guard: true,
   base(creds) {
     need(creds, 'instance_url');
     if (!/^https:\/\/[A-Za-z0-9.-]+\.(my\.salesforce\.com|salesforce\.com|force\.com)$/.test(creds.instance_url)) throw new Error('instance_url is not a Salesforce host');

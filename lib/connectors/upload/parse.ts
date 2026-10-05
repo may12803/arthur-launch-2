@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { assertSafeZip, ZipBombError } from './zip-guard.ts';
 
 export class UploadError extends Error {
   code: 'too_large' | 'too_many_rows' | 'too_many_columns' | 'empty' | 'unterminated_quote' | 'unsupported_format' | 'bad_workbook';
@@ -129,13 +130,20 @@ export function parseCsv(data: Buffer | string, limits: ParseLimits = DEFAULT_LI
   return finish(parseCsvText(text), limits, 'csv');
 }
 
-export function parseXlsx(data: Buffer, limits: ParseLimits = DEFAULT_LIMITS, sheetName?: string): ParsedTable {
+export function parseXlsx(data: Buffer, limits: ParseLimits = DEFAULT_LIMITS, sheetName?: string, deps: { read?: typeof XLSX.read } = {}): ParsedTable {
   if (data.length > limits.maxBytes) throw new UploadError('too_large', `file exceeds ${limits.maxBytes} bytes`);
   // xlsx.read() silently accepts arbitrary text as a CSV sheet, so insist on the zip container first.
   if (!(data.length > 3 && data[0] === 0x50 && data[1] === 0x4b && data[2] === 0x03 && data[3] === 0x04)) throw new UploadError('bad_workbook', 'not an .xlsx workbook');
+  try {
+    assertSafeZip(data);
+  } catch (e) {
+    if (e instanceof ZipBombError) throw new UploadError('bad_workbook', `workbook rejected: ${e.message}`);
+    throw e;
+  }
   let wb: XLSX.WorkBook;
   try {
-    wb = XLSX.read(data, { type: 'buffer', cellFormula: false, cellHTML: false, cellText: true, cellDates: false });
+    // sheetRows caps rows parsed per sheet: header + maxRows data rows + one extra so an overflow is still detected.
+    wb = (deps.read ?? XLSX.read)(data, { type: 'buffer', cellFormula: false, cellHTML: false, cellText: true, cellDates: false, sheetRows: limits.maxRows + 2 });
   } catch {
     throw new UploadError('bad_workbook', 'could not read workbook');
   }

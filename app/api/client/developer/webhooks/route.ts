@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiContext } from "@/lib/client-portal/api";
 import { clip, dbFail, isAdminRole } from "@/lib/client-portal/connector-api";
+import { publicHttpsUrlError } from "@/lib/connectors/net/safe-url";
 import { WEBHOOK_EVENTS } from "@/lib/client-portal/connector-ui";
 
 export const runtime = "nodejs";
 
-// A webhook target must be public HTTPS. Literal private, loopback and link-local hosts are refused here; the sender
-// repeats the check on the resolved address before every delivery (DNS can change after this validation).
-function badTarget(raw: string): string | null {
-  let u: URL;
-  try { u = new URL(raw); } catch { return "That is not a valid address."; }
-  if (u.protocol !== "https:") return "Webhook addresses must start with https://.";
-  const h = u.hostname.toLowerCase();
-  if (h === "localhost" || h.endsWith(".local") || h.endsWith(".internal")) return "Webhook addresses must be public.";
-  if (/^(127\.|10\.|192\.168\.|169\.254\.|0\.)/.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h) || h === "[::1]" || /^\[(fc|fd|fe80)/i.test(h)) return "Webhook addresses must be public.";
-  if (u.username || u.password) return "Do not put credentials in the address.";
-  return null;
+// A webhook target must be public HTTPS. The SSRF guard the connectors use rejects private, loopback and link-local
+// literals and hostnames that resolve to them; the sender repeats the check before every delivery (DNS can change
+// after this validation).
+async function badTarget(raw: string): Promise<string | null> {
+  const why = await publicHttpsUrlError(raw);
+  return why ? `Webhook addresses must be public https URLs (${why}).` : null;
 }
 
 // webhook_upsert returns the signing secret only when an endpoint is first created; it is passed straight through
@@ -29,7 +25,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "save") {
     const url = clip(body.url, 500);
-    const bad = badTarget(url);
+    const bad = await badTarget(url);
     if (bad) return NextResponse.json({ error: bad }, { status: 400 });
     const events = (Array.isArray(body.events) ? body.events.map((s: unknown) => clip(s, 40)) : []).filter((s: string) => WEBHOOK_EVENTS.includes(s));
     if (!events.length) return NextResponse.json({ error: "Choose at least one event." }, { status: 400 });
