@@ -1,7 +1,7 @@
 {
   "key": "help-scout",
-  "at": "2026-10-05T18:25:31.426Z",
-  "status": "CONFIGURED",
+  "at": "2026-10-05T19:25:07.453Z",
+  "status": "CLIENT_VERIFIED",
   "names": [
     "HELPSCOUT_CLIENT_ID",
     "HELPSCOUT_CLIENT_SECRET",
@@ -9,8 +9,7 @@
     "HELPSCOUT_LOGIN_PASSWORD"
   ],
   "steps": [
-    "real secret: HTTP 400 error=invalid_request",
-    "wrong-secret control: HTTP 400 error=invalid_client",
-    "no grant-level error: client validity unproven"
+    "real secret: HTTP 400 error=invalid_code",
+    "wrong-secret control: HTTP 400 error=invalid_client"
   ]
 }

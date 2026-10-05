@@ -1,7 +1,7 @@
 {
   "key": "intercom",
-  "at": "2026-10-05T18:25:32.523Z",
-  "status": "CONFIGURED",
+  "at": "2026-10-05T19:25:07.025Z",
+  "status": "CLIENT_VERIFIED",
   "names": [
     "INTERCOM_CLIENT_ID",
     "INTERCOM_CLIENT_SECRET",
@@ -9,8 +9,7 @@
     "INTERCOM_LOGIN_PASSWORD"
   ],
   "steps": [
-    "real secret: HTTP 401 error=(none)",
-    "wrong-secret control: HTTP 401 error=invalid_client",
-    "no grant-level error: client validity unproven"
+    "real secret: HTTP 401 error=unauthorized_code",
+    "wrong-secret control: HTTP 401 error=invalid_client"
   ]
 }

@@ -1,0 +1,68 @@
+{
+  "system": "Trello",
+  "vendor": "Atlassian Pty Ltd",
+  "category": "project_management",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.trello.com/1",
+    "openapi_spec_url": "UNVERIFIED (none confirmed)",
+    "docs_url": "https://developer.atlassian.com/cloud/trello/guides/rest-api/api-introduction/"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "read:board",
+      "read:organization",
+      "read:member"
+    ],
+    "token_lifetime": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "refresh": "UNVERIFIED (not confirmed from a vendor page this run)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "UNVERIFIED (status file: no Power-Up capabilities and no listing submitted)",
+    "customer_admin_must_do": "A Trello member authorizes the LOVELEEDAY app and grants the read scopes.",
+    "cost_to_us": "$0 (a 14-day Trello trial banner appeared and no card was entered; whether the OAuth app survives it is UNVERIFIED)",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": {
+    "available": false,
+    "how_to_get": "No sandbox; the LOVELEEDAY board in the Trello account is used for testing"
+  },
+  "rate_limits": "300 requests per 10 seconds per API key and 100 requests per 10 seconds per token (Trello rate-limit page); not re-fetched this run",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "board, list, card and member actions via the webhooks API (event names UNVERIFIED)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "boards",
+    "lists",
+    "cards",
+    "members",
+    "organizations",
+    "actions"
+  ],
+  "incremental_sync": "GET /boards/{id}/actions supports since and before; card and board dateLastActivity gives a cursor; UNVERIFIED which is cheaper",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "The status file registered an OAuth 2.0 client in the Atlassian Apps administration; the Trello token endpoint and grant for it are UNVERIFIED.",
+    "The probe is not discriminating: the Atlassian token endpoint answers real and wrong secrets identically (status file)."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/trello.json",
+    "https://developer.atlassian.com/cloud/trello/guides/rest-api/api-introduction/",
+    "https://developer.atlassian.com/cloud/trello/guides/rest-api/rate-limits/"
+  ]
+}

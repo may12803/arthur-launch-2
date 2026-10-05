@@ -1,0 +1,19 @@
+{
+  "key": "mews",
+  "at": "2026-10-05T19:25:17.302Z",
+  "status": "DATA_FLOWED_SANDBOX",
+  "names": [
+    "MEWS_BASE_URL",
+    "MEWS_DEMO_ACCESS_TOKEN",
+    "MEWS_DEMO_CLIENT_TOKEN"
+  ],
+  "steps": [
+    "configuration read: HTTP 200 1 record(s)",
+    "bogus-credential control: HTTP 401"
+  ],
+  "evidence": {
+    "object": "configuration",
+    "record_count": 1,
+    "via": "vendor REST API with the vendor test/demo credential (no adapter)"
+  }
+}

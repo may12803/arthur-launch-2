@@ -1,0 +1,63 @@
+{
+  "system": "PandaDoc",
+  "vendor": "PandaDoc Inc.",
+  "category": "esignature",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.pandadoc.com/public/v1",
+    "openapi_spec_url": "UNVERIFIED (none confirmed)",
+    "docs_url": "https://developers.pandadoc.com/reference/about"
+  },
+  "auth": {
+    "method": "api_key",
+    "scopes_needed_read": [
+      "None: API-Key in the Authorization header (sandbox key); OAuth scopes UNVERIFIED"
+    ],
+    "token_lifetime": "API keys do not expire until revoked (UNVERIFIED from a vendor page this run)",
+    "refresh": "Not applicable (static key); OAuth refresh UNVERIFIED"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None for the sandbox key; the OAuth Applications page is gated behind the paid API Developer plan (status file)",
+    "customer_admin_must_do": "The customer generates an API key in Settings > API and Integrations, or authorizes OAuth once a paid developer plan exists.",
+    "cost_to_us": "$0 for the sandbox key; OAuth app needs a paid plan, not bought",
+    "time_to_approval": "Immediate for the sandbox"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Free sandbox at developers.pandadoc.com gives a sandbox API key limited to 10 requests per minute (status file); GET /templates returned 200"
+  },
+  "rate_limits": "Sandbox: 10 requests per minute (status file); production limits UNVERIFIED",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "document_state_changed and related events (UNVERIFIED this run)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "documents",
+    "templates",
+    "contacts",
+    "members"
+  ],
+  "incremental_sync": "GET /documents supports modified_from and modified_to; UNVERIFIED this run",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "OAuth custom applications need the paid API Developer plan, so multi-customer OAuth is not available to us today (status file).",
+    "Sandbox documents carry a developer prefix and are not representative of production content."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/pandadoc.json",
+    "https://developers.pandadoc.com/reference/about"
+  ]
+}

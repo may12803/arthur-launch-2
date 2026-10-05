@@ -1,0 +1,64 @@
+{
+  "system": "Notion",
+  "vendor": "Notion Labs, Inc.",
+  "category": "productivity",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.notion.com/v1",
+    "openapi_spec_url": "UNVERIFIED (none confirmed)",
+    "docs_url": "https://developers.notion.com/docs/authorization"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "Read content (capability, not an OAuth scope string)",
+      "Read user information including email addresses (capability)"
+    ],
+    "token_lifetime": "UNVERIFIED (access token lifetime and refresh support not confirmed this run)",
+    "refresh": "UNVERIFIED (not confirmed from a vendor page this run)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "UNVERIFIED (status file: integration is Unpublished, no Marketplace listing submitted)",
+    "customer_admin_must_do": "A workspace member authorizes the LOVELEEDAY public integration and picks the pages and databases to share with it.",
+    "cost_to_us": "$0 (free Notion workspace)",
+    "time_to_approval": "Immediate for an unlisted public integration"
+  },
+  "sandbox": {
+    "available": false,
+    "how_to_get": "No sandbox; a free Notion workspace is used for testing"
+  },
+  "rate_limits": "Average of 3 requests per second per integration, with bursts allowed (Notion request-limits page); the exact figure is UNVERIFIED this run",
+  "webhooks": {
+    "available": "UNVERIFIED",
+    "events": []
+  },
+  "data_objects_to_pull": [
+    "pages",
+    "databases",
+    "blocks",
+    "users",
+    "comments"
+  ],
+  "incremental_sync": "POST /v1/search and database queries can filter and sort on last_edited_time; cursor pagination via next_cursor; page_size maximum UNVERIFIED this run",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 5,
+  "blockers": [
+    "Access is limited to the pages and databases the customer explicitly shares with the integration, so coverage is whatever the customer picked.",
+    "The Basic auth token exchange cannot tell a wrong secret from a bogus code in the probe (status file): client validity is unproven until a real authorization runs."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/notion.json",
+    "https://developers.notion.com/docs/authorization",
+    "https://developers.notion.com/reference/request-limits"
+  ]
+}

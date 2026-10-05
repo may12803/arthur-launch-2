@@ -1,0 +1,65 @@
+{
+  "system": "Wrike",
+  "vendor": "Wrike, Inc.",
+  "category": "project_management",
+  "api": {
+    "type": "REST",
+    "base_url": "https://www.wrike.com/api/v4 (the data-center host is returned in the token response)",
+    "openapi_spec_url": "UNVERIFIED (none confirmed)",
+    "docs_url": "https://developers.wrike.com/oauth-20-authorization/"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "wsReadOnly"
+    ],
+    "token_lifetime": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "refresh": "UNVERIFIED (not confirmed from a vendor page this run)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "UNVERIFIED (no marketplace listing; status file lists none submitted)",
+    "customer_admin_must_do": "A Wrike user authorizes the LOVELEEDAY app; access follows that user's account.",
+    "cost_to_us": "$0 for the 14-day trial; the free-plan API access is UNVERIFIED (status file: downgrade is Daniel's call before 2026-10-19)",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": {
+    "available": false,
+    "how_to_get": "No sandbox and no developer program (status file dev_program NONE); a 14-day trial account is used"
+  },
+  "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "task, folder and project change events (names UNVERIFIED)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "tasks",
+    "folders",
+    "projects",
+    "contacts",
+    "timelogs"
+  ],
+  "incremental_sync": "Task and folder queries accept updatedDate ranges; pagination via nextPageToken; UNVERIFIED this run",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "Trial expires 2026-10-19; the app may not survive a downgrade to the free plan (UNVERIFIED).",
+    "Only the portal redirect URL is registered; Wrike allows localhost only without a path (status file).",
+    "The probe answers invalid_grant for real and wrong secrets alike, so the secret is stored but unproven."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/wrike.json",
+    "https://developers.wrike.com/oauth-20-authorization/"
+  ]
+}

@@ -40,27 +40,33 @@ const TOKEN_PROBES = {
   box: { file: "box", id: "BOX_CLIENT_ID", secret: "BOX_CLIENT_SECRET", url: "https://api.box.com/oauth2/token", params: { grant_type: "authorization_code", code: "bogus-code" } },
   clickup: { file: "clickup", id: "CLICKUP_CLIENT_ID", secret: "CLICKUP_CLIENT_SECRET", url: "https://api.clickup.com/api/v2/oauth/token", json: true, params: { code: "BOGUSCODE" } },
   "clio-manage": { file: "clio", id: "CLIO_CLIENT_ID", secret: "CLIO_CLIENT_SECRET", url: "https://auth.api.clio.com/oauth/token", params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
-  docusign: { file: "docusign", id: "DOCUSIGN_CLIENT_ID", secret: "DOCUSIGN_CLIENT_SECRET", url: "https://account-d.docusign.com/oauth/token", basic: true, params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
+  docusign: { file: "docusign", id: "DOCUSIGN_CLIENT_ID", secret: "DOCUSIGN_CLIENT_SECRET", url: "https://account-d.docusign.com/oauth/token", basic: true, params: { grant_type: "refresh_token", refresh_token: "bogus-refresh-token" } },
   "google-workspace": { file: "google", id: "GOOGLE_CLIENT_ID", secret: "GOOGLE_CLIENT_SECRET", url: "https://oauth2.googleapis.com/token", params: { grant_type: "authorization_code", code: "bogus", redirect_uri: R } },
-  "help-scout": { file: "helpscout", id: "HELPSCOUT_CLIENT_ID", secret: "HELPSCOUT_CLIENT_SECRET", url: "https://api.helpscout.net/v2/oauth2/token", params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
-  hubspot: { file: "hubspot", id: "HUBSPOT_CLIENT_ID", secret: "HUBSPOT_CLIENT_SECRET", url: "https://api.hubapi.com/oauth/v1/token", params: { grant_type: "refresh_token", refresh_token: "probe-invalid", redirect_uri: R } },
+  "help-scout": { grantDesc: /^invalid code$/i, file: "helpscout", id: "HELPSCOUT_CLIENT_ID", secret: "HELPSCOUT_CLIENT_SECRET", url: "https://api.helpscout.net/v2/oauth2/token", params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
+  hubspot: { file: "hubspot", id: "HUBSPOT_CLIENT_ID", secret: "HUBSPOT_CLIENT_SECRET", url: "https://api.hubapi.com/oauth/v1/token", params: { grant_type: "authorization_code", code: "probe-invalid", redirect_uri: R } },
   intercom: { file: "intercom", id: "INTERCOM_CLIENT_ID", secret: "INTERCOM_CLIENT_SECRET", url: "https://api.intercom.io/auth/eagle/token", json: true, params: { code: "bogus-code" } },
   "quickbooks-online": { file: "intuit", id: "INTUIT_CLIENT_ID", secret: "INTUIT_CLIENT_SECRET", url: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer", basic: true, params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
   mailchimp: { file: "mailchimp", id: "MAILCHIMP_CLIENT_ID", secret: "MAILCHIMP_CLIENT_SECRET", url: "https://login.mailchimp.com/oauth2/token", params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
   "microsoft-365": { file: "microsoft", id: "MICROSOFT_CLIENT_ID", secret: "MICROSOFT_CLIENT_SECRET", url: "https://login.microsoftonline.com/common/oauth2/v2.0/token", params: { grant_type: "authorization_code", code: "bogus", redirect_uri: R } },
   monday: { file: "monday", id: "MONDAY_CLIENT_ID", secret: "MONDAY_CLIENT_SECRET", url: "https://auth.monday.com/oauth2/token", json: true, params: { code: "bogus-code", redirect_uri: R } },
   pipedrive: { file: "pipedrive", id: "PIPEDRIVE_CLIENT_ID", secret: "PIPEDRIVE_CLIENT_SECRET", url: "https://oauth.pipedrive.com/oauth/token", basic: true, params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
-  salesforce: { file: "salesforce", id: "SALESFORCE_CLIENT_ID", secret: "SALESFORCE_CLIENT_SECRET", url: (e) => `${/^https?:/.test(e.SALESFORCE_MY_DOMAIN || "") ? e.SALESFORCE_MY_DOMAIN : `https://${e.SALESFORCE_MY_DOMAIN}`}/services/oauth2/token`, needs: ["SALESFORCE_MY_DOMAIN"], params: { grant_type: "authorization_code", code: "probe-invalid", redirect_uri: R, code_verifier: "probe".repeat(10) } },
+  salesforce: { file: "salesforce", id: "SALESFORCE_CLIENT_ID", secret: "SALESFORCE_CLIENT_SECRET", url: (e) => `${/^https?:/.test(e.SALESFORCE_MY_DOMAIN || "") ? e.SALESFORCE_MY_DOMAIN : `https://${e.SALESFORCE_MY_DOMAIN}`}/services/oauth2/token`, needs: ["SALESFORCE_MY_DOMAIN"], params: { grant_type: "refresh_token", refresh_token: "bogus-refresh-token" } },
+  notion: { file: "notion", id: "NOTION_CLIENT_ID", secret: "NOTION_CLIENT_SECRET", url: "https://api.notion.com/v1/oauth/token", basic: true, json: true, params: { grant_type: "authorization_code", code: "00000000-0000-4000-8000-000000000000" } }, // Notion checks the client first, then that the code is a UUID
+  trello: { file: "trello", id: "TRELLO_CLIENT_ID", secret: "TRELLO_CLIENT_SECRET", url: "https://auth.atlassian.com/oauth/token", json: true, params: { grant_type: "refresh_token", refresh_token: "bogus-refresh-token" } },
+  wrike: { file: "wrike", id: "WRIKE_CLIENT_ID", secret: "WRIKE_CLIENT_SECRET", url: "https://login.wrike.com/oauth2/token", params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
+  jobber: { file: "jobber", id: "JOBBER_CLIENT_ID", secret: "JOBBER_CLIENT_SECRET", url: "https://api.getjobber.com/api/oauth/token", params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
+  // eClinicalWorks sandbox: token_endpoint taken from the practice's public SMART configuration (staging-fhir.ecwcloud.com)
+  eclinicalworks: { file: "eclinicalworks", id: "ECLINICALWORKS_SANDBOX_CLIENT_ID", secret: "ECLINICALWORKS_SANDBOX_CLIENT_SECRET", url: "https://staging-oauthserver.ecwcloud.com/oauth/oauth2/token", params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
   typeform: { file: "typeform", id: "TYPEFORM_CLIENT_ID", secret: "TYPEFORM_CLIENT_SECRET", url: "https://api.typeform.com/oauth/token", params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
   xero: { file: "xero", id: "XERO_CLIENT_ID", secret: "XERO_CLIENT_SECRET", url: "https://identity.xero.com/connect/token", basic: true, params: { grant_type: "authorization_code", code: "probe-invalid", redirect_uri: R } },
-  zendesk: { file: "zendesk", id: "ZENDESK_CLIENT_ID", secret: "ZENDESK_CLIENT_SECRET", url: (e) => `https://${e.ZENDESK_SUBDOMAIN}.zendesk.com/oauth/tokens`, needs: ["ZENDESK_SUBDOMAIN"], json: true, params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R, scope: "read" } },
-  "zoho-crm": { file: "zoho", id: "ZOHO_CLIENT_ID", secret: "ZOHO_CLIENT_SECRET", url: "https://accounts.zoho.com/oauth/v2/token", params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
+  zendesk: { file: "zendesk", id: "ZENDESK_CLIENT_ID", secret: "ZENDESK_CLIENT_SECRET", url: (e) => `https://${e.ZENDESK_SUBDOMAIN}.zendesk.com/oauth/tokens`, needs: ["ZENDESK_SUBDOMAIN"], json: true, params: { grant_type: "refresh_token", refresh_token: "bogus-refresh-token" } },
+  "zoho-crm": { file: "zoho", id: "ZOHO_CLIENT_ID", secret: "ZOHO_CLIENT_SECRET", url: "https://accounts.zoho.com/oauth/v2/token", params: { grant_type: "refresh_token", refresh_token: "bogus-refresh-token" } },
   airtable: { file: "airtable", id: "AIRTABLE_CLIENT_ID", secret: "AIRTABLE_CLIENT_SECRET", url: "https://airtable.com/oauth2/v1/token", basic: true, params: { grant_type: "authorization_code", code: "bogus-code", code_verifier: "x".repeat(50), redirect_uri: R } },
   calendly: { file: "calendly", id: "CALENDLY_CLIENT_ID", secret: "CALENDLY_CLIENT_SECRET", url: "https://auth.calendly.com/oauth/token", params: { grant_type: "authorization_code", code: "bogus-code", redirect_uri: R } },
 };
 // Codes that mean "I read your client, and it is the code that is wrong". Vendor spellings: invalid_grant (RFC 6749),
 // ErrTokenInvalid (Typeform, "invalid code"), OAUTH_013 (ClickUp, "code not found"), bad_verification_code.
-const GRANT_LEVEL = /^(invalid_grant|ErrTokenInvalid|OAUTH_013|bad_verification_code|invalid_code)$/i;
+const GRANT_LEVEL = /^(invalid_grant|ErrTokenInvalid|OAUTH_013|bad_verification_code|invalid_code|unauthorized_code)$/i;
 const CLIENT_LEVEL = /^(invalid_client|unauthorized_client|INVALID_AUTHORIZATION|invalid_client_id|invalid_client_secret|AADSTS7000215|AADSTS700016)$/i;
 const safe = (s) => (typeof s === "string" && /^[A-Za-z0-9_.-]{1,40}$/.test(s) ? s : "(unrecognized)");
 
@@ -75,10 +81,15 @@ async function tokenCall(p, e, secret) {
   const r = await fetch(url, { method: "POST", headers, body, redirect: "manual" });
   const t = await r.text(); let j = {}; try { j = JSON.parse(t); } catch { /* non-JSON proves nothing */ }
   const raw = j.error ?? j.err ?? j.ECODE ?? j.errorCode ?? j.code ?? (/invalid_grant|invalid_client|unauthorized_client/.exec(t) || [])[0];
-  const err = typeof raw === "object" && raw ? safe(raw.code) : raw === undefined ? "(none)" : safe(String(raw));
+  let err = typeof raw === "object" && raw ? safe(raw.code) : raw === undefined ? "(none)" : safe(String(raw));
+  if (err === "(none)" && Array.isArray(j.errors) && j.errors[0]?.code) err = safe(String(j.errors[0].code)); // Intercom: {errors:[{code}]}
+  // Help Scout answers a bad code as invalid_request + "Invalid code" and a bad client as invalid_client.
+  // Jobber answers in plain text; map its two distinct sentences onto the RFC 6749 codes.
+  if (err === "(none)" && /authorization code was not valid/i.test(t)) err = "invalid_grant";
+  if (err === "(none)" && /do not match an existing application/i.test(t)) err = "invalid_client";
+  if (p.grantDesc && err === "invalid_request" && p.grantDesc.test(String(j.error_description || ""))) err = "invalid_code";
   return { http: r.status, err };
 }
-
 async function tokenProbe(key) {
   const p = TOKEN_PROBES[key];
   const out = { key, at: new Date().toISOString(), status: "NOT_CONFIGURED", names: [], steps: [] };
@@ -131,13 +142,48 @@ async function squareProbe() {
   return out;
 }
 
+// Static-credential vendors (API key / test token / demo token): one read with the real credential and one with a bogus
+// control. Accepted by the vendor AND the control refused = CLIENT_VERIFIED; >= 1 record read = DATA_FLOWED_SANDBOX.
+// These go straight to the vendor's REST API (no adapter exists for them yet), so evidence is the vendor answer only.
+const BEARER_PROBES = {
+  shippo: { file: "shippo", need: ["SHIPPO_TEST_TOKEN"], object: "addresses",
+    call: (e, bad) => ["https://api.goshippo.com/addresses/?results=1", { headers: { authorization: `ShippoToken ${bad ? "shippo_test_" + "0".repeat(40) : e.SHIPPO_TEST_TOKEN}` } }], count: (j) => (j.results || []).length },
+  fleetio: { file: "fleetio", need: ["FLEETIO_API_KEY", "FLEETIO_ACCOUNT_TOKEN"], object: "vehicles",
+    call: (e, bad) => ["https://secure.fleetio.com/api/v1/vehicles?per_page=10", { headers: { authorization: `Token ${bad ? "0".repeat(32) : e.FLEETIO_API_KEY}`, "account-token": e.FLEETIO_ACCOUNT_TOKEN, accept: "application/json" } }], count: (j) => (Array.isArray(j) ? j.length : (j.records || []).length) },
+  pandadoc: { file: "pandadoc", need: ["PANDADOC_SANDBOX_API_KEY"], object: "templates",
+    call: (e, bad) => ["https://api.pandadoc.com/public/v1/templates?count=1", { headers: { authorization: `API-Key ${bad ? "0".repeat(40) : e.PANDADOC_SANDBOX_API_KEY}` } }], count: (j) => (j.results || []).length },
+  mews: { file: "mews", need: ["MEWS_DEMO_CLIENT_TOKEN", "MEWS_DEMO_ACCESS_TOKEN", "MEWS_BASE_URL"], object: "configuration",
+    call: (e, bad) => [`${e.MEWS_BASE_URL}/api/connector/v1/configuration/get`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ClientToken: e.MEWS_DEMO_CLIENT_TOKEN, AccessToken: bad ? "0".repeat(32) : e.MEWS_DEMO_ACCESS_TOKEN, Client: "LOVELEEDAY-probe" }) }], count: (j) => (j.Enterprise ? 1 : 0) },
+};
+async function bearerProbe(key) {
+  const p = BEARER_PROBES[key];
+  const out = { key, at: new Date().toISOString(), status: "NOT_CONFIGURED", names: [], steps: [] };
+  const file = path.join(VAULT, `${p.file}.env`);
+  if (!existsSync(file)) { out.steps.push(`no vault file ${p.file}.env`); return out; }
+  const e = loadEnv(file); out.names = Object.keys(e).sort();
+  const missing = p.need.filter((n) => !e[n]);
+  if (missing.length) { out.steps.push(`missing names: ${missing.join(", ")}`); return out; }
+  out.status = "CONFIGURED";
+  try {
+    const go = async (bad) => { const [u, init] = p.call(e, bad); const r = await fetch(u, { ...init, redirect: "manual" }); const j = await r.json().catch(() => ({})); return { http: r.status, n: r.ok ? p.count(j) : 0 }; };
+    const real = await go(false), ctrl = await go(true);
+    out.steps.push(`${p.object} read: HTTP ${real.http} ${real.n} record(s)`, `bogus-credential control: HTTP ${ctrl.http}`);
+    if (real.http === 200 && ![200, 204].includes(ctrl.http)) {
+      out.status = "CLIENT_VERIFIED";
+      if (real.n) { out.status = "DATA_FLOWED_SANDBOX"; out.evidence = { object: p.object, record_count: real.n, via: "vendor REST API with the vendor test/demo credential (no adapter)" }; }
+    } else if (real.http === 401 || real.http === 403) out.status = "VALIDATE_FAILED";
+  } catch (err) { out.steps.push(`unreachable: ${err?.cause?.code || err?.name || "error"}`); }
+  return out;
+}
+
 const getDefinitionKeys = () => new Set(readdirSync(path.join(root, "data/connectors/systems")).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)));
 
 
 async function probe(key) {
   if (key === "gusto") return gustoProbe();
   if (key === "square") return squareProbe();
-  if (TOKEN_PROBES[key] && !VENDOR_FILES[key]) return tokenProbe(key);
+  if (BEARER_PROBES[key]) return bearerProbe(key);
+  if (TOKEN_PROBES[key]) return tokenProbe(key);
   const out = { key, at: new Date().toISOString(), status: "NOT_CONFIGURED", names: [], steps: [] };
   const mapped = vendorEnv(key);
   const file = mapped ? mapped.file : path.join(VAULT, `${key}.env`);

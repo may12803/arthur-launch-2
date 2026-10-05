@@ -1,0 +1,66 @@
+{
+  "system": "Mews",
+  "vendor": "Mews Systems B.V.",
+  "category": "property",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.mews.com/api/connector/v1 (demo: https://api.mews-demo.com)",
+    "openapi_spec_url": "UNVERIFIED (none confirmed)",
+    "docs_url": "https://mews-systems.gitbook.io/connector-api"
+  },
+  "auth": {
+    "method": "api_key",
+    "scopes_needed_read": [
+      "None: ClientToken plus a per-property AccessToken in the request body"
+    ],
+    "token_lifetime": "UNVERIFIED (AccessToken lifetime not confirmed this run)",
+    "refresh": "Not applicable to ClientToken and AccessToken (no refresh flow documented in the status file)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": false,
+    "partner_program_name": "Mews integration/partner program (application required, per status file)",
+    "app_review_or_marketplace_listing": "Production ClientToken is issued by the Mews integration team after certification (status file)",
+    "customer_admin_must_do": "The property creates an AccessToken for the integration in its Mews account.",
+    "cost_to_us": "UNVERIFIED (partner program terms not confirmed)",
+    "time_to_approval": "UNVERIFIED"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Public demo ClientToken and AccessToken against https://api.mews-demo.com, shared and not for real data (status file)"
+  },
+  "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "UNVERIFIED (event names not confirmed this run)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "reservations",
+    "customers",
+    "bills",
+    "payments",
+    "resources",
+    "services"
+  ],
+  "incremental_sync": "Most getAll operations take UpdatedUtc time intervals and cursor limits; exact per-object support UNVERIFIED this run",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 8,
+  "blockers": [
+    "No self-serve production credentials: the ClientToken needs Mews certification.",
+    "The demo tokens are shared and public, so a data-flow proof against them says nothing about any customer property."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/mews.json",
+    "https://mews-systems.gitbook.io/connector-api",
+    "docs.mews.com Environments page (per status file): configuration/get returned HTTP 200 on the demo host"
+  ]
+}

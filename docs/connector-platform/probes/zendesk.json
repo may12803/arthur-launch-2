@@ -1,7 +1,7 @@
 {
   "key": "zendesk",
-  "at": "2026-10-05T18:25:42.154Z",
-  "status": "CONFIGURED",
+  "at": "2026-10-05T19:25:06.558Z",
+  "status": "CLIENT_VERIFIED",
   "names": [
     "ZENDESK_CLIENT_ID",
     "ZENDESK_CLIENT_SECRET",
@@ -11,7 +11,6 @@
   ],
   "steps": [
     "real secret: HTTP 400 error=invalid_grant",
-    "wrong-secret control: HTTP 400 error=invalid_grant",
-    "control answered the same as the real secret: client validity unproven"
+    "wrong-secret control: HTTP 401 error=invalid_client"
   ]
 }

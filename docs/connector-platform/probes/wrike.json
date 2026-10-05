@@ -1,12 +1,12 @@
 {
-  "key": "docusign",
-  "at": "2026-10-05T19:25:05.362Z",
+  "key": "wrike",
+  "at": "2026-10-05T19:25:12.838Z",
   "status": "CONFIGURED",
   "names": [
-    "DOCUSIGN_CLIENT_ID",
-    "DOCUSIGN_CLIENT_SECRET",
-    "DOCUSIGN_LOGIN_EMAIL",
-    "DOCUSIGN_LOGIN_PASSWORD"
+    "WRIKE_CLIENT_ID",
+    "WRIKE_CLIENT_SECRET",
+    "WRIKE_LOGIN_EMAIL",
+    "WRIKE_LOGIN_PASSWORD"
   ],
   "steps": [
     "real secret: HTTP 400 error=invalid_grant",

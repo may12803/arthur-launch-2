@@ -1,0 +1,14 @@
+{
+  "key": "shippo",
+  "at": "2026-10-05T19:25:15.659Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "SHIPPO_LOGIN_EMAIL",
+    "SHIPPO_LOGIN_PASSWORD",
+    "SHIPPO_TEST_TOKEN"
+  ],
+  "steps": [
+    "addresses read: HTTP 200 0 record(s)",
+    "bogus-credential control: HTTP 401"
+  ]
+}
