@@ -686,7 +686,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "A Cityworks user/role with read access to the needed work orders, service requests, assets"
     ],
     "build_status": "implemented",
-    "logo": "",
+    "logo": "/connectors/logos/cityworks.png",
     "source_file": "data/connectors/systems/cityworks.json",
     "api_base_url": "https://<customer-cityworks-host>/Cityworks/Services (per customer instance; documented at the instance's /apidocs)",
     "token_lifetime": "UNVERIFIED",
@@ -895,7 +895,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     },
     "scopes": [],
     "build_status": "implemented",
-    "logo": "",
+    "logo": "/connectors/logos/csv-excel-upload.svg",
     "source_file": "data/connectors/systems/csv-excel-upload.json",
     "api_base_url": "n/a (browser upload to presigned object-store URL)",
     "token_lifetime": "n/a",
@@ -1101,7 +1101,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "https://api.businesscentral.dynamics.com/.default (application permission API.ReadWrite.All; exact app permission name UNVERIFIED on fetched page)"
     ],
     "build_status": "implemented",
-    "logo": "",
+    "logo": "/connectors/logos/dynamics-365-business-central.svg",
     "source_file": "data/connectors/systems/dynamics-365-business-central.json",
     "api_base_url": "https://api.businesscentral.dynamics.com/v2.0/{tenantId}/{environmentName}/api/v2.0 (host/prefix from Nango providers.yaml; /api/v2.0 from Microsoft API v2.0 reference title)",
     "token_lifetime": "UNVERIFIED (Entra default ~60-90 min)",
@@ -1156,7 +1156,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "https://{environmentUrl}/.default (resource = environment URL, no trailing slash)"
     ],
     "build_status": "implemented",
-    "logo": "",
+    "logo": "/connectors/logos/dynamics-365-finance-operations.svg",
     "source_file": "data/connectors/systems/dynamics-365-finance-operations.json",
     "api_base_url": "https://{environmentUrl}/data (service root); metadata at /data/$metadata and /Metadata/DataEntities",
     "token_lifetime": "UNVERIFIED (Entra default)",
@@ -1316,7 +1316,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "None: an API key carries the permissions of the agent who owns it; use a read-only agent role (docs)"
     ],
     "build_status": "planned",
-    "logo": "",
+    "logo": "/connectors/logos/freshdesk.png",
     "source_file": "data/connectors/systems/freshdesk.json",
     "api_base_url": "https://{domain}.freshdesk.com/api/v2",
     "token_lifetime": "Long-lived key until the agent resets it",
@@ -2196,7 +2196,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "Fusion resource scope configured on the IAM confidential application (scope string per Oracle doc configure_oauth, exact value UNVERIFIED)"
     ],
     "build_status": "implemented",
-    "logo": "",
+    "logo": "/connectors/logos/oracle-fusion-cloud-erp.svg",
     "source_file": "data/connectors/systems/oracle-fusion-cloud-erp.json",
     "api_base_url": "https://{pod}.fa.{region}.oraclecloud.com/fscmRestApi/resources/11.13.18.05/ (e.g. /invoices, /receivablesInvoices)",
     "token_lifetime": "UNVERIFIED",
@@ -2652,7 +2652,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "customer uploads to /<customer>/inbox only"
     ],
     "build_status": "implemented",
-    "logo": "",
+    "logo": "/connectors/logos/sftp-drop.svg",
     "source_file": "data/connectors/systems/sftp-drop.json",
     "api_base_url": "sftp.loveleedaystudios.com:22 (to be provisioned)",
     "token_lifetime": "n/a",

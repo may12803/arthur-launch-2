@@ -3,6 +3,13 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Eyebrow } from "./ui";
 import type { Tone } from "@/lib/client-portal/connector-ui";
+import LOGO_COLORS from "@/lib/client-portal/logo-colors.json";
+
+// Each logo sits on a square tinted with its own brand colour (scripts/logo-colors.py), matching the public directory.
+const logoTint = (src: string) => {
+  const c = (LOGO_COLORS as Record<string, string>)[src.split("/").pop() || ""] || "#5B6472";
+  return { background: `${c}2E`, borderColor: `${c}73` };
+};
 
 // Shared pieces for the connector-platform screens. Presentational only, so the dev preview can render them with
 // fixtures and the real pages can render them with live rows.
@@ -81,7 +88,7 @@ const SWATCH = ["#2b4a6f", "#3d6b7a", "#6a5a8c", "#7a5a3f", "#4a6b52", "#8a4a4a"
 export function Logo({ src, name, size = 40 }: { src?: string | null; name: string; size?: number }) {
   if (src) {
     return (
-      <span className="cp-logo" style={{ width: size, height: size }}>
+      <span className="cp-logo" style={{ width: size, height: size, ...logoTint(src) }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt="" decoding="async" />
       </span>

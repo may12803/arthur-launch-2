@@ -47,12 +47,6 @@ export function CatalogView({ entries, conns, now, canManage, notReady = [] }: {
         </label>
       </div>
 
-      <p className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-[var(--muted)]">
-        <span className="cp-cap">Method</span>
-        <span><Pill>Sign in</Pill> the vendor&apos;s own sign-in page</span>
-        <span><Pill>Key</Pill> a credential stored encrypted, never shown again</span>
-        <span><Pill>File</Pill> CSV, XLSX or scheduled drop</span>
-      </p>
 
       {!groups.length ? (
         <div className="mt-10 rounded-2xl border border-[var(--line)] p-10 text-center">
@@ -84,17 +78,15 @@ export function CatalogView({ entries, conns, now, canManage, notReady = [] }: {
                             <span className="block truncate text-[15px] font-medium text-[var(--ink)]">{e.name}</span>
                             <span className="block truncate text-[11.5px] text-[var(--muted)]">{e.categoryLabel}</span>
                           </span>
-                          <Pill tone={connected ? st.tone : e.gate.kind === "partner" ? "wait" : "off"} dot={connected}>
-                            {connected ? st.label : e.gate.kind === "partner" ? "Vendor approval" : soon ? "Coming soon" : "Available"}
-                          </Pill>
+                          {connected ? (
+                            <Pill tone={st.tone} dot>
+                              {st.label}
+                            </Pill>
+                          ) : null}
                         </span>
                         <span className="text-[13px] leading-[1.6] text-[#4a4f58]">{describe(e)}</span>
                         <span className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-1">
-                          <span className="flex flex-wrap gap-1.5">
-                            {e.methods.map((m) => (
-                              <Pill key={m}>{m}</Pill>
-                            ))}
-                          </span>
+                          <span />
                           <span className="text-[12px] text-[var(--blue)]">
                             {connected ? (st.id === "failing" ? "Re-authorize" : "Manage") : canManage && !soon ? (e.gate.kind === "partner" ? "Request access" : "Connect") : "View"}
                           </span>
