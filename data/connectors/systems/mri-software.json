@@ -1,0 +1,34 @@
+{
+  "system": "MRI Software",
+  "vendor": "MRI Software LLC",
+  "category": "property",
+  "api": { "type": "REST", "base_url": "UNVERIFIED (MRI MIX gateway; per-product)", "openapi_spec_url": "none public", "docs_url": "https://developers.apideck.com/apis/accounting/mrisoftware/configuration (MRI's own docs sit behind the myMRI Partner Portal)" },
+  "auth": { "method": "basic", "scopes_needed_read": ["Determined by the customer's MRI user credentials plus our MIX key"], "token_lifetime": "n/a", "refresh": "n/a. Apideck's MRI page: MRI 'does not use OAuth: there is no app to register and no consent screen'; HTTP Basic where the username embeds the MIX Partner Key (secondary, Apideck)." },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": true,
+    "partner_program_name": "MRI Partner Connect (Solution Partner category), key = MIX Partner Key / Developer Key",
+    "app_review_or_marketplace_listing": "Application, intro call, NDA, commercial agreement, provisioning. Alternative: an existing MRI client sponsors the integration.",
+    "customer_admin_must_do": "Provide their own MRI installation credentials (per Apideck: consumers provide only their own MRI installation credentials) and, if sponsoring, introduce us to MRI. Exact MRI-side steps UNVERIFIED (MRI portal gated).",
+    "cost_to_us": "UNVERIFIED (commercial agreement)",
+    "time_to_approval": "Per Apideck (secondary): 5-7 business days from application to intro call, then NDA, agreement, provisioning"
+  },
+  "sandbox": { "available": "unverified", "how_to_get": "Developer Key tier allows ad-hoc APIs for prototyping, per Apideck; issued under agreement." },
+  "rate_limits": "Partner key: higher limits, 24-hour cache; Developer key: lower limits, no cache (Apideck, secondary). Numeric limits UNVERIFIED.",
+  "webhooks": { "available": "unverified", "events": [] },
+  "data_objects_to_pull": ["properties", "leases", "tenants", "GL accounts and transactions", "AP invoices and vendors", "AR"],
+  "incremental_sync": "UNVERIFIED (depends on registered MIX API)",
+  "unified_api_coverage": { "merge_dev": "unverified", "codat": "no", "apideck": "yes (accounting: developers.apideck.com/apis/accounting/mrisoftware)", "nango": "no", "airbyte_source": "no" },
+  "recommended_path": "unified_api:apideck",
+  "build_effort_days": 4,
+  "blockers": [
+    "Production key is only issued under a MRI Partner Connect agreement (Apideck holds that agreement for its connector, so using Apideck sidesteps ours but covers only the accounting objects Apideck maps)",
+    "MRI's own developer docs not public"
+  ],
+  "sources": [
+    "https://developers.apideck.com/apis/accounting/mrisoftware/configuration - 'MRI does not use OAuth: there is no app to register and no consent screen'; Partner vs Developer key; Partner Connect 5-7 business days",
+    "https://www.mrisoftware.com/become-a-partner/ - cited by Apideck; not fetched directly",
+    "https://developers.apideck.com/connectors - lists MRI Software",
+    "docs.nango.dev nav, airbyte oss_registry.json - no MRI"
+  ]
+}

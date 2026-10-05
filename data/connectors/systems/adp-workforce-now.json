@@ -1,0 +1,65 @@
+{
+  "system": "ADP Workforce Now",
+  "vendor": "ADP",
+  "category": "hr_payroll",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.adp.com (gateway) and https://accounts.adp.com (token)",
+    "openapi_spec_url": "UNVERIFIED",
+    "docs_url": "https://developers.adp.com/"
+  },
+  "auth": {
+    "method": "oauth2_client_credentials",
+    "scopes_needed_read": [
+      "UNVERIFIED"
+    ],
+    "token_lifetime": "UNVERIFIED",
+    "refresh": "Client credentials re-request; mutual TLS client certificate required on every call"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": true,
+    "partner_program_name": "ADP Marketplace Partner program",
+    "app_review_or_marketplace_listing": "ADP Marketplace partner onboarding; clients can also use ADP 'API Central' for their own integrations",
+    "customer_admin_must_do": "Per ADP: client logs into API Central and generates a mutual SSL certificate; client authorizes the partner app/credentials for their ADP org via Marketplace subscription (exact steps UNVERIFIED).",
+    "cost_to_us": "UNVERIFIED",
+    "time_to_approval": "UNVERIFIED"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Partner Self-Service portal after Marketplace partner acceptance (UNVERIFIED details)"
+  },
+  "rate_limits": "UNVERIFIED",
+  "webhooks": {
+    "available": false,
+    "events": []
+  },
+  "data_objects_to_pull": [
+    "workers",
+    "payroll output",
+    "pay statements",
+    "time cards",
+    "organizational structure"
+  ],
+  "incremental_sync": "UNVERIFIED",
+  "unified_api_coverage": {
+    "merge_dev": "yes (ADP Workforce Now: HRIS on merge.dev/integrations)",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "unverified"
+  },
+  "recommended_path": "unified_api:merge",
+  "build_effort_days": 20,
+  "blockers": [
+    "Mutual TLS certificate per partner and per client",
+    "Marketplace partner approval required for multi-customer use",
+    "Pricing/timeline unpublished"
+  ],
+  "sources": [
+    "WebSearch result summarizing developers.adp.com / marketplace-cdn.adp.com Partner Development Learning Guide \u2014 'A Mutual SSL certificate is required for all API calls exchanged with the ADP API Gateway: api.adp.com or accounts.adp.com'",
+    "same \u2014 'Credentials are automatically generated as soon as you start a new project'",
+    "https://developers.adp.com/ \u2014 page content too thin to quote further",
+    "https://www.merge.dev/integrations \u2014 ADP Workforce Now (HRIS)"
+  ]
+}

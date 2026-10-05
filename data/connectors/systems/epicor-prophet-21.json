@@ -1,0 +1,18 @@
+{
+  "system": "Epicor Prophet 21",
+  "vendor": "Epicor",
+  "category": "erp",
+  "api": {"type": "REST", "base_url": "UNVERIFIED: per-customer P21 Middleware / API host (customer's own https://{host}/api path); not published on a public Epicor page found", "openapi_spec_url": "UNVERIFIED (Epicor states REST and OData are documented via OpenAPI/Swagger, but P21 reference is in the customer's own instance)", "docs_url": "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/prophet-21/technology/"},
+  "auth": {"method": "basic", "scopes_needed_read": ["UNVERIFIED"], "token_lifetime": "UNVERIFIED", "refresh": "UNVERIFIED primary source. Third-party summary (supergood.ai, not primary) says username and password exchanged for an access token plus optional consumer key, no OAuth. Treat as unconfirmed."},
+  "access_requirements": {"self_serve_dev_account": false, "partner_program_required": false, "partner_program_name": "UNVERIFIED (API access per customer license, possibly Epicor Professional Services/ISV program)", "app_review_or_marketplace_listing": "UNVERIFIED", "customer_admin_must_do": "UNVERIFIED primary. Likely: customer P21 admin provides an API user, enables the Middleware/API service, exposes it via reverse proxy/VPN, and (per third-party sources) supplies consumer key. Confirm with Epicor docs under customer login (Epicor Learning Center).", "cost_to_us": "UNVERIFIED", "time_to_approval": "UNVERIFIED"},
+  "sandbox": {"available": false, "how_to_get": "No public portal or sandbox found; customer's test database"},
+  "rate_limits": "UNVERIFIED",
+  "webhooks": {"available": false, "events": []},
+  "data_objects_to_pull": ["customers", "invoices", "items (inv_mast)", "orders", "price books/pricing", "GL (via Data Services/OData)"],
+  "incremental_sync": "UNVERIFIED; OData $filter on date_last_modified columns is the likely approach",
+  "unified_api_coverage": {"merge_dev": "unverified (not in merge.dev/integrations HTML)", "codat": "no", "apideck": "no (Epicor not found in connectors page text)", "nango": "no", "airbyte_source": "no"},
+  "recommended_path": "sftp_csv",
+  "build_effort_days": 8,
+  "blockers": ["Primary Epicor API docs (P21 Interactive and Data Services API V2, Bulk Data API) not publicly fetchable; only marketing page confirms 'API V2' and 'Bulk Data API capabilities'", "Requires customer-hosted middleware reachable from outside", "No sandbox"],
+  "sources": ["https://www.epicor.com/en/blog/supply-chain-management/prophet-21-2026-1-is-now-available/ (search snippet) - \"Prophet 21's API V2 features a greater depth and breadth of Interactive and Data Services API capabilities ... new Bulk Data API capabilities\"", "https://www.epicor.com/en-us/products/enterprise-resource-planning-erp/prophet-21/technology/ - product technology page (no endpoint detail)", "https://supergood.ai/docs/prophet-21-epicor-api - THIRD-PARTY, not primary: username+password token, optional consumer key, no public sandbox"]
+}

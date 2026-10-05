@@ -1,0 +1,18 @@
+{
+  "system": "Xero",
+  "vendor": "Xero",
+  "category": "accounting",
+  "api": {"type": "REST", "base_url": "https://api.xero.com/api.xro/2.0 (host from Nango providers.yaml; /api.xro/2.0 path UNVERIFIED on fetched page)", "openapi_spec_url": "UNVERIFIED (Xero publishes OpenAPI at github.com/XeroAPI/Xero-OpenAPI; not fetched)", "docs_url": "https://developer.xero.com/documentation/guides/oauth2/auth-flow"},
+  "auth": {"method": "oauth2_authcode", "scopes_needed_read": ["accounting.transactions.read", "accounting.contacts.read", "accounting.settings.read", "accounting.reports.read", "offline_access (scope names UNVERIFIED on a fetched page)"], "token_lifetime": "UNVERIFIED on fetched page (30 minutes per general knowledge)", "refresh": "offline_access scope gives refresh token; expiry UNVERIFIED. Custom Connections (client_credentials) exists but is for single-org use"},
+  "access_requirements": {"self_serve_dev_account": true, "partner_program_required": false, "partner_program_name": "Xero App Store tiers (new from 2 March 2026): Starter, Core, Plus, Advanced, Enterprise", "app_review_or_marketplace_listing": "App certification required for Plus, Advanced and Enterprise tiers; uncertified apps capped at 25 tenant connections (older rule) / tiered connection caps now", "customer_admin_must_do": "User with Standard or Advisor role clicks Connect and authorizes the organisation(s) in Xero consent screen; connection list via /connections.", "cost_to_us": "Monthly tier fees: Starter free (5 connections), Core AUD 35 (50), Plus AUD 245 (1,000), Advanced AUD 1,445 (10,000), Enterprise on application (unlimited) - via search snippet of developer.xero.com/pricing", "time_to_approval": "UNVERIFIED (certification review time not found)"},
+  "sandbox": {"available": true, "how_to_get": "Xero Demo Company free from any Xero account (UNVERIFIED on fetched page)"},
+  "rate_limits": "Per-minute, daily, concurrent limits plus tier connection caps; search snippet reports daily limits 1,000/day Starter and 5,000/day higher tiers (verify at developer.xero.com/documentation/guides/oauth2/limits/ before relying, fetched page gave no numbers)",
+  "webhooks": {"available": true, "events": ["Contacts", "Invoices (subscription categories; full list UNVERIFIED)"]},
+  "data_objects_to_pull": ["Contacts", "Invoices", "Bills", "Payments", "BankTransactions", "Accounts", "Items", "ManualJournals", "Journals", "Reports (TrialBalance, P&L)"],
+  "incremental_sync": "If-Modified-Since request header on list endpoints; Journals endpoint offset cursor",
+  "unified_api_coverage": {"merge_dev": "unverified (not in merge.dev/integrations HTML)", "codat": "yes (Standard tier)", "apideck": "yes by name", "nango": "yes (xero, xero-oauth2-cc)", "airbyte_source": "yes, source-xero (community)"},
+  "recommended_path": "direct",
+  "build_effort_days": 3,
+  "blockers": ["2026 tier pricing and certification gate: serving >50 customers needs Plus (AUD 245/mo) and app certification", "Small daily call cap on lower tiers, matters for backfill"],
+  "sources": ["https://developer.xero.com/pricing (search snippet) - \"Starter (5), Core (50), Plus (1000), Advanced (10,000), and Enterprise (No limit)\"", "https://developer.xero.com/documentation/guides/oauth2/limits/ - uncertified apps limited to 25 tenants", "https://developer.xero.com/faq/pricing-and-policy-updates - tiers effective 2 March 2026 (via search)", "https://github.com/NangoHQ/nango providers.yaml xero", "https://docs.codat.io/integrations/accounting/overview"]
+}

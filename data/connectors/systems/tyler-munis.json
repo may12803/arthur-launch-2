@@ -1,0 +1,34 @@
+{
+  "system": "Tyler Munis",
+  "vendor": "Tyler Technologies",
+  "category": "public_sector",
+  "api": { "type": "REST", "base_url": "UNVERIFIED (per-customer Tyler-hosted endpoint)", "openapi_spec_url": "none public (login-gated)", "docs_url": "Login-gated Tyler API catalog; no public URL found. Third-party summary: https://supergood.ai/api-report-card/tyler-technologies-munis" },
+  "auth": { "method": "oauth2_client_credentials", "scopes_needed_read": ["UNVERIFIED"], "token_lifetime": "UNVERIFIED", "refresh": "UNVERIFIED. Secondary source (supergood.ai): 'OAuth2 client credentials, but no public app registration; keys are provisioned by Tyler services engagements.'" },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": true,
+    "partner_program_name": "Tyler Platform Alliance (named by secondary source; Tyler's own page for it not found)",
+    "app_review_or_marketplace_listing": "None public",
+    "customer_admin_must_do": "Customer (the municipality) must have an active Tyler license and engage Tyler professional services to provision API credentials for us. Exact steps UNVERIFIED.",
+    "cost_to_us": "UNVERIFIED; customer-side cost is a Tyler implementation/services engagement",
+    "time_to_approval": "UNVERIFIED"
+  },
+  "sandbox": { "available": false, "how_to_get": "None public per secondary source ('no public signup, sandbox, or trial')." },
+  "rate_limits": "Not published; per secondary source surfaced only via support tickets.",
+  "webhooks": { "available": "unverified", "events": [] },
+  "data_objects_to_pull": ["GL accounts and journal", "vendors", "AP invoices", "POs", "budgets", "utility billing accounts", "employees (HR/payroll modules)"],
+  "incremental_sync": "UNVERIFIED",
+  "unified_api_coverage": { "merge_dev": "unverified", "codat": "no", "apideck": "no", "nango": "no (nango nav lists a generic 'tyler' string only in unrelated context; no Munis page)", "airbyte_source": "no" },
+  "recommended_path": "sftp_csv",
+  "build_effort_days": 10,
+  "blockers": [
+    "No self-serve access: needs Tyler license plus professional-services engagement per customer",
+    "Docs and schemas login-gated; every fact above about auth is from a third-party summary",
+    "Interim: customer-scheduled Munis report/export to SFTP (not verified; confirm with customer)"
+  ],
+  "sources": [
+    "https://supergood.ai/api-report-card/tyler-technologies-munis (secondary) - 'Credentials come only through Tyler implementation or professional services; no public signup, sandbox, or trial.'",
+    "https://supergood.ai/docs/tyler-technologies-api (secondary)",
+    "Tyler primary developer page: UNVERIFIED, none found in search"
+  ]
+}

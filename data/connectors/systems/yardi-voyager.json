@@ -1,0 +1,35 @@
+{
+  "system": "Yardi Voyager",
+  "vendor": "Yardi Systems",
+  "category": "property",
+  "api": { "type": "SOAP", "base_url": "UNVERIFIED (per-customer hosted Voyager web-services URL, issued with the interface license)", "openapi_spec_url": "none (WSDL only, issued to licensed interface partners)", "docs_url": "https://www.yardi.com/partners/become-an-interface-partner/ (yardi.com returned Cloudflare 403 / challenge to automated fetch; page not read directly)" },
+  "auth": { "method": "basic", "scopes_needed_read": ["UNVERIFIED: per-interface license (e.g. resident, GL, work orders) determines which SOAP operations are callable"], "token_lifetime": "n/a (credentials per call) - UNVERIFIED", "refresh": "n/a - UNVERIFIED" },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": true,
+    "partner_program_name": "Yardi Interface Partner Program (Standard Interface Partnership Program, SIPP)",
+    "app_review_or_marketplace_listing": "Approved interface vendor list; per-interface licensing",
+    "customer_admin_must_do": "Customer must authorize the vendor with Yardi and request the interface be enabled on their Voyager database; Yardi then issues the web-services URL, interface credentials and license. Exact customer steps UNVERIFIED (vendor page blocked).",
+    "cost_to_us": "Per secondary sources only (supergood.ai/truto.one, not Yardi): about $25K per interface per year; Yardi's own search snippet says 'Participation in the Yardi Interfaces Program requires an annual license fee per interface'. Exact figure UNVERIFIED.",
+    "time_to_approval": "UNVERIFIED (secondary sources: multi-step approval)"
+  },
+  "sandbox": { "available": true, "how_to_get": "Per Yardi snippet: 'Standard Interface (SIPP) vendors are provided access to a development sandbox for testing Voyager integration.' Only after joining the program." },
+  "rate_limits": "UNVERIFIED - not published",
+  "webhooks": { "available": false, "events": [] },
+  "data_objects_to_pull": ["properties", "units", "tenants/residents", "leases", "charges/receivables", "payables/vendors", "GL accounts and journal", "work orders"],
+  "incremental_sync": "UNVERIFIED. Interfaces are request/response SOAP; expect full or date-range pulls. No documented change feed.",
+  "unified_api_coverage": { "merge_dev": "unverified (merge.dev/integrations is JS-rendered; not found)", "codat": "no (docs.codat.io/integrations/overview fetched, no Yardi)", "apideck": "no (developers.apideck.com/connectors fetched, no Yardi)", "nango": "no (nango.dev docs nav list, no Yardi)", "airbyte_source": "no (oss_registry.json checked, no Yardi source)" },
+  "recommended_path": "sftp_csv",
+  "build_effort_days": 8,
+  "blockers": [
+    "Direct API requires membership in the Yardi Interface Partner Program with a paid per-interface annual license and mutual-customer requirements (secondary sources: 2 years in business, 3 active Voyager clients)",
+    "No self-serve sandbox or public docs",
+    "Primary Yardi pages could not be read (Cloudflare 403); program terms must be confirmed with Yardi"
+  ],
+  "sources": [
+    "https://www.yardi.com/?p=359162 and https://yardi.com/?p=2754 (Yardi 'Become an Interface Partner') - surfaced in search; direct fetch 403. Search snippet: 'Participation in the Yardi Interfaces Program requires an annual license fee per interface'",
+    "https://truto.one/blog/overcoming-legacy-api-constraints-when-integrating-with-yardi-and-realpage/ (secondary) - 'SOAP web services described by WSDL files, requires partners to join the Standard Interface Partnership Program (SIPP)'",
+    "https://supergood.ai/api-report-card/yardi-voyager (secondary) - 2 years, 3 Voyager clients, ~$25K per interface per year",
+    "https://docs.nango.dev nav list, https://connectors.airbyte.com/files/registries/v0/oss_registry.json, https://developers.apideck.com/connectors - no Yardi entry"
+  ]
+}

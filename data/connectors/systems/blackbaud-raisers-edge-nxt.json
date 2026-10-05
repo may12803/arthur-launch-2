@@ -1,0 +1,34 @@
+{
+  "system": "Blackbaud Raiser's Edge NXT",
+  "vendor": "Blackbaud",
+  "category": "nonprofit",
+  "api": { "type": "REST", "base_url": "https://api.sky.blackbaud.com/ (constituent, gift, fundraising, etc. under /constituent/v1, /gift/v1) - path details UNVERIFIED this turn", "openapi_spec_url": "UNVERIFIED (published per API in the SKY API reference)", "docs_url": "https://developer.blackbaud.com/skyapi/" },
+  "auth": { "method": "oauth2_authcode", "scopes_needed_read": ["UNVERIFIED (403 'Insufficient Scope' reports on community.blackbaud.com show app configuration must grant data access)"], "token_lifetime": "Access token 60 minutes (secondary: iPaaS/Flowgear docs)", "refresh": "Refresh token exchange; refresh-token lifetime UNVERIFIED. Every call also needs the Bb-Api-Subscription-Key header (subscriber's SKY API subscription Primary access key)." },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "Blackbaud Developer Portal (SKY Developer) - app registration; a Blackbaud Partner / Marketplace route exists for apps used across customers (terms UNVERIFIED)",
+    "app_review_or_marketplace_listing": "Developer page lists subscription key, OAuth2 authorization code, app registration, and partner/developer terms as prerequisites. Whether multi-customer apps need Blackbaud approval: UNVERIFIED.",
+    "customer_admin_must_do": "A Blackbaud user with rights authorizes our registered app through the OAuth authorization code flow for their Raiser's Edge NXT environment (environment/tenant selection happens at consent). Customer may also need to be entitled to the API under their RE NXT license (UNVERIFIED).",
+    "cost_to_us": "UNVERIFIED (developer subscription listed as free in the portal historically; not confirmed on a fetched page)",
+    "time_to_approval": "UNVERIFIED"
+  },
+  "sandbox": { "available": true, "how_to_get": "Blackbaud developer portal offers a sandbox environment; exact sign-up steps UNVERIFIED." },
+  "rate_limits": "Throttling exists per subscription (api-throttling page fetched but returned no content); numbers UNVERIFIED.",
+  "webhooks": { "available": "unverified", "events": [] },
+  "data_objects_to_pull": ["constituents", "gifts/donations", "campaigns, funds, appeals", "pledges", "actions/interactions", "addresses/emails/phones"],
+  "incremental_sync": "UNVERIFIED. SKY endpoints commonly accept last_modified filters (e.g. constituents list) - confirm per endpoint.",
+  "unified_api_coverage": { "merge_dev": "unverified", "codat": "no", "apideck": "no for RE NXT (Apideck lists a Blackbaud CRM-category connector, /apis/crm/blackbaud, product not confirmed)", "nango": "yes (Blackbaud and Blackbaud Basic Auth in nango nav; RE NXT scope unconfirmed)", "airbyte_source": "no" },
+  "recommended_path": "direct",
+  "build_effort_days": 7,
+  "blockers": [
+    "Each customer needs both our app authorization and a subscription key arrangement; multi-tenant app approval terms UNVERIFIED",
+    "Primary docs pages returned empty to the fetcher"
+  ],
+  "sources": [
+    "https://developer.blackbaud.com/skyapi/ - lists subscription key, OAuth2 authorization code, app registration, partner/developer terms, rate limits",
+    "https://support.ipaas.com/en/articles/15122555-blackbaud-raiser-s-edge-nxt-connections-and-settings (secondary) - Bb-Api-Subscription-Key header, client_id/secret, SKY Developer Portal My applications",
+    "https://help.flowgear.net/v2/nodes/blackbaud-raisers-edge-nxt (secondary) - access token good for 60 minutes",
+    "https://developers.apideck.com/connectors and nango.dev docs nav"
+  ]
+}

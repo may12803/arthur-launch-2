@@ -1,0 +1,29 @@
+{
+  "system": "Shopify",
+  "vendor": "Shopify Inc.",
+  "category": "commerce",
+  "api": { "type": "GraphQL", "base_url": "https://{shop}.myshopify.com/admin/api/{version}/graphql.json", "openapi_spec_url": "", "docs_url": "https://shopify.dev/docs/apps/build/authentication-authorization" },
+  "auth": { "method": "oauth2_authcode", "scopes_needed_read": ["read_orders", "read_customers", "read_products", "read_inventory", "read_all_orders (needed beyond 60 days)"], "token_lifetime": "Offline tokens persist across sessions; online tokens last as long as the staff session", "refresh": "Offline access token reused; no refresh needed for classic offline tokens (expiring offline tokens UNVERIFIED)" },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": true,
+    "partner_program_name": "Shopify Partner Program (free Partner account needed to create public apps)",
+    "app_review_or_marketplace_listing": "Public apps must pass protected-customer-data review: Level 1 requires review; Level 2 (name, address, phone, email) requires review plus data protection reviews. Custom apps bypass it.",
+    "customer_admin_must_do": "Option A (custom per-store app): store admin creates a custom app in Settings > Apps > Develop apps, selects read scopes, installs, and gives us the Admin API token. Option B (public/unlisted distribution): merchant clicks install link and approves scopes.",
+    "cost_to_us": "$0 for Partner account; app submission free (UNVERIFIED for fees)",
+    "time_to_approval": "UNVERIFIED"
+  },
+  "sandbox": { "available": true, "how_to_get": "Partner dashboard > Stores > create development store (free, self-serve)" },
+  "rate_limits": "UNVERIFIED (not fetched; Shopify GraphQL uses calculated query cost buckets)",
+  "webhooks": { "available": true, "events": ["orders/create", "orders/updated", "customers/create", "customers/update", "products/update", "app/uninstalled"] },
+  "data_objects_to_pull": ["orders", "customers", "products/variants", "inventory", "refunds/transactions", "discounts", "shop"],
+  "incremental_sync": "GraphQL query filter updated_at:>=ISO with cursor pagination; Bulk Operations API for backfill; webhooks for deltas",
+  "unified_api_coverage": { "merge_dev": "no (merge.dev/integrations/shopify 404)", "codat": "unverified", "apideck": "unverified (name appears on connectors page, not confirmed as connector)", "nango": "yes (200)", "airbyte_source": "yes (https://docs.airbyte.com/integrations/sources/shopify 200)" },
+  "recommended_path": "direct",
+  "build_effort_days": 5,
+  "blockers": ["Public app route needs protected customer data approval (Level 2 for customer PII) before arbitrary merchants can install.", "Interim path: merchant-created custom app token avoids review but needs manual admin steps per store."],
+  "sources": [
+    "https://shopify.dev/docs/apps/build/authentication-authorization - custom apps use client credentials grant, no merchant approval; public apps cannot",
+    "https://shopify.dev/docs/apps/launch/protected-customer-data - table: Public Level 1 'Requires review', Level 2 'Requires review + data protection reviews'; Custom 'Always available'"
+  ]
+}

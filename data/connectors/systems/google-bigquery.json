@@ -1,0 +1,62 @@
+{
+  "system": "Google BigQuery",
+  "vendor": "Google",
+  "category": "warehouse",
+  "api": {
+    "type": "REST",
+    "base_url": "https://bigquery.googleapis.com/bigquery/v2",
+    "openapi_spec_url": "https://bigquery.googleapis.com/$discovery/rest?version=v2",
+    "docs_url": "https://cloud.google.com/bigquery/docs"
+  },
+  "auth": {
+    "method": "service_account",
+    "scopes_needed_read": [
+      "https://www.googleapis.com/auth/bigquery.readonly (UNVERIFIED not fetched)"
+    ],
+    "token_lifetime": "access token ~1 hour (UNVERIFIED)",
+    "refresh": "Our service account impersonated or keyed in customer project; short-lived tokens preferred over keys"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "none for service accounts (OAuth verification only if using user consent)",
+    "customer_admin_must_do": "Grant our service account dataset-level viewer plus a job-running role in a project that bills queries. Org policy may block external principals (domain-restricted sharing); admin must allow our domain/principal.",
+    "cost_to_us": "Query cost: runs in OUR project (we pay) or customer project (customer pays) depending on where jobUser is granted",
+    "time_to_approval": "none"
+  },
+  "customer_grant_statements": [
+    "Dataset read (Google docs SQL form): GRANT `roles/bigquery.dataViewer` ON SCHEMA `<customer_project>`.<dataset> TO \"serviceAccount:loveleeday-reader@<LOVELEEDAY_PROJECT>.iam.gserviceaccount.com\";",
+    "Google docs: roles/bigquery.dataViewer at dataset level lets principals 'Get metadata and permissions for the dataset' and 'Read (query), replicate, and export table data.'",
+    "Run queries: gcloud projects add-iam-policy-binding <PROJECT_THAT_BILLS> --member=serviceAccount:loveleeday-reader@<LOVELEEDAY_PROJECT>.iam.gserviceaccount.com --role=roles/bigquery.jobUser   (jobUser role named in Google doc; gcloud form is standard, not fetched verbatim)",
+    "Alternative: Analytics Hub listing shared to our project (UNVERIFIED, not fetched)."
+  ],
+  "sandbox": {
+    "available": true,
+    "how_to_get": "BigQuery sandbox (no billing) in any Google Cloud project (UNVERIFIED not fetched)"
+  },
+  "rate_limits": "Default 100 concurrent interactive queries per project (UNVERIFIED)",
+  "webhooks": {
+    "available": false,
+    "events": []
+  },
+  "data_objects_to_pull": [
+    "customer-chosen datasets/tables/views"
+  ],
+  "incremental_sync": "Timestamp cursor on partitioned column; table snapshots/time travel; change history via CHANGES function (UNVERIFIED)",
+  "unified_api_coverage": {
+    "merge_dev": "unverified",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "yes, BigQuery source (UNVERIFIED not fetched)"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "Customer org policy may restrict granting external service accounts"
+  ],
+  "sources": [
+    "https://docs.cloud.google.com/bigquery/docs/control-access-to-resources-iam \u2014 GRANT `roles/bigquery.dataViewer` ON SCHEMA `myProject`.myDataset TO \"user:user@example.com\""
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "system": "Procore",
+  "vendor": "Procore Technologies",
+  "category": "construction",
+  "api": { "type": "REST", "base_url": "https://api.procore.com (sandbox: https://sandbox.procore.com) - UNVERIFIED this turn", "openapi_spec_url": "UNVERIFIED", "docs_url": "https://developers.procore.com/" },
+  "auth": { "method": "oauth2_authcode", "scopes_needed_read": ["Procore uses permission-based access via the authorizing user or a Developer Managed Service Account; no OAuth scope strings - UNVERIFIED"], "token_lifetime": "Access token 2 hours; authorization code 10 minutes (secondary source)", "refresh": "Refresh token flow. Client credentials grant for app-level access via a Developer Managed Service Account (DMSA) - UNVERIFIED this turn." },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": true,
+    "partner_program_name": "Procore App Marketplace partner program (needed for Marketplace distribution; secondary source says partner-program approval)",
+    "app_review_or_marketplace_listing": "Sandbox/development apps are self-serve; distribution to customers through the Procore App Marketplace requires approval. Whether a private (unlisted) app can be installed by a customer company admin without listing: UNVERIFIED.",
+    "customer_admin_must_do": "Company admin installs the app (custom or Marketplace) in their Procore company and, for DMSA, creates the service account and grants project permissions. Exact steps UNVERIFIED.",
+    "cost_to_us": "UNVERIFIED",
+    "time_to_approval": "UNVERIFIED for Marketplace"
+  },
+  "sandbox": { "available": true, "how_to_get": "Developer portal sandbox (sign-up on developers.procore.com); details UNVERIFIED." },
+  "rate_limits": "Secondary source: default 3,600 calls per hour; raising it goes through partner business development. Procore rate-limit page not readable by fetcher.",
+  "webhooks": { "available": true, "events": ["UNVERIFIED: Procore Webhooks API for resource create/update/delete"] },
+  "data_objects_to_pull": ["projects", "commitments / subcontracts", "change orders", "budget line items", "direct costs", "invoices / pay applications", "vendors", "RFIs and submittals"],
+  "incremental_sync": "UNVERIFIED (webhooks plus updated_at filters on list endpoints).",
+  "unified_api_coverage": { "merge_dev": "unverified", "codat": "no", "apideck": "no", "nango": "yes (docs.nango.dev/api-integrations/procore returns 200)", "airbyte_source": "no" },
+  "recommended_path": "unified_api:nango",
+  "build_effort_days": 6,
+  "blockers": [
+    "Marketplace listing needs partner-program approval (secondary source); private install route not verified",
+    "Rate limit ceiling needs partner BD to raise"
+  ],
+  "sources": [
+    "https://docs.nango.dev/api-integrations/procore - 200",
+    "https://supergood.ai/api-report-card/procore-technologies (secondary) - marketplace apps need partner-program approval, 3,600 calls per hour default",
+    "https://github.com/procore/Procore-Sample-Python (secondary via search) - access token 2 hours, code 10 minutes",
+    "developers.procore.com documentation pages rendered only header/footer to the fetcher"
+  ]
+}

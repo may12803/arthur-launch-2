@@ -1,0 +1,18 @@
+{
+  "system": "QuickBooks Online",
+  "vendor": "Intuit",
+  "category": "accounting",
+  "api": {"type": "REST", "base_url": "https://quickbooks.api.intuit.com/v3/company/{realmId} (host from Nango providers.yaml; /v3/company path UNVERIFIED on fetched page)", "openapi_spec_url": "UNVERIFIED", "docs_url": "https://developer.intuit.com/app/developer/qbo/docs/develop"},
+  "auth": {"method": "oauth2_authcode", "scopes_needed_read": ["com.intuit.quickbooks.accounting"], "token_lifetime": "access token 60 minutes", "refresh": "Refresh token valid up to 100 days, but value rotates every 24-26 hours; always store newest"},
+  "access_requirements": {"self_serve_dev_account": true, "partner_program_required": false, "partner_program_name": "Intuit Developer program (free account); production keys require completing app assessment questionnaire", "app_review_or_marketplace_listing": "Production credentials need app details/privacy/EULA and security questionnaire; Intuit App Store listing optional (UNVERIFIED fetched page)", "customer_admin_must_do": "Company admin clicks Connect to QuickBooks and approves the consent screen selecting the company; no other setup.", "cost_to_us": "Free to build; Intuit announced tiered API/CorePlus pricing - UNVERIFIED", "time_to_approval": "UNVERIFIED"},
+  "sandbox": {"available": true, "how_to_get": "Free sandbox companies from Intuit developer account (quickbooks-sandbox provider host)"},
+  "rate_limits": "500 requests/minute per realm ID, 10 concurrent requests per second per realm and app, 40 batch requests/minute per realm (help.developer.intuit.com API call limits and throttling, via search snippet)",
+  "webhooks": {"available": true, "events": ["Customer", "Invoice", "Payment", "Bill", "Item", "Account (entity create/update/delete notifications; full list UNVERIFIED)"]},
+  "data_objects_to_pull": ["Customer", "Vendor", "Invoice", "Bill", "Payment", "Item", "Account", "JournalEntry", "Deposit", "reports (GeneralLedger, ProfitAndLoss, TrialBalance)"],
+  "incremental_sync": "Change Data Capture endpoint (/cdc?entities=...&changedSince=) or query WHERE MetaData.LastUpdatedTime > cursor; CDC page itself UNVERIFIED (fetch failed)",
+  "unified_api_coverage": {"merge_dev": "yes (QuickBooks Online appears in merge.dev/integrations HTML)", "codat": "yes", "apideck": "yes by name", "nango": "yes (quickbooks, quickbooks-sandbox)", "airbyte_source": "yes, source-quickbooks (certified)"},
+  "recommended_path": "direct",
+  "build_effort_days": 3,
+  "blockers": ["Refresh-token rotation must be persisted atomically or connection dies", "Production app assessment before connecting real customers", "Possible Intuit usage-based pricing UNVERIFIED"],
+  "sources": ["https://help.developer.intuit.com/s/article/API-call-limits-and-throttling - 500 req/min per realm, 10 concurrent (via search)", "https://help.developer.intuit.com/s/article/Validity-of-Refresh-Token - refresh token up to 100 days (via search)", "https://help.developer.intuit.com/s/article/Handling-OAuth-token-expiration - access token 60 min (via search)", "https://github.com/NangoHQ/nango providers.yaml quickbooks", "https://connectors.airbyte.com/files/registries/v0/oss_registry.json source-quickbooks certified"]
+}

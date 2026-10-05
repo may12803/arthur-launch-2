@@ -1,0 +1,33 @@
+{
+  "system": "Salesforce",
+  "vendor": "Salesforce, Inc.",
+  "category": "crm",
+  "api": { "type": "REST", "base_url": "https://{instance}.my.salesforce.com/services/data/v{ver}/ (login.salesforce.com for OAuth)", "openapi_spec_url": "", "docs_url": "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_oauth_and_connected_apps.htm" },
+  "auth": { "method": "oauth2_authcode", "scopes_needed_read": ["api", "refresh_token", "offline_access"], "token_lifetime": "Access token session-timeout based (UNVERIFIED exact; org policy)", "refresh": "refresh_token grant until revoked or policy expires it" },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "Salesforce Partner Program (only for AppExchange listing)",
+    "app_review_or_marketplace_listing": "AppExchange security review only for listed apps (UNVERIFIED, page not fetched). Per search: from Spring '26 creation of new Connected Apps is disabled by default in all orgs; use External Client Apps (ECA, PKCE OAuth); temporary exception via Support, to be removed.",
+    "customer_admin_must_do": "Org admin installs our External Client App / authorizes it (or approves the OAuth app), assigns permission set, and the user logs in and allows. API access requires Enterprise, Unlimited, Performance, Developer edition, or Professional with API add-on.",
+    "cost_to_us": "$0 (free Developer Edition org)",
+    "time_to_approval": "Immediate for private use; AppExchange security review UNVERIFIED"
+  },
+  "sandbox": { "available": true, "how_to_get": "Free Developer Edition org at developer.salesforce.com (self-serve)" },
+  "rate_limits": "Enterprise/Professional(with API): 100,000 + 1,000 per user license per 24 hours; Unlimited/Performance: 100,000 + 5,000 per license, plus add-ons (via search snippet of Salesforce limits cheat sheet)",
+  "webhooks": { "available": true, "events": ["Change Data Capture events", "Platform Events", "Outbound Messages"] },
+  "data_objects_to_pull": ["Account", "Contact", "Lead", "Opportunity", "Case", "Task/Event", "User", "Product2/PricebookEntry", "Campaign"],
+  "incremental_sync": "SOQL WHERE SystemModstamp > last sync; getUpdated/getDeleted; Bulk API 2.0 for backfill; Change Data Capture for streams",
+  "unified_api_coverage": { "merge_dev": "yes (https://www.merge.dev/integrations/salesforce 200)", "codat": "unverified", "apideck": "unverified (appears on connectors page text)", "nango": "yes (200)", "airbyte_source": "yes (https://docs.airbyte.com/integrations/sources/salesforce 200)" },
+  "recommended_path": "direct",
+  "build_effort_days": 5,
+  "blockers": [
+    "Customer edition must include API access; Professional needs an API add-on purchase (customer side).",
+    "New Connected Apps disabled by default since Spring '26; must build an External Client App.",
+    "Daily API call allocation shared with customer's other integrations; backfill via Bulk API."
+  ],
+  "sources": [
+    "WebSearch result: 'Starting with Salesforce's Spring '26 release, creation of new Connected Apps is disabled by default in all orgs' (striim.com and rudderstack.com pages summarizing); developer.salesforce.com page itself returned 403 to WebFetch",
+    "https://developer.salesforce.com/docs/platform/salesforce-app-limits-cheatsheet/guide/salesforce-app-limits-platform-api.html - search snippet: 100,000 plus licenses times calls per license"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "system": "Acumatica",
+  "vendor": "Acumatica",
+  "category": "erp",
+  "api": {"type": "REST", "base_url": "https://{instance}/entity/{endpointName}/{version}/ e.g. /entity/Default/24.200.001 (path convention from general knowledge, UNVERIFIED on fetched page); token at https://{instance}/identity/connect/token", "openapi_spec_url": "https://{instance}/entity/{endpoint}/{version}/swagger.json (per-instance, UNVERIFIED)", "docs_url": "https://help.acumatica.com/Wiki/ShowWiki.aspx?wikiname=HelpRoot_Dev_Integration&PageID=3ab47faf-6e35-415d-88ba-f8b5a8f8c67e"},
+  "auth": {"method": "oauth2_authcode", "scopes_needed_read": ["api", "offline_access (api scope grants contract-based REST and SOAP per Acumatica doc)"], "token_lifetime": "UNVERIFIED", "refresh": "Authorization code, implicit, and resource owner password flows supported per Acumatica docs; offline_access refresh token; Nango config also uses password grant under OAUTH2_CC"},
+  "access_requirements": {"self_serve_dev_account": false, "partner_program_required": false, "partner_program_name": "Acumatica ISV / Technology partner program for certified listing and dev licenses (UNVERIFIED)", "app_review_or_marketplace_listing": "ISV certification only for Acumatica Marketplace; not needed for private connection", "customer_admin_must_do": "Open Connected Applications (SM303010), add an OAuth 2.0 application (flow, redirect URI, scopes), generate shared secret; client ID format <GUID>@<CompanyID>; create/assign an API user with a role; confirm license allows web services API users.", "cost_to_us": "None found", "time_to_approval": "Same day after customer admin step"},
+  "sandbox": {"available": true, "how_to_get": "Acumatica trial/dev instance via partner portal or customer test tenant (public self-serve UNVERIFIED)"},
+  "rate_limits": "License-based: Web API requests per minute Essentials 50, Select 100, Prime 150, Enterprise 300; also max concurrent requests and max API users; requests delayed at 50% of limit (help.acumatica.com License Restrictions for API Users, via search snippet)",
+  "webhooks": {"available": true, "events": ["Push Notifications (webhook on entity changes) and Business Events; list UNVERIFIED"]},
+  "data_objects_to_pull": ["Customer", "Vendor", "Invoice", "Bill", "StockItem", "SalesOrder", "JournalTransaction", "Account", "Payment"],
+  "incremental_sync": "OData $filter=LastModifiedDateTime gt datetimeoffset'...' on contract-based entities; Generic Inquiry via OData as alternative",
+  "unified_api_coverage": {"merge_dev": "unverified (not in merge.dev/integrations HTML)", "codat": "no (not listed in fetched summary)", "apideck": "yes by name (Acumatica present in connectors page text)", "nango": "yes (acumatica)", "airbyte_source": "no"},
+  "recommended_path": "direct",
+  "build_effort_days": 5,
+  "blockers": ["Low per-minute API limits on small license tiers (50/min) make backfill slow", "Customer license caps number of API users and concurrent requests"],
+  "sources": ["https://help.acumatica.com/Wiki/ShowWiki.aspx?wikiname=HelpRoot_Dev_Integration&PageID=3ab47faf-6e35-415d-88ba-f8b5a8f8c67e - \"Connected Applications (SM303010) form to register an OAuth 2.0 or OpenID Connect client application\" (via search)", "https://help.acumatica.com/(W(1))/Wiki/ShowWiki.aspx?pageid=7a796856-3dec-4a4f-abf8-171324c9642b - License Restrictions for API Users: \"Essentials (50), Select (100), Prime (150), and Enterprise (300)\" (via search)", "https://github.com/NangoHQ/nango providers.yaml acumatica token_url /identity/connect/token"]
+}

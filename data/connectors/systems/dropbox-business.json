@@ -1,0 +1,65 @@
+{
+  "system": "Dropbox Business",
+  "vendor": "Dropbox",
+  "category": "files",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.dropboxapi.com/2",
+    "openapi_spec_url": "UNVERIFIED",
+    "docs_url": "https://www.dropbox.com/developers/documentation/http/teams"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "files.metadata.read",
+      "files.content.read",
+      "team_data.member",
+      "members.read (UNVERIFIED exact names)"
+    ],
+    "token_lifetime": "short-lived; exact seconds returned at issue (docs: 'Dropbox access tokens are short lived')",
+    "refresh": "Include token_access_type=offline in authorization URL to receive a refresh token; exchange at /oauth2/token"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "App starts in Development status limited to 50 users (UNVERIFIED); production approval via Dropbox review (UNVERIFIED not fetched)",
+    "customer_admin_must_do": "Team admin authorizes the app; per Dropbox, scopes requested via the Business API yield a token 'associated with the team (rather than the administrator who authorized it)'. Use Dropbox-API-Select-User header to act as members.",
+    "cost_to_us": "UNVERIFIED",
+    "time_to_approval": "UNVERIFIED"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Free Dropbox account (Business-API needs a team; Dropbox Business trial UNVERIFIED)"
+  },
+  "rate_limits": "UNVERIFIED",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "file change notification (webhook with cursor poll)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "team members",
+    "files and folders",
+    "file content",
+    "shared links"
+  ],
+  "incremental_sync": "files/list_folder returns a cursor; files/list_folder/continue and longpoll for changes (UNVERIFIED not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "yes (Dropbox: File storage on merge.dev/integrations)",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "unverified"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 6,
+  "blockers": [
+    "Production-status app review (details UNVERIFIED)"
+  ],
+  "sources": [
+    "https://docs.dropboxapi.com/dropbox-api/docs/oauth \u2014 'Dropbox access tokens are short lived'; token_access_type=offline; team-scoped token association",
+    "https://www.merge.dev/integrations \u2014 Dropbox (File storage)"
+  ]
+}

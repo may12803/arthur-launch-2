@@ -1,0 +1,34 @@
+{
+  "system": "Homebase",
+  "vendor": "Homebase (joinhomebase.com)",
+  "category": "hr_payroll",
+  "api": { "type": "REST", "base_url": "https://app.joinhomebase.com/api/public", "openapi_spec_url": "https://app.joinhomebase.com/api/public/swagger_doc.json", "docs_url": "https://app.joinhomebase.com/api-docs" },
+  "auth": { "method": "api_key", "scopes_needed_read": [], "token_lifetime": "UNVERIFIED", "refresh": "Swagger UI config states api_auth 'bearer' with Authorization header; no OAuth flow found" },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": false,
+    "partner_program_name": "UNVERIFIED (no partner program page found)",
+    "app_review_or_marketplace_listing": "UNVERIFIED",
+    "customer_admin_must_do": "Customer admin must obtain an API token for their Homebase account (a third-party summary says API access is Enterprise-plan only with keys issued after contacting support; not confirmed in a Homebase primary source).",
+    "cost_to_us": "UNVERIFIED",
+    "time_to_approval": "UNVERIFIED"
+  },
+  "sandbox": { "available": false, "how_to_get": "UNVERIFIED; none found" },
+  "rate_limits": "UNVERIFIED",
+  "webhooks": { "available": false, "events": [] },
+  "data_objects_to_pull": ["company", "locations", "employees", "shifts (and deleted)", "timecards (and deleted)", "labor summary (by employee, by role)", "location plan", "timeclock status"],
+  "incremental_sync": "Swagger paths include shifts/deleted and timecards/deleted; date-range query params on shifts/timecards (parameter names not extracted); no webhooks so poll",
+  "unified_api_coverage": { "merge_dev": "no (merge.dev/integrations/homebase 404)", "codat": "unverified", "apideck": "unverified", "nango": "no (404)", "airbyte_source": "no (404)" },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "Token issuance path and plan gating unverified in a primary source; a third-party report says Enterprise plan and support request only.",
+    "No OAuth or partner flow found, so customers must paste a token.",
+    "existing in repo: ~/arthur/scripts/homebase-cloud.mjs (headless cloud-browser login to app.joinhomebase.com with saved session state; UI scraping, not the public API), homebase-capture.py, homebase-doc-pull.sh, homebase-settings-dump.sh, skill homebase-employee-ops (env names HOMEBASE_EMAIL, HOMEBASE_PASSWORD). The repo does not use the public API."
+  ],
+  "sources": [
+    "https://app.joinhomebase.com/api-docs - Swagger UI config: url 'api/public/swagger_doc.json', api_auth 'bearer', header Authorization",
+    "https://app.joinhomebase.com/api/public/swagger_doc.json - basePath /api/public; paths /company, /locations, /locations/{uuid}/employees, /shifts, /timecards, /labor, /timeclock/status",
+    "https://supergood.ai/api-report-card/homebase - third-party (not primary): Enterprise-plan gating, keys via support"
+  ]
+}

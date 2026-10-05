@@ -1,0 +1,35 @@
+{
+  "system": "AppFolio",
+  "vendor": "AppFolio, Inc.",
+  "category": "property",
+  "api": { "type": "REST", "base_url": "UNVERIFIED (developer.appfolio.com is a JS shell; fetched content was only 'Developer Space')", "openapi_spec_url": "UNVERIFIED", "docs_url": "https://developer.appfolio.com/" },
+  "auth": { "method": "oauth2_client_credentials", "scopes_needed_read": ["UNVERIFIED"], "token_lifetime": "UNVERIFIED", "refresh": "UNVERIFIED. Auth method is a best guess; not confirmed in a primary page (docs/getting-started 404)." },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": true,
+    "partner_program_name": "AppFolio Stack Partner program (appfolio.com/stack/partners)",
+    "app_review_or_marketplace_listing": "Three phases per AppFolio: application and initial review; security compliance questionnaire, final approval and contract signing; development and testing, then marketplace listing.",
+    "customer_admin_must_do": "UNVERIFIED. Partner integrations are enabled for a customer account by AppFolio/the customer through the Stack marketplace; exact steps not on pages read.",
+    "cost_to_us": "UNVERIFIED - AppFolio's page does not state fees",
+    "time_to_approval": "UNVERIFIED"
+  },
+  "sandbox": { "available": true, "how_to_get": "AppFolio page: partners get 'all-inclusive access to our developer tools and sandbox environment' after approval." },
+  "rate_limits": "UNVERIFIED",
+  "webhooks": { "available": false, "events": [] },
+  "data_objects_to_pull": ["properties", "units", "tenants", "leases", "charges/receivables", "vendors and bills", "work orders", "GL/financial reports"],
+  "incremental_sync": "UNVERIFIED",
+  "unified_api_coverage": { "merge_dev": "unverified", "codat": "no", "apideck": "no", "nango": "no", "airbyte_source": "no" },
+  "recommended_path": "sftp_csv",
+  "build_effort_days": 8,
+  "blockers": [
+    "Stack Partner application, security questionnaire and contract required before any API or sandbox access",
+    "API docs not publicly readable by automated fetch; auth/limits UNVERIFIED",
+    "Interim path: customer-scheduled AppFolio report exports (not verified to exist as scheduled-delivery; confirm with customer)"
+  ],
+  "sources": [
+    "https://www.appfolio.com/stack/partners - three-stage process; 'all-inclusive access to our developer tools and sandbox environment'",
+    "https://developer.appfolio.com/ - returned only a shell, no usable content",
+    "https://developer.appfolio.com/docs/getting-started - 404",
+    "nango/airbyte/apideck/codat listings checked, no AppFolio"
+  ]
+}

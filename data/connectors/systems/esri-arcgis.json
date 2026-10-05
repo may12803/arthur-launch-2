@@ -1,0 +1,34 @@
+{
+  "system": "Esri ArcGIS",
+  "vendor": "Esri",
+  "category": "public_sector",
+  "api": { "type": "REST", "base_url": "https://www.arcgis.com/sharing/rest (ArcGIS Online); https://<host>/portal/sharing/rest and https://<host>/server/rest/services (Enterprise); feature layer query at <service>/FeatureServer/<n>/query", "openapi_spec_url": "none (REST reference)", "docs_url": "https://developers.arcgis.com/rest/" },
+  "auth": { "method": "oauth2_client_credentials", "scopes_needed_read": ["Read access to the customer's feature services / items shared with the app or its service account"], "token_lifetime": "API key: long-lived, up to one year (Esri docs via search); OAuth user tokens shorter - exact values UNVERIFIED", "refresh": "Options per Esri: OAuth 2.0 user authentication, OAuth 2.0 app credentials (client_id/client_secret), or API key. For a customer's private content, the customer admin creates an API key credential or shares a service account / registers an OAuth app in their org." },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None needed for customer-key access; optional Esri partner network",
+    "customer_admin_must_do": "In ArcGIS Online/Enterprise: register an app (OAuth client id/secret) or create an API key with item access, and share the target feature layers with it (or provide a read-only service account). Customer-hosted Enterprise servers must be reachable from us.",
+    "cost_to_us": "$0 for a free ArcGIS Location Platform / developer account; customer ArcGIS credit consumption for hosted layers is the customer's",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": { "available": true, "how_to_get": "Free ArcGIS Location Platform account (Esri lists Location Platform, ArcGIS Online and Enterprise as account types for development)." },
+  "rate_limits": "UNVERIFIED (varies by org plan and service; ArcGIS Online services default maxRecordCount per query page)",
+  "webhooks": { "available": true, "events": ["Feature service webhooks exist for hosted layers (create/update/delete) - Esri docs not fetched; UNVERIFIED"] },
+  "data_objects_to_pull": ["feature layers (assets, parcels, permits, work orders)", "tables", "item metadata"],
+  "incremental_sync": "Hosted feature layers: Esri notes editingInfo.dataLastEditDate works only for hosted feature layers, not proxied server services. Query with where on editor-tracking fields (e.g. last_edited_date) or use Change Tracking / extractChanges on layers with it enabled (extractChanges not confirmed this turn).",
+  "unified_api_coverage": { "merge_dev": "unverified", "codat": "no", "apideck": "no", "nango": "yes (nav list contains arcgis; exact page not fetched)", "airbyte_source": "no" },
+  "recommended_path": "direct",
+  "build_effort_days": 5,
+  "blockers": [
+    "Per-customer registration; Enterprise on-prem needs network reachability",
+    "Layers without editor tracking cannot be pulled incrementally"
+  ],
+  "sources": [
+    "https://developers.arcgis.com/documentation/mapping-apis-and-services/security/oauth-2/ - user authentication vs app credentials authentication (via search results)",
+    "https://developers.arcgis.com/documentation/security-and-authentication/api-key-authentication/how-to-use-an-api-key/ - API key valid up to one year (via search)",
+    "https://developers.arcgis.com/rest/ - index; query page fetch 404 under one URL, parameters list seen in retrieved copy of the query page (returnIdsOnly, orderByFields, resultOffset)",
+    "community.esri.com discussion (secondary) - dataLastEditDate only on hosted feature layers"
+  ]
+}

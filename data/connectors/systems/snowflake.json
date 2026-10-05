@@ -1,0 +1,70 @@
+{
+  "system": "Snowflake",
+  "vendor": "Snowflake",
+  "category": "warehouse",
+  "api": {
+    "type": "SDK",
+    "base_url": "https://<account_identifier>.snowflakecomputing.com (SQL API /api/v2/statements; drivers)",
+    "openapi_spec_url": "UNVERIFIED",
+    "docs_url": "https://docs.snowflake.com/"
+  },
+  "auth": {
+    "method": "key_pair",
+    "scopes_needed_read": [
+      "ROLE with USAGE on warehouse, database, schema and SELECT on tables"
+    ],
+    "token_lifetime": "JWT lifetime UNVERIFIED (key-pair page does not state it)",
+    "refresh": "Sign a new JWT per session with private key; rotate via RSA_PUBLIC_KEY_2"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "none",
+    "customer_admin_must_do": "Option A (preferred for zero-credential): create a secure share and add our account. Option B: create a SERVICE user with our public key and a read-only role (statements below). Admin needs USERADMIN/SECURITYADMIN (CREATE USER requires USERADMIN or higher) and ACCOUNTADMIN for shares.",
+    "cost_to_us": "Our own Snowflake account only if using shares (consumer side compute); key-pair: customer pays warehouse credits for our queries",
+    "time_to_approval": "none"
+  },
+  "customer_grant_statements": [
+    "OPTION A SHARE (Snowflake docs): CREATE SHARE loveleeday_share;",
+    "GRANT USAGE ON DATABASE <db> TO SHARE loveleeday_share;",
+    "GRANT USAGE ON SCHEMA <db>.<schema> TO SHARE loveleeday_share;",
+    "GRANT SELECT ON TABLE <db>.<schema>.<table> TO SHARE loveleeday_share;",
+    "ALTER SHARE loveleeday_share ADD ACCOUNTS=<LOVELEEDAY_ACCOUNT_LOCATOR>;   (docs pattern: ALTER SHARE sales_s ADD ACCOUNTS=xy12345, yz23456;)",
+    "OPTION B KEY PAIR: CREATE ROLE loveleeday_reader; GRANT USAGE ON WAREHOUSE <wh> TO ROLE loveleeday_reader; GRANT USAGE ON DATABASE <db> TO ROLE loveleeday_reader; GRANT USAGE ON SCHEMA <db>.<schema> TO ROLE loveleeday_reader; GRANT SELECT ON ALL TABLES IN SCHEMA <db>.<schema> TO ROLE loveleeday_reader; GRANT SELECT ON FUTURE TABLES IN SCHEMA <db>.<schema> TO ROLE loveleeday_reader;   (role/grant syntax assembled from standard Snowflake grammar; not fetched verbatim)",
+    "CREATE USER loveleeday_svc TYPE=SERVICE DEFAULT_ROLE=loveleeday_reader RSA_PUBLIC_KEY='<PUBLIC_KEY_NO_DELIMITERS>' NETWORK_POLICY=<policy>;   (docs: TYPE=SERVICE, RSA_PUBLIC_KEY, NETWORK_POLICY params)",
+    "GRANT ROLE loveleeday_reader TO USER loveleeday_svc;",
+    "Existing user variant (docs): ALTER USER example_user SET RSA_PUBLIC_KEY='MIIBIjANBgkqh...';  'Exclude the public key delimiters in the SQL statement.'"
+  ],
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Snowflake 30-day trial (UNVERIFIED, not fetched)"
+  },
+  "rate_limits": "No fixed API limit; bounded by warehouse concurrency (UNVERIFIED)",
+  "webhooks": {
+    "available": false,
+    "events": []
+  },
+  "data_objects_to_pull": [
+    "customer-chosen tables and views"
+  ],
+  "incremental_sync": "Streams (CDC) or a high-water-mark column; shares are live so query with updated_at filter (Streams detail UNVERIFIED, not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "unverified",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "yes, Snowflake source/destination (UNVERIFIED not fetched)"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 5,
+  "blockers": [
+    "Secure share requires cross-region/cloud replication if our account sits elsewhere (UNVERIFIED)",
+    "Key-pair needs customer network policy to allow our egress IPs"
+  ],
+  "sources": [
+    "https://docs.snowflake.com/en/user-guide/data-sharing-gs \u2014 CREATE SHARE; GRANT USAGE ON DATABASE ... TO SHARE; GRANT SELECT ON TABLE ... TO SHARE; ALTER SHARE ... ADD ACCOUNTS",
+    "https://docs.snowflake.com/en/user-guide/key-pair-auth \u2014 ALTER USER ... SET RSA_PUBLIC_KEY; 'Exclude the public key delimiters'",
+    "https://docs.snowflake.com/en/sql-reference/sql/create-user \u2014 TYPE = SERVICE; RSA_PUBLIC_KEY; NETWORK_POLICY; USERADMIN required"
+  ]
+}

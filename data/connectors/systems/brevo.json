@@ -1,0 +1,33 @@
+{
+  "system": "Brevo",
+  "vendor": "Brevo (formerly Sendinblue)",
+  "category": "marketing",
+  "api": { "type": "REST", "base_url": "https://api.brevo.com/v3/", "openapi_spec_url": "UNVERIFIED (not fetched)", "docs_url": "https://developers.brevo.com/docs/how-it-works" },
+  "auth": { "method": "api_key", "scopes_needed_read": [], "token_lifetime": "Long-lived key until revoked", "refresh": "None; OAuth for third-party apps not mentioned in the docs page fetched (UNVERIFIED whether a partner OAuth exists)" },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "UNVERIFIED",
+    "app_review_or_marketplace_listing": "None for API-key use",
+    "customer_admin_must_do": "Customer admin opens SMTP & API > API keys in Brevo, generates a v3 key, and pastes it into LOVELEEDAY (header 'api-key').",
+    "cost_to_us": "$0",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": { "available": false, "how_to_get": "No sandbox found; free tier account" },
+  "rate_limits": "General plans: contacts endpoints 36,000 requests/hour and 10 rps; other endpoints 100 requests/hour; Advanced: contacts 20 rps, other 200/hour; 429 with x-ratelimit headers",
+  "webhooks": { "available": true, "events": ["delivered", "opened", "click", "hardBounce", "softBounce", "unsubscribed", "spam", "contact updates"] },
+  "data_objects_to_pull": ["contacts", "lists", "email campaigns", "campaign statistics", "transactional email events/logs", "templates", "senders"],
+  "incremental_sync": "GET /contacts?modifiedSince=ISO with limit/offset; /smtp/statistics/events with startDate/endDate",
+  "unified_api_coverage": { "merge_dev": "no (merge.dev/integrations/brevo 404)", "codat": "unverified", "apideck": "unverified", "nango": "no (404)", "airbyte_source": "yes (https://docs.airbyte.com/integrations/sources/brevo 200)" },
+  "recommended_path": "direct",
+  "build_effort_days": 2,
+  "blockers": [
+    "No documented multi-tenant OAuth; customers must paste keys (secure storage required).",
+    "'Other endpoints' limit of 100 requests per hour on General plans makes stats backfills slow.",
+    "existing in repo: ~/arthur/scripts/brevo-resend-nonopeners.py and ~/arthur/lib/send-gate.mjs (direct api.brevo.com/v3 with api-key header, env name BREVO_API_KEY, Dabney's own account)"
+  ],
+  "sources": [
+    "https://developers.brevo.com/docs/how-it-works - 'Include your API key in the api-key header for every request'; base https://api.brevo.com/v3/",
+    "https://developers.brevo.com/docs/api-limits - 'Contacts endpoints: 36,000 RPH | 10 RPS'; 'Other endpoints: 100 RPH'"
+  ]
+}

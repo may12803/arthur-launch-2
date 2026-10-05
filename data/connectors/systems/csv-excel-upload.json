@@ -1,0 +1,56 @@
+{
+  "system": "CSV and Excel upload",
+  "vendor": "n/a (in-product)",
+  "category": "ingest",
+  "api": {
+    "type": "none",
+    "base_url": "n/a (browser upload to presigned object-store URL)",
+    "openapi_spec_url": "n/a",
+    "docs_url": "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html"
+  },
+  "auth": {
+    "method": "none",
+    "scopes_needed_read": [],
+    "token_lifetime": "n/a",
+    "refresh": "n/a (user is signed in to portal)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "none",
+    "customer_admin_must_do": "Export report to CSV or XLSX from their system and upload via portal.",
+    "cost_to_us": "Storage only",
+    "time_to_approval": "none"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "local"
+  },
+  "rate_limits": "Excel worksheet max 1,048,576 rows by 16,384 columns (Microsoft Excel specifications), so larger CSVs need streaming; OWASP: set upload size limits",
+  "webhooks": {
+    "available": false,
+    "events": []
+  },
+  "data_objects_to_pull": [
+    "any tabular export mapped by user to a canonical schema"
+  ],
+  "incremental_sync": "None native: re-upload; dedupe by row hash or primary-key upsert after column mapping",
+  "unified_api_coverage": {
+    "merge_dev": "n/a",
+    "codat": "n/a",
+    "apideck": "n/a",
+    "nango": "n/a",
+    "airbyte_source": "n/a"
+  },
+  "recommended_path": "sftp_csv",
+  "build_effort_days": 6,
+  "blockers": [
+    "CSV/formula injection and zip-bomb risks need controls: OWASP says allow-list extensions, rename files to random IDs server-side, check decompressed size, malware scan",
+    "Reject macro-enabled .xlsm"
+  ],
+  "sources": [
+    "https://support.microsoft.com/en-us/office/excel-specifications-and-limits-1672b34d-7043-467e-8e27-269d656771c3 \u2014 '1,048,576 rows by 16,384 columns'",
+    "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html \u2014 'List allowed extensions'; 'Generate random identifiers server-side'; size limits; malware scan"
+  ]
+}

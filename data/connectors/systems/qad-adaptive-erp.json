@@ -1,0 +1,18 @@
+{
+  "system": "QAD Adaptive ERP",
+  "vendor": "QAD",
+  "category": "erp",
+  "api": {"type": "SOAP", "base_url": "UNVERIFIED: per-customer QXtend Inbound endpoint (SOAP/web services) and in-product REST; no public base URL", "openapi_spec_url": "UNVERIFIED (third-party source says Swagger lives at per-instance URLs behind credentials)", "docs_url": "https://www.qad.com/documentation/CRM/CRM_AG_v0671/ag_12_ERPIntegration.15.03.html"},
+  "auth": {"method": "basic", "scopes_needed_read": ["UNVERIFIED"], "token_lifetime": "UNVERIFIED for core ERP; QAD qualified apps (e.g. EQMS) use a JWT from their authentication service", "refresh": "UNVERIFIED. qad.com technical reference for EQMS states each REST request needs a JWT retrieved from the EQMS authentication service; this does not establish how core Adaptive ERP authenticates."},
+  "access_requirements": {"self_serve_dev_account": false, "partner_program_required": false, "partner_program_name": "UNVERIFIED (QAD documentation portal is customer/partner login)", "app_review_or_marketplace_listing": "None found", "customer_admin_must_do": "UNVERIFIED primary. QAD docs show QXtend must be installed and linked to the ERP databases (QXtend 1.10 required for Adaptive ERP 2022.1); customer would need QXtend Inbound/Outbound configured, and a service user. Alternatively the customer produces scheduled report/export files.", "cost_to_us": "UNVERIFIED (QXtend is a licensed QAD add-on per QAD docs references; price not found)", "time_to_approval": "UNVERIFIED"},
+  "sandbox": {"available": false, "how_to_get": "No public sandbox; customer test domain"},
+  "rate_limits": "UNVERIFIED",
+  "webhooks": {"available": true, "events": ["QXtend Outbound / eSync event publishing (event list UNVERIFIED)"]},
+  "data_objects_to_pull": ["customers", "items", "sales orders", "purchase orders", "inventory", "work orders", "price lists", "GL (via reports/exports)"],
+  "incremental_sync": "UNVERIFIED; practical option is QXtend Outbound events or scheduled delta export by modified date",
+  "unified_api_coverage": {"merge_dev": "unverified (not in merge.dev/integrations HTML)", "codat": "no", "apideck": "no (QAD not found in connectors page text)", "nango": "no", "airbyte_source": "no"},
+  "recommended_path": "sftp_csv",
+  "build_effort_days": 8,
+  "blockers": ["No public API docs; QXtend is SOAP-based, REST is per-product or custom services engagement (third-party claim, unverified)", "QXtend licensing and install on customer side", "Customer-side data export (scheduled browse/report to SFTP) is the lowest-friction path"],
+  "sources": ["https://www.qad.com/documentation/CRM/CRM_AG_v0671/ag_12_ERPIntegration.15.03.html - QXtend Configuration", "https://www.qad.com/documents/2370665/2520006/EQMS_Integration_TR_v2020_1.pdf - EQMS REST APIs need JWT; QXtend 1.8.3 / 1.10 requirements (via search snippet)", "https://supergood.ai/docs/qad-api - THIRD-PARTY, not primary: no public portal or sandbox; QXtend mostly SOAP"]
+}

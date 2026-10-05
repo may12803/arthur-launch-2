@@ -1,0 +1,34 @@
+{
+  "system": "Cityworks",
+  "vendor": "Trimble (Cityworks)",
+  "category": "public_sector",
+  "api": { "type": "REST", "base_url": "https://<customer-cityworks-host>/Cityworks/Services (per customer instance; documented at the instance's /apidocs)", "openapi_spec_url": "per instance, /apidocs - UNVERIFIED", "docs_url": "Per-customer /apidocs; no central public portal found" },
+  "auth": { "method": "basic", "scopes_needed_read": ["A Cityworks user/role with read access to the needed work orders, service requests, assets"], "token_lifetime": "UNVERIFIED", "refresh": "Per Safe Software article: call General/Authentication/Authenticate with LoginName and Password, receive a token, pass it as 'bearer {token}' in the Authorization header or as a POST body parameter. Secondary source says v23 changed to a custom token header (UNVERIFIED)." },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None found",
+    "customer_admin_must_do": "Expose the Cityworks web services (often behind VPN/firewall, on-prem or Trimble-hosted) to us and create a dedicated service user. Exact steps UNVERIFIED.",
+    "cost_to_us": "$0 found; requires customer to be a licensed Cityworks customer",
+    "time_to_approval": "Depends on customer IT"
+  },
+  "sandbox": { "available": false, "how_to_get": "None public; use the customer's test instance." },
+  "rate_limits": "UNVERIFIED",
+  "webhooks": { "available": true, "events": ["UNVERIFIED: Safe Software documents Cityworks webhooks for work order / service request events"] },
+  "data_objects_to_pull": ["work orders", "service requests", "inspections", "assets", "labor and material costs", "permits/cases (PLL)"],
+  "incremental_sync": "UNVERIFIED (search methods generally support date filters; confirm in customer's /apidocs)",
+  "unified_api_coverage": { "merge_dev": "unverified", "codat": "no", "apideck": "no", "nango": "no", "airbyte_source": "no" },
+  "recommended_path": "direct",
+  "build_effort_days": 8,
+  "blockers": [
+    "Instance-by-instance connectivity (customer firewall/VPN, on-prem hosting)",
+    "API docs only on the customer's own server, so auth and endpoints UNVERIFIED from vendor source"
+  ],
+  "sources": [
+    "https://support.safe.com/hc/en-us/articles/25407422609677-Connecting-to-Cityworks-with-a-Web-Connection (secondary) - Authenticate with LoginName and Password returns a token; bearer header",
+    "https://support.safe.com/hc/en-us/articles/25407532065037-Real-time-Automations-with-Cityworks-Webhooks (secondary)",
+    "https://supergood.ai/api-report-card/cityworks (secondary) - documented per instance at /apidocs",
+    "No Trimble primary page read"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "system": "Google Workspace (Drive, Gmail, Calendar, Sheets)",
+  "vendor": "Google",
+  "category": "productivity",
+  "api": {
+    "type": "REST",
+    "base_url": "https://www.googleapis.com (gmail.googleapis.com, sheets.googleapis.com)",
+    "openapi_spec_url": "https://www.googleapis.com/discovery/v1/apis (Discovery docs)",
+    "docs_url": "https://developers.google.com/workspace"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/drive.readonly",
+      "https://www.googleapis.com/auth/calendar.readonly",
+      "https://www.googleapis.com/auth/spreadsheets.readonly",
+      "narrower alternative: drive.file or drive.metadata.readonly (classification UNVERIFIED on page fetched)"
+    ],
+    "token_lifetime": "access token ~1 hour (standard; not re-fetched this run)",
+    "refresh": "Offline refresh token via access_type=offline. Alternative for a customer's own domain: service account with domain-wide delegation (not re-verified this run)."
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "Google OAuth app verification is required for sensitive or restricted scopes. Per Google: 'Apps that request access to scopes categorized as sensitive or restricted must complete Google's OAuth app verification.' Restricted-scope apps that can reach data through a third-party server must pass a CASA security assessment: 'Every app that requests access to Google users' restricted data and has the ability to access data from or through a third-party server must go through a security assessment.' Re-verify and reassess at least every 12 months after Letter of Assessment. Gmail read scopes and broad Drive read scopes are generally restricted (Google's Verification FAQ holds the authoritative list; not enumerated on pages fetched, so UNVERIFIED here).",
+    "customer_admin_must_do": "Workspace admin allowlists our OAuth client ID in Admin console > Security > API controls > App access control (UNVERIFIED page not fetched), or for domain-wide delegation authorizes our service account client ID and scopes. Until verified, unverified-app consent screen caps at 100 users (UNVERIFIED).",
+    "cost_to_us": "CASA assessor fees: not stated on Google pages (UNVERIFIED)",
+    "time_to_approval": "not stated by Google on pages fetched (UNVERIFIED)"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Any free Google account or Workspace trial; project in Google Cloud Console in Testing mode"
+  },
+  "rate_limits": "Per-API quotas in Cloud Console (UNVERIFIED values)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "Gmail watch via Pub/Sub",
+      "Drive changes.watch",
+      "Calendar events.watch"
+    ]
+  },
+  "data_objects_to_pull": [
+    "Gmail messages/threads",
+    "Drive files and metadata",
+    "Calendar events",
+    "Sheets cell values"
+  ],
+  "incremental_sync": "Gmail history.list with historyId; Drive changes.list with startPageToken; Calendar syncToken; Sheets has no change feed (use Drive modifiedTime) (standard behavior, UNVERIFIED this run)",
+  "unified_api_coverage": {
+    "merge_dev": "yes for Google Drive (file storage); Gmail/Calendar unverified",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "unverified"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 25,
+  "blockers": [
+    "Restricted scopes (Gmail, full Drive read) require OAuth verification plus annual third-party CASA assessment",
+    "Workspace admin allowlisting per customer",
+    "Consider narrower scopes (drive.file / Picker, calendar.readonly) to avoid CASA for non-email products"
+  ],
+  "sources": [
+    "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification \u2014 'Every app that requests access to Google users' restricted data ... must go through a security assessment'",
+    "same \u2014 'reverified ... at least every 12 months after your assessor's Letter of Assessment (LOA) approval date'",
+    "https://support.google.com/cloud/answer/13463073 \u2014 'Apps that request access to scopes categorized as sensitive or restricted must complete Google's OAuth app verification'",
+    "https://developers.google.com/identity/protocols/oauth2/scopes \u2014 gmail.readonly, calendar.readonly listed",
+    "https://www.merge.dev/integrations \u2014 Google Drive (File storage)"
+  ]
+}

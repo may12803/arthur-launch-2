@@ -1,0 +1,18 @@
+{
+  "system": "Infor CloudSuite",
+  "vendor": "Infor",
+  "category": "erp",
+  "api": {"type": "REST", "base_url": "https://{ionApiUrl}/{tenant}/ (ION API Gateway; per-product path e.g. /M3/m3api-rest, /LN/..., from .ionapi 'iu' field; Nango proxy base https://${ionApiUrl}/${tenant})", "openapi_spec_url": "UNVERIFIED (ION API Gateway publishes per-API definitions inside the tenant)", "docs_url": "https://docs.infor.com/inforos/latest/en-us/useradminlib_cloud/etl_dl_ag/oda1623328668051.html"},
+  "auth": {"method": "oauth2_client_credentials", "scopes_needed_read": ["none; access controlled by the Service Account user's roles/security in the target product"], "token_lifetime": "UNVERIFIED", "refresh": "Backend Service authorized app: client ID (ci), client secret (cs), service account keys (saak/sask) in .ionapi file; token from pu+ot (token endpoint); also Password Credentials grant for older apps"},
+  "access_requirements": {"self_serve_dev_account": false, "partner_program_required": true, "partner_program_name": "Infor Partner Network / Infor Dev Portal (UNVERIFIED); calling a customer tenant needs only the customer's .ionapi", "app_review_or_marketplace_listing": "None for private integration; Infor Marketplace listing optional", "customer_admin_must_do": "In Infor OS: API Gateway > Authorized Apps > + > type Backend Service, save, Download Credentials with Create Service Account enabled and a user chosen, then send us the .ionapi file securely. The product (M3, LN, CloudSuite Industrial/SyteLine, etc.) must be exposed through ION API and the service-account user needs security roles.", "cost_to_us": "None found", "time_to_approval": "Days, customer admin driven"},
+  "sandbox": {"available": false, "how_to_get": "Only customer tenants (TST/PRD); no public sandbox found"},
+  "rate_limits": "UNVERIFIED",
+  "webhooks": {"available": true, "events": ["ION BODs/events via ION Connect (outbound document flows); specifics UNVERIFIED"]},
+  "data_objects_to_pull": ["customers", "suppliers", "items", "sales orders", "invoices (AR/AP)", "GL journal / balances (product-specific APIs)"],
+  "incremental_sync": "Product-specific: M3 MI programs with change date fields; LN BDEs; generic approach is last-modified filter where API exposes it; UNVERIFIED",
+  "unified_api_coverage": {"merge_dev": "unverified (Infor string 1x in merge.dev/integrations HTML, not an accounting connector confirmed)", "codat": "unverified (Infor string 2x on codat page, support not confirmed)", "apideck": "unverified (name Infor in connectors page text, product unconfirmed)", "nango": "yes (infor-cc, infor)", "airbyte_source": "partial (Infor Nexus source only, which is supply chain, not CloudSuite ERP)"},
+  "recommended_path": "direct",
+  "build_effort_days": 15,
+  "blockers": ["Infor CloudSuite is many products (M3, LN, Industrial, Financials & Supply Management): each has different APIs, so one connector per product", "Customer must have ION API Gateway enabled", "No public sandbox or full docs without customer login (docs.infor.com mostly public, product API refs often behind login)"],
+  "sources": ["https://docs.infor.com/inforos/latest/en-us/useradminlib_cloud/etl_dl_ag/oda1623328668051.html - \"select Backend Service as the type ... Download Credentials, enable the Create Service Account option\"", "https://docs.infor.com/inforos/2025.x/en-us/useradminlib_cloud/apigatewayag_cloud/wxo1761727799964.html - .ionapi credential used to generate a Gateway token (client credentials)", "https://github.com/NangoHQ/nango providers.yaml infor-cc"]
+}

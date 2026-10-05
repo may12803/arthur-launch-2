@@ -1,0 +1,30 @@
+{
+  "system": "Square",
+  "vendor": "Block, Inc.",
+  "category": "pos",
+  "api": { "type": "REST", "base_url": "https://connect.squareup.com/v2 (sandbox: connect.squareupsandbox.com)", "openapi_spec_url": "UNVERIFIED (Square publishes an OpenAPI spec on GitHub; not fetched)", "docs_url": "https://developer.squareup.com/docs/oauth-api/overview" },
+  "auth": { "method": "oauth2_authcode", "scopes_needed_read": ["MERCHANT_PROFILE_READ", "ORDERS_READ", "PAYMENTS_READ", "CUSTOMERS_READ", "ITEMS_READ", "INVENTORY_READ", "EMPLOYEES_READ", "TIMECARDS_READ", "INVOICES_READ", "SUBSCRIPTIONS_READ"], "token_lifetime": "Access tokens 'expire after 30 days'; auth code expires after 5 minutes, single use", "refresh": "Code flow refresh tokens are non-expiring until access revoked (PKCE flow: single-use, 90 days)" },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None mentioned for OAuth on the overview page (App Marketplace listing is optional)",
+    "customer_admin_must_do": "Square account owner clicks our Connect with Square link, reviews the permission list and clicks Allow; we receive the code and exchange it server-side.",
+    "cost_to_us": "$0 (developer account and API free)",
+    "time_to_approval": "Immediate for OAuth; none"
+  },
+  "sandbox": { "available": true, "how_to_get": "Square Developer Console creates sandbox test accounts on app creation (self-serve)" },
+  "rate_limits": "UNVERIFIED (rate-limits page URL returned 404; checked developer.squareup.com/docs/build-basics/rate-limits)",
+  "webhooks": { "available": true, "events": ["order.created", "order.updated", "payment.updated", "customer.created", "customer.updated", "catalog.version.updated", "inventory.count.updated"] },
+  "data_objects_to_pull": ["orders", "payments", "customers", "catalog items/categories", "inventory counts", "team members/timecards", "invoices", "subscriptions", "locations"],
+  "incremental_sync": "SearchOrders / ListPayments with updated_at or begin_time/end_time filters and cursor; plus webhooks for deltas",
+  "unified_api_coverage": { "merge_dev": "no (merge.dev/integrations/square 404)", "codat": "unverified (docs.codat.io 403)", "apideck": "no (not in connectors page text)", "nango": "yes (https://www.nango.dev/docs/api-integrations/squareup 200)", "airbyte_source": "yes (https://docs.airbyte.com/integrations/sources/square 200)" },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": ["Per-merchant 30-day access token requires scheduled refresh job.", "Rate limit figures not verified from primary source."],
+  "sources": [
+    "https://developer.squareup.com/docs/oauth-api/overview - 'Access tokens: expire after 30 days'; Code Flow refresh tokens non-expiring",
+    "https://developer.squareup.com/docs/oauth-api/square-permissions - scope names CUSTOMERS_READ, ORDERS_READ, PAYMENTS_READ, ITEMS_READ, INVENTORY_READ, EMPLOYEES_READ, TIMECARDS_READ, INVOICES_READ, SUBSCRIPTIONS_READ, MERCHANT_PROFILE_READ",
+    "https://www.nango.dev/docs/api-integrations/squareup and https://docs.airbyte.com/integrations/sources/square - HTTP 200"
+  ]
+}

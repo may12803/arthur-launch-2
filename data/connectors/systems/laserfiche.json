@@ -1,0 +1,33 @@
+{
+  "system": "Laserfiche",
+  "vendor": "Laserfiche",
+  "category": "files",
+  "api": { "type": "REST", "base_url": "https://api.laserfiche.com/repository/v2 (US cloud) - UNVERIFIED this turn; regional hosts exist", "openapi_spec_url": "UNVERIFIED (Swagger playground linked from developer.laserfiche.com)", "docs_url": "https://developer.laserfiche.com/" },
+  "auth": { "method": "oauth2_client_credentials", "scopes_needed_read": ["repository.Read", "table.Read (OData table API) - scope names UNVERIFIED"], "token_lifetime": "UNVERIFIED", "refresh": "Developer site lists Service Principals plus OAuth 2.0 flows (service apps, single-page apps, web apps). Service app: Developer Console service application bound to a Service Principal user, authenticated with a base-64 encoded access key created on the app's Authentication tab (secondary: Boomi/ABBYY docs)." },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None for customer-owned service apps",
+    "customer_admin_must_do": "Cloud admin creates a Service Principal user (Laserfiche doc: authenticates with a rotatable API key, no MFA), registers a service app in the Developer Console with that principal as service account, creates an access key, and grants the principal read rights on the target repository folders.",
+    "cost_to_us": "$0 (API included with Laserfiche Cloud; self-hosted needs the Laserfiche API Server - UNVERIFIED)",
+    "time_to_approval": "Immediate once admin creates principal and key"
+  },
+  "sandbox": { "available": true, "how_to_get": "Swagger playground on developer.laserfiche.com against a Laserfiche Cloud account; free developer account details UNVERIFIED." },
+  "rate_limits": "UNVERIFIED",
+  "webhooks": { "available": "unverified", "events": [] },
+  "data_objects_to_pull": ["entries (folders, documents) and metadata fields", "document text/exports", "OData tables (business data)", "workflow/process instances (separate APIs)"],
+  "incremental_sync": "UNVERIFIED. Repository search/entry listing supports metadata and modification-time queries; confirm in the Repository API reference.",
+  "unified_api_coverage": { "merge_dev": "unverified", "codat": "no", "apideck": "no", "nango": "no", "airbyte_source": "no" },
+  "recommended_path": "direct",
+  "build_effort_days": 6,
+  "blockers": [
+    "Self-hosted customers need Laserfiche API Server and network reachability (UNVERIFIED)",
+    "Developer docs are JS-rendered; scopes, limits and token lifetimes need confirming on a loaded page"
+  ],
+  "sources": [
+    "https://developer.laserfiche.com/ - 'Learn how to create a secure connection to Laserfiche Cloud and authenticate each API request'; Repository API and OData Table API; Service Principals; OAuth 2.0 service apps",
+    "https://doc.laserfiche.com/laserfiche/en-us/Content/ServicePrincipals.htm (via search) - service principals authenticate with a rotatable API key and cannot use MFA",
+    "https://help.boomi.com/docs/Atomsphere/Integration/Connectors/r-atm-Laserfiche_connection_3c000c74-10cc-4093-8aca-22a579a2cc49 (secondary) - Developer Console service application and access key steps"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "system": "Amazon S3",
+  "vendor": "Amazon Web Services",
+  "category": "files",
+  "api": {
+    "type": "REST",
+    "base_url": "https://s3.<region>.amazonaws.com",
+    "openapi_spec_url": "https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html",
+    "docs_url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/"
+  },
+  "auth": {
+    "method": "oauth2_client_credentials",
+    "scopes_needed_read": [
+      "s3:ListBucket",
+      "s3:GetObject",
+      "s3:GetBucketLocation"
+    ],
+    "token_lifetime": "STS AssumeRole session 1 hour default (standard; not re-fetched)",
+    "refresh": "We re-call sts:AssumeRole with the customer-specific ExternalId; no stored customer keys"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "none",
+    "customer_admin_must_do": "Create an IAM role in their account with the trust policy and read-only policy in customer_grant_statements, then send us the role ARN. We generate the ExternalId, unique per customer: per AWS 'The ExternalId value must be unique among Example Corp's customers and controlled by Example Corp, not its customers.'",
+    "cost_to_us": "S3 request and data-transfer fees borne by the customer account; we pay AWS STS nothing",
+    "time_to_approval": "none"
+  },
+  "customer_grant_statements": [
+    "Trust policy on role LOVELEEDAYReadRole (per AWS confused-deputy doc, with ExternalId): {\"Version\":\"2012-10-17\",\"Statement\":{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"<LOVELEEDAY_AWS_ACCOUNT_ID>\"},\"Action\":\"sts:AssumeRole\",\"Condition\":{\"StringEquals\":{\"sts:ExternalId\":\"<EXTERNAL_ID_WE_ISSUE>\"}}}}",
+    "Permissions policy (list and read, adapted from AWS S3 example policies which use s3:ListBucket on the bucket ARN and s3:GetObject on bucket/*): {\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:ListBucket\",\"s3:GetBucketLocation\"],\"Resource\":\"arn:aws:s3:::<BUCKET>\"},{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:GetObjectVersion\"],\"Resource\":\"arn:aws:s3:::<BUCKET>/<PREFIX>/*\"}]}",
+    "Customer sends us: role ARN and bucket/prefix. KMS-encrypted buckets additionally need kms:Decrypt on the key (UNVERIFIED page not fetched)."
+  ],
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Any AWS account; free tier"
+  },
+  "rate_limits": "S3 supports at least 5,500 GET/HEAD requests per second per prefix (UNVERIFIED, not fetched this run)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "s3:ObjectCreated:*",
+      "s3:ObjectRemoved:*"
+    ]
+  },
+  "data_objects_to_pull": [
+    "CSV/JSON/Parquet/PDF objects under agreed prefixes"
+  ],
+  "incremental_sync": "S3 Event Notifications to SQS in the customer account (needs extra grant) or ListObjectsV2 with StartAfter / LastModified high-water mark; S3 Inventory for large buckets (UNVERIFIED, not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "unverified",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "yes, S3 source exists (UNVERIFIED not fetched this run)"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "None: customer-grants-us-read cross-account role with ExternalId"
+  ],
+  "sources": [
+    "https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html \u2014 trust policy with 'sts:ExternalId' condition",
+    "https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-policies-s3.html \u2014 s3:ListBucket on bucket ARN, s3:GetObject on bucket/prefix/*"
+  ]
+}

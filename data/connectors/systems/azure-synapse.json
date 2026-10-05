@@ -1,0 +1,66 @@
+{
+  "system": "Azure Synapse Analytics",
+  "vendor": "Microsoft",
+  "category": "warehouse",
+  "api": {
+    "type": "SDK",
+    "base_url": "<workspace>-ondemand.sql.azuresynapse.net (serverless) / <workspace>.sql.azuresynapse.net (dedicated), TDS 1433",
+    "openapi_spec_url": "UNVERIFIED",
+    "docs_url": "https://learn.microsoft.com/en-us/azure/synapse-analytics/"
+  },
+  "auth": {
+    "method": "service_account",
+    "scopes_needed_read": [
+      "database users with db_datareader or custom read role"
+    ],
+    "token_lifetime": "UNVERIFIED",
+    "refresh": "Entra service principal client-credentials token for https://database.windows.net/"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "none",
+    "customer_admin_must_do": "A Microsoft Entra admin on the workspace creates a user for our Entra app in the target database and grants read, and opens the workspace firewall to our egress IPs. Note: Microsoft banner on the doc page states Fabric Data Warehouse is the new recommended path and dedicated pools can upgrade to Fabric.",
+    "cost_to_us": "Customer pays serverless per-TB or dedicated DWU",
+    "time_to_approval": "none"
+  },
+  "customer_grant_statements": [
+    "Run as the Microsoft Entra admin connected to the target database (serverless or dedicated):",
+    "CREATE USER [loveleeday-reader-app] FROM EXTERNAL PROVIDER;   (Microsoft doc form: CREATE USER [mike@contoso.com] FROM EXTERNAL PROVIDER; app display name used for a service principal)",
+    "Serverless: ALTER ROLE db_datareader ADD MEMBER [loveleeday-reader-app];   (docs: 'In Azure SQL Database or synapse serverless, use the ALTER ROLE statement.')",
+    "Dedicated pool: EXEC sp_addrolemember 'db_datareader', 'loveleeday-reader-app';   (docs: ALTER ROLE not supported in provisioned; use sp_addrolemember)",
+    "Docs caution: db_datareader is broad; prefer CREATE ROLE with GRANT SELECT on specific schemas.",
+    "Firewall: add our egress IP range as workspace firewall rule (portal step).",
+    "Caveat from docs: 'CREATE/ALTER/DROP LOGIN and CREATE/ALTER/DROP USER statements are not supported when Microsoft Entra-only authentication is enabled for the Azure Synapse workspace.' Check workspace auth mode first (UNVERIFIED how external-provider users behave under Entra-only)."
+  ],
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Azure free account (UNVERIFIED)"
+  },
+  "rate_limits": "UNVERIFIED",
+  "webhooks": {
+    "available": false,
+    "events": []
+  },
+  "data_objects_to_pull": [
+    "customer-chosen tables, views, external tables over the lake"
+  ],
+  "incremental_sync": "Timestamp cursor or change tracking; no native CDC feed for dedicated pools (UNVERIFIED)",
+  "unified_api_coverage": {
+    "merge_dev": "unverified",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "UNVERIFIED (generic MSSQL source exists)"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 5,
+  "blockers": [
+    "Product direction moving to Microsoft Fabric (doc banner) so prioritize Fabric Warehouse later",
+    "Entra-only auth workspaces change the user-creation path"
+  ],
+  "sources": [
+    "https://learn.microsoft.com/en-us/azure/synapse-analytics/sql/sql-authentication \u2014 CREATE USER [mike@contoso.com] FROM EXTERNAL PROVIDER; 'In Azure SQL Database or synapse serverless, use the ALTER ROLE statement'; dedicated: EXEC sp_addrolemember"
+  ]
+}

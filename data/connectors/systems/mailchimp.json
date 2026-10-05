@@ -1,0 +1,29 @@
+{
+  "system": "Mailchimp",
+  "vendor": "Intuit Mailchimp",
+  "category": "marketing",
+  "api": { "type": "REST", "base_url": "https://<dc>.api.mailchimp.com/3.0/", "openapi_spec_url": "UNVERIFIED (not fetched)", "docs_url": "https://mailchimp.com/developer/marketing/docs/fundamentals/" },
+  "auth": { "method": "oauth2_authcode", "scopes_needed_read": ["No granular scopes documented; token inherits the authorizing user's access"], "token_lifetime": "'Mailchimp Marketing access tokens do not expire'", "refresh": "None needed; valid until user revokes" },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None mentioned on the OAuth guide; self-service 'Register An App' in Mailchimp account",
+    "customer_admin_must_do": "Customer logs in at login.mailchimp.com authorize URL and approves; we call login.mailchimp.com/oauth2/metadata to obtain the dc (data center) for their API host. Alternative: customer generates an API key in Account > Extras > API keys and shares it.",
+    "cost_to_us": "$0",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": { "available": false, "how_to_get": "No sandbox found in primary docs; use a free Mailchimp account" },
+  "rate_limits": "10 simultaneous connections; 429 on exceed; 120-second call timeout",
+  "webhooks": { "available": true, "events": ["subscribe", "unsubscribe", "profile", "cleaned", "upemail", "campaign"] },
+  "data_objects_to_pull": ["audiences/lists", "members (contacts)", "segments/tags", "campaigns", "campaign reports (opens, clicks)", "automations", "templates"],
+  "incremental_sync": "since_last_changed / since_timestamp_opt filters on list members; since_send_time on campaigns; count/offset pagination (UNVERIFIED parameter names on fetched page)",
+  "unified_api_coverage": { "merge_dev": "yes (https://www.merge.dev/integrations/mailchimp 200)", "codat": "unverified", "apideck": "unverified (appears on connectors page text)", "nango": "no (nango.dev/docs/api-integrations/mailchimp 404)", "airbyte_source": "yes (https://docs.airbyte.com/integrations/sources/mailchimp 200)" },
+  "recommended_path": "direct",
+  "build_effort_days": 3,
+  "blockers": ["Concurrency cap of 10 requires a connection pool."],
+  "sources": [
+    "https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/ - 'Mailchimp Marketing access tokens do not expire'; authorize URL login.mailchimp.com/oauth2/authorize; metadata endpoint",
+    "https://mailchimp.com/developer/marketing/docs/fundamentals/ - 'The Marketing API has a limit of 10 simultaneous connections'"
+  ]
+}

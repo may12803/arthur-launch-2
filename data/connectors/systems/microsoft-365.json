@@ -1,0 +1,71 @@
+{
+  "system": "Microsoft 365 (Graph: Outlook, SharePoint, OneDrive, Teams, Excel)",
+  "vendor": "Microsoft",
+  "category": "productivity",
+  "api": {
+    "type": "REST",
+    "base_url": "https://graph.microsoft.com/v1.0",
+    "openapi_spec_url": "https://github.com/microsoftgraph/msgraph-metadata (UNVERIFIED not fetched)",
+    "docs_url": "https://learn.microsoft.com/en-us/graph/"
+  },
+  "auth": {
+    "method": "oauth2_client_credentials",
+    "scopes_needed_read": [
+      "Mail.Read (app: admin consent Yes; delegated: No)",
+      "Files.Read.All (admin consent Yes both)",
+      "Sites.Selected (app and delegated; admin consent No per permissions reference, but admin must grant per-site access)",
+      "ChannelMessage.Read.All (admin consent Yes both)",
+      "Chat.Read.All (app) for chats",
+      "Calendars.Read, Sites.Read.All (UNVERIFIED rows not fetched)"
+    ],
+    "token_lifetime": "UNVERIFIED this run",
+    "refresh": "App-only: client credentials with client secret or certificate. Delegated: auth code + refresh token."
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "Multi-tenant Entra app registration, no review for basic use; publisher verification recommended (UNVERIFIED not fetched). Teams message export APIs are 'protected APIs': 'to use it, you must request access by completing a request form' (getAllMessages) beyond permissions and consent.",
+    "customer_admin_must_do": "Tenant Global Admin (or Privileged Role Admin) grants admin consent to our multi-tenant app via the admin-consent URL for the application permissions above; for SharePoint minimal access, admin grants Sites.Selected then grants our app per-site permission via POST /sites/{id}/permissions.",
+    "cost_to_us": "Free app registration; Teams message APIs can be metered/billed (UNVERIFIED, page not fetched)",
+    "time_to_approval": "Protected API form approval time UNVERIFIED"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Microsoft 365 Developer Program tenant (UNVERIFIED eligibility, not fetched)"
+  },
+  "rate_limits": "Graph throttling per app/tenant (UNVERIFIED numbers; see learn.microsoft.com/graph/throttling)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "change notifications on mail, driveItem, events, chatMessage"
+    ]
+  },
+  "data_objects_to_pull": [
+    "Outlook messages/events",
+    "SharePoint sites/lists/driveItems",
+    "OneDrive driveItems",
+    "Teams channel/chat messages",
+    "Excel workbook ranges (drive items via workbook API)"
+  ],
+  "incremental_sync": "Delta query per Microsoft: supported for message, event, driveItem, listItem, site, chatMessage; follow @odata.nextLink until @odata.deltaLink; 410 Gone means full resync; Outlook delta tokens have no fixed life; directory objects 7 days; OneDrive/SharePoint support token=latest.",
+  "unified_api_coverage": {
+    "merge_dev": "SharePoint and OneDrive absent from merge.dev/integrations fetch (unverified, page may be truncated)",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "unverified"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 25,
+  "blockers": [
+    "Tenant admin consent required for every app-only permission",
+    "Teams messages need protected-API access request",
+    "Use Sites.Selected to avoid tenant-wide Sites.Read.All objections"
+  ],
+  "sources": [
+    "https://learn.microsoft.com/en-us/graph/permissions-reference \u2014 Mail.Read app AdminConsentRequired Yes; Files.Read.All Yes/Yes; Sites.Selected No/No; ChannelMessage.Read.All Yes/Yes",
+    "https://learn.microsoft.com/en-us/graph/delta-query-overview \u2014 'Delta query ... enables applications to discover newly created, updated, or deleted entities'; supported resources table; '410 Gone' sync reset",
+    "https://learn.microsoft.com/en-us/graph/api/chats-getallmessages \u2014 protected API: 'you must request access by completing a request form' (via search snippet)"
+  ]
+}

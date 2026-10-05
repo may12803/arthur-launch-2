@@ -1,0 +1,29 @@
+{
+  "system": "HubSpot",
+  "vendor": "HubSpot, Inc.",
+  "category": "crm",
+  "api": { "type": "REST", "base_url": "https://api.hubapi.com", "openapi_spec_url": "UNVERIFIED (public OpenAPI at github.com/HubSpot/HubSpot-public-api-spec-collection; not fetched)", "docs_url": "https://developers.hubspot.com/docs/api/oauth-quickstart-guide" },
+  "auth": { "method": "oauth2_authcode", "scopes_needed_read": ["crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.deals.read", "crm.schemas.contacts.read", "oauth"], "token_lifetime": "Access token 'currently 30 minutes'", "refresh": "POST https://api.hubapi.com/oauth/v1/token with refresh token" },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "HubSpot App Partner Program (only for Marketplace listing)",
+    "app_review_or_marketplace_listing": "Not required to install on customer accounts via OAuth install URL; Marketplace listing requires certification (error rate under 5% of daily traffic per docs).",
+    "customer_admin_must_do": "Super Admin installs the app from our install link and approves scopes. Alternative: customer creates a Private App / service key with read scopes and shares the token.",
+    "cost_to_us": "$0 developer account",
+    "time_to_approval": "Immediate for unlisted OAuth app; Marketplace review UNVERIFIED"
+  },
+  "sandbox": { "available": true, "how_to_get": "Free developer test accounts from the HubSpot developer account (self-serve)" },
+  "rate_limits": "Public OAuth apps: 110 requests per 10 seconds per installing account; private apps 100/190 per 10s and 250,000-1,000,000 per day by tier; Search API does not return rate-limit headers",
+  "webhooks": { "available": true, "events": ["contact.creation", "contact.propertyChange", "deal.creation", "deal.propertyChange", "company.creation"] },
+  "data_objects_to_pull": ["contacts", "companies", "deals", "tickets", "owners", "products/line items", "engagements (emails, notes, calls)", "marketing emails/forms"],
+  "incremental_sync": "CRM Search API filtering hs_lastmodifieddate GTE cursor, paged by 'after'; webhooks for deltas",
+  "unified_api_coverage": { "merge_dev": "yes (https://www.merge.dev/integrations/hubspot 200; listed under CRM)", "codat": "unverified", "apideck": "unverified (appears on connectors page text)", "nango": "yes (200)", "airbyte_source": "yes (https://docs.airbyte.com/integrations/sources/hubspot 200)" },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": ["Search API result cap and per-account 110/10s limit make large backfills slow.", "Super Admin required to install."],
+  "sources": [
+    "https://developers.hubspot.com/docs/api/oauth-quickstart-guide - 'The access token will expire ... currently 30 minutes'; 'Super Admin access to install apps'",
+    "https://developers.hubspot.com/docs/api/usage-details - 'Each HubSpot account that installs your app is limited to 110 requests every 10 seconds.'"
+  ]
+}

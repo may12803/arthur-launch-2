@@ -1,0 +1,31 @@
+{
+  "system": "Clio Manage",
+  "vendor": "Clio (Themis Solutions)",
+  "category": "legal",
+  "api": { "type": "REST", "base_url": "https://app.clio.com/api/v4 (US); ca.app.clio.com, au.app.clio.com, eu.app.clio.com for other regions", "openapi_spec_url": "UNVERIFIED", "docs_url": "https://docs.developers.clio.com/api-docs/clio-manage/" },
+  "auth": { "method": "oauth2_authcode", "scopes_needed_read": ["Per Clio permissions section (docs.developers.clio.com/api-docs/clio-manage/permissions/); scope names UNVERIFIED"], "token_lifetime": "Access token 30 days (2592000 expires_in); 401 on expiry", "refresh": "'refresh tokens do not expire'; POST /oauth/token with grant_type=refresh_token. Tokens issued against app.clio.com 'are not valid against EU, CA, or AU endpoints', so store the user's region." },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "Clio Developer account (apps); Clio App Directory for listings",
+    "app_review_or_marketplace_listing": "Register an application in a Clio developer account to get key and secret. App Directory listing is optional and reviewed (terms UNVERIFIED).",
+    "customer_admin_must_do": "A user at the firm authorizes our app via the OAuth consent screen (in their region); firm admin approval may be required by firm policy (UNVERIFIED).",
+    "cost_to_us": "$0 for developer account (UNVERIFIED on a fetched pricing page)",
+    "time_to_approval": "Immediate for unlisted apps"
+  },
+  "sandbox": { "available": true, "how_to_get": "Developer account docs reference a developer sandbox account; steps UNVERIFIED." },
+  "rate_limits": "Documented at /api-docs/clio-manage/rate-limits/; page not read, numbers UNVERIFIED.",
+  "webhooks": { "available": "unverified", "events": [] },
+  "data_objects_to_pull": ["matters", "contacts", "activities/time entries", "bills", "payments", "trust transactions", "calendar entries", "users"],
+  "incremental_sync": "UNVERIFIED (Clio v4 list endpoints commonly accept updated_since; confirm in reference).",
+  "unified_api_coverage": { "merge_dev": "unverified", "codat": "no", "apideck": "no", "nango": "yes (docs.nango.dev/api-integrations/clio returns 200)", "airbyte_source": "no" },
+  "recommended_path": "direct",
+  "build_effort_days": 5,
+  "blockers": [
+    "Region-aware token handling required (four regional hosts)"
+  ],
+  "sources": [
+    "https://docs.developers.clio.com/api-docs/clio-manage/authorization/ - 'Access tokens expire after 30 days'; 'refresh tokens do not expire'; regional host note; create an application in your Clio developer account",
+    "https://docs.nango.dev/api-integrations/clio - 200"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "system": "Databricks",
+  "vendor": "Databricks",
+  "category": "warehouse",
+  "api": {
+    "type": "REST",
+    "base_url": "https://<workspace-host>/api/2.0 (SQL Statement Execution /api/2.0/sql/statements)",
+    "openapi_spec_url": "UNVERIFIED",
+    "docs_url": "https://docs.databricks.com/aws/en/"
+  },
+  "auth": {
+    "method": "oauth2_client_credentials",
+    "scopes_needed_read": [
+      "all-apis (default) or scoped secret such as 'sql'"
+    ],
+    "token_lifetime": "one hour",
+    "refresh": "Re-request via client_credentials; token endpoint https://<workspace>/oidc/v1/token or accounts.cloud.databricks.com/oidc/accounts/<account-id>/v1/token"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "none",
+    "customer_admin_must_do": "Create a service principal, generate an OAuth secret, grant Unity Catalog privileges and CAN USE on a SQL warehouse, then send us workspace host, client ID and secret via our secure form. Alternative with no credentials: Delta Sharing.",
+    "cost_to_us": "Customer pays SQL warehouse compute",
+    "time_to_approval": "none"
+  },
+  "customer_grant_statements": [
+    "Docs form: GRANT USE CATALOG ON CATALOG <catalog> TO `<service-principal-application-id>`;",
+    "GRANT USE SCHEMA ON SCHEMA <catalog>.<schema> TO `<service-principal-application-id>`;",
+    "GRANT SELECT ON TABLE <catalog>.<schema>.<table> TO `<service-principal-application-id>`;   (SELECT follows documented pattern GRANT <privilege> ON <securable-type> <name> TO <principal>; Databricks page gave USE CATALOG/USE SCHEMA examples verbatim)",
+    "Warehouse access: SQL warehouse permissions > CAN USE for the service principal (UI/API; statement UNVERIFIED).",
+    "Token request (docs): grant_type=client_credentials&scope=all-apis"
+  ],
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Databricks Free Edition / trial (UNVERIFIED)"
+  },
+  "rate_limits": "UNVERIFIED",
+  "webhooks": {
+    "available": false,
+    "events": []
+  },
+  "data_objects_to_pull": [
+    "Unity Catalog tables and views"
+  ],
+  "incremental_sync": "Delta Change Data Feed (table_changes) or timestamp cursor (UNVERIFIED not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "unverified",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "yes, Databricks source (UNVERIFIED)"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 5,
+  "blockers": [
+    "Per-workspace host and warehouse ID; customer must run a warehouse"
+  ],
+  "sources": [
+    "https://docs.databricks.com/aws/en/dev-tools/auth/oauth-m2m \u2014 'grant_type=client_credentials&scope=all-apis'; 'Each access token is valid for one hour'",
+    "https://docs.databricks.com/aws/en/data-governance/unity-catalog/manage-privileges/ \u2014 GRANT USE CATALOG ON CATALOG main TO `finance-team`; GRANT USE SCHEMA ON SCHEMA main.default TO `finance-team`"
+  ]
+}

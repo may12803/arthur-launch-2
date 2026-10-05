@@ -1,0 +1,18 @@
+{
+  "system": "SAP Business One",
+  "vendor": "SAP",
+  "category": "erp",
+  "api": {"type": "REST", "base_url": "https://{host}:50000/b1s/v1 (OData v3) and /b1s/v2 (OData v4); login POST /b1s/v1/Login", "openapi_spec_url": "UNVERIFIED (per-instance /b1s/v2/$metadata; SAP API Business Hub listing not fetched)", "docs_url": "https://help.sap.com/doc/fc2f5477516c404c8bf9ad1315a17238/10.0/en-US/Working_with_SAP_Business_One_Service_Layer.pdf"},
+  "auth": {"method": "basic", "scopes_needed_read": ["Business One user license/authorizations on the SAP user (no scopes)"], "token_lifetime": "Session cookie B1SESSION, default SessionTimeout 30 minutes idle (configurable in b1s.conf)", "refresh": "No refresh: re-POST /Login with CompanyDB, UserName, Password when session expires"},
+  "access_requirements": {"self_serve_dev_account": false, "partner_program_required": false, "partner_program_name": "SAP PartnerEdge for certification/listing only; calling Service Layer needs none", "app_review_or_marketplace_listing": "None for private integration", "customer_admin_must_do": "Provide an externally reachable Service Layer URL (port 50000 or reverse proxy / VPN / IP allow-list), the CompanyDB name, and a dedicated B1 user with a license (e.g. Indirect Access/Professional) and read authorizations. Hosted customers: ask hosting partner to expose Service Layer.", "cost_to_us": "None to us; customer needs a Business One user license for the integration user (UNVERIFIED)", "time_to_approval": "Days, driven by customer IT/network"},
+  "sandbox": {"available": false, "how_to_get": "No public sandbox found; SAP B1 trial/demo through SAP partners, UNVERIFIED"},
+  "rate_limits": "UNVERIFIED; sessions limited by licenses/Service Layer load-balancer instances",
+  "webhooks": {"available": false, "events": []},
+  "data_objects_to_pull": ["BusinessPartners", "Invoices", "Orders", "Items", "JournalEntries", "ChartOfAccounts", "IncomingPayments", "PurchaseInvoices"],
+  "incremental_sync": "$filter=UpdateDate ge '{date}' (+UpdateTime) on entities; $skip/$top paging",
+  "unified_api_coverage": {"merge_dev": "unverified (not in merge.dev/integrations HTML)", "codat": "no (not listed in fetched summary)", "apideck": "unverified (name 'SAP Business One' not found in connectors page text)", "nango": "yes (sap-business-one)", "airbyte_source": "no"},
+  "recommended_path": "direct",
+  "build_effort_days": 6,
+  "blockers": ["Customer-hosted on-prem/SQL or HANA: network exposure of port 50000 is the real blocker", "Per-session login and 30 min timeout means session management code", "Limited public docs verified; no sandbox"],
+  "sources": ["https://help.sap.com/doc/fc2f5477516c404c8bf9ad1315a17238/10.0/en-US/Working_with_SAP_Business_One_Service_Layer.pdf (search snippet) - \"Service Layer responds to login requests at port 50000 ... B1SESSION ... SessionTimeout value of 30\"", "https://help.sap.com/docs/SAP_BUSINESS_ONE/f110a154dd0f4c20bf7f3ebca9eeb794/fca234d647c04d458726e0806c73c371.html - Managing Service Layer Settings", "https://github.com/NangoHQ/nango providers.yaml sap-business-one token_url https://${domain}/Login token_expires_in_ms 1700000"]
+}

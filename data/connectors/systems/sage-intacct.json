@@ -1,0 +1,18 @@
+{
+  "system": "Sage Intacct",
+  "vendor": "Sage",
+  "category": "erp",
+  "api": {"type": "REST", "base_url": "https://api.intacct.com/ia/api/v1 (from Nango providers.yaml: base https://api.intacct.com/ia/api, authorize/token under /ia/api/v1/oauth2/); legacy XML gateway also exists", "openapi_spec_url": "UNVERIFIED (developer.sage.com/intacct/docs/openapi/ returned HTTP 403 to fetch)", "docs_url": "https://developer.sage.com/intacct/docs/developer-portal/authorization-security/oauth2/"},
+  "auth": {"method": "oauth2_client_credentials", "scopes_needed_read": ["UNVERIFIED (permissions come from the Web Services user's role, not scopes)"], "token_lifetime": "UNVERIFIED", "refresh": "Authorization code grant returns refresh token (Nango config lists refresh_token grant); client credentials needs no refresh"},
+  "access_requirements": {"self_serve_dev_account": false, "partner_program_required": true, "partner_program_name": "Sage Intacct developer program (client ID and secret are issued when you register an application; web services developer license with sender ID needed for legacy XML)", "app_review_or_marketplace_listing": "Registration of the application with Sage required to receive client ID/secret; marketplace listing not required for private integration (UNVERIFIED)", "customer_admin_must_do": "Create a Web Services user (Company > Admin > Web Services Users > Add) with a role of needed permissions; then Company > Setup > Company > Edit > Security > Authorized Client Applications > Add, enter our Client ID and the Web Services user ID. For legacy XML also authorize our Web Services sender ID. Customer's subscription must include Web Services.", "cost_to_us": "UNVERIFIED (developer license pricing not found)", "time_to_approval": "UNVERIFIED"},
+  "sandbox": {"available": true, "how_to_get": "Developer/partner sandbox company provided with developer program; public self-serve UNVERIFIED"},
+  "rate_limits": "UNVERIFIED on fetched page",
+  "webhooks": {"available": false, "events": []},
+  "data_objects_to_pull": ["customers", "vendors", "ar-invoices", "ap-bills", "items", "gl-accounts", "gl-journal-entries", "gl-detail", "payments", "dimensions (location, department, project)"],
+  "incremental_sync": "REST list endpoints with filter on whenModified > cursor (exact filter param name UNVERIFIED); legacy XML readByQuery on WHENMODIFIED also works",
+  "unified_api_coverage": {"merge_dev": "unverified (not found in merge.dev/integrations HTML)", "codat": "yes (accounting overview lists Sage Intacct)", "apideck": "yes by name", "nango": "yes (sage-intacct, sage-intacct-oauth, sage-intacct-cc)", "airbyte_source": "no (no Intacct source in oss_registry.json)"},
+  "recommended_path": "direct",
+  "build_effort_days": 6,
+  "blockers": ["Must register as Sage developer to obtain client ID/secret (gatekeeping, cost UNVERIFIED)", "Customer needs web services entitlement and admin to authorize client app", "OpenAPI spec and rate limits not retrievable (403)"],
+  "sources": ["https://developer.sage.com/intacct/docs/developer-portal/authorization-security/oauth2/ (search snippet) - \"Client applications can use the authorization code or the client credentials grant type\"", "same page - \"the client application must be associated with a Web Services user and explicitly authorized in a company's configuration\"", "https://developer.intacct.com/web-services/ (search snippet) - \"You must have an active Sage Intacct Web Services developer license, which includes a Web Services sender ID and password\"", "https://github.com/NangoHQ/nango providers.yaml sage-intacct-oauth", "https://docs.codat.io/integrations/accounting/overview"]
+}

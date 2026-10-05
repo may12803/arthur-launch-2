@@ -1,0 +1,33 @@
+{
+  "system": "Stripe",
+  "vendor": "Stripe, Inc.",
+  "category": "payments",
+  "api": { "type": "REST", "base_url": "https://api.stripe.com/v1", "openapi_spec_url": "https://github.com/stripe/openapi", "docs_url": "https://docs.stripe.com/connect/oauth-standard-accounts" },
+  "auth": { "method": "oauth2_authcode", "scopes_needed_read": ["read_only (default scope)"], "token_lifetime": "OAuth returns stripe_user_id; calls use our platform secret key plus Stripe-Account header (no per-account expiring token)", "refresh": "refresh_token returned once at connection, used to roll tokens; store it" },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "Stripe Connect platform (enable in Dashboard)",
+    "app_review_or_marketplace_listing": "Connect platform profile required; Stripe Apps marketplace listing optional (review). Docs: 'OAuth isn't recommended for new Connect platforms'; Connect Onboarding for Standard accounts preferred.",
+    "customer_admin_must_do": "Customer admin clicks Connect with Stripe, signs in, selects the account and approves read_only access. Alternative with no Connect: customer creates a restricted API key (read-only on Charges, Customers, Invoices, Subscriptions, Balance transactions, Payouts) and pastes it.",
+    "cost_to_us": "$0 for read-only OAuth connections (Connect fees apply only to payments or accounts we create; UNVERIFIED)",
+    "time_to_approval": "Immediate for OAuth read_only; Connect profile may require Stripe review (UNVERIFIED)"
+  },
+  "sandbox": { "available": true, "how_to_get": "Dashboard sandboxes / test mode; separate test client_id" },
+  "rate_limits": "Live 100 rps global, 25 rps per endpoint, Search 20 rps; reads capped at average 500 per transaction over rolling 30 days, minimum 10,000 reads per month per account; platform has separate allocation for connected accounts",
+  "webhooks": { "available": true, "events": ["charge.succeeded", "invoice.paid", "customer.created", "payout.paid", "account.application.deauthorized"] },
+  "data_objects_to_pull": ["customers", "charges", "payment_intents", "invoices", "subscriptions", "products/prices", "balance_transactions", "payouts", "refunds", "disputes"],
+  "incremental_sync": "created[gte] filter and starting_after cursor; Events API (/v1/events) for changes; Data Pipeline for full export",
+  "unified_api_coverage": { "merge_dev": "no (merge.dev/integrations/stripe 404)", "codat": "unverified", "apideck": "unverified (appears on connectors page; not confirmed as connector)", "nango": "yes (200)", "airbyte_source": "yes (https://docs.airbyte.com/integrations/sources/stripe 200)" },
+  "recommended_path": "direct",
+  "build_effort_days": 3,
+  "blockers": [
+    "Read allocation (500 reads per transaction) can throttle large backfills; use Data Pipeline or incremental events.",
+    "OAuth is 'not recommended for new Connect platforms'; fall back to restricted-key paste if Connect profile blocks us.",
+    "existing in repo: ~/arthur/scripts/stripe-q.mjs, stripe-connect-check.mjs, ~/arthur/lib/stripe/client.js (direct secret key / restricted key for Dabney's own account; env names STRIPE_DABNEY_SECRET_KEY, STRIPE_DABNEY_RESTRICTED_KEY). Not a multi-tenant OAuth path yet."
+  ],
+  "sources": [
+    "https://docs.stripe.com/connect/oauth-standard-accounts - 'OAuth isn't recommended for new Connect platforms'; 'scope ... read_only being the default'; Stripe-Account header",
+    "https://docs.stripe.com/rate-limits - 'Live mode: 100 requests per second'; 'must not exceed an average of 500 per transaction'; 'minimum allocation of 10,000 read requests per month'"
+  ]
+}

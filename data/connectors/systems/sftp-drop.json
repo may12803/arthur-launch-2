@@ -1,0 +1,59 @@
+{
+  "system": "SFTP drop",
+  "vendor": "n/a (AWS Transfer Family or self-hosted)",
+  "category": "ingest",
+  "api": {
+    "type": "SFTP",
+    "base_url": "sftp.loveleedaystudios.com:22 (to be provisioned)",
+    "openapi_spec_url": "n/a",
+    "docs_url": "https://aws.amazon.com/aws-transfer-family/"
+  },
+  "auth": {
+    "method": "key_pair",
+    "scopes_needed_read": [
+      "customer uploads to /<customer>/inbox only"
+    ],
+    "token_lifetime": "n/a",
+    "refresh": "customer-supplied public key per user, rotatable"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "none",
+    "customer_admin_must_do": "Customer sends an SSH public key and nightly-export job pushes CSV to the drop host using our supplied host key fingerprint.",
+    "cost_to_us": "AWS Transfer Family SFTP: $0.30 per endpoint-hour (about $216/month) plus $0.04/GB each way, US East (N. Virginia). Self-hosted SFTPGo/OpenSSH on Fly is far cheaper.",
+    "time_to_approval": "none"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Provision test endpoint ourselves"
+  },
+  "rate_limits": "n/a",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "S3 ObjectCreated on backing bucket (AWS Transfer) or SFTPGo event hooks"
+    ]
+  },
+  "data_objects_to_pull": [
+    "customer-defined CSV/TSV/XLSX exports, one folder per object type"
+  ],
+  "incremental_sync": "Each file is a delivery: dedupe by (customer, filename, sha256); manifest or .done marker file to signal completeness; idempotent replay by hash (design recommendation)",
+  "unified_api_coverage": {
+    "merge_dev": "n/a",
+    "codat": "n/a",
+    "apideck": "n/a",
+    "nango": "n/a",
+    "airbyte_source": "SFTP source exists (UNVERIFIED not fetched)"
+  },
+  "recommended_path": "sftp_csv",
+  "build_effort_days": 5,
+  "blockers": [
+    "Legacy ERPs often cannot push SFTP; need customer IT",
+    "Per-customer isolation: chroot homes or per-user S3 prefix (design)"
+  ],
+  "sources": [
+    "https://aws.amazon.com/aws-transfer-family/pricing/ \u2014 'At $0.30 hourly rate' SFTP endpoint; '$0.04/GB' upload/download"
+  ]
+}

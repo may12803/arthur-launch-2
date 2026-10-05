@@ -1,0 +1,64 @@
+{
+  "system": "Gusto",
+  "vendor": "Gusto",
+  "category": "hr_payroll",
+  "api": {
+    "type": "REST",
+    "base_url": "UNVERIFIED (developer.gusto.com did not resolve; docs.gusto.com used)",
+    "openapi_spec_url": "UNVERIFIED",
+    "docs_url": "https://docs.gusto.com/"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "UNVERIFIED"
+    ],
+    "token_lifetime": "UNVERIFIED",
+    "refresh": "Refresh tokens (standard; UNVERIFIED)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": true,
+    "partner_program_name": "Gusto Embedded / App Integrations partnerships",
+    "app_review_or_marketplace_listing": "Per docs.gusto.com: partners complete 'commercial, security, and implementation conversations/reviews' before production; 'Developers can work with a demo environment immediately' but production access needs partnerships approval",
+    "customer_admin_must_do": "Company admin approves the OAuth consent for the app (UNVERIFIED specifics)",
+    "cost_to_us": "UNVERIFIED",
+    "time_to_approval": "UNVERIFIED"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Demo environment available immediately per docs.gusto.com introduction"
+  },
+  "rate_limits": "UNVERIFIED",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "UNVERIFIED"
+    ]
+  },
+  "data_objects_to_pull": [
+    "employees",
+    "payrolls",
+    "pay schedules",
+    "contractors",
+    "company"
+  ],
+  "incremental_sync": "UNVERIFIED",
+  "unified_api_coverage": {
+    "merge_dev": "yes (Gusto: HRIS on merge.dev/integrations)",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "unverified"
+  },
+  "recommended_path": "unified_api:merge",
+  "build_effort_days": 8,
+  "blockers": [
+    "Production access gated by Gusto partnerships review",
+    "Embedded product states it 'is not able to support all partner use cases'"
+  ],
+  "sources": [
+    "https://docs.gusto.com/embedded-payroll/docs/introduction \u2014 'Gusto Embedded is not able to support all partner use cases at this time'; commercial/security/implementation reviews before production; demo environment",
+    "https://www.merge.dev/integrations \u2014 Gusto (HRIS)"
+  ]
+}

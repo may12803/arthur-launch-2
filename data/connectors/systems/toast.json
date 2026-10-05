@@ -1,0 +1,38 @@
+{
+  "system": "Toast",
+  "vendor": "Toast, Inc.",
+  "category": "pos",
+  "api": { "type": "REST", "base_url": "https://ws-api.toasttab.com (sandbox: ws-sandbox-api)", "openapi_spec_url": "https://doc.toasttab.com/openapi/authentication/operation/authenticationLoginPost/ (per-API OpenAPI under doc.toasttab.com/openapi/)", "docs_url": "https://doc.toasttab.com/doc/devguide/authentication.html" },
+  "auth": { "method": "oauth2_client_credentials", "scopes_needed_read": ["orders.orders:read (via ordersBulk)", "menus:read", "labor:read", "restaurants:read", "config:read"], "token_lifetime": "Docs example response shows expiresIn 19168 (seconds); re-login on expiry", "refresh": "No refresh token; call POST /authentication/v1/authentication/login again with clientId, clientSecret, userAccessType=TOAST_MACHINE_CLIENT" },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": true,
+    "partner_program_name": "Toast Integration Partner program (Partner API account)",
+    "app_review_or_marketplace_listing": "Docs: credentials are created by the Toast integrations team 'after your application has been reviewed and approved'",
+    "customer_admin_must_do": "Restaurant admin grants API access to the specific integration partner in Toast Web (partner access is per restaurant). Customer then supplies restaurant GUID / external ID. Fallback with no partner status: customer enables Toast Data Export nightly SFTP to our host (Toast Web > Integrations / data export).",
+    "cost_to_us": "UNVERIFIED (no public fee found; partner terms are negotiated)",
+    "time_to_approval": "UNVERIFIED (weeks to months per partner reports; no primary source)"
+  },
+  "sandbox": { "available": true, "how_to_get": "Issued by Toast integrations team after partner application; ws-sandbox-api host" },
+  "rate_limits": "UNVERIFIED (doc.toasttab.com returned 403 to WebFetch; rate-limit page not read)",
+  "webhooks": { "available": true, "events": ["orders updated", "menus updated", "labor/employee events (via Toast partner webhooks; exact list UNVERIFIED)"] },
+  "data_objects_to_pull": ["orders (ordersBulk)", "payments/tips", "checks", "menus/items/sales categories", "employees", "time entries/labor", "cash entries", "restaurant config", "discounts"],
+  "incremental_sync": "ordersBulk with startDate/endDate on modified time (businessDate for single-day); pagination by page; used in repo by day/month windows",
+  "unified_api_coverage": { "merge_dev": "no (no merge.dev/integrations/toast page; HTTP 404)", "codat": "unverified (docs.codat.io returned 403)", "apideck": "no (not found on developers.apideck.com/connectors page text)", "nango": "yes (https://www.nango.dev/docs/api-integrations/toast: user enters Client ID, Client Secret, API subdomain, Restaurant External ID; the Client ID must still come from Toast)", "airbyte_source": "no (docs.airbyte.com/integrations/sources/toast 404)" },
+  "recommended_path": "sftp_csv",
+  "build_effort_days": 6,
+  "blockers": [
+    "Multi-tenant Partner API requires Toast integrations team approval before any credentials exist; there is no self-serve developer signup.",
+    "Our existing Toast credential is Dabney's own machine client (TOAST_API_CLIENT_ID/SECRET, single restaurant GUID), not a multi-restaurant partner credential; it cannot be used for other customers.",
+    "existing in repo: ~/arthur/scripts/toast-api-monthly.js (machine-client login to ws-api.toasttab.com + ordersBulk, vault ~/.arthur/vault/toast.env names TOAST_API_CLIENT_ID, TOAST_API_CLIENT_SECRET, TOAST_RESTAURANT_GUID, TOAST_API_USER_ACCESS_TYPE)",
+    "existing in repo: ~/arthur/scripts/toast-nightly-sftp.sh and toast-sftp-rollup.js (Toast nightly data-export SFTP; env names TOAST_SFTP_HOST/USER/KEY)",
+    "existing in repo: ~/arthur/scripts/toast-admin-ops* and skills toast-admin-ops / toast-menu-item-write (browser scraping of Toast Web admin; TOAST_EMAIL/TOAST_ADMIN_PASSWORD names) - fragile, last resort",
+    "Interim route while partnership is pending: customer-side Toast Data Export to SFTP (needs customer to enable it) or Nango with the customer's own API client if the customer already holds one."
+  ],
+  "sources": [
+    "https://doc.toasttab.com/doc/devguide/authentication.html - 'team after your application has been reviewed and approved' (Partner integrations credentials) and POST /authentication/v1/authentication/login with clientId, clientSecret, userAccessType=TOAST_MACHINE_CLIENT",
+    "https://doc.toasttab.com/doc/devguide/apiClientAccounts.html - Partner API account: 'Used by integration partners who perform Toast API operations on multiple restaurants'; 'Individual restaurants choose to give API access to specific integration partners' (via search snippet)",
+    "https://www.nango.dev/docs/api-integrations/toast - Nango Toast connect quickstart",
+    "https://doc.toasttab.com/doc/devguide/apiAuthentication.html and https://pos.toasttab.com/partners/integration-partners - 403 to WebFetch; not read"
+  ]
+}

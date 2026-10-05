@@ -1,0 +1,33 @@
+{
+  "system": "Bloomerang",
+  "vendor": "Bloomerang",
+  "category": "nonprofit",
+  "api": { "type": "REST", "base_url": "https://api.bloomerang.com/v2/", "openapi_spec_url": "UNVERIFIED", "docs_url": "https://bloomerang.com/api/oauth-reference-guide" },
+  "auth": { "method": "oauth2_authcode", "scopes_needed_read": ["Standard (read; other scopes: StandardEditFinancialData, OrgAdmin). Default if unspecified is the highest available scope, so request Standard explicitly."], "token_lifetime": "Access token 3600 seconds; authorization code single use, 10 minute exchange window; refresh tokens valid 90 days", "refresh": "POST https://api.bloomerang.com/v2/oauth/token. 'Any attempt to use a refresh token that has already been used will result in the revocation of all tokens associated.' Single-use rotation, so persist the new refresh token atomically. Alternate: customer private API key (secondary, full access) for single-org use." },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": true,
+    "partner_program_name": "OAuth app registration with Bloomerang (no named program on the page read)",
+    "app_review_or_marketplace_listing": "Apps register by supplying application name, description, website URI, privacy policy URI, terms of service URI and redirect URI; 'Bloomerang will generate and send you a client ID and secret key.' Bloomerang decides.",
+    "customer_admin_must_do": "Authorize our app at https://crm.bloomerang.com/Authorize with a Bloomerang user (OrgAdmin may be needed to grant higher scopes). Alternatively generate a private API key in their Bloomerang settings (secondary source; steps UNVERIFIED).",
+    "cost_to_us": "UNVERIFIED",
+    "time_to_approval": "UNVERIFIED (manual issuance of client credentials)"
+  },
+  "sandbox": { "available": "unverified", "how_to_get": "Not stated on pages read." },
+  "rate_limits": "Not published as numbers (apis.io/secondary); use backoff and honor Retry-After on 429.",
+  "webhooks": { "available": "unverified", "events": [] },
+  "data_objects_to_pull": ["constituents", "transactions (donations)", "interactions", "funds, campaigns, appeals", "households", "tasks"],
+  "incremental_sync": "UNVERIFIED. Lists paginated with skip/take (take default 50); confirm a last-modified filter in the API reference.",
+  "unified_api_coverage": { "merge_dev": "unverified", "codat": "no", "apideck": "no", "nango": "no", "airbyte_source": "no" },
+  "recommended_path": "direct",
+  "build_effort_days": 5,
+  "blockers": [
+    "OAuth client credentials are issued manually by Bloomerang after app registration",
+    "Plan or edition requirements for API use not stated on the page read (UNVERIFIED)"
+  ],
+  "sources": [
+    "https://bloomerang.com/api/oauth-reference-guide - registration fields; 'Access tokens expire after 3600 seconds'; refresh valid 90 days; scopes Standard / StandardEditFinancialData / OrgAdmin; endpoints crm.bloomerang.com/Authorize and api.bloomerang.com/v2/oauth/token",
+    "https://apis.io/rate-limits/bloomerang/bloomerang-rate-limits/ (secondary) - no published numeric limit",
+    "nango/airbyte/apideck/codat lists - no Bloomerang"
+  ]
+}

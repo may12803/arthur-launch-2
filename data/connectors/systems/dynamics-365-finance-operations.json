@@ -1,0 +1,18 @@
+{
+  "system": "Microsoft Dynamics 365 (Finance and Operations)",
+  "vendor": "Microsoft",
+  "category": "erp",
+  "api": {"type": "OData", "base_url": "https://{environmentUrl}/data (service root); metadata at /data/$metadata and /Metadata/DataEntities", "openapi_spec_url": "none (OData $metadata EDMX)", "docs_url": "https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/odata"},
+  "auth": {"method": "oauth2_client_credentials", "scopes_needed_read": ["https://{environmentUrl}/.default (resource = environment URL, no trailing slash)"], "token_lifetime": "UNVERIFIED (Entra default)", "refresh": "Both Authorization Code Grant and service-to-service client credentials (shared secret or certificate) are supported"},
+  "access_requirements": {"self_serve_dev_account": false, "partner_program_required": false, "partner_program_name": "", "app_review_or_marketplace_listing": "None", "customer_admin_must_do": "Entra admin registers/consents our app (multi-tenant); then in F&O: System administration > Setup > Microsoft Entra applications > New, enter Client Id, Name, and a service-account User ID with least-privilege security roles, Save. Needs data entities marked IsPublic.", "cost_to_us": "Free; customer licenses cover integration users (UNVERIFIED)", "time_to_approval": "Same day after customer admin action"},
+  "sandbox": {"available": true, "how_to_get": "Customer's sandbox environment via Lifecycle Services/Power Platform admin; Microsoft trial environment (UNVERIFIED), no self-serve"},
+  "rate_limits": "Service protection API limits apply (figures UNVERIFIED, not on fetched page); OData server-driven paging max page size 10,000",
+  "webhooks": {"available": true, "events": ["Business events (via Azure Event Grid/Service Bus/HTTPS endpoint); event list UNVERIFIED"]},
+  "data_objects_to_pull": ["CustomersV3", "VendorsV2", "SalesOrderHeadersV2", "CustomerInvoiceHeaders", "VendorInvoiceHeaders", "ReleasedProductsV2", "LedgerJournalLines / GeneralJournalAccountEntries", "MainAccounts", "LegalEntities"],
+  "incremental_sync": "$filter on ModifiedDateTime where entity has it (not on all entities); otherwise Change tracking on entity (Enable change tracking) or Export to Data Lake; cross-company=true needed to read all legal entities",
+  "unified_api_coverage": {"merge_dev": "unverified (not in merge.dev/integrations HTML)", "codat": "yes (Dynamics 365 Finance & Operations, Premium tier per fetched summary; granularity UNVERIFIED)", "apideck": "yes by name (Dynamics 365; F&O specifically UNVERIFIED)", "nango": "yes (microsoft-dynamics-365-finance-and-operations and -cc)", "airbyte_source": "no"},
+  "recommended_path": "direct",
+  "build_effort_days": 7,
+  "blockers": ["Per-environment URL; admin must register app inside F&O", "Entities vary by customer customization", "Rate and service protection limits unverified"],
+  "sources": ["https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/services-home-page - \"Currently, both Authorization Code Grant flow and Service to service calls using client credentials (shared secret or certificate) are supported.\"", "same page - \"System administration > Setup > Microsoft Entra applications ... Select New\"", "https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/odata - \"maximum page size of 10,000\"; \"?cross-company=true\"", "https://github.com/NangoHQ/nango providers.yaml microsoft-dynamics-365-finance-and-operations-cc scope .default"]
+}

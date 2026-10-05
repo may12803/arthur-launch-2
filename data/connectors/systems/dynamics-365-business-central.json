@@ -1,0 +1,18 @@
+{
+  "system": "Microsoft Dynamics 365 Business Central",
+  "vendor": "Microsoft",
+  "category": "erp",
+  "api": {"type": "REST", "base_url": "https://api.businesscentral.dynamics.com/v2.0/{tenantId}/{environmentName}/api/v2.0 (host/prefix from Nango providers.yaml; /api/v2.0 from Microsoft API v2.0 reference title)", "openapi_spec_url": "https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/api-reference/v2.0/dynamics-open-api (linked as \"OpenAPI specification\" from the v2.0 index page)", "docs_url": "https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/api-reference/v2.0/"},
+  "auth": {"method": "oauth2_client_credentials", "scopes_needed_read": ["https://api.businesscentral.dynamics.com/.default (application permission API.ReadWrite.All; exact app permission name UNVERIFIED on fetched page)"], "token_lifetime": "UNVERIFIED (Entra default ~60-90 min)", "refresh": "Client credentials: request new token with secret/cert; authcode flow also supported via Entra"},
+  "access_requirements": {"self_serve_dev_account": true, "partner_program_required": false, "partner_program_name": "", "app_review_or_marketplace_listing": "None needed to call standard APIs; AppSource only for extensions", "customer_admin_must_do": "Entra admin consents to our multi-tenant app (admin consent URL); BC admin opens Microsoft Entra Applications page in the environment, adds our client ID, sets state Enabled and assigns permission sets (e.g. D365 READ / API-access sets). Step wording partially UNVERIFIED (S2S doc page found by search only).", "cost_to_us": "Free; customer API entitlement is part of BC license (API calls throttled by BC service limits)", "time_to_approval": "Same day after customer admin consent"},
+  "sandbox": {"available": true, "how_to_get": "Free BC online sandbox via Microsoft 365 Developer Program or a trial tenant (UNVERIFIED page)"},
+  "rate_limits": "UNVERIFIED on fetched page (BC online enforces per-environment operational limits incl. 6000 requests per 5 min per user per general knowledge; not confirmed)",
+  "webhooks": {"available": true, "events": ["API webhook subscriptions on entities (create/update/delete); details UNVERIFIED"]},
+  "data_objects_to_pull": ["customers", "vendors", "salesInvoices", "purchaseInvoices", "items", "generalLedgerEntries", "accounts", "customerPayments", "companies"],
+  "incremental_sync": "OData $filter=lastModifiedDateTime gt {cursor} on API v2.0 entities; webhooks supplement",
+  "unified_api_coverage": {"merge_dev": "unverified (not in merge.dev/integrations HTML)", "codat": "yes (Premium tier)", "apideck": "yes by name", "nango": "yes (microsoft-business-central)", "airbyte_source": "no"},
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": ["Per-customer environment name and tenant ID needed; customer must add our app inside BC, not only in Entra", "Rate limits not confirmed"],
+  "sources": ["https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/api-reference/v2.0/ - \"APIs for Business Central online are enabled by default\"; links OpenAPI specification", "https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/administration/automation-apis-using-s2s-authentication - \"S2S authentication uses the Client Credentials OAuth 2.0 Flow\" (via search)", "https://github.com/NangoHQ/nango providers.yaml microsoft-business-central", "https://docs.codat.io/integrations/accounting/overview"]
+}

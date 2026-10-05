@@ -1,0 +1,18 @@
+{
+  "system": "Oracle Fusion Cloud ERP",
+  "vendor": "Oracle",
+  "category": "erp",
+  "api": {"type": "REST", "base_url": "https://{pod}.fa.{region}.oraclecloud.com/fscmRestApi/resources/11.13.18.05/ (e.g. /invoices, /receivablesInvoices)", "openapi_spec_url": "UNVERIFIED (each resource has describe endpoint /resources/11.13.18.05/{resource}/describe; docs publish per-endpoint reference)", "docs_url": "https://docs.oracle.com/en/cloud/saas/financials/26b/farfa/Quick_Start.html"},
+  "auth": {"method": "oauth2_authcode", "scopes_needed_read": ["Fusion resource scope configured on the IAM confidential application (scope string per Oracle doc configure_oauth, exact value UNVERIFIED)"], "token_lifetime": "UNVERIFIED", "refresh": "Basic auth over SSL, JWT in header, or OAuth 2.0 via OCI IAM identity domain (2-legged or 3-legged); basic auth is simplest but needs a stored integration-user password"},
+  "access_requirements": {"self_serve_dev_account": false, "partner_program_required": false, "partner_program_name": "Oracle PartnerNetwork needed only for listing/ test pods; none for calling customer APIs", "app_review_or_marketplace_listing": "None", "customer_admin_must_do": "Create an integration user with a role that carries the needed Financials REST privileges (e.g. Accounts Receivable/Payables inquiry duties) and, for OAuth, register a confidential application in the Fusion IAM identity domain with grant types and scopes, then send us client ID/secret, pod URL.", "cost_to_us": "None", "time_to_approval": "Days to weeks driven by customer IT/security; no vendor approval"},
+  "sandbox": {"available": false, "how_to_get": "Only customer test/stage pods; no public sandbox found"},
+  "rate_limits": "UNVERIFIED for ERP REST; docs state REST API timeout of 5 minutes (via search snippet)",
+  "webhooks": {"available": true, "events": ["Business events for outbound integration via Oracle Integration Cloud / ERP Cloud Adapter (module-specific; ERP financial event list UNVERIFIED)"]},
+  "data_objects_to_pull": ["invoices (AP)", "receivablesInvoices", "suppliers", "customers (via TCA/accounts REST)", "journals/ledger via BI Publisher or FBDI exports", "items (productsV2)", "purchaseOrders", "payments"],
+  "incremental_sync": "q=LastUpdateDate>'{cursor}' filter on resource collections with limit/offset paging; bulk GL via BI Publisher reports or ESS-scheduled exports (not verified on a fetched page)",
+  "unified_api_coverage": {"merge_dev": "unverified (not in merge.dev/integrations HTML)", "codat": "unverified (Oracle string appears 3x on codat page, likely NetSuite; Fusion not confirmed)", "apideck": "unverified (name 'Oracle' present in connectors page text, product unconfirmed)", "nango": "no (only oracle-hcm and oracle-cloud-identity in providers.yaml)", "airbyte_source": "no (Oracle DB and Oracle Enterprise are database sources, not Fusion ERP)"},
+  "recommended_path": "direct",
+  "build_effort_days": 12,
+  "blockers": ["No unified API or Nango coverage: all custom", "Per-customer pod URL and IAM setup", "General ledger balances often need BI Publisher/FBDI, not plain REST", "No public sandbox"],
+  "sources": ["https://docs.oracle.com/en/cloud/saas/financials/26b/farfa/Quick_Start.html (search snippet) - \"basic authentication over SSL, JWT in the HTTP header over SSL, and OAuth 2.0\"", "https://docs.oracle.com/en/cloud/saas/financials/26a/farfa/api-invoices.html - /fscmRestApi/resources/11.13.18.05/invoices", "https://docs.oracle.com/en/cloud/saas/applications-common/26a/farca/configure_oauth.html - OAuth via Fusion IAM identity domain, 2-legged or 3-legged", "https://docs.oracle.com/en/cloud/saas/sales/fasqa/what-is-the-max-timout-for-rest-apis-in-oracle-fusion.html"]
+}

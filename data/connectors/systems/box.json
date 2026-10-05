@@ -1,0 +1,65 @@
+{
+  "system": "Box",
+  "vendor": "Box",
+  "category": "files",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.box.com/2.0",
+    "openapi_spec_url": "https://github.com/box/box-openapi (UNVERIFIED not fetched)",
+    "docs_url": "https://developer.box.com/"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "root_readonly (read all files and folders)"
+    ],
+    "token_lifetime": "access token 60 minutes",
+    "refresh": "OAuth2 refresh token lasts 60 days and is single-use; CCG/JWT apps simply request fresh tokens"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "Per-customer: Box admin approves/enables the custom app in Admin Console. Public Box Platform App Center listing optional (UNVERIFIED).",
+    "customer_admin_must_do": "Per Box docs: server-side apps (CCG, JWT) 'must be authorized' by the enterprise admin in Admin Console > Apps > Custom Apps Manager; OAuth 2.0 apps only need enablement 'when your enterprise leaves unpublished apps inactive by default'. Customer creates a service-account-scoped collaboration or grants app access.",
+    "cost_to_us": "Free developer account (UNVERIFIED)",
+    "time_to_approval": "none for custom app; admin approval only"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Free Box developer account"
+  },
+  "rate_limits": "UNVERIFIED",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "FILE.UPLOADED",
+      "FILE.TRASHED",
+      "FOLDER.CREATED (UNVERIFIED list)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "folders",
+    "files metadata",
+    "file content",
+    "collaborations",
+    "events"
+  ],
+  "incremental_sync": "Events API (/events with stream_position) or webhooks; UNVERIFIED details not fetched",
+  "unified_api_coverage": {
+    "merge_dev": "yes (Box: File storage on merge.dev/integrations)",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "unverified"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 6,
+  "blockers": [
+    "Enterprise admin must authorize CCG/JWT app"
+  ],
+  "sources": [
+    "https://developer.box.com/guides/authentication/ \u2014 'Client Credentials Grant ... Requires admin authorization'; 'access tokens valid for 60 minutes'; refresh token 60 days",
+    "https://www.merge.dev/integrations \u2014 Box (File storage)"
+  ]
+}

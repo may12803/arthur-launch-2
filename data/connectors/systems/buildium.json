@@ -1,0 +1,33 @@
+{
+  "system": "Buildium",
+  "vendor": "RealPage (Buildium)",
+  "category": "property",
+  "api": { "type": "REST", "base_url": "https://api.buildium.com/", "openapi_spec_url": "https://developer.buildium.com/ (OpenAPI served inside the Redoc page; direct spec URL not confirmed)", "docs_url": "https://developer.buildium.com/" },
+  "auth": { "method": "api_key", "scopes_needed_read": ["API key permissions are set per key by the customer admin when creating the key (exact permission list UNVERIFIED)"], "token_lifetime": "no token; client ID and secret sent on every request", "refresh": "n/a" },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None required for direct API-key use. Buildium docs describe the API as customer-key based.",
+    "customer_admin_must_do": "Per Propexo's Buildium guide (secondary, matches Buildium help): admin user on a Premium subscription turns on Settings > Application settings > System preferences > API settings > Open API toggle, then Settings > Developer Tools > Create API Key, names it, and copies the client ID and secret to us.",
+    "cost_to_us": "$0 (customer needs Buildium Premium plan per secondary sources)",
+    "time_to_approval": "Immediate once customer creates key"
+  },
+  "sandbox": { "available": true, "how_to_get": "Buildium FAQ in developer.buildium.com mentions a sandbox account (limited to 10 concurrent requests per second; reset not supported). How to obtain: UNVERIFIED." },
+  "rate_limits": "'we limit clients to 10 concurrent requests per second'; 429 returned on violation (developer.buildium.com).",
+  "webhooks": { "available": "unverified", "events": [] },
+  "data_objects_to_pull": ["rental properties", "units", "leases", "tenants/owners", "vendors", "bills", "general ledger accounts and transactions", "work orders/tasks", "applicants"],
+  "incremental_sync": "LastUpdatedFrom / LastUpdatedTo filters on several resources including general ledger transactions and applicants (changelog in developer.buildium.com); not confirmed for every resource.",
+  "unified_api_coverage": { "merge_dev": "unverified", "codat": "no", "apideck": "no", "nango": "yes (nango.dev/docs/integrations/all/buildium returns 200)", "airbyte_source": "no (not in oss_registry.json)" },
+  "recommended_path": "direct",
+  "build_effort_days": 5,
+  "blockers": [
+    "Customer must be on a Premium plan with Open API enabled by an admin (secondary source; confirm on Buildium help center)"
+  ],
+  "sources": [
+    "https://developer.buildium.com/ - 'x-buildium-client-id' and 'x-buildium-client-secret' request headers; 'we limit clients to 10 concurrent requests per second'; server https://api.buildium.com/",
+    "https://developer.buildium.com/ changelog - 'General ledger transaction resources can now be filtered by LastUpdatedFrom and LastUpdatedTo'",
+    "https://docs.propexo.com/pms-guidance/buildium/request-api-key (secondary) - Settings > Developer Tools > Create API Key; Premium subscription; Open API toggle",
+    "https://nango.dev/docs/integrations/all/buildium - 200"
+  ]
+}

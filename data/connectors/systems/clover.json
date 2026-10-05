@@ -1,0 +1,31 @@
+{
+  "system": "Clover",
+  "vendor": "Fiserv (Clover)",
+  "category": "pos",
+  "api": { "type": "REST", "base_url": "https://api.clover.com (US/CA); sandbox https://apisandbox.dev.clover.com", "openapi_spec_url": "https://docs.clover.com/dev/llms.txt (index of pages and OpenAPI endpoints)", "docs_url": "https://docs.clover.com/dev/docs/oauth-2-0-flow" },
+  "auth": { "method": "oauth2_authcode", "scopes_needed_read": ["Orders read", "Payments read", "Customers read", "Inventory read", "Employees read", "Merchant read (permissions set per app in Clover dev dashboard)"], "token_lifetime": "UNVERIFIED (oauth-2-0-flow page not read in detail)", "refresh": "UNVERIFIED" },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "Clover Developer Program / App Market",
+    "app_review_or_marketplace_listing": "Docs: 'The Clover team must approve all apps before you can publish them to the Clover App Market' (video, permissions, REST config, webhooks, legal docs reviewed). Production merchant OAuth: 'All interactions with merchant data sent through the Clover server must be authenticated with an OAuth token (and not a merchant API token as allowed in the sandbox)'.",
+    "customer_admin_must_do": "Merchant owner installs our app from the Clover App Market (or private install link) and approves permissions; changing permissions later requires uninstall and reinstall.",
+    "cost_to_us": "UNVERIFIED (developer account free per docs; listing fees not found)",
+    "time_to_approval": "UNVERIFIED ('approval timelines can vary'; contact Developer Relations)"
+  },
+  "sandbox": { "available": true, "how_to_get": "Create a Clover developer account and sandbox merchant in the developer dashboard (self-serve)" },
+  "rate_limits": "Per app: 50 rps, per token: 16 rps; concurrent per app 10, per token 5; 429 on exceed",
+  "webhooks": { "available": true, "events": ["orders", "inventory", "customers", "payments", "app install/uninstall (types per app config)"] },
+  "data_objects_to_pull": ["orders", "payments", "items/categories", "customers", "employees/shifts", "merchant"],
+  "incremental_sync": "Filter by modifiedTime on list endpoints (e.g. orders?filter=modifiedTime>=ms) plus webhooks",
+  "unified_api_coverage": { "merge_dev": "no (merge.dev/integrations/clover 404)", "codat": "unverified", "apideck": "no", "nango": "yes (https://www.nango.dev/docs/api-integrations/clover 200)", "airbyte_source": "no (404)" },
+  "recommended_path": "direct",
+  "build_effort_days": 6,
+  "blockers": ["Clover App Market approval needed to onboard arbitrary merchants (video, legal docs, functional review).", "Token lifetime and refresh details not verified from the OAuth page."],
+  "sources": [
+    "https://docs.clover.com/dev/docs/app-approval-and-app-market-faqs - 'Merchants must uninstall and reinstall the app for updated permissions'",
+    "https://docs.clover.com/docs/developer-app-approval - 'The Clover team must approve all apps before you can publish them to the Clover App Market' (search snippet)",
+    "https://docs.clover.com/dev/docs/api-usage-rate-limits - 'Per app: 50', 'Per token: 16'",
+    "https://docs.clover.com/dev/docs/making-rest-api-calls - US/CA base https://api.clover.com (search snippet)"
+  ]
+}

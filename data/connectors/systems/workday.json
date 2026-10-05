@@ -1,0 +1,66 @@
+{
+  "system": "Workday",
+  "vendor": "Workday",
+  "category": "hr_payroll",
+  "api": {
+    "type": "REST",
+    "base_url": "tenant-specific: https://<host>.workday.com/ccx/api/v1/<tenant> (UNVERIFIED exact pattern; not fetched)",
+    "openapi_spec_url": "https://developer.workday.com (per-API OpenAPI; UNVERIFIED exact URL)",
+    "docs_url": "https://developer.workday.com/documentation"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "Registered API Client functional-area scopes (e.g. Staffing, Contact Information) plus ISU security-group domain access; exact names UNVERIFIED"
+    ],
+    "token_lifetime": "UNVERIFIED (not found in pages checked)",
+    "refresh": "Refresh token via registered API client; details UNVERIFIED. Alternative: Integration System User (ISU) with RaaS/SOAP."
+  },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": true,
+    "partner_program_name": "Workday Partner / Developer program (UNVERIFIED exact name)",
+    "app_review_or_marketplace_listing": "Workday Marketplace listing for a product integration; customer-built integrations via ISU need no listing (UNVERIFIED)",
+    "customer_admin_must_do": "Per doc.workday.com search result: customer admin runs the 'Register API Client' task (Set Up: Tenant Setup - Security / Security Administration domains), supplying a unique client name and an x509 certificate public key plus the ISU user; creates an Integration System User and assigns it to a security group with view access to the needed domains and activates security policy changes.",
+    "cost_to_us": "UNVERIFIED (partner membership fees not published in pages checked)",
+    "time_to_approval": "UNVERIFIED"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Customer-owned sandbox tenant; Workday partners get a partner sandbox via program (UNVERIFIED). No public self-serve."
+  },
+  "rate_limits": "UNVERIFIED",
+  "webhooks": {
+    "available": false,
+    "events": []
+  },
+  "data_objects_to_pull": [
+    "workers",
+    "organizations",
+    "job profiles",
+    "compensation",
+    "time off",
+    "payroll results",
+    "GL journals (Financials)"
+  ],
+  "incremental_sync": "RaaS reports with Updated-Since prompt, or REST/SOAP Get_Workers with Transaction_Log_Criteria (UNVERIFIED, not fetched).",
+  "unified_api_coverage": {
+    "merge_dev": "yes (Workday: Accounting, HRIS, ATS listed on merge.dev/integrations)",
+    "codat": "unverified",
+    "apideck": "unverified",
+    "nango": "unverified",
+    "airbyte_source": "unverified"
+  },
+  "recommended_path": "unified_api:merge",
+  "build_effort_days": 15,
+  "blockers": [
+    "No self-serve developer access; needs customer tenant ISU plus API client registration by the customer admin",
+    "Partner program terms/cost unverified",
+    "Per-tenant URLs and per-customer security-group setup make direct build heavy"
+  ],
+  "sources": [
+    "https://doc.workday.com/admin-guide/en-us/workday-data-cloud/data-out/workday-live-data-query-/set-up-live-data-query-isu-authentication.html \u2014 search snippet: 'ISU credentials use simplified ISU authentication'",
+    "https://doc.workday.com/peakon/en-us/workday-peakon-employee-voice/integrations/workday-integration/nfa1667304944189.html \u2014 search snippet: 'Register API Client task ... unique client name and x509 certificate'",
+    "https://www.merge.dev/integrations \u2014 Workday (Accounting, HRIS, ATS)"
+  ]
+}
