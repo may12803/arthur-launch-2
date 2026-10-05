@@ -54,7 +54,11 @@ Every theme branch builds against this file. Change it only on feat/connector-pl
 - RPCs (server, `connectors-server`): `oauth_state_consume`, `connection_store_tokens`, `connection_secret`
   (existing), `connections_due(p_secret)`, `sync_run_start`, `sync_run_finish`, `sync_cursor_set`,
   `ingest_records(p_secret, p_run, p_records jsonb)` returns inserted count, `connection_health_record`,
-  `approval_propose`.
+  `approval_propose`, `ingested_records_since(p_secret, p_tenant_slug, p_after_id, p_limit)`,
+  `workstream_task_propose(p_secret, p_tenant_slug, p_workstream_key, p_title, p_detail, p_recommendation, p_evidence, p_proof)`,
+  `approvals_approved(p_secret, p_tenant_slug, p_limit)`, `approval_claim(p_secret, p_id)` (atomic, single use: sets claimed_at
+  only if null and status approved, returns the row or null), `approval_record_proof(p_secret, p_id, p_proof)`.
+  `approvals` therefore also carries `claimed_at timestamptz` and `executed_proof text`.
 
 ## Code layout (owner: theme B unless noted)
 - `lib/connectors/definitions.generated.ts` from `scripts/gen-connector-definitions.mjs` (reads the 48 JSON files,
