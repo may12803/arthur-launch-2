@@ -19,8 +19,8 @@
       "account:read",
       "updates:read"
     ],
-    "token_lifetime": "UNVERIFIED (not fetched)",
-    "refresh": "UNVERIFIED"
+    "token_lifetime": "Legacy OAuth 2.0 tokens do not expire until the user uninstalls the app; a newer OAuth 2.1 flow adds expiring tokens (lifetime UNVERIFIED)",
+    "refresh": "Legacy flow: no refresh tokens; OAuth 2.1 flow: refresh tokens (details UNVERIFIED)"
   },
   "access_requirements": {
     "self_serve_dev_account": true,
@@ -35,7 +35,7 @@
     "available": true,
     "how_to_get": "Free developer account loveleedaystudios.monday.com via Developer Center (self-serve)"
   },
-  "rate_limits": "UNVERIFIED (not fetched)",
+  "rate_limits": "Complexity budget 5M points/min per app token (read and write separately), 10M/min personal token; queries/min Enterprise 5,000, Pro 2,500, other 1,000; daily calls Free/Standard/Basic 1,000, Pro 10,000, Enterprise 25,000; concurrency Enterprise 250, Pro 100, other 40; 5,000 requests per 10 s per IP; items queries max 100 items",
   "webhooks": {
     "available": true,
     "events": [
@@ -62,12 +62,12 @@
   },
   "recommended_path": "direct",
   "build_effort_days": 4,
-  "blockers": [
-    "GraphQL complexity budget applies: UNVERIFIED figures."
-  ],
+  "blockers": [],
   "sources": [
     "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/monday.json - app id on file, read scopes saved, probe 401 invalid_grant (client accepted)",
     "../connectors/EXPANSION-A.json and EXPANSION-B.json - monday.com rows (self-serve, GraphQL)",
+    "https://developer.monday.com/apps/docs/oauth",
+    "https://developer.monday.com/api-reference/docs/rate-limits",
     "https://developer.monday.com/apps/docs/oauth"
   ]
 }

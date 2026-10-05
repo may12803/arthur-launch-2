@@ -1,7 +1,7 @@
 {
   "key": "square",
-  "at": "2026-10-05T14:58:34.393Z",
-  "status": "NOT_CONFIGURED",
+  "at": "2026-10-05T18:25:39.772Z",
+  "status": "DATA_FLOWED_SANDBOX",
   "names": [
     "SQUARE_APPLICATION_ID",
     "SQUARE_LOGIN_EMAIL",
@@ -10,5 +10,11 @@
     "SQUARE_SANDBOX_APPLICATION_ID",
     "SQUARE_SANDBOX_OAUTH_SECRET"
   ],
-  "steps": []
+  "steps": [
+    "sandbox locations: HTTP 200 1 location(s)"
+  ],
+  "evidence": {
+    "object": "locations",
+    "record_count": 1
+  }
 }

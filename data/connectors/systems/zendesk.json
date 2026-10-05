@@ -29,7 +29,7 @@
     "available": true,
     "how_to_get": "14-day trial account loveleedaystudios.zendesk.com, no card (status file); Zendesk sandboxes need Enterprise plan (EXPANSION-A, third-party)"
   },
-  "rate_limits": "UNVERIFIED (not fetched)",
+  "rate_limits": "Requests/min by plan: Team 200, Growth 400, Professional 400, Enterprise 700, Enterprise Plus 2,500, High Volume add-on 2,500; incremental exports 10/min (30 with High Volume); 429 with Retry-After; account-wide safeguard 100,000/min",
   "webhooks": {
     "available": true,
     "events": [
@@ -44,7 +44,7 @@
     "ticket fields",
     "groups"
   ],
-  "incremental_sync": "UNVERIFIED (incremental export endpoints with start_time cursor per Zendesk docs; not fetched)",
+  "incremental_sync": "Incremental export endpoints: start_time (Unix epoch, more than one minute in the past) then cursor; cursor-based for tickets and users, time-based for organizations; per_page up to 1,000; 10 requests/min",
   "unified_api_coverage": {
     "merge_dev": "UNVERIFIED",
     "codat": "UNVERIFIED",
@@ -56,12 +56,13 @@
   "build_effort_days": 4,
   "blockers": [
     "The OAuth client lives in a 14-day trial and vanishes on lapse; re-create or convert before 2026-10-19.",
-    "Global OAuth for multi-customer apps needs Zendesk approval: UNVERIFIED.",
-    "Rate limits UNVERIFIED."
+    "Global OAuth for multi-customer apps needs Zendesk approval: UNVERIFIED."
   ],
   "sources": [
     "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/zendesk.json - confidential client LOVELEEDAY, probe 400 invalid_grant",
     "../connectors/EXPANSION-A.json and EXPANSION-B.json - Zendesk rows",
-    "https://developer.zendesk.com/api-reference/introduction/security-and-auth/"
+    "https://developer.zendesk.com/api-reference/introduction/security-and-auth/",
+    "https://developer.zendesk.com/api-reference/introduction/rate-limits/",
+    "https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"
   ]
 }

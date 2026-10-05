@@ -1,0 +1,16 @@
+{
+  "key": "mailchimp",
+  "at": "2026-10-05T18:25:33.575Z",
+  "status": "NOT_CONFIGURED",
+  "names": [
+    "ADDR1",
+    "ADDR_CITY",
+    "ADDR_STATE",
+    "ADDR_ZIP",
+    "MAILCHIMP_LOGIN_EMAIL",
+    "MAILCHIMP_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "missing names: MAILCHIMP_CLIENT_ID, MAILCHIMP_CLIENT_SECRET"
+  ]
+}

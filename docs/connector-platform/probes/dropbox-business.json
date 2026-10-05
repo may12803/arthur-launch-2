@@ -1,6 +1,6 @@
 {
   "key": "dropbox-business",
-  "at": "2026-10-05T14:58:30.764Z",
+  "at": "2026-10-05T18:25:18.226Z",
   "status": "CLIENT_VERIFIED",
   "names": [
     "DROPBOX_CLIENT_ID",
@@ -9,6 +9,7 @@
     "DROPBOX_LOGIN_PASSWORD"
   ],
   "steps": [
-    "token endpoint (client_secret_basic): HTTP 400 error=invalid_grant"
+    "token endpoint (client_secret_basic): HTTP 400 error=invalid_grant",
+    "wrong-secret control (client_secret_basic): HTTP 400 error=(unrecognized, not printed)"
   ]
 }

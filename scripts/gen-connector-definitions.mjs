@@ -23,6 +23,9 @@ const RATE = {
   stripe: { rps: 25, burst: 25 },
   mailchimp: { rps: 10, burst: 10 },
   acumatica: { rps: 50 / 60, burst: 5 },
+  clickup: { rps: 100 / 60, burst: 10 },
+  typeform: { rps: 2, burst: 2 },
+  freshdesk: { rps: 100 / 60, burst: 10 },
 };
 const DEFAULT_RATE = { rps: 2, burst: 2, source: 'default_unverified' };
 

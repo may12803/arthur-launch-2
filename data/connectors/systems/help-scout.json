@@ -11,10 +11,10 @@
   "auth": {
     "method": "oauth2_authcode",
     "scopes_needed_read": [
-      "UNVERIFIED (Mailbox API v2 OAuth grants the app's access as the authorizing user; no scope list fetched)"
+      "None: Help Scout documents no OAuth scopes; access equals the authorizing user (docs)"
     ],
-    "token_lifetime": "UNVERIFIED (not fetched)",
-    "refresh": "POST https://api.helpscout.net/v2/oauth2/token with refresh token (UNVERIFIED lifetime)"
+    "token_lifetime": "Access token valid 2 days (expires_in 172800)",
+    "refresh": "Refresh token exchanged at https://api.helpscout.net/v2/oauth2/token on a 401; each refresh returns a new refresh token that replaces the old one (refresh-token lifetime UNVERIFIED)"
   },
   "access_requirements": {
     "self_serve_dev_account": true,
@@ -29,7 +29,7 @@
     "available": true,
     "how_to_get": "15-day trial account, no card asked (status file); sandbox otherwise UNVERIFIED"
   },
-  "rate_limits": "UNVERIFIED (not fetched)",
+  "rate_limits": "Limit depends on plan (per-minute numbers UNVERIFIED); headers X-RateLimit-Limit-Minute, X-RateLimit-Remaining-Minute, X-RateLimit-Retry-After; 429 on excess; write requests (POST, PUT, DELETE, PATCH) count as 2",
   "webhooks": {
     "available": true,
     "events": [
@@ -57,11 +57,13 @@
   "blockers": [
     "Only ONE redirect URL allowed; only the portal callback is set (no localhost).",
     "OAuth app disappears if the 15-day trial lapses without a paid plan.",
-    "Rate limits UNVERIFIED."
+    "Per-plan per-minute rate limit numbers UNVERIFIED (docs say it depends on plan)."
   ],
   "sources": [
     "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/helpscout.json - app created, probe 400 invalid_request 'Invalid code' (client accepted)",
     "../connectors/EXPANSION-B.json - Help Scout row (marked UNVERIFIED)",
-    "https://developer.helpscout.com/mailbox-api/overview/authentication/"
+    "https://developer.helpscout.com/mailbox-api/overview/authentication/",
+    "https://developer.helpscout.com/mailbox-api/overview/authentication/",
+    "https://developer.helpscout.com/mailbox-api/overview/rate-limiting/"
   ]
 }

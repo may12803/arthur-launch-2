@@ -1,0 +1,18 @@
+{
+  "key": "hubspot",
+  "at": "2026-10-05T18:25:31.799Z",
+  "status": "CONFIGURED",
+  "names": [
+    "HUBSPOT_ACCOUNT_ID",
+    "HUBSPOT_CLIENT_ID",
+    "HUBSPOT_CLIENT_SECRET",
+    "HUBSPOT_LOGIN_EMAIL",
+    "HUBSPOT_LOGIN_PASSWORD",
+    "HUBSPOT_PERSONAL_ACCESS_KEY"
+  ],
+  "steps": [
+    "real secret: HTTP 400 error=invalid_request",
+    "wrong-secret control: HTTP 400 error=invalid_request",
+    "no grant-level error: client validity unproven"
+  ]
+}

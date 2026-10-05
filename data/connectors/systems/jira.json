@@ -15,8 +15,8 @@
       "read:jira-user",
       "offline_access"
     ],
-    "token_lifetime": "UNVERIFIED (not fetched)",
-    "refresh": "offline_access scope returns a refresh token; exchange at https://auth.atlassian.com/oauth/token (UNVERIFIED lifetime)"
+    "token_lifetime": "Access token expires_in is returned with each token (value not fixed in docs)",
+    "refresh": "offline_access scope returns a rotating refresh token; exchange at https://auth.atlassian.com/oauth/token; expires after 90 days of inactivity, each use issues a new one and invalidates the old (10-minute reuse interval)"
   },
   "access_requirements": {
     "self_serve_dev_account": true,
@@ -31,7 +31,7 @@
     "available": true,
     "how_to_get": "UNVERIFIED (free Atlassian Jira site can be created for testing; not confirmed in status file)"
   },
-  "rate_limits": "UNVERIFIED (not fetched)",
+  "rate_limits": "Points-based hourly quota: 65,000 points/hour global pool by default; per-tenant pool (100,000+10 x users Standard, 130,000+20 x users Premium, 150,000+30 x users Enterprise, cap 500,000) only for apps granted it; per-endpoint burst GET 100/s, POST 100/s, PUT 50/s, DELETE 50/s; 429 with Retry-After",
   "webhooks": {
     "available": true,
     "events": [
@@ -59,11 +59,12 @@
   "build_effort_days": 4,
   "blockers": [
     "Only ONE 3LO callback URL allowed; only the portal callback is registered (no localhost).",
-    "Status probe is not discriminating (same 400/403 for real and wrong secrets); credentials unproven beyond the console.",
-    "Rate limits UNVERIFIED."
+    "Status probe is not discriminating (same 400/403 for real and wrong secrets); credentials unproven beyond the console."
   ],
   "sources": [
     "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/atlassian.json - app LOVELEEDAY, OAuth 2.0 3LO, Jira scopes read:jira-work and read:jira-user",
+    "https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/",
+    "https://developer.atlassian.com/cloud/jira/platform/rate-limiting/",
     "https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/"
   ]
 }

@@ -1,0 +1,64 @@
+{
+  "system": "Freshdesk",
+  "vendor": "Freshworks Inc. (Freshdesk)",
+  "category": "support",
+  "api": {
+    "type": "REST",
+    "base_url": "https://{domain}.freshdesk.com/api/v2",
+    "openapi_spec_url": "UNVERIFIED (none mentioned on the docs page fetched)",
+    "docs_url": "https://developers.freshdesk.com/api/"
+  },
+  "auth": {
+    "method": "api_key",
+    "scopes_needed_read": [
+      "None: an API key carries the permissions of the agent who owns it; use a read-only agent role (docs)"
+    ],
+    "token_lifetime": "Long-lived key until the agent resets it",
+    "refresh": "None; HTTP Basic auth with the API key as username and any password (docs: curl -u apikey:X)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None for API-key use",
+    "customer_admin_must_do": "Customer opens Profile settings in Freshdesk, copies their API key, and pastes it with their Freshdesk domain (https://<domain>.freshdesk.com) into LOVELEEDAY. No OAuth app exists.",
+    "cost_to_us": "$0 (free trial account for testing; UNVERIFIED whether a free plan exposes the API)",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": {
+    "available": false,
+    "how_to_get": "UNVERIFIED (no sandbox on the docs page fetched; use a trial account)"
+  },
+  "rate_limits": "Per minute by plan: Blossom 100, Garden 200, Estate 400, Forest 700; list tickets 50/60/100/200 and list contacts 50/60/100/200 per minute on those plans; extra API calls can be purchased",
+  "webhooks": {
+    "available": false,
+    "events": []
+  },
+  "data_objects_to_pull": [
+    "tickets",
+    "conversations",
+    "contacts",
+    "companies",
+    "agents",
+    "groups",
+    "solution articles"
+  ],
+  "incremental_sync": "GET /api/v2/tickets?updated_since=ISO with per_page up to 100 (default 30); docs advise against page numbers over 500",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 2,
+  "blockers": [
+    "Customers must paste their own API key (secure storage required); the key has the full permissions of its owner, so read-only is enforced in our adapter.",
+    "The docs page fetched mentions no webhooks; automation-rule webhooks exist in the product but are not an API surface we verified.",
+    "Lowest plan allows 100 calls/min and 50 ticket-list calls/min, which makes a large backfill slow."
+  ],
+  "sources": [
+    "https://developers.freshdesk.com/api/ - Basic auth, rate-limit table, tickets updated_since and per_page, resource list"
+  ]
+}

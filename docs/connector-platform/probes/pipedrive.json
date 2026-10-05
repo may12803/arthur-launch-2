@@ -1,0 +1,15 @@
+{
+  "key": "pipedrive",
+  "at": "2026-10-05T18:25:38.309Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "PIPEDRIVE_CLIENT_ID",
+    "PIPEDRIVE_CLIENT_SECRET",
+    "PIPEDRIVE_LOGIN_EMAIL",
+    "PIPEDRIVE_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "real secret: HTTP 400 error=invalid_grant",
+    "wrong-secret control: HTTP 401 error=invalid_client"
+  ]
+}

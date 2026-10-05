@@ -1,0 +1,10 @@
+{
+  "key": "pandadoc",
+  "at": "2026-10-05T18:25:38.308Z",
+  "status": "NOT_CONFIGURED",
+  "names": [
+    "PANDADOC_LOGIN_EMAIL",
+    "PANDADOC_LOGIN_PASSWORD"
+  ],
+  "steps": []
+}

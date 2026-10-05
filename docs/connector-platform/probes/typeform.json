@@ -1,0 +1,15 @@
+{
+  "key": "typeform",
+  "at": "2026-10-05T18:25:40.281Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "TYPEFORM_CLIENT_ID",
+    "TYPEFORM_CLIENT_SECRET",
+    "TYPEFORM_LOGIN_EMAIL",
+    "TYPEFORM_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "real secret: HTTP 401 error=ErrTokenInvalid",
+    "wrong-secret control: HTTP 400 error=bad_request"
+  ]
+}

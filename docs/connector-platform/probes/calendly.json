@@ -1,0 +1,16 @@
+{
+  "key": "calendly",
+  "at": "2026-10-05T18:25:24.073Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "CALENDLY_CLIENT_ID",
+    "CALENDLY_CLIENT_SECRET",
+    "CALENDLY_LOGIN_EMAIL",
+    "CALENDLY_LOGIN_PASSWORD",
+    "CALENDLY_WEBHOOK_SIGNING_KEY"
+  ],
+  "steps": [
+    "real secret: HTTP 400 error=invalid_grant",
+    "wrong-secret control: HTTP 400 error=invalid_request"
+  ]
+}

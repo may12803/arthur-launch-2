@@ -13,8 +13,8 @@
     "scopes_needed_read": [
       "None: ClickUp OAuth apps have no scope picker; access is the authorizing user's workspaces (status file clickup.json)"
     ],
-    "token_lifetime": "UNVERIFIED (ClickUp OAuth tokens are documented as non-expiring; not fetched)",
-    "refresh": "UNVERIFIED"
+    "token_lifetime": "Access token currently does not expire ('subject to change' per ClickUp docs)",
+    "refresh": "None: no refresh-token mechanism documented"
   },
   "access_requirements": {
     "self_serve_dev_account": true,
@@ -29,7 +29,7 @@
     "available": false,
     "how_to_get": "No separate sandbox; Free Forever workspace 'Loveleedaystudios' used for testing"
   },
-  "rate_limits": "UNVERIFIED (not fetched)",
+  "rate_limits": "100 requests/min on Free Forever, Unlimited and Business; 1,000/min on Business Plus; 10,000/min on Enterprise; 429 with X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset (Unix time)",
   "webhooks": {
     "available": true,
     "events": []
@@ -44,7 +44,7 @@
     "time entries",
     "goals"
   ],
-  "incremental_sync": "UNVERIFIED (tasks endpoint supports date_updated_gt filter per ClickUp docs; not fetched)",
+  "incremental_sync": "GET /list/{id}/task with date_updated_gt (Unix ms), 100 tasks per page, include_closed and subtasks off by default",
   "unified_api_coverage": {
     "merge_dev": "UNVERIFIED",
     "codat": "UNVERIFIED",
@@ -56,12 +56,13 @@
   "build_effort_days": 4,
   "blockers": [
     "Redirect field stores only the origin https://portal.loveleedaystudios.com; the localhost URL was not retained (redirect_uris_set: partial).",
-    "No scope picker means read-only cannot be enforced at the token level; enforce in our adapter.",
-    "Rate limits UNVERIFIED."
+    "No scope picker means read-only cannot be enforced at the token level; enforce in our adapter."
   ],
   "sources": [
     "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/clickup.json - app LOVELEEDAY registered, token endpoint probe 401 OAUTH_013 'Code not found' (client accepted)",
     "../connectors/EXPANSION-B.json - ClickUp row (self-serve, REST, OAuth2; marked UNVERIFIED)",
-    "https://developer.clickup.com/docs/authentication"
+    "https://developer.clickup.com/docs/authentication",
+    "https://developer.clickup.com/docs/rate-limits",
+    "https://developer.clickup.com/reference/gettasks"
   ]
 }

@@ -88,6 +88,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
   "admin": "In ArcGIS Online/Enterprise: register an app (OAuth client id/secret) or create an API key with item access, and share the target feature layers with it (or provide a read-only service account). Customer-hosted Enterprise servers must be reachable from us.",
   "wait": "Immediate"
  },
+ "freshdesk": {
+  "admin": "Customer opens Profile settings in Freshdesk, copies their API key, and pastes it with their Freshdesk domain (https://<domain>.freshdesk.com) into LOVELEEDAY. No OAuth app exists.",
+  "wait": "Immediate"
+ },
  "google-bigquery": {
   "admin": "Grant our service account dataset-level viewer plus a job-running role in a project that bills queries. Org policy may block external principals (domain-restricted sharing); admin must allow our domain/principal.",
   "wait": ""
@@ -207,6 +211,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
  "tyler-munis": {
   "admin": "Customer (the municipality) must have an active Tyler license and engage Tyler professional services to provision API credentials for us..",
   "wait": ""
+ },
+ "typeform": {
+  "admin": "Typeform account member authorizes the LOVELEEDAY app and grants the read scopes.",
+  "wait": "Immediate"
  },
  "workday": {
   "admin": "Per doc.workday.com search result: customer admin runs the 'Register API Client' task (Set Up: Tenant Setup - Security / Security Administration domains), supplying a unique client name and an x509 certificate public key plus the ISU user; creates an Integration System User and assigns it to a security group with view access to the needed domains and activates security policy changes.",

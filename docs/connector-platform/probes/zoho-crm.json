@@ -1,0 +1,16 @@
+{
+  "key": "zoho-crm",
+  "at": "2026-10-05T18:25:43.322Z",
+  "status": "CONFIGURED",
+  "names": [
+    "ZOHO_CLIENT_ID",
+    "ZOHO_CLIENT_SECRET",
+    "ZOHO_LOGIN_EMAIL",
+    "ZOHO_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "real secret: HTTP 200 error=invalid_code",
+    "wrong-secret control: HTTP 200 error=invalid_code",
+    "control answered the same as the real secret: client validity unproven"
+  ]
+}

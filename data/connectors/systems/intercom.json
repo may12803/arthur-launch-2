@@ -11,7 +11,7 @@
   "auth": {
     "method": "oauth2_authcode",
     "scopes_needed_read": [
-      "Read-only permission set in Developer Hub: read users and companies, read conversations, read admins, read tags (exact labels UNVERIFIED; write/update/delete/merge/manage left unchecked)"
+      "Developer Hub permissions (read-only subset): Read and list users and companies; Read conversations; Read tags; Read admins; Read counts; Read events; Read tickets (write permissions left unchecked)"
     ],
     "token_lifetime": "UNVERIFIED (not fetched)",
     "refresh": "UNVERIFIED"
@@ -55,12 +55,13 @@
   "recommended_path": "direct",
   "build_effort_days": 4,
   "blockers": [
-    "Rate limits UNVERIFIED.",
-    "Regional workspaces (EU/AU) use different API hosts: UNVERIFIED."
+    "Numeric rate limits UNVERIFIED (not stated on the pages fetched).",
+    "Regional OAuth hosts differ: app.intercom.com (US), app.eu.intercom.com (EU), app.au.intercom.com (AU); a Google-signed-in customer on the wrong host fails instead of being prompted, so the region must be matched."
   ],
   "sources": [
     "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/intercom.json - OAuth enabled, read-only permissions, probe 401 unauthorized_code (client accepted)",
     "../connectors/EXPANSION-B.json - Intercom row (marked UNVERIFIED)",
-    "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication"
+    "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication",
+    "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/setting-up-oauth"
   ]
 }

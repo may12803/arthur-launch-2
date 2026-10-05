@@ -1,0 +1,73 @@
+{
+  "system": "Typeform",
+  "vendor": "Typeform S.L.",
+  "category": "marketing",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.typeform.com (EU data center: https://api.eu.typeform.com)",
+    "openapi_spec_url": "UNVERIFIED (none confirmed)",
+    "docs_url": "https://www.typeform.com/developers/get-started/applications/"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "accounts:read",
+      "forms:read",
+      "responses:read",
+      "workspaces:read",
+      "offline"
+    ],
+    "token_lifetime": "Access token default expiry 1 week",
+    "refresh": "Include the offline scope to receive a refresh token; POST https://api.typeform.com/oauth/token with grant_type=refresh_token; each refresh invalidates the old refresh token"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None for OAuth on an unlisted app (status file: nothing to submit)",
+    "customer_admin_must_do": "Typeform account member authorizes the LOVELEEDAY app and grants the read scopes.",
+    "cost_to_us": "$0 (free Typeform account)",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": {
+    "available": false,
+    "how_to_get": "No sandbox; free Typeform account used for testing"
+  },
+  "rate_limits": "2 requests per second per Typeform account for the Create and Responses APIs; Webhooks and Embed have no rate limit",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "form_response"
+    ]
+  },
+  "data_objects_to_pull": [
+    "forms",
+    "responses",
+    "workspaces",
+    "themes",
+    "images"
+  ],
+  "incremental_sync": "GET /forms/{id}/responses with since/until (ISO 8601 or Unix seconds) and after/before cursors; responses from the last ~30 minutes may be missing, so webhooks are advised for real time; page_size maximum UNVERIFIED (not stated)",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 3,
+  "blockers": [
+    "Accounts on the EU data center must use api.eu.typeform.com (also api.typeform.eu for newer EU accounts); region must be detected per customer.",
+    "Refresh rotation invalidates the old refresh token, so every refresh must persist the new one atomically.",
+    "The client secret was echoed once into an agent transcript during registration; delete and re-register the app if that transcript is not trusted (status file)."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/typeform.json - app LOVELEEDAY registered; bogus-code probe HTTP 401 ErrTokenInvalid vs wrong secret HTTP 400 INVALID_AUTHORIZATION",
+    "https://www.typeform.com/developers/get-started/applications/",
+    "https://www.typeform.com/developers/get-started/scopes/",
+    "https://www.typeform.com/developers/get-started/",
+    "https://www.typeform.com/developers/responses/reference/retrieve-responses/",
+    "https://www.typeform.com/developers/webhooks/"
+  ]
+}

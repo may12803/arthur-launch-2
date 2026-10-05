@@ -1,0 +1,15 @@
+{
+  "key": "airtable",
+  "at": "2026-10-05T18:25:22.559Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "AIRTABLE_CLIENT_ID",
+    "AIRTABLE_CLIENT_SECRET",
+    "AIRTABLE_LOGIN_EMAIL",
+    "AIRTABLE_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "real secret: HTTP 400 error=invalid_grant",
+    "wrong-secret control: HTTP 401 error=invalid_client"
+  ]
+}

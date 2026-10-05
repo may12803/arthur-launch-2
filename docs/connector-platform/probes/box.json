@@ -1,12 +1,12 @@
 {
-  "key": "xero",
-  "at": "2026-10-05T18:25:41.084Z",
+  "key": "box",
+  "at": "2026-10-05T18:25:23.387Z",
   "status": "CLIENT_VERIFIED",
   "names": [
-    "XERO_CLIENT_ID",
-    "XERO_CLIENT_SECRET",
-    "XERO_LOGIN_EMAIL",
-    "XERO_LOGIN_PASSWORD"
+    "BOX_CLIENT_ID",
+    "BOX_CLIENT_SECRET",
+    "BOX_LOGIN_EMAIL",
+    "BOX_LOGIN_PASSWORD"
   ],
   "steps": [
     "real secret: HTTP 400 error=invalid_grant",

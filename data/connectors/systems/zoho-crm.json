@@ -16,8 +16,8 @@
       "ZohoCRM.users.READ",
       "ZohoCRM.org.READ"
     ],
-    "token_lifetime": "UNVERIFIED (not fetched)",
-    "refresh": "POST https://accounts.zoho.com/oauth/v2/token with refresh_token (UNVERIFIED lifetime)"
+    "token_lifetime": "Access token expires after 1 hour (expires_in 3600)",
+    "refresh": "POST https://accounts.zoho.com/oauth/v2/token with refresh_token; refresh-token expiry UNVERIFIED (not stated on the page fetched)"
   },
   "access_requirements": {
     "self_serve_dev_account": true,
@@ -32,7 +32,7 @@
     "available": false,
     "how_to_get": "UNVERIFIED (no separate sandbox confirmed; Zoho CRM sandbox is a paid-plan feature per general knowledge, not fetched)"
   },
-  "rate_limits": "UNVERIFIED (not fetched)",
+  "rate_limits": "Credit budget per 24 h: Free 5,000; Standard 50,000+250/user (max 100,000); Professional 50,000+500/user (max 3,000,000); Enterprise 50,000+1,000/user (max 5,000,000); Ultimate 50,000+2,000/user; concurrency per org per app Free 5, Standard 10, Professional 15, Enterprise 20, Ultimate 25; sub-limit 10 concurrent for heavy ops; no per-minute limit",
   "webhooks": {
     "available": true,
     "events": [
@@ -48,7 +48,7 @@
     "Tasks",
     "Users"
   ],
-  "incremental_sync": "UNVERIFIED (Modified_Time filtering and COQL; not fetched)",
+  "incremental_sync": "GET records with sort_by=Modified_Time and the If-Modified-Since header; per_page max 200; page_token pagination up to 100,000 records; COQL for filtered queries (UNVERIFIED)",
   "unified_api_coverage": {
     "merge_dev": "UNVERIFIED",
     "codat": "UNVERIFIED",
@@ -59,12 +59,13 @@
   "recommended_path": "direct",
   "build_effort_days": 4,
   "blockers": [
-    "US data center only (accounts.zoho.com); EU/IN/AU customers need per-data-center clients (status file).",
-    "Rate limits UNVERIFIED."
+    "US data center only (accounts.zoho.com); EU/IN/AU customers need per-data-center clients (status file)."
   ],
   "sources": [
     "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/zoho.json - server-based client LOVELEEDAY, probe returned invalid_code (client accepted)",
     "../connectors/EXPANSION-A.json and EXPANSION-B.json - Zoho CRM rows",
-    "https://www.zoho.com/crm/developer/docs/api/v8/register-client.html"
+    "https://www.zoho.com/crm/developer/docs/api/v8/register-client.html",
+    "https://www.zoho.com/crm/developer/docs/api/v8/api-limits.html",
+    "https://www.zoho.com/crm/developer/docs/api/v8/get-records.html"
   ]
 }

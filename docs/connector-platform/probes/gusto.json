@@ -1,7 +1,7 @@
 {
   "key": "gusto",
-  "at": "2026-10-05T14:58:34.393Z",
-  "status": "NOT_CONFIGURED",
+  "at": "2026-10-05T18:25:30.508Z",
+  "status": "CLIENT_VERIFIED",
   "names": [
     "GUSTO_APPLICATION_ID",
     "GUSTO_CLIENT_ID",
@@ -13,5 +13,8 @@
     "GUSTO_RECOVERY_CODES",
     "GUSTO_TOTP_SECRET"
   ],
-  "steps": []
+  "steps": [
+    "real secret: HTTP 200 token_issued=true",
+    "wrong-secret control: HTTP 401 token_issued=false"
+  ]
 }

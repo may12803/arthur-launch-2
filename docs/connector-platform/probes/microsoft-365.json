@@ -1,0 +1,16 @@
+{
+  "key": "microsoft-365",
+  "at": "2026-10-05T18:25:33.576Z",
+  "status": "NOT_CONFIGURED",
+  "names": [
+    "DANIEL_DOB",
+    "DOB_D",
+    "DOB_M",
+    "DOB_Y",
+    "MICROSOFT_LOGIN_EMAIL",
+    "MICROSOFT_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "missing names: MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET"
+  ]
+}

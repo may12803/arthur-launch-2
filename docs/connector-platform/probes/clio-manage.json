@@ -1,0 +1,15 @@
+{
+  "key": "clio-manage",
+  "at": "2026-10-05T18:25:25.423Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "CLIO_CLIENT_ID",
+    "CLIO_CLIENT_SECRET",
+    "CLIO_LOGIN_EMAIL",
+    "CLIO_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "real secret: HTTP 400 error=invalid_grant",
+    "wrong-secret control: HTTP 422 error=(unrecognized)"
+  ]
+}

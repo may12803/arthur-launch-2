@@ -66,6 +66,7 @@
   "sources": [
     "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/docusign.json - Private custom integration, Development, Ready to Submit; probe 400 invalid_grant",
     "../connectors/EXPANSION-A.json and EXPANSION-B.json - DocuSign rows (self-serve sandbox; go-live review)",
-    "https://developers.docusign.com/platform/auth/authcode/"
+    "https://developers.docusign.com/platform/auth/authcode/",
+    "DocuSign developer docs (developers.docusign.com auth and rate-limit pages) returned only page titles to the fetcher on 2026-10-05; token lifetime, rate limits and scope text left UNVERIFIED"
   ]
 }

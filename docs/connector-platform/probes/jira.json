@@ -1,0 +1,16 @@
+{
+  "key": "jira",
+  "at": "2026-10-05T18:25:52.247Z",
+  "status": "CONFIGURED",
+  "names": [
+    "ATLASSIAN_CLIENT_ID",
+    "ATLASSIAN_CLIENT_SECRET",
+    "ATLASSIAN_LOGIN_EMAIL",
+    "ATLASSIAN_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "real secret: HTTP 403 error=unauthorized_client",
+    "wrong-secret control: HTTP 403 error=unauthorized_client",
+    "no grant-level error: client validity unproven"
+  ]
+}

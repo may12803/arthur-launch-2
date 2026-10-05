@@ -614,12 +614,12 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "time entries",
       "goals"
     ],
-    "incremental_sync": "UNVERIFIED (tasks endpoint supports date_updated_gt filter per ClickUp docs; not fetched)",
-    "rate_limits": "UNVERIFIED (not fetched)",
+    "incremental_sync": "GET /list/{id}/task with date_updated_gt (Unix ms), 100 tasks per page, include_closed and subtasks off by default",
+    "rate_limits": "100 requests/min on Free Forever, Unlimited and Business; 1,000/min on Business Plus; 10,000/min on Enterprise; 429 with X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset (Unix time)",
     "rate_limit": {
-      "rps": 2,
-      "burst": 2,
-      "source": "default_unverified"
+      "rps": 1.6666666666666667,
+      "burst": 10,
+      "source": "documented"
     },
     "scopes": [
       "None: ClickUp OAuth apps have no scope picker; access is the authorizing user's workspaces (status file clickup.json)"
@@ -628,19 +628,14 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "logo": "/connectors/logos/clickup.svg",
     "source_file": "data/connectors/systems/clickup.json",
     "api_base_url": "https://api.clickup.com/api/v2",
-    "token_lifetime": "UNVERIFIED (ClickUp OAuth tokens are documented as non-expiring; not fetched)",
-    "refresh": "UNVERIFIED",
+    "token_lifetime": "Access token currently does not expire ('subject to change' per ClickUp docs)",
+    "refresh": "None: no refresh-token mechanism documented",
     "build_effort_days": 4,
     "blockers": [
       "Redirect field stores only the origin https://portal.loveleedaystudios.com; the localhost URL was not retained (redirect_uris_set: partial).",
-      "No scope picker means read-only cannot be enforced at the token level; enforce in our adapter.",
-      "Rate limits UNVERIFIED."
+      "No scope picker means read-only cannot be enforced at the token level; enforce in our adapter."
     ],
     "unverified": [
-      "token_lifetime",
-      "refresh",
-      "rate_limits",
-      "incremental_sync",
       "openapi_spec_url"
     ]
   },
@@ -1170,6 +1165,59 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     ]
   },
   {
+    "key": "freshdesk",
+    "name": "Freshdesk",
+    "vendor": "Freshworks Inc. (Freshdesk)",
+    "category": "support",
+    "auth_method": "api_key",
+    "auth_methods": [
+      "api_key"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": false,
+      "how_to_get": "UNVERIFIED (no sandbox on the docs page fetched; use a trial account)"
+    },
+    "objects": [
+      "tickets",
+      "conversations",
+      "contacts",
+      "companies",
+      "agents",
+      "groups",
+      "solution articles"
+    ],
+    "incremental_sync": "GET /api/v2/tickets?updated_since=ISO with per_page up to 100 (default 30); docs advise against page numbers over 500",
+    "rate_limits": "Per minute by plan: Blossom 100, Garden 200, Estate 400, Forest 700; list tickets 50/60/100/200 and list contacts 50/60/100/200 per minute on those plans; extra API calls can be purchased",
+    "rate_limit": {
+      "rps": 1.6666666666666667,
+      "burst": 10,
+      "source": "documented"
+    },
+    "scopes": [
+      "None: an API key carries the permissions of the agent who owns it; use a read-only agent role (docs)"
+    ],
+    "build_status": "planned",
+    "logo": "",
+    "source_file": "data/connectors/systems/freshdesk.json",
+    "api_base_url": "https://{domain}.freshdesk.com/api/v2",
+    "token_lifetime": "Long-lived key until the agent resets it",
+    "refresh": "None; HTTP Basic auth with the API key as username and any password (docs: curl -u apikey:X)",
+    "build_effort_days": 2,
+    "blockers": [
+      "Customers must paste their own API key (secure storage required); the key has the full permissions of its owner, so read-only is enforced in our adapter.",
+      "The docs page fetched mentions no webhooks; automation-rule webhooks exist in the product but are not an API surface we verified.",
+      "Lowest plan allows 100 calls/min and 50 ticket-list calls/min, which makes a large backfill slow."
+    ],
+    "unverified": [
+      "sandbox",
+      "cost_to_us",
+      "openapi_spec_url"
+    ]
+  },
+  {
     "key": "google-bigquery",
     "name": "Google BigQuery",
     "vendor": "Google",
@@ -1353,33 +1401,31 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "tags"
     ],
     "incremental_sync": "UNVERIFIED (conversations list supports modifiedAt filter per docs; not fetched)",
-    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limits": "Limit depends on plan (per-minute numbers UNVERIFIED); headers X-RateLimit-Limit-Minute, X-RateLimit-Remaining-Minute, X-RateLimit-Retry-After; 429 on excess; write requests (POST, PUT, DELETE, PATCH) count as 2",
     "rate_limit": {
       "rps": 2,
       "burst": 2,
       "source": "default_unverified"
     },
     "scopes": [
-      "UNVERIFIED (Mailbox API v2 OAuth grants the app's access as the authorizing user; no scope list fetched)"
+      "None: Help Scout documents no OAuth scopes; access equals the authorizing user (docs)"
     ],
     "build_status": "planned",
     "logo": "/connectors/logos/helpscout.svg",
     "source_file": "data/connectors/systems/help-scout.json",
     "api_base_url": "https://api.helpscout.net/v2",
-    "token_lifetime": "UNVERIFIED (not fetched)",
-    "refresh": "POST https://api.helpscout.net/v2/oauth2/token with refresh token (UNVERIFIED lifetime)",
+    "token_lifetime": "Access token valid 2 days (expires_in 172800)",
+    "refresh": "Refresh token exchanged at https://api.helpscout.net/v2/oauth2/token on a 401; each refresh returns a new refresh token that replaces the old one (refresh-token lifetime UNVERIFIED)",
     "build_effort_days": 4,
     "blockers": [
       "Only ONE redirect URL allowed; only the portal callback is set (no localhost).",
       "OAuth app disappears if the 15-day trial lapses without a paid plan.",
-      "Rate limits UNVERIFIED."
+      "Per-plan per-minute rate limit numbers UNVERIFIED (docs say it depends on plan)."
     ],
     "unverified": [
-      "token_lifetime",
       "refresh",
       "rate_limits",
       "incremental_sync",
-      "scopes",
       "sandbox",
       "openapi_spec_url"
     ]
@@ -1581,7 +1627,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "source": "default_unverified"
     },
     "scopes": [
-      "Read-only permission set in Developer Hub: read users and companies, read conversations, read admins, read tags (exact labels UNVERIFIED; write/update/delete/merge/manage left unchecked)"
+      "Developer Hub permissions (read-only subset): Read and list users and companies; Read conversations; Read tags; Read admins; Read counts; Read events; Read tickets (write permissions left unchecked)"
     ],
     "build_status": "planned",
     "logo": "/connectors/logos/intercom.svg",
@@ -1591,15 +1637,14 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "refresh": "UNVERIFIED",
     "build_effort_days": 4,
     "blockers": [
-      "Rate limits UNVERIFIED.",
-      "Regional workspaces (EU/AU) use different API hosts: UNVERIFIED."
+      "Numeric rate limits UNVERIFIED (not stated on the pages fetched).",
+      "Regional OAuth hosts differ: app.intercom.com (US), app.eu.intercom.com (EU), app.au.intercom.com (AU); a Google-signed-in customer on the wrong host fails instead of being prompted, so the region must be matched."
     ],
     "unverified": [
       "token_lifetime",
       "refresh",
       "rate_limits",
       "incremental_sync",
-      "scopes",
       "openapi_spec_url"
     ]
   },
@@ -1629,7 +1674,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "worklogs"
     ],
     "incremental_sync": "UNVERIFIED (JQL 'updated >=' search with pagination; not fetched)",
-    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limits": "Points-based hourly quota: 65,000 points/hour global pool by default; per-tenant pool (100,000+10 x users Standard, 130,000+20 x users Premium, 150,000+30 x users Enterprise, cap 500,000) only for apps granted it; per-endpoint burst GET 100/s, POST 100/s, PUT 50/s, DELETE 50/s; 429 with Retry-After",
     "rate_limit": {
       "rps": 2,
       "burst": 2,
@@ -1644,18 +1689,14 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "logo": "/connectors/logos/jira.svg",
     "source_file": "data/connectors/systems/jira.json",
     "api_base_url": "https://api.atlassian.com/ex/jira/{cloudid}/rest/api/3",
-    "token_lifetime": "UNVERIFIED (not fetched)",
-    "refresh": "offline_access scope returns a refresh token; exchange at https://auth.atlassian.com/oauth/token (UNVERIFIED lifetime)",
+    "token_lifetime": "Access token expires_in is returned with each token (value not fixed in docs)",
+    "refresh": "offline_access scope returns a rotating refresh token; exchange at https://auth.atlassian.com/oauth/token; expires after 90 days of inactivity, each use issues a new one and invalidates the old (10-minute reuse interval)",
     "build_effort_days": 4,
     "blockers": [
       "Only ONE 3LO callback URL allowed; only the portal callback is registered (no localhost).",
-      "Status probe is not discriminating (same 400/403 for real and wrong secrets); credentials unproven beyond the console.",
-      "Rate limits UNVERIFIED."
+      "Status probe is not discriminating (same 400/403 for real and wrong secrets); credentials unproven beyond the console."
     ],
     "unverified": [
-      "token_lifetime",
-      "refresh",
-      "rate_limits",
       "incremental_sync",
       "sandbox",
       "time_to_approval",
@@ -1854,7 +1895,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "users"
     ],
     "incremental_sync": "UNVERIFIED (items_page cursor with query rules; activity_logs; not fetched)",
-    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limits": "Complexity budget 5M points/min per app token (read and write separately), 10M/min personal token; queries/min Enterprise 5,000, Pro 2,500, other 1,000; daily calls Free/Standard/Basic 1,000, Pro 10,000, Enterprise 25,000; concurrency Enterprise 250, Pro 100, other 40; 5,000 requests per 10 s per IP; items queries max 100 items",
     "rate_limit": {
       "rps": 2,
       "burst": 2,
@@ -1873,16 +1914,13 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "logo": "/connectors/logos/monday.png",
     "source_file": "data/connectors/systems/monday.json",
     "api_base_url": "https://api.monday.com/v2",
-    "token_lifetime": "UNVERIFIED (not fetched)",
-    "refresh": "UNVERIFIED",
+    "token_lifetime": "Legacy OAuth 2.0 tokens do not expire until the user uninstalls the app; a newer OAuth 2.1 flow adds expiring tokens (lifetime UNVERIFIED)",
+    "refresh": "Legacy flow: no refresh tokens; OAuth 2.1 flow: refresh tokens (details UNVERIFIED)",
     "build_effort_days": 4,
-    "blockers": [
-      "GraphQL complexity budget applies: UNVERIFIED figures."
-    ],
+    "blockers": [],
     "unverified": [
       "token_lifetime",
       "refresh",
-      "rate_limits",
       "incremental_sync",
       "time_to_approval",
       "openapi_spec_url"
@@ -2088,7 +2126,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "users"
     ],
     "incremental_sync": "UNVERIFIED (updated_since on list endpoints and webhooks; not fetched)",
-    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limits": "Daily token budget 30,000 x plan multiplier (1 Lite to 7 Ultimate) x seats, resets at midnight server time; burst per 2 s per token with OAuth: Lite 80, Growth 160, Premium 400, Ultimate 480; Search API 10 per 2 s; 429 on burst, repeated abuse gets 403",
     "rate_limit": {
       "rps": 2,
       "burst": 2,
@@ -2106,18 +2144,14 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "logo": "/connectors/logos/pipedrive.png",
     "source_file": "data/connectors/systems/pipedrive.json",
     "api_base_url": "https://api.pipedrive.com/v1 (per-company domain returned as api_domain at token exchange)",
-    "token_lifetime": "UNVERIFIED (not fetched)",
-    "refresh": "POST https://oauth.pipedrive.com/oauth/token with refresh_token (UNVERIFIED lifetime)",
+    "token_lifetime": "Access token expires after 60 minutes",
+    "refresh": "POST https://oauth.pipedrive.com/oauth/token with refresh_token; refresh token expires if unused for 60 days, each use resets it to 60 days",
     "build_effort_days": 4,
     "blockers": [
       "Only ONE callback URL allowed; only the portal callback is set (no localhost).",
-      "Status file notes 'Read users data' scope may not have saved.",
-      "Rate limits UNVERIFIED."
+      "Status file notes 'Read users data' scope may not have saved."
     ],
     "unverified": [
-      "token_lifetime",
-      "refresh",
-      "rate_limits",
       "incremental_sync",
       "time_to_approval",
       "openapi_spec_url"
@@ -2856,6 +2890,60 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     ]
   },
   {
+    "key": "typeform",
+    "name": "Typeform",
+    "vendor": "Typeform S.L.",
+    "category": "marketing",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": false,
+      "how_to_get": "No sandbox; free Typeform account used for testing"
+    },
+    "objects": [
+      "forms",
+      "responses",
+      "workspaces",
+      "themes",
+      "images"
+    ],
+    "incremental_sync": "GET /forms/{id}/responses with since/until (ISO 8601 or Unix seconds) and after/before cursors; responses from the last ~30 minutes may be missing, so webhooks are advised for real time; page_size maximum UNVERIFIED (not stated)",
+    "rate_limits": "2 requests per second per Typeform account for the Create and Responses APIs; Webhooks and Embed have no rate limit",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "documented"
+    },
+    "scopes": [
+      "accounts:read",
+      "forms:read",
+      "responses:read",
+      "workspaces:read",
+      "offline"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/typeform.svg",
+    "source_file": "data/connectors/systems/typeform.json",
+    "api_base_url": "https://api.typeform.com (EU data center: https://api.eu.typeform.com)",
+    "token_lifetime": "Access token default expiry 1 week",
+    "refresh": "Include the offline scope to receive a refresh token; POST https://api.typeform.com/oauth/token with grant_type=refresh_token; each refresh invalidates the old refresh token",
+    "build_effort_days": 3,
+    "blockers": [
+      "Accounts on the EU data center must use api.eu.typeform.com (also api.typeform.eu for newer EU accounts); region must be detected per customer.",
+      "Refresh rotation invalidates the old refresh token, so every refresh must persist the new one atomically.",
+      "The client secret was echoed once into an agent transcript during registration; delete and re-register the app if that transcript is not trusted (status file)."
+    ],
+    "unverified": [
+      "incremental_sync",
+      "openapi_spec_url"
+    ]
+  },
+  {
     "key": "workday",
     "name": "Workday",
     "vendor": "Workday",
@@ -3062,8 +3150,8 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "ticket fields",
       "groups"
     ],
-    "incremental_sync": "UNVERIFIED (incremental export endpoints with start_time cursor per Zendesk docs; not fetched)",
-    "rate_limits": "UNVERIFIED (not fetched)",
+    "incremental_sync": "Incremental export endpoints: start_time (Unix epoch, more than one minute in the past) then cursor; cursor-based for tickets and users, time-based for organizations; per_page up to 1,000; 10 requests/min",
+    "rate_limits": "Requests/min by plan: Team 200, Growth 400, Professional 400, Enterprise 700, Enterprise Plus 2,500, High Volume add-on 2,500; incremental exports 10/min (30 with High Volume); 429 with Retry-After; account-wide safeguard 100,000/min",
     "rate_limit": {
       "rps": 2,
       "burst": 2,
@@ -3081,14 +3169,11 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "build_effort_days": 4,
     "blockers": [
       "The OAuth client lives in a 14-day trial and vanishes on lapse; re-create or convert before 2026-10-19.",
-      "Global OAuth for multi-customer apps needs Zendesk approval: UNVERIFIED.",
-      "Rate limits UNVERIFIED."
+      "Global OAuth for multi-customer apps needs Zendesk approval: UNVERIFIED."
     ],
     "unverified": [
       "token_lifetime",
       "refresh",
-      "rate_limits",
-      "incremental_sync",
       "openapi_spec_url"
     ]
   },
@@ -3117,8 +3202,8 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "Tasks",
       "Users"
     ],
-    "incremental_sync": "UNVERIFIED (Modified_Time filtering and COQL; not fetched)",
-    "rate_limits": "UNVERIFIED (not fetched)",
+    "incremental_sync": "GET records with sort_by=Modified_Time and the If-Modified-Since header; per_page max 200; page_token pagination up to 100,000 records; COQL for filtered queries (UNVERIFIED)",
+    "rate_limits": "Credit budget per 24 h: Free 5,000; Standard 50,000+250/user (max 100,000); Professional 50,000+500/user (max 3,000,000); Enterprise 50,000+1,000/user (max 5,000,000); Ultimate 50,000+2,000/user; concurrency per org per app Free 5, Standard 10, Professional 15, Enterprise 20, Ultimate 25; sub-limit 10 concurrent for heavy ops; no per-minute limit",
     "rate_limit": {
       "rps": 2,
       "burst": 2,
@@ -3134,17 +3219,14 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "logo": "/connectors/logos/zohocrm.svg",
     "source_file": "data/connectors/systems/zoho-crm.json",
     "api_base_url": "https://www.zohoapis.com/crm/v8 (US data center; EU/IN/AU use different domains)",
-    "token_lifetime": "UNVERIFIED (not fetched)",
-    "refresh": "POST https://accounts.zoho.com/oauth/v2/token with refresh_token (UNVERIFIED lifetime)",
+    "token_lifetime": "Access token expires after 1 hour (expires_in 3600)",
+    "refresh": "POST https://accounts.zoho.com/oauth/v2/token with refresh_token; refresh-token expiry UNVERIFIED (not stated on the page fetched)",
     "build_effort_days": 4,
     "blockers": [
-      "US data center only (accounts.zoho.com); EU/IN/AU customers need per-data-center clients (status file).",
-      "Rate limits UNVERIFIED."
+      "US data center only (accounts.zoho.com); EU/IN/AU customers need per-data-center clients (status file)."
     ],
     "unverified": [
-      "token_lifetime",
       "refresh",
-      "rate_limits",
       "incremental_sync",
       "sandbox",
       "cost_to_us",

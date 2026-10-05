@@ -1,8 +1,10 @@
 {
   "key": "salesforce",
-  "at": "2026-10-05T14:58:34.393Z",
-  "status": "NOT_CONFIGURED",
+  "at": "2026-10-05T18:25:39.142Z",
+  "status": "CONFIGURED",
   "names": [
+    "SALESFORCE_CLIENT_ID",
+    "SALESFORCE_CLIENT_SECRET",
     "SALESFORCE_LOGIN_EMAIL",
     "SALESFORCE_LOGIN_PASSWORD",
     "SALESFORCE_MY_DOMAIN",
@@ -10,5 +12,9 @@
     "SALESFORCE_SECURITY_Q",
     "SALESFORCE_USERNAME"
   ],
-  "steps": []
+  "steps": [
+    "real secret: HTTP 400 error=unknown_error",
+    "wrong-secret control: HTTP 400 error=unknown_error",
+    "no grant-level error: client validity unproven"
+  ]
 }
