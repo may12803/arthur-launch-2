@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiContext, rpcErrorResponse } from "@/lib/client-portal/api";
+import { getApiContext } from "@/lib/client-portal/api";
+import { dbFail } from "@/lib/client-portal/connector-api";
 
 export const runtime = "nodejs";
 
@@ -17,9 +18,13 @@ export async function POST(req: NextRequest) {
     res = await ctx.supabase.rpc("connection_request", { p_tenant: ctx.tenantId, p_connector: connector, p_kind: action });
   } else if (action === "key") {
     const payload = body.payload && typeof body.payload === "object" ? body.payload : {};
-    const clean = Object.fromEntries(Object.entries(payload).map(([k, v]) => [String(k).slice(0, 40), String(v).trim().slice(0, 500)]).filter(([, v]) => v));
+    // A service account file runs to a few KB; every other credential field is short.
+    const clean = Object.fromEntries(Object.entries(payload).map(([k, v]) => [String(k).slice(0, 40), String(v).trim().slice(0, k === "service_account_json" ? 8000 : 500)]).filter(([, v]) => v));
     if (!Object.keys(clean).length) return NextResponse.json({ error: "Enter the key first." }, { status: 400 });
     res = await ctx.supabase.rpc("connection_set_key", { p_tenant: ctx.tenantId, p_connector: connector, p_payload: clean });
+  } else if (action === "pause" || action === "resume") {
+    // CONTRACT GAP: connection_set_paused(p_tenant, p_connector, p_paused) is not listed in CONTRACT.md.
+    res = await ctx.supabase.rpc("connection_set_paused", { p_tenant: ctx.tenantId, p_connector: connector, p_paused: action === "pause" });
   } else if (action === "disconnect") {
     res = await ctx.supabase.rpc("connection_disconnect", { p_tenant: ctx.tenantId, p_connector: connector });
   } else {
@@ -27,7 +32,7 @@ export async function POST(req: NextRequest) {
   }
   if (res.error) {
     if (/only an owner|unknown platform|missing key/i.test(res.error.message)) return NextResponse.json({ error: res.error.message.charAt(0).toUpperCase() + res.error.message.slice(1) + "." }, { status: 403 });
-    return rpcErrorResponse(res.error.message);
+    return dbFail(res.error.message, "Could not save");
   }
   return NextResponse.json({ ok: true, status: res.data });
 }
