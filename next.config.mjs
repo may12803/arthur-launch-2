@@ -40,6 +40,9 @@ const nextConfig = {
   // spreadsheet. The dynamic import was deliberate ("bundles xlsx only when needed") and is
   // exactly what the tracer misses, so the dependency has to be named explicitly.
   experimental: {
+    // Next 14 ignores instrumentation.ts without this flag, so the in-process connector
+    // scheduler (lib/connectors/scheduler.ts) was never started in production.
+    instrumentationHook: true,
     outputFileTracingIncludes: {
       "/api/chat": ["./node_modules/xlsx/**"],
     },
