@@ -99,7 +99,6 @@ export function DetailView({
 
   const fields = keyFieldsFor({ entry });
   const m = entry.authMethod;
-  const readLabel = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   return (
     <div>
@@ -167,7 +166,7 @@ export function DetailView({
                   <span className="cp-cap">Before you authorize, this is what we will read</span>
                   <ul className="mt-2 grid gap-1 text-[13.5px] text-[#303238]">
                     {(entry.scopes.length ? entry.scopes : ["Read access to the objects listed on this page"]).map((s) => (
-                      <li key={s} className="flex gap-2"><span className="mt-[9px] h-1 w-1 flex-none rounded-full bg-[#9aa3b0]" />{readLabel(s)}</li>
+                      <li key={s} className="flex gap-2"><span className="mt-[9px] h-1 w-1 flex-none rounded-full bg-[#9aa3b0]" /><span className={entry.scopes.includes(s) ? "cp-mono text-[12.5px]" : ""}>{s}</span></li>
                     ))}
                   </ul>
                   <p className="mt-2 text-[12px] text-[var(--muted)]">Nothing is written to {entry.name}. Any change we propose comes to Approvals first.</p>
@@ -277,7 +276,7 @@ export function DetailView({
                 <div className="flex flex-wrap gap-2">{entry.objects.map((o) => <Pill key={o}>{o}</Pill>)}</div>
               ) : <p className="text-[13.5px] text-[var(--muted)]">Objects are agreed with you when the connection is set up.</p>}
               {entry.scopes.length ? (
-                <div><span className="cp-cap">Permissions requested</span><ul className="mt-1.5 grid gap-1 text-[13px] text-[#303238]">{(connected && row?.scopes?.length ? row.scopes : entry.scopes).map((s) => <li key={s}>{readLabel(s)}</li>)}</ul></div>
+                <div><span className="cp-cap">Permissions requested</span><ul className="mt-1.5 grid gap-1 text-[13px] text-[#303238]">{(connected && row?.scopes?.length ? row.scopes : entry.scopes).map((s) => <li key={s}><span className={entry.scopes.includes(s) ? "cp-mono text-[12.5px]" : ""}>{s}</span></li>)}</ul></div>
               ) : null}
               {entry.incremental ? <div><span className="cp-cap">How changes are picked up</span><p className="mt-1.5 text-[13px] leading-[1.65] text-[#303238]">{entry.incremental}</p></div> : null}
               {entry.sandbox != null ? <p className="text-[12px] text-[var(--muted)]">{entry.sandbox ? "A sandbox or test environment is available for trying this first." : "This vendor does not offer a sandbox."}</p> : null}

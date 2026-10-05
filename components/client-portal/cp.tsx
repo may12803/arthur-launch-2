@@ -8,7 +8,7 @@ import type { Tone } from "@/lib/client-portal/connector-ui";
 // fixtures and the real pages can render them with live rows.
 
 export function Panel({ className, children }: { className?: string; children: ReactNode }) {
-  return <section className={cn("cp-panel", className)}>{children}</section>;
+  return <div className={cn("cp-panel", className)}>{children}</div>;
 }
 
 export function PanelHead({ title, sub, right }: { title: ReactNode; sub?: ReactNode; right?: ReactNode }) {
@@ -124,9 +124,9 @@ export function SettingsLayout({ active, isAdmin, children }: { active: string; 
   return (
     <div className="cp-split">
       <nav className="cp-subnav" aria-label="Settings">
-        {groups.map((g) => (
+        {groups.map((g, gi) => (
           <div key={g} className="contents">
-            <span className="cp-cap max-md:hidden px-3 pb-1.5 pt-4 first:pt-0">{g}</span>
+            <span className={`cp-cap max-md:hidden px-3 pb-1.5 ${gi === 0 ? "" : "pt-5"}`}>{g}</span>
             {items
               .filter((i) => i.group === g)
               .map((i) => (

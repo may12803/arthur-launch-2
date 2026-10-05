@@ -65,7 +65,7 @@ export function CatalogView({ entries, conns, now, canManage }: { entries: Catal
           {groups.map((g) => {
             const list = shown.filter((e) => e.group === g.id);
             return (
-              <section key={g.id} aria-labelledby={`g-${g.id}`}>
+              <div key={g.id} aria-labelledby={`g-${g.id}`}>
                 <h2 id={`g-${g.id}`} className="mb-4 flex items-baseline gap-3 text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">
                   {g.label}
                   <span className="text-[12px] font-normal text-[var(--muted)]">{list.length} connectors</span>
@@ -103,7 +103,7 @@ export function CatalogView({ entries, conns, now, canManage }: { entries: Catal
                     );
                   })}
                 </div>
-              </section>
+              </div>
             );
           })}
         </div>
