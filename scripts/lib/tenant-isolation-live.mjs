@@ -22,7 +22,10 @@ import crypto from "node:crypto";
 const REF = "eydcfgoklajcztpoprsl";
 const SLUG = { A: "zz-iso-a-20261005", B: "zz-iso-b-20261005" };
 const EMAIL = { A: `${SLUG.A}@probe.loveleedaystudios.com`, B: `${SLUG.B}@probe.loveleedaystudios.com` };
-const SEEDED = ["workstreams", "coverage_areas", "contracts", "deliverables", "entities", "engine_entities", "engine_aliases", "engine_properties", "engine_mentions", "memberships", "tenants"];
+const SEEDED = ["workstreams", "coverage_areas", "contracts", "deliverables", "entities", "engine_entities", "engine_aliases", "engine_properties", "engine_mentions",
+  "engine_links", "engine_watches", "engine_pipeline_runs", "memberships", "tenants"];
+// Engine tables members may READ (own tenant) but never write; engine_pipeline_cursors is engine state with no member policy at all.
+const ENGINE_WRITE_DENIED = ["engine_entities", "engine_links", "engine_watches", "engine_watch_firings", "engine_pipeline_runs", "engine_pipeline_cursors"];
 
 export async function main(argv = process.argv) {
   const E = process.env;
@@ -104,7 +107,15 @@ export async function main(argv = process.argv) {
         from public.engine_entities e where e.tenant_id='${t}' and e.object_key='customer:${tag}-secret-customer'
         and not exists (select 1 from public.engine_properties p where p.entity_id=e.id);
       insert into public.engine_mentions (tenant_id, surface, source_system, source_ref)
-        select '${t}', 'Secret Customer ${who}', 'isolation-probe', 'seed:${tag}' where not exists (select 1 from public.engine_mentions where tenant_id='${t}' and source_ref='seed:${tag}');`);
+        select '${t}', 'Secret Customer ${who}', 'isolation-probe', 'seed:${tag}' where not exists (select 1 from public.engine_mentions where tenant_id='${t}' and source_ref='seed:${tag}');
+      insert into public.engine_links (tenant_id, from_entity, to_entity, relation, valid_from, source_ref)
+        select e.tenant_id, e.id, e.id, 'probe_self', '2026-01-01', 'seed:${tag}' from public.engine_entities e
+        where e.tenant_id='${t}' and e.object_key='customer:${tag}-secret-customer' on conflict do nothing;
+      insert into public.engine_watches (tenant_id, entity_id, prop, op, threshold, threshold_num, note)
+        select e.tenant_id, e.id, 'annual_revenue', '>', '1', 1, 'seed:${tag}' from public.engine_entities e
+        where e.tenant_id='${t}' and e.object_key='customer:${tag}-secret-customer' and not exists (select 1 from public.engine_watches w where w.tenant_id='${t}' and w.note='seed:${tag}');
+      insert into public.engine_pipeline_runs (tenant_id, status, detail)
+        select '${t}', 'ok', '{"seed":"${tag}"}'::jsonb where not exists (select 1 from public.engine_pipeline_runs where tenant_id='${t}' and detail->>'seed'='${tag}');`);
   }
   ok("setup", `tenants ${SLUG.A}, ${SLUG.B}; users owner-of-own-tenant; seeded rows in ${SEEDED.length} tables per tenant`);
 
@@ -175,14 +186,35 @@ export async function main(argv = process.argv) {
   }
   ok("RLS anon + aal1", `${denialChecks} unfiltered reads; aal1 sees nothing, not even its own tenant (restrictive require_mfa_aal2)`);
 
-  // Engine tables: members can never write, even into their own tenant.
+  // Engine tables: members can never write, even into their own tenant (insert, update and delete, own tenant and B's).
   const aTok = session.A?.aal2?.access_token;
+  let engineWriteChecks = 0;
   if (aTok) {
-    for (const body of [{ tenant_id: T.A, object_key: "customer:zz-write", type: "customer", canonical_name: "Write attempt" }, { tenant_id: T.B, object_key: "customer:zz-write", type: "customer", canonical_name: "Write attempt" }]) {
-      const r = await j("/rest/v1/engine_entities", { token: aTok, method: "POST", body: [body], headers: { Prefer: "return=minimal" } });
-      if (r.status >= 200 && r.status < 300) leak(`engine write as member`, `insert into ${body.tenant_id === T.A ? "own" : "B's"} tenant accepted`);
-      else if (r.status !== 401 && r.status !== 403) fail("engine write as member", `unexpected ${r.status} ${short(r.data)}`);
+    const ent = (await sql(`select tenant_id, id from public.engine_entities where object_key in ('customer:zz-iso-a-secret-customer','customer:zz-iso-b-secret-customer')`));
+    const E = Object.fromEntries(ent.map((r) => [r.tenant_id === T.A ? "A" : "B", r.id]));
+    const bodyFor = (table, who) => ({
+      engine_entities: { tenant_id: T[who], object_key: "customer:zz-write", type: "customer", canonical_name: "Write attempt" },
+      engine_links: { tenant_id: T[who], from_entity: E[who], to_entity: E[who], relation: "zz_write" },
+      engine_watches: { tenant_id: T[who], entity_id: E[who], prop: "zz_write", op: ">", threshold: "1" },
+      engine_watch_firings: { tenant_id: T[who], watch_id: 1, property_id: 1, value: "zz_write", observed_at: started },
+      engine_pipeline_runs: { tenant_id: T[who], status: "ok", error: "zz_write" },
+      engine_pipeline_cursors: { tenant_id: T[who], last_seq: 999999999 },
+    })[table];
+    for (const table of ENGINE_WRITE_DENIED) {
+      for (const who of ["A", "B"]) {
+        engineWriteChecks++;
+        const r = await j(`/rest/v1/${table}`, { token: aTok, method: "POST", body: [bodyFor(table, who)], headers: { Prefer: "return=minimal" } });
+        if (r.status >= 200 && r.status < 300) leak(`engine write as member ${table}`, `insert into ${who === "A" ? "own" : "B's"} tenant accepted`);
+        else if (r.status !== 401 && r.status !== 403) fail(`engine write as member ${table}`, `unexpected ${r.status} ${short(r.data)}`);
+        engineWriteChecks++;
+        const u = await j(`/rest/v1/${table}?tenant_id=eq.${T[who]}`, { token: aTok, method: "PATCH", body: table === "engine_pipeline_cursors" ? { last_seq: 999999999 } : { tenant_id: T[who] }, headers: { Prefer: "return=representation" } });
+        if (u.status >= 200 && u.status < 300 && Array.isArray(u.data) && u.data.length) leak(`engine update as member ${table}`, `${u.data.length} row(s) of ${who === "A" ? "own" : "B's"} tenant updated`);
+        engineWriteChecks++;
+        const d = await j(`/rest/v1/${table}?tenant_id=eq.${T[who]}`, { token: aTok, method: "DELETE", headers: { Prefer: "return=representation" } });
+        if (d.status >= 200 && d.status < 300 && Array.isArray(d.data) && d.data.length) leak(`engine delete as member ${table}`, `${d.data.length} row(s) of ${who === "A" ? "own" : "B's"} tenant deleted`);
+      }
     }
+    ok("engine writes as member", `${engineWriteChecks} insert/update/delete attempts over ${ENGINE_WRITE_DENIED.length} engine tables, own tenant and B's`);
   }
 
   // ---------- 2. RPCs aimed at the other tenant ----------
@@ -201,6 +233,9 @@ export async function main(argv = process.argv) {
       ["engine_resolve", { p_tenant: T.B, p_text: "Secret Customer B" }, "deny"],
       ["engine_props_as_of", { p_tenant: T.B, p_entity: "00000000-0000-0000-0000-000000000000" }, "deny"],
       ["engine_set_prop", { p_tenant: T.B, p_entity: "00000000-0000-0000-0000-000000000000", p_prop: "x", p_value: "1", p_valid_from: started, p_observed_at: started, p_source_system: "zz", p_source_ref: "zz" }, "deny"],
+      ["engine_pipeline_due", { p_limit: 50 }, "deny"],
+      ["engine_pipeline_advance", { p_tenant: T.B, p_from: 0, p_to: 999999999 }, "deny"],
+      ["engine_pipeline_advance", { p_tenant: T.A, p_from: 0, p_to: 999999999 }, "deny"],
     ];
     for (const [fn, args, expect] of aimed) {
       rpcChecks++;
@@ -211,7 +246,7 @@ export async function main(argv = process.argv) {
       else if (expect === "false" && okStatus && r.data !== false) leak(`rpc ${fn}(B) as A`, `returned ${short(r.data)}`);
       else if (!okStatus && r.status >= 500) fail(`rpc ${fn}(B) as A`, `server error ${r.status} ${short(r.data)}`);
     }
-    for (const fn of ["engine_resolve", "engine_set_prop"]) { // anon, no JWT
+    for (const fn of ["engine_resolve", "engine_set_prop", "engine_pipeline_due", "engine_pipeline_advance"]) { // anon, no JWT
       rpcChecks++;
       const r = await rpc(fn, fn === "engine_resolve" ? { p_tenant: T.A, p_text: "Secret Customer A" } : aimed.find((x) => x[0] === fn)[1], undefined);
       if (r.status >= 200 && r.status < 300) leak(`rpc ${fn} as anon`, `accepted: ${short(r.data)}`);
@@ -280,12 +315,14 @@ export async function main(argv = process.argv) {
       (select count(*) from public.api_keys where tenant_id='${T.B}' and created_at >= '${started}') as api_keys,
       (select count(*) from public.tenant_connections where tenant_id='${T.B}' and connector_key='zz-probe') as connections,
       (select count(*) from public.engine_entities where object_key='customer:zz-write') as engine_writes,
+      ((select count(*) from public.engine_links where relation='zz_write') + (select count(*) from public.engine_watches where prop='zz_write')
+        + (select count(*) from public.engine_pipeline_runs where error='zz_write') + (select count(*) from public.engine_pipeline_cursors where last_seq=999999999)) as engine_graph_writes,
       (select external_sharing from public.tenants where id='${T.B}') as b_sharing`))[0];
-  for (const k of ["entities", "api_keys", "connections", "engine_writes"]) if (Number(se[k]) > 0) leak(`side effect ${k}`, `${se[k]} row(s) created by a cross-tenant call`);
+  for (const k of ["entities", "api_keys", "connections", "engine_writes", "engine_graph_writes"]) if (Number(se[k]) > 0) leak(`side effect ${k}`, `${se[k]} row(s) created by a cross-tenant call`);
   if (se.b_sharing === false) leak("side effect tenants.external_sharing", "A's call changed B's sharing setting");
   ok("side effects", "no row created in the other tenant by any refused call");
 
-  const summary = { target: `${REF} + ${BASE}`, tenants: SLUG, tables: Object.keys(TABLES).length, table_checks: tableChecks, denial_checks: denialChecks, rpc_checks: rpcChecks, api_checks: apiChecks,
+  const summary = { target: `${REF} + ${BASE}`, tenants: SLUG, tables: Object.keys(TABLES).length, table_checks: tableChecks, denial_checks: denialChecks, engine_write_checks: engineWriteChecks, rpc_checks: rpcChecks, api_checks: apiChecks,
     leaks: leaks.length, failures: failures.length, pass: leaks.length === 0 && failures.length === 0 };
   for (const l of log) console.log(l);
   console.log(JSON.stringify(summary));

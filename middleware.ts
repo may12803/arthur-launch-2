@@ -56,6 +56,8 @@ const PUBLIC_PREFIXES = [
   // Anonymous Free Snapshot (CORS-limited to loveleedaystudios.com, per-IP rate limited, 7-day retention) and its purge cron (secret-guarded).
   "/api/public/snapshot",
   "/api/cron/snapshot-purge",
+  // Client-tenant engine pipeline: secret-guarded AND loopback-only (the route refuses any request that came through the Fly proxy).
+  "/api/cron/tenant-pipeline",
   "/api/v1/",
   // Outside-sharing recipients have no account: the share page and its API
   // are gated by the link token + an emailed one-time code instead.

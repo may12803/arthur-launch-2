@@ -9,6 +9,8 @@ export const JOBS: Job[] = [
   // Market data (FRED, BLS, EIA): once a day, plus one run two minutes after boot. Idempotent upserts, so a restart rerun is harmless.
   { path: "/api/cron/market-refresh", everyMs: 24 * 60 * 60 * 1000, firstRunMs: 2 * 60 * 1000 },
   { path: "/api/cron/snapshot-purge", everyMs: 60 * 60 * 1000 },
+  // Client-tenant engine pipeline (lib/engine): every 5 minutes, first run 3 minutes after boot. Cursor-based and idempotent.
+  { path: "/api/cron/tenant-pipeline", everyMs: 5 * 60 * 1000, firstRunMs: 3 * 60 * 1000 },
 ];
 
 export function startScheduler(env: Record<string, string | undefined> = process.env, doFetch: typeof fetch = fetch): (() => void) | null {
