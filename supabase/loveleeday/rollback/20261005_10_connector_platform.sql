@@ -20,6 +20,8 @@ drop function if exists public.connection_store_tokens(text, uuid, jsonb, timest
 drop function if exists public.connections_due(text);
 drop function if exists public.sync_run_start(text, uuid, text);
 drop function if exists public.sync_cursor_set(text, uuid, text, text);
+drop function if exists public.sync_cursor_get(text, uuid, text);
+drop function if exists public.sync_runs_recent(text, uuid, integer);
 drop function if exists public.sync_run_finish(text, uuid, text, integer, integer, text, text);
 drop function if exists public.ingest_records(text, uuid, jsonb);
 drop function if exists public.connection_health_record(text, uuid);
@@ -34,6 +36,7 @@ drop function if exists public.is_tenant_admin(uuid);
 drop function if exists private.compute_connection_health(uuid, timestamptz);
 drop function if exists private.refresh_connection_health(uuid);
 drop function if exists private.require_role(uuid, text, boolean);
+drop function if exists public.entity_in_scope(uuid, uuid);
 drop function if exists private.entity_in_scope(uuid, uuid);
 
 drop table if exists public.webhook_deliveries, public.webhook_endpoints, public.api_keys, public.tenant_security,

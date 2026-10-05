@@ -281,6 +281,12 @@ begin
     select 1 from up join public.membership_scopes s on s.entity_id = up.id and s.membership_id = v_m);
 end $$;
 revoke all on function private.entity_in_scope(uuid, uuid) from public, anon, authenticated, service_role;
+-- The approvals read policy calls this as the reader. A narrow public wrapper, so schema private stays closed to clients;
+-- it answers only about auth.uid()'s own membership.
+create or replace function public.entity_in_scope(p_tenant uuid, p_entity uuid) returns boolean
+language sql stable security definer set search_path = '' as $$ select private.entity_in_scope(p_tenant, p_entity) $$;
+revoke all on function public.entity_in_scope(uuid, uuid) from public, anon;
+grant execute on function public.entity_in_scope(uuid, uuid) to authenticated, service_role;
 
 -- ── RLS ────────────────────────────────────────────────────────────────────
 create or replace function pg_temp.mk_rls(p_table regclass, p_select_name text, p_select_using text) returns void language plpgsql as $f$
@@ -307,7 +313,9 @@ select pg_temp.mk_rls('public.upload_mappings', 'upload_mappings_member_select',
 select pg_temp.mk_rls('public.entities', 'entities_member_select', 'public.is_tenant_member(tenant_id)');
 select pg_temp.mk_rls('public.membership_scopes', 'membership_scopes_member_select',
   'exists (select 1 from public.memberships m where m.id = membership_scopes.membership_id and public.is_tenant_member(m.tenant_id))');
-select pg_temp.mk_rls('public.approvals', 'approvals_member_select', 'public.is_tenant_member(tenant_id)');
+-- G09: a member scoped to some entities sees only approvals inside them (company-wide items need an unscoped member).
+drop policy if exists approvals_member_select on public.approvals;
+select pg_temp.mk_rls('public.approvals', 'approvals_member_select', 'public.is_tenant_member(tenant_id) and public.entity_in_scope(tenant_id, entity_id)');
 select pg_temp.mk_rls('public.tenant_security', 'tenant_security_member_select', 'public.is_tenant_member(tenant_id)');
 select pg_temp.mk_rls('public.api_keys', 'api_keys_admin_select', 'public.is_tenant_admin(tenant_id)');
 select pg_temp.mk_rls('public.webhook_endpoints', 'webhook_endpoints_admin_select', 'public.is_tenant_admin(tenant_id)');
