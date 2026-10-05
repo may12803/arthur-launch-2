@@ -47,7 +47,7 @@ async function handle(req: NextRequest) {
       const creds = Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, typeof v === "string" ? v : JSON.stringify(v)]));
       if (key === "zendesk") {
         // Per-tenant subdomain (saved on the connection at connect time) drives the token refresh and every API call.
-        const cfg = await anon.rpc("connection_config_get", { p_secret: secret, p_connection: c.id });
+        const cfg = await anon.rpc("connection_config_get", { p_secret: secret, p_connection: id });
         const sub = (cfg.data as { subdomain?: string } | null)?.subdomain;
         if (!sub) throw new Error("no Zendesk subdomain saved");
         creds.subdomain = sub;
