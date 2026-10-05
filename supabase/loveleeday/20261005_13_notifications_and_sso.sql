@@ -44,17 +44,43 @@ $$;
 revoke all on function public.sso_session_allowed(uuid) from public, anon;
 grant execute on function public.sso_session_allowed(uuid) to authenticated, service_role;
 
-create or replace function public.sso_required_for_email(p_email text) returns boolean
+-- R3-02: enforcement lives in the two functions every table policy and RPC already calls, so a password session for a
+-- member of an SSO-enforced tenant reads and writes nothing there, whether through the portal or straight to the API.
+-- Staff with a live grant are exempt (private.sso_required already returns false for them).
+create or replace function private.sso_blocks(p_tenant uuid) returns boolean
 language sql stable security definer set search_path = '' as $$
-  select exists (
-    select 1 from public.tenant_security s
-    where s.sso_enforced and lower(split_part(trim(p_email), '@', 2)) = any (
-      select lower(trim(d)) from unnest(s.sso_domains) d
-    ) and p_email ~* '^[^@[:space:]]+@[^@[:space:]]+$'
-  )
+  select private.sso_required(p_tenant) and not exists (
+    select 1 from jsonb_array_elements(coalesce(auth.jwt() -> 'amr', '[]'::jsonb)) a where a ->> 'method' = 'sso/saml')
 $$;
-revoke all on function public.sso_required_for_email(text) from public;
-grant execute on function public.sso_required_for_email(text) to anon, authenticated, service_role;
+revoke all on function private.sso_blocks(uuid) from public, anon, authenticated, service_role;
+
+create or replace function public.is_tenant_member(p_tenant uuid)
+ returns boolean language sql stable security definer set search_path to 'public', 'pg_temp'
+as $function$
+  select (exists (
+    select 1 from public.memberships
+    where tenant_id = p_tenant and user_id = auth.uid() and accepted_at is not null
+  ) and not private.sso_blocks(p_tenant)) or private.active_grant(p_tenant) is not null;
+$function$;
+
+create or replace function private.member_role(p_tenant uuid)
+ returns text language sql stable security definer set search_path to ''
+as $function$
+  select coalesce(
+    case when private.sso_blocks(p_tenant) then null else
+      (select role from public.memberships where tenant_id = p_tenant and user_id = auth.uid() and accepted_at is not null) end,
+    case when private.active_grant(p_tenant) is not null then 'staff' end)
+$function$;
+
+-- R3-03: no anonymous lookup (it told anyone which domains enforce SSO). After a password sign-in the account holder
+-- asks about their OWN memberships only; the answer reveals nothing they could not already see.
+drop function if exists public.sso_required_for_email(text);
+create or replace function public.sso_required_for_me() returns boolean
+language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.memberships m where m.user_id = auth.uid() and m.accepted_at is not null and private.sso_blocks(m.tenant_id))
+$$;
+revoke all on function public.sso_required_for_me() from public, anon;
+grant execute on function public.sso_required_for_me() to authenticated, service_role;
 
 create or replace function public.notification_prefs_set(p_tenant uuid, p_approvals_digest text, p_sync_failures boolean, p_weekly_summary boolean) returns void
 language plpgsql security definer set search_path = '' as $$

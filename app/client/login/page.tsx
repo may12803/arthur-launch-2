@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { loveleeday } from "@/lib/supabase/loveleeday";
 import { FormField, PortalButton, inputClass } from "@/components/client-portal/ui";
 import { AuthShell } from "@/components/client-portal/AuthShell";
-import { emailDomain, passwordSignInAllowed } from "@/lib/client-portal/sso";
+import { emailDomain, ssoRequiredForMe } from "@/lib/client-portal/sso";
 import { friendlyAuthError } from "@/lib/client-portal/auth-errors";
 
 function safeNext(raw: string | null): string {
@@ -53,22 +53,26 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    try {
-      if (!await passwordSignInAllowed(loveleeday, email)) {
-        setMode("sso");
-        setError("Your company signs in with single sign-on.");
-        setLoading(false);
-        return;
-      }
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Sign-in options could not be checked. Try again.");
+    const { error: signInError } = await loveleeday.auth.signInWithPassword({ email, password });
+    if (signInError) {
+      setError(friendlyAuthError(signInError.message).text);
       setLoading(false);
       return;
     }
 
-    const { error: signInError } = await loveleeday.auth.signInWithPassword({ email, password });
-    if (signInError) {
-      setError(friendlyAuthError(signInError.message).text);
+    let ssoRequired = false;
+    try {
+      ssoRequired = await ssoRequiredForMe(loveleeday);
+    } catch (cause) {
+      await loveleeday.auth.signOut();
+      setError(cause instanceof Error ? cause.message : "Sign-in rules could not be checked. Try again.");
+      setLoading(false);
+      return;
+    }
+    if (ssoRequired) {
+      await loveleeday.auth.signOut();
+      setMode("sso");
+      setError("Your company signs in with single sign-on.");
       setLoading(false);
       return;
     }

@@ -595,6 +595,13 @@ begin
     raise exception 'enter domains like example.com';
   end if;
   if coalesce(p_sso_enforced, false) and cardinality(coalesce(p_sso_domains, '{}'::text[])) = 0 then raise exception 'add at least one domain before enforcing single sign-on'; end if;
+  -- Lockout guard: enforcing SSO from a password session would shut the owner out at once (the database refuses
+  -- password sessions of enforced tenants). Turning it on requires being signed in through SSO, which proves it works.
+  if coalesce(p_sso_enforced, false) and not exists (
+       select 1 from jsonb_array_elements(coalesce(auth.jwt() -> 'amr', '[]'::jsonb)) a where a ->> 'method' = 'sso/saml')
+     and not coalesce((select s.sso_enforced from public.tenant_security s where s.tenant_id = p_tenant), false) then
+    raise exception 'sign in with single sign-on before enforcing it, so nobody is locked out';
+  end if;
   insert into public.tenant_security (tenant_id, sso_enforced, sso_domains, scim_enabled, session_hours, retention_days)
     values (p_tenant, coalesce(p_sso_enforced, false), coalesce(p_sso_domains, '{}'::text[]), coalesce(p_scim_enabled, false), p_session_hours, p_retention_days)
   on conflict (tenant_id) do update set sso_enforced = excluded.sso_enforced, sso_domains = excluded.sso_domains, scim_enabled = excluded.scim_enabled,

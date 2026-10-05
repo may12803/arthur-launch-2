@@ -1,4 +1,4 @@
-scratch cluster: 14.24 (Homebrew) on port 56327 (temp dir removed on exit)
+scratch cluster: 14.24 (Homebrew) on port 49215 (temp dir removed on exit)
 PASS: stubs applied (roles, auth, vault, extensions)
 PASS: applied 20261005_00_base_schema.sql to an empty database
 PASS: applied 20261005_10_connector_platform.sql to an empty database
@@ -220,6 +220,7 @@ PASS: declining needs a reason (raised: say why this was declined)
 PASS: edit returns status edited
 PASS: edit merged the edited details into proposed
 PASS: an admin cannot change tenant security (owner only) (raised: not allowed)
+PASS: enforcing SSO from a password session is refused (lockout guard) (raised: sign in with single sign-on before enforcing it, so nobody is locked out)
 PASS: settings persisted
 PASS: enforcing SSO without a domain is refused (raised: add at least one domain before enforcing single sign-on)
 PASS: retention below the floor is refused (raised: retention must be 30 to 3650 days)
@@ -310,18 +311,23 @@ PASS: cleanup removes the QA toast and stripe connection rows but keeps the seed
 PASS: cleanup touches no other tenant (including a qa-named document and an arthur+harborqa invite on the Dabney twin)
 PASS: a second cleanup run matches nothing and the seed survives it
 PASS: seed id collision: the other tenant's row keeps its tenant and content
-PASS: enforced domain requires SSO
-PASS: email domain check ignores case
-PASS: unenforced and unknown domains do not require SSO
-PASS: invalid email does not reveal a domain
-PASS: email function exposes only a boolean
+PASS: no anonymous SSO-by-email lookup exists
+PASS: sso_required_for_me is not callable by anon
 PASS: staff with live grant can use a password session
+PASS: staff with live grant still reads the enforced tenant
 PASS: enforced tenant refuses password session
-PASS: own tenant requires SSO
-PASS: other tenant SSO policy is hidden
+PASS: sso_required_for_me tells the account holder
+PASS: password session reads 0 tenant rows of the enforced tenant
+PASS: password session reads 0 connections of the enforced tenant
+PASS: password session reads 0 audit rows of the enforced tenant
+PASS: password session cannot call a write RPC on the enforced tenant (raised: not allowed)
 PASS: other tenant session is refused
 PASS: enforced tenant accepts SSO session
+PASS: SSO session reads the enforced tenant
+PASS: sso_required_for_me is false inside an SSO session
+PASS: an owner signed in through SSO can enforce it
 PASS: non-enforced tenant accepts password session
+PASS: non-enforced tenant member is unaffected
 PASS: another tenant cannot set notification preferences
 PASS: other tenant notification write refused (raised: not allowed)
 PASS: member reads own notification row
@@ -369,4 +375,4 @@ PASS: 12 rollback restored the previous document_delete (no staff branch)
 PASS: 12 forward migration re-applies after its rollback
 PASS: 13 rollback removed notification preferences and SSO functions
 PASS: 13 forward migration re-applies after its rollback
-RESULT: 370 passed, 0 failed
+RESULT: 376 passed, 0 failed

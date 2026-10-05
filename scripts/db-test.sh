@@ -114,7 +114,7 @@ fi
 
 RB13="$MIG/rollback/20261005_13_notifications_and_sso.sql"
 if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$RB13")"; then
-  if [ "$(psqlq -c "select count(*) from pg_class where oid = to_regclass('public.notification_prefs')")" = "0" ] && [ "$(psqlq -c "select count(*) from pg_proc where oid = to_regprocedure('public.sso_required_for_email(text)')")" = "0" ]; then
+  if [ "$(psqlq -c "select count(*) from pg_class where oid = to_regclass('public.notification_prefs')")" = "0" ] && [ "$(psqlq -c "select count(*) from pg_proc where oid = to_regprocedure('public.sso_required_for_me()')")" = "0" ]; then
     echo "PASS: 13 rollback removed notification preferences and SSO functions"; PASSES=$((PASSES + 1))
   else echo "FAIL: 13 rollback left objects"; FAILS=$((FAILS + 1)); fi
   if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$MIG"/20261005_13_*.sql)"; then echo "PASS: 13 forward migration re-applies after its rollback"; PASSES=$((PASSES + 1)); else echo "$out" | tail -3; echo "FAIL: 13 forward migration does not re-apply after rollback"; FAILS=$((FAILS + 1)); fi

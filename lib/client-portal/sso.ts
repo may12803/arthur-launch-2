@@ -12,10 +12,12 @@ export function emailDomain(email: string): string | null {
   return /^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain) ? domain : null;
 }
 
-export async function passwordSignInAllowed(client: { rpc(name: string, args: { p_email: string }): PromiseLike<{ data: boolean | null; error: unknown }> }, email: string): Promise<boolean> {
-  const { data, error } = await client.rpc("sso_required_for_email", { p_email: email });
-  if (error) throw new Error("Sign-in options could not be checked. Try again.");
-  return data !== true;
+// Asked AFTER a password sign-in, about the signed-in person's own companies only: there is no anonymous lookup, so
+// nobody can probe which domains enforce single sign-on. The database refuses the session either way.
+export async function ssoRequiredForMe(client: { rpc(name: string): PromiseLike<{ data: boolean | null; error: unknown }> }): Promise<boolean> {
+  const { data, error } = await client.rpc("sso_required_for_me");
+  if (error) throw new Error("Sign-in rules could not be checked. Try again.");
+  return data === true;
 }
 
 export async function tenantSessionAllowed(client: { rpc(name: string, args: { p_tenant: string }): PromiseLike<{ data: boolean | null; error: unknown }> }, tenantId: string): Promise<boolean> {

@@ -186,7 +186,7 @@ const CLASSES = {
     "workstream_task_propose", "approvals_approved", "approval_claim", "approval_record_proof",
     // 20261005_14: public API reads, webhook worker, atomic token rotation (all gated by the connectors-server secret)
     "public_api_connections", "public_api_records", "public_api_approvals", "webhook_deliveries_due", "webhook_delivery_record", "connection_rotate_tokens"],
-  helper: ["is_staff", "session_is_strong", "role_rank", "is_tenant_admin", "entity_in_scope", "sso_required_for_email", "sso_required_for_tenant", "sso_session_allowed"],
+  helper: ["is_staff", "session_is_strong", "role_rank", "is_tenant_admin", "entity_in_scope", "sso_required_for_me", "sso_required_for_tenant", "sso_session_allowed"],
 };
 const CLASS_OF = Object.fromEntries(Object.entries(CLASSES).flatMap(([c, names]) => names.map((n) => [n, c])));
 const BOGUS = "probe-bogus-0123456789abcdef";
