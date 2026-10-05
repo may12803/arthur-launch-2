@@ -1,0 +1,60 @@
+{
+  "system": "Calendly",
+  "vendor": "Calendly LLC",
+  "category": "project_management",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.calendly.com",
+    "openapi_spec_url": "https://developer.calendly.com/openapi/calendly-api.yaml",
+    "docs_url": "https://developer.calendly.com/docs/authentication/creating-an-oauth-app.md"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": ["scheduled_events:read", "event_types:read", "users:read", "organizations:read", "availability:read", "routing_forms:read", "locations:read", "groups:read", "contacts:read", "webhooks:read"],
+    "token_lifetime": "UNVERIFIED (access token lifetime not stated on the pages fetched; response carries expires_in)",
+    "refresh": "Single-use refresh tokens with rotation: each refresh returns a new refresh token and the old one stops working; exchange at https://auth.calendly.com/oauth/token. PKCE with S256 is recommended, not enforced, for web apps."
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "UNVERIFIED (status file: Production-environment app and any Calendly app review not requested)",
+    "customer_admin_must_do": "Calendly user authorizes the LOVELEEDAY app; access follows that user's account and organization role.",
+    "cost_to_us": "$0 (free developer account)",
+    "time_to_approval": "Immediate for the Sandbox app; Production app approval time UNVERIFIED"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Developer console (developer.calendly.com) creates apps in a Sandbox environment by default; docs recommend a second Production app for live customer data; Sandbox allows http://localhost redirects, Production requires HTTPS"
+  },
+  "rate_limits": "Per user per minute: 500 on paid plans, 50 on the free plan; only 8 OAuth tokens per user per minute; limits apply to third-party integrations too; Create Event Invitee has stricter limits (5/day trial, 10/min, 50/hour, 100/day paid non-Enterprise)",
+  "webhooks": {
+    "available": true,
+    "events": ["UNVERIFIED (webhook subscriptions are scoped by event family and need the related read scopes; event names not fetched)"]
+  },
+  "data_objects_to_pull": ["scheduled events", "event invitees", "event types", "users", "organizations", "availability", "routing forms and submissions", "groups", "contacts"],
+  "incremental_sync": "GET /scheduled_events with min_start_time and max_start_time, count up to 100, page_token cursor, sort start_time:asc|desc; no updated-since filter on scheduled events found in the OpenAPI spec (invitees fetched per event); webhooks cover changes",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 3,
+  "blockers": [
+    "Only the Sandbox app exists with one redirect URI (the portal callback); a Production app must be created before real customers can authorize (status file).",
+    "Rotating single-use refresh tokens: every refresh must persist the new token atomically or the grant is lost.",
+    "No updated-since filter on scheduled events, so change detection needs webhooks or a rolling start-time window."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/calendly.json - Sandbox app LOVELEEDAY with 13 read scopes; probe: bogus code HTTP 400 invalid_grant vs wrong secret invalid_request",
+    "https://developer.calendly.com/openapi/calendly-api.yaml",
+    "https://developer.calendly.com/api-docs/overview/rate-limits.md",
+    "https://developer.calendly.com/docs/authentication/scopes.md",
+    "https://developer.calendly.com/docs/authentication/creating-an-oauth-app.md",
+    "https://developer.calendly.com/docs/authentication/refresh-token-rotation-guide.md",
+    "https://calendly.com/.well-known/oauth-authorization-server"
+  ]
+}

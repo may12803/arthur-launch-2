@@ -99,3 +99,5 @@ QAD, Cityworks, Azure Synapse: MISSING official asset; shown as monogram (QAD, C
 | zohocrm | zohocrm.svg | moodboard asset (arthur briefs) | n/a | ~/arthur/briefs/loveleeday-full-review-2026-10-05/moodboard/assets/logos |
 | Jira Cloud | jira.svg | moodboard asset atlassian.svg | n/a | ~/arthur/briefs/loveleeday-full-review-2026-10-05/moodboard/assets/logos |
 | Typeform | typeform.svg | Simple Icons (CC0) via jsdelivr, brand hex 262627 | n/a | https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/typeform.svg |
+| Airtable | airtable.svg | Simple Icons (CC0) via jsdelivr, fill #2D7FF9 (Airtable blue; Simple Icons hex 18BFFF is too light on white) | n/a | https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/airtable.svg |
+| Calendly | calendly.svg | Simple Icons (CC0) via jsdelivr, brand hex 006BFF | n/a | https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/calendly.svg |

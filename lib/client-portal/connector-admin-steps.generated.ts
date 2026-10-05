@@ -8,6 +8,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
   "admin": "Per ADP: client logs into API Central and generates a mutual SSL certificate; client authorizes the partner app/credentials for their ADP org via Marketplace subscription.",
   "wait": ""
  },
+ "airtable": {
+  "admin": "Airtable user authorizes the LOVELEEDAY integration and picks the workspaces and bases it may read.",
+  "wait": "Immediate"
+ },
  "amazon-s3": {
   "admin": "Create an IAM role in their account with the trust policy and read-only policy in customer_grant_statements, then send us the role ARN. We generate the ExternalId, unique per customer: per AWS 'The ExternalId value must be unique among Example Corp's customers and controlled by Example Corp, not its customers.'",
   "wait": ""
@@ -39,6 +43,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
  "buildium": {
   "admin": "Per Propexo's Buildium guide (secondary, matches Buildium help): admin user on a Premium subscription turns on Settings > Application settings > System preferences > API settings > Open API toggle, then Settings > Developer Tools > Create API Key, names it, and copies the client ID and secret to us.",
   "wait": "Immediate once customer creates key"
+ },
+ "calendly": {
+  "admin": "Calendly user authorizes the LOVELEEDAY app; access follows that user's account and organization role.",
+  "wait": "Immediate for the Sandbox app;"
  },
  "cityworks": {
   "admin": "Expose the Cityworks web services (often behind VPN/firewall, on-prem or Trimble-hosted) to us and create a dedicated service user..",

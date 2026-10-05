@@ -1,0 +1,57 @@
+{
+  "system": "Airtable",
+  "vendor": "Airtable Inc.",
+  "category": "project_management",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.airtable.com/v0",
+    "openapi_spec_url": "UNVERIFIED (none confirmed)",
+    "docs_url": "https://airtable.com/developers/web/api/oauth-reference"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": ["data.records:read", "schema.bases:read", "data.recordComments:read", "user.email:read", "workspacesAndBases:read"],
+    "token_lifetime": "Access token 60 minutes (expires_in); refresh token 60 days (refresh_expires_in)",
+    "refresh": "POST https://airtable.com/oauth2/v1/token with grant_type=refresh_token; each refresh invalidates the previous access and refresh tokens and returns new ones; refreshing within every 60 days keeps the grant alive indefinitely. PKCE (S256, 43-128 char verifier) is mandatory on the authorization request."
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None: status file notes Airtable does not review third-party OAuth integrations; support email, privacy and terms URLs are set so other users may authorize it",
+    "customer_admin_must_do": "Airtable user authorizes the LOVELEEDAY integration and picks the workspaces and bases it may read.",
+    "cost_to_us": "$0 (free Airtable account)",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": {
+    "available": false,
+    "how_to_get": "No sandbox; free Airtable account used for testing"
+  },
+  "rate_limits": "5 requests/second per base; 50 requests/second per user or service account for personal access token traffic; 429 requires waiting 30 seconds before requests succeed again; Airtable reserves the right to change limits by plan",
+  "webhooks": {
+    "available": true,
+    "events": ["UNVERIFIED (webhook:manage scope exists; event list not fetched)"]
+  },
+  "data_objects_to_pull": ["bases", "tables and fields (schema)", "records", "record comments", "workspaces"],
+  "incremental_sync": "List records has no native last-modified filter; use filterByFormula on a last-modified-time field (workaround stated in docs); pageSize up to 100 with offset pagination; POST list recommended for formulas over 16,000 URL characters",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 3,
+  "blockers": [
+    "Incremental sync depends on the customer having a last-modified-time field in each table; otherwise a full re-read per sync.",
+    "5 requests/second per base caps large backfills.",
+    "The client secret was visible once in a screenshot image during registration (status file); rotate if that image is not trusted."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/airtable.json - app LOVELEEDAY registered, read scopes saved; probe: real creds + bogus code HTTP 400 invalid_grant, wrong-secret control HTTP 401 invalid_client",
+    "https://airtable.com/developers/web/api/oauth-reference",
+    "https://airtable.com/developers/web/api/rate-limits",
+    "https://airtable.com/developers/web/api/list-records"
+  ]
+}

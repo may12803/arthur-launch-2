@@ -117,6 +117,59 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     ]
   },
   {
+    "key": "airtable",
+    "name": "Airtable",
+    "vendor": "Airtable Inc.",
+    "category": "project_management",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": false,
+      "how_to_get": "No sandbox; free Airtable account used for testing"
+    },
+    "objects": [
+      "bases",
+      "tables and fields (schema)",
+      "records",
+      "record comments",
+      "workspaces"
+    ],
+    "incremental_sync": "List records has no native last-modified filter; use filterByFormula on a last-modified-time field (workaround stated in docs); pageSize up to 100 with offset pagination; POST list recommended for formulas over 16,000 URL characters",
+    "rate_limits": "5 requests/second per base; 50 requests/second per user or service account for personal access token traffic; 429 requires waiting 30 seconds before requests succeed again; Airtable reserves the right to change limits by plan",
+    "rate_limit": {
+      "rps": 5,
+      "burst": 5,
+      "source": "documented"
+    },
+    "scopes": [
+      "data.records:read",
+      "schema.bases:read",
+      "data.recordComments:read",
+      "user.email:read",
+      "workspacesAndBases:read"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/airtable.svg",
+    "source_file": "data/connectors/systems/airtable.json",
+    "api_base_url": "https://api.airtable.com/v0",
+    "token_lifetime": "Access token 60 minutes (expires_in); refresh token 60 days (refresh_expires_in)",
+    "refresh": "POST https://airtable.com/oauth2/v1/token with grant_type=refresh_token; each refresh invalidates the previous access and refresh tokens and returns new ones; refreshing within every 60 days keeps the grant alive indefinitely. PKCE (S256, 43-128 char verifier) is mandatory on the authorization request.",
+    "build_effort_days": 3,
+    "blockers": [
+      "Incremental sync depends on the customer having a last-modified-time field in each table; otherwise a full re-read per sync.",
+      "5 requests/second per base caps large backfills.",
+      "The client secret was visible once in a screenshot image during registration (status file); rotate if that image is not trusted."
+    ],
+    "unverified": [
+      "openapi_spec_url"
+    ]
+  },
+  {
     "key": "amazon-s3",
     "name": "Amazon S3",
     "vendor": "Amazon Web Services",
@@ -533,6 +586,69 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "unverified": [
       "scopes",
       "sandbox"
+    ]
+  },
+  {
+    "key": "calendly",
+    "name": "Calendly",
+    "vendor": "Calendly LLC",
+    "category": "project_management",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "Developer console (developer.calendly.com) creates apps in a Sandbox environment by default; docs recommend a second Production app for live customer data; Sandbox allows http://localhost redirects, Production requires HTTPS"
+    },
+    "objects": [
+      "scheduled events",
+      "event invitees",
+      "event types",
+      "users",
+      "organizations",
+      "availability",
+      "routing forms and submissions",
+      "groups",
+      "contacts"
+    ],
+    "incremental_sync": "GET /scheduled_events with min_start_time and max_start_time, count up to 100, page_token cursor, sort start_time:asc|desc; no updated-since filter on scheduled events found in the OpenAPI spec (invitees fetched per event); webhooks cover changes",
+    "rate_limits": "Per user per minute: 500 on paid plans, 50 on the free plan; only 8 OAuth tokens per user per minute; limits apply to third-party integrations too; Create Event Invitee has stricter limits (5/day trial, 10/min, 50/hour, 100/day paid non-Enterprise)",
+    "rate_limit": {
+      "rps": 0.8333333333333334,
+      "burst": 5,
+      "source": "documented"
+    },
+    "scopes": [
+      "scheduled_events:read",
+      "event_types:read",
+      "users:read",
+      "organizations:read",
+      "availability:read",
+      "routing_forms:read",
+      "locations:read",
+      "groups:read",
+      "contacts:read",
+      "webhooks:read"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/calendly.svg",
+    "source_file": "data/connectors/systems/calendly.json",
+    "api_base_url": "https://api.calendly.com",
+    "token_lifetime": "UNVERIFIED (access token lifetime not stated on the pages fetched; response carries expires_in)",
+    "refresh": "Single-use refresh tokens with rotation: each refresh returns a new refresh token and the old one stops working; exchange at https://auth.calendly.com/oauth/token. PKCE with S256 is recommended, not enforced, for web apps.",
+    "build_effort_days": 3,
+    "blockers": [
+      "Only the Sandbox app exists with one redirect URI (the portal callback); a Production app must be created before real customers can authorize (status file).",
+      "Rotating single-use refresh tokens: every refresh must persist the new token atomically or the grant is lost.",
+      "No updated-since filter on scheduled events, so change detection needs webhooks or a rolling start-time window."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "time_to_approval"
     ]
   },
   {

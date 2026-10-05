@@ -26,6 +26,8 @@ const RATE = {
   clickup: { rps: 100 / 60, burst: 10 },
   typeform: { rps: 2, burst: 2 },
   freshdesk: { rps: 100 / 60, burst: 10 },
+  airtable: { rps: 5, burst: 5 },
+  calendly: { rps: 50 / 60, burst: 5 },
 };
 const DEFAULT_RATE = { rps: 2, burst: 2, source: 'default_unverified' };
 
