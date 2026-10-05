@@ -19,6 +19,7 @@ import { readFileSync, existsSync, writeFileSync, mkdirSync, readdirSync } from 
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const VAULT = process.env.CONNECTOR_VAULT_DIR || path.join(homedir(), ".arthur/vault/connectors");
@@ -139,7 +140,7 @@ async function probe(key) {
       for (const object of vendor.objects || adapter.objects) {
         const page = await adapter.pull(object, null, creds, f);
         out.steps.push(`pull ${object}: ${page.records.length} record(s)`);
-        if (page.records.length) { out.status = "DATA_FLOWED_SANDBOX"; out.evidence = { object, source_ref: page.records[0].source_ref }; break; }
+        if (page.records.length) { out.status = "DATA_FLOWED_SANDBOX"; out.evidence = { object, record_count: page.records.length, source_ref_sha256_prefix: createHash("sha256").update(String(page.records[0].source_ref)).digest("hex").slice(0, 12) }; break; }
       }
       if (out.status !== "DATA_FLOWED_SANDBOX") out.steps.push("validate passed but every object returned 0 records; sandbox may be empty");
     } catch (e) { out.status = "VALIDATE_FAILED"; out.steps.push(`adapter error: ${e?.name || "Error"}${typeof e?.status === "number" ? ` HTTP ${e.status}` : ""}`); }

@@ -12,7 +12,7 @@ export function signature(secret: string, body: string, unix: number): string {
   return `t=${unix},v1=${hex}`;
 }
 
-export async function deliverWebhook(delivery: Delivery, store: DeliveryStore, options: { fetch?: typeof fetch; resolve?: Resolver; now?: Date } = {}): Promise<DeliveryResult> {
+export async function deliverWebhook(delivery: Delivery, store: DeliveryStore, options: { fetch?: typeof fetch; resolve?: Resolver; now?: Date; testOnlyAllowUnpinnedFetch?: boolean } = {}): Promise<DeliveryResult> {
   const now = options.now ?? new Date();
   const body = JSON.stringify(delivery.payload);
   const controller = new AbortController();
@@ -22,7 +22,7 @@ export async function deliverWebhook(delivery: Delivery, store: DeliveryStore, o
     const response = await safeFetch(options.fetch ?? fetch, delivery.url, {
       method: "POST", body, signal: controller.signal,
       headers: { "Content-Type": "application/json", "LLD-Signature": signature(delivery.secret, body, Math.floor(now.getTime() / 1000)) },
-    }, { resolve: options.resolve });
+    }, { resolve: options.resolve, followRedirects: false, testOnlyAllowUnpinnedFetch: options.testOnlyAllowUnpinnedFetch });
     response_code = response.status;
   } catch { /* A refused URL and a network failure both count as a failed attempt. */ }
   finally { clearTimeout(timer); }

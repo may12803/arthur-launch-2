@@ -154,7 +154,7 @@ export async function publicHttpsUrlError(raw: string, opts: { resolve?: Resolve
 }
 
 const MAX_REDIRECTS = 3;
-const SENSITIVE = /^(authorization|proxy-authorization|cookie|x-esri-authorization|x-shopify-access-token|bb-api-subscription-key)$/i;
+const SENSITIVE = /^(authorization|proxy-authorization|cookie|x-esri-authorization|x-shopify-access-token|bb-api-subscription-key|lld-.*)$/i;
 
 export type SafeConnector = (url: string, init: RequestInit, lookup: (host: string) => Promise<{ address: string; family: 4 | 6 }>) => Promise<Response>;
 
@@ -173,12 +173,17 @@ const nativeConnector: SafeConnector = async (raw, init, checkedLookup) => {
       res.on('error', reject);
     });
     req.on('error', reject);
+    const abort = () => req.destroy(init.signal?.reason instanceof Error ? init.signal.reason : new DOMException('Request aborted', 'AbortError'));
+    if (init.signal?.aborted) abort();
+    else init.signal?.addEventListener('abort', abort, { once: true });
+    req.on('close', () => init.signal?.removeEventListener('abort', abort));
+    if (init.signal?.aborted) return;
     if (init.body) req.write(init.body as string);
     req.end();
   });
 };
 
-export interface SafeFetchOptions { resolve?: Resolver; connect?: SafeConnector }
+export interface SafeFetchOptions { resolve?: Resolver; connect?: SafeConnector; followRedirects?: boolean; testOnlyAllowUnpinnedFetch?: boolean }
 
 /** Asserts the target before every request, never lets the platform follow a redirect, and re-asserts each hop. */
 export async function safeFetch(fetch: FetchLike, url: string, init: RequestInit = {}, opts: SafeFetchOptions = {}): Promise<Response> {
@@ -192,11 +197,13 @@ export async function safeFetch(fetch: FetchLike, url: string, init: RequestInit
       if (answers.some((a) => !isPublicAddress(a))) throw new UnsafeUrlError('host resolves to a non-public address');
       return { address: answers[0], family: isIP(answers[0]) as 4 | 6 };
     };
+    const testFetch = process.env.NODE_TEST_CONTEXT === 'child-v8' && (opts.testOnlyAllowUnpinnedFetch || (fetch as FetchLike & { testOnlyAllowUnpinnedFetch?: boolean }).testOnlyAllowUnpinnedFetch);
+    if (fetch !== globalThis.fetch && !opts.connect && !testFetch) throw new UnsafeUrlError('injected fetch cannot use the checked address');
     const res = await (opts.connect ?? (fetch === globalThis.fetch ? nativeConnector : async (u, i, lookup) => {
       await lookup(new URL(u).hostname);
       return fetch(u, i);
     }))(target, cur, checked);
-    if (res.status < 300 || res.status >= 400 || res.status === 304) return res;
+    if (res.status < 300 || res.status >= 400 || res.status === 304 || opts.followRedirects === false) return res;
     const loc = res.headers.get('location');
     if (!loc) return res;
     if (hop >= MAX_REDIRECTS) throw new UnsafeUrlError('too many redirects');
