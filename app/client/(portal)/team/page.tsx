@@ -50,8 +50,9 @@ export default async function TeamPage() {
   }
 
   let invites: InviteRow[] = [];
+  let invitesError = false;
   if (isAdmin) {
-    const { data } = await supabase
+    const { data, error: invErr } = await supabase
       .from("invites")
       .select("id, email, role, expires_at, created_at")
       .eq("tenant_id", ctx.tenantId)
@@ -59,6 +60,7 @@ export default async function TeamPage() {
       .order("created_at", { ascending: false })
       .returns<InviteRow[]>();
     invites = data || [];
+    invitesError = !!invErr;
   }
 
   // Scoped membership (G09): which parts of the organization each member works in. Read under the member's own session.
@@ -111,6 +113,9 @@ export default async function TeamPage() {
         </div>
       </Card>
 
+      {isAdmin && invitesError && (
+        <ErrorBanner label="Pending invites did not load" errors={["The list of invitations you have sent could not be read. Refresh in a moment; if it keeps happening, tell your LOVELEEDAY contact."]} />
+      )}
       {isAdmin && invites.length > 0 && (
         <Card className="p-6 mb-6">
           <h2 className="font-serif text-h3 text-text-active mb-4">Pending invites</h2>

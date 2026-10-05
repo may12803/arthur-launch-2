@@ -52,7 +52,14 @@ export default async function BillingPage() {
         Manage your payment method, invoices, and plan through Stripe.
       </Muted>
 
-      {stripeCustomerId ? (
+      {error ? (
+        <Card className="p-10 text-center">
+          <p role="alert" className="font-serif text-h3 text-text-active mb-2">Couldn&apos;t load your billing details</p>
+          <Muted className="mx-auto max-w-[46ch]">
+            This is on our side, not yours. Refresh in a moment; if it keeps happening, tell your LOVELEEDAY contact.
+          </Muted>
+        </Card>
+      ) : stripeCustomerId ? (
         <Card className="p-8">
           <p className="font-serif text-h3 text-text-active mb-2">Manage billing</p>
           <Muted className="mb-6 max-w-[46ch]">

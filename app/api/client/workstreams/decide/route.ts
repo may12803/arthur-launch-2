@@ -13,7 +13,10 @@ export async function POST(req: NextRequest) {
   if (!["approve", "approve_with_changes", "not_now"].includes(decision)) return NextResponse.json({ error: "Unknown decision." }, { status: 400 });
   const { data, error } = await ctx.supabase.rpc("workstream_decide", { p_task: String(body.task || ""), p_decision: decision, p_note: String(body.note || "").slice(0, 2000) });
   if (error) {
-    if (/only owners|already done|not found/i.test(error.message)) return NextResponse.json({ error: error.message.charAt(0).toUpperCase() + error.message.slice(1) + "." }, { status: 403 });
+    const m = error.message, text = m.charAt(0).toUpperCase() + m.slice(1) + ".";
+    if (/not found/i.test(m)) return NextResponse.json({ error: text }, { status: 404 });
+    if (/already done/i.test(m)) return NextResponse.json({ error: text }, { status: 409 });
+    if (/only owners/i.test(m)) return NextResponse.json({ error: text }, { status: 403 });
     return rpcErrorResponse(error.message);
   }
   return NextResponse.json({ ok: true, decision: data });

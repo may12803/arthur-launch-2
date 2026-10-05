@@ -21,7 +21,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { data: token, error } = await ctx.supabase.rpc("share_create", { p_document: id, p_email: email, p_days: days });
   if (error) {
     const m = error.message;
-    if (/turned off|valid email|days for this account|not allowed/i.test(m)) return NextResponse.json({ error: m.charAt(0).toUpperCase() + m.slice(1) + "." }, { status: 400 });
+    if (/not allowed/i.test(m)) return NextResponse.json({ error: m.charAt(0).toUpperCase() + m.slice(1) + "." }, { status: 403 });
+    if (/turned off|valid email|days for this account/i.test(m)) return NextResponse.json({ error: m.charAt(0).toUpperCase() + m.slice(1) + "." }, { status: 400 });
     return rpcErrorResponse(m);
   }
 

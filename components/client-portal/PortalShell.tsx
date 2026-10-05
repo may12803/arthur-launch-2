@@ -58,8 +58,8 @@ export function PortalShell({
               <Wordmark />
             </Link>
             <span className="text-[12px] text-[#c4c6cc]" aria-hidden="true">/</span>
-            <span className="text-[12px] text-[#606066] truncate">{tenantName}</span>
-            {canSwitch ? <Link href="/client/select-company" className="text-[12px] text-[#606066] underline whitespace-nowrap">Switch</Link> : null}
+            <span className="hidden md:inline text-[12px] text-[#606066] truncate">{tenantName}</span>
+            {canSwitch ? <Link href="/client/select-company" className="hidden md:inline text-[12px] text-[#606066] underline whitespace-nowrap">Switch</Link> : null}
           </div>
           <nav className="ll-nav-links" aria-label="Portal navigation">
             <div className="hidden md:flex items-center gap-8">{links}</div>
@@ -67,9 +67,18 @@ export function PortalShell({
           </nav>
         </div>
         <div className="md:hidden border-t border-[#00000010]">
-          <nav className="ll-wrap ll-nav-links !gap-6 overflow-x-auto" aria-label="Portal sections">
-            {links}
-          </nav>
+          {/* On a phone the company name gets its own line, in full, instead of being cut off beside the wordmark. */}
+          <p className="ll-wrap flex flex-wrap items-baseline gap-x-3 pt-2 text-[12px] text-[#606066]">
+            <span className="min-w-0 break-words">{tenantName}</span>
+            {canSwitch ? <Link href="/client/select-company" className="underline whitespace-nowrap">Switch</Link> : null}
+          </p>
+          {/* The section list scrolls sideways; the fade on the right edge says there is more (Billing, Access, Account). */}
+          <div className="relative">
+            <nav className="ll-wrap ll-nav-links !gap-6 overflow-x-auto whitespace-nowrap pr-10" aria-label="Portal sections">
+              {links}
+            </nav>
+            <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white to-transparent" />
+          </div>
         </div>
       </header>
       <main className="ll-wrap flex-1 py-16 md:py-20">{children}</main>

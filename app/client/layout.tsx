@@ -6,6 +6,10 @@ import "./cp-ui.css";
 export const metadata: Metadata = {
   title: { absolute: "Client portal — LOVELEEDAY" },
   description: "Deliverables, contracts and billing for LOVELEEDAY clients.",
+  keywords: ["LOVELEEDAY", "client portal"],
+  applicationName: "LOVELEEDAY",
+  openGraph: { type: "website", siteName: "LOVELEEDAY", title: "Client portal — LOVELEEDAY", description: "Deliverables, contracts and billing for LOVELEEDAY clients." },
+  twitter: { card: "summary", title: "Client portal — LOVELEEDAY" },
   robots: { index: false, follow: false },
   icons: { icon: "/brand/favicon-32.png", apple: "/brand/apple-icon.png" },
 };

@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function StaffConsolePage() {
   const { supabase } = await requireStrongSession();
   const { data: staff } = await supabase.rpc("is_staff");
-  if (!staff) redirect("/client/no-access");
+  if (!staff) redirect("/client");
   const { data } = await supabase.rpc("staff_list_tenants");
   const tenants = (data as StaffTenant[] | null) || [];
 

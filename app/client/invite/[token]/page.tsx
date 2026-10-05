@@ -7,7 +7,7 @@ import { AuthShell } from "@/components/client-portal/AuthShell";
 import { isSsoSession } from "@/lib/client-portal/sso";
 import { friendlyAuthError } from "@/lib/client-portal/auth-errors";
 
-type Preview = { tenant_name: string; role: string; expired: boolean; email_hint?: string | null } | null;
+type Preview = { tenant_name: string; role: string; expired: boolean; email_hint?: string | null } | "invalid" | null;
 
 // `get_invite_preview(p_token text)` is a SECURITY DEFINER RPC granted to
 // anon, so this call works before the visitor has any session — it shows
@@ -20,9 +20,10 @@ type Preview = { tenant_name: string; role: string; expired: boolean; email_hint
 // below regardless of whether the preview loaded.
 async function fetchPreview(token: string): Promise<Preview> {
   const { data, error } = await loveleeday.rpc("get_invite_preview", { p_token: token });
-  if (error || !data) return null;
+  if (error) return null;
   const row = Array.isArray(data) ? data[0] : data;
-  return row || null;
+  // A clean answer with no row means no open invite carries this token: unknown, already used, or withdrawn.
+  return row || "invalid";
 }
 
 function friendlyAcceptError(message: string): string {
@@ -135,7 +136,24 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     );
   }
 
-  if (preview?.expired) {
+  const info = preview === "invalid" ? null : preview;
+  if (preview === "invalid" && !authedEmail) {
+    return (
+      <AuthShell
+        eyebrow="Invitation"
+        headline="This invite link"
+        muted="isn't valid."
+        lead="It may have been copied incompletely, already used, or withdrawn."
+      >
+        <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Link not valid</h2>
+        <p className="ll-note mt-2">
+          Check that you copied the whole link from the email. If you already joined, <a className="underline" href="/client/login">sign in</a>; otherwise ask your contact to send a new invite.
+        </p>
+      </AuthShell>
+    );
+  }
+
+  if (info?.expired) {
     return (
       <AuthShell
         eyebrow="Invitation"
@@ -145,7 +163,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
       >
         <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Link no longer valid</h2>
         <p className="ll-note mt-2">
-          Your invite to join {preview.tenant_name} as {preview.role} can&apos;t be used any more. Ask your
+          Your invite to join {info.tenant_name} as {info.role} can&apos;t be used any more. Ask your
           contact there to send a new one.
         </p>
       </AuthShell>
@@ -155,13 +173,13 @@ export default function InvitePage({ params }: { params: { token: string } }) {
   return (
     <AuthShell
       eyebrow="Invitation"
-      headline={preview ? `Join ${preview.tenant_name}` : "You've been"}
-      muted={preview ? "on LOVELEEDAY." : "invited."}
+      headline={info ? `Join ${info.tenant_name}` : "You've been"}
+      muted={info ? "on LOVELEEDAY." : "invited."}
       lead={
-        preview
+        info
           ? authedEmail
-            ? `You've been invited as ${preview.role}. Accept to add ${preview.tenant_name} to your account.`
-            : `You've been invited as ${preview.role}. Create your account, or sign in if you already have one, to see the deliverables, contracts and billing for this engagement.`
+            ? `You've been invited as ${info.role}. Accept to add ${info.tenant_name} to your account.`
+            : `You've been invited as ${info.role}. Create your account, or sign in if you already have one, to see the deliverables, contracts and billing for this engagement.`
           : "Create your account to join your company's LOVELEEDAY client portal."
       }
       footer={<p className="ll-note">Two-factor authentication is set up right after, for every account.</p>}
@@ -189,9 +207,9 @@ export default function InvitePage({ params }: { params: { token: string } }) {
         </div>
       ) : (
         <>
-          {preview?.email_hint && (
+          {info?.email_hint && (
             <p className="ll-note mb-5">
-              This invitation is for <span className="text-[var(--ink)]">{preview.email_hint}</span>. Use that
+              This invitation is for <span className="text-[var(--ink)]">{info.email_hint}</span>. Use that
               address, since the invite only works for it.
             </p>
           )}
