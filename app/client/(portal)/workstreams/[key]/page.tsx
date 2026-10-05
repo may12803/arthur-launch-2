@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireClientPortal } from "@/lib/client-portal/session";
-import { Card, Eyebrow, PageTitle, Muted } from "@/components/client-portal/ui";
+import { Card, Eyebrow, PageTitle, Muted, LoadError } from "@/components/client-portal/ui";
 import { display, gradeTone, loadWorkstreams, ORDER, STATUS_LABEL, STATUS_TONE, type WsGrade } from "@/lib/client-portal/workstreams";
 import { LocalDate } from "@/components/client-portal/LocalTime";
 
@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
 export default async function WorkstreamPage({ params }: { params: Promise<{ key: string }> }) {
   const { key } = await params;
   const ctx = await requireClientPortal();
-  const { supabase, workstreams, tasks } = await loadWorkstreams(ctx.tenantId);
+  const { supabase, workstreams, tasks, error } = await loadWorkstreams(ctx.tenantId);
+  if (error) return <LoadError what="this workstream" />;
   const w = workstreams.find((x) => x.key === key);
   if (!w) notFound();
   const { data: dims } = await supabase.from("workstream_grades").select("workstream_id, dimension, grade_start, grade_now, grade_target, sort").eq("workstream_id", w.id).order("sort").returns<WsGrade[]>();
@@ -65,7 +66,7 @@ export default async function WorkstreamPage({ params }: { params: Promise<{ key
       {w.review_slug && (
         <Card className="mt-12 flex items-center justify-between bg-[#f5f5f7] p-6">
           <span><Eyebrow>Deliverable</Eyebrow><span className="mt-1 block text-[16px] text-[var(--ink)]">The full {w.name} review</span><span className="text-[13px] text-[var(--muted)]">Findings, evidence and method</span></span>
-          <Link href="/client" className="ll-secondary">Open</Link>
+          <Link href={`/client/deliverables/${w.review_slug}`} className="ll-secondary">Open</Link>
         </Card>
       )}
     </div>

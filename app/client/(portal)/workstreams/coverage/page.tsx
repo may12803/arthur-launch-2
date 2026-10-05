@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
-import { Card, Eyebrow, PageTitle, Muted, EmptyState } from "@/components/client-portal/ui";
+import { Card, Eyebrow, PageTitle, Muted, EmptyState, LoadError } from "@/components/client-portal/ui";
 import type { CoverageArea } from "@/lib/client-portal/workstreams";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,8 @@ const TONE = { reviewed: ["Reviewed", "bg-[#e6f4ea] text-[#1e6b3a]"], partial: [
 export default async function CoveragePage() {
   const ctx = await requireClientPortal();
   const supabase = await getLoveleedayServer();
-  const { data } = await supabase.from("coverage_areas").select("grp, area, status, note, rank, sort").eq("tenant_id", ctx.tenantId).order("sort").returns<CoverageArea[]>();
+  const { data, error } = await supabase.from("coverage_areas").select("grp, area, status, note, rank, sort").eq("tenant_id", ctx.tenantId).order("sort").returns<CoverageArea[]>();
+  if (error) return <LoadError what="coverage" />;
   const areas = data ?? [];
   if (!areas.length) return <EmptyState title="Coverage map coming" body="We're mapping every area your business runs on. It appears here with what we've reviewed and what we'd look at next." />;
   const n = (s: CoverageArea["status"]) => areas.filter((a) => a.status === s).length;

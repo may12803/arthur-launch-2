@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const ctx = await getApiContext();
   if (ctx.error) return ctx.error;
   const { supabase } = ctx;
-  if (ctx.role === "staff") return NextResponse.json({ error: "Billing is for the company's own members." }, { status: 403 });
+  if (ctx.role !== "owner" && ctx.role !== "admin") return NextResponse.json({ error: "Only owners and admins can manage billing." }, { status: 403 });
 
   const { data: tenant, error: tenantError } = await supabase
     .from("tenants")
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ url: session.url });
   } catch (e) {
-    return NextResponse.json({ error: (e as Error).message || "Couldn't open the billing portal." }, { status: 500 });
+    console.error("billing portal session failed", (e as Error).message);
+    return NextResponse.json({ error: "Couldn't open the billing portal. Try again." }, { status: 500 });
   }
 }

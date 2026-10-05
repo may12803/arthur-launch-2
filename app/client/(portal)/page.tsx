@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { requireClientPortal } from "@/lib/client-portal/session";
-import { Card, Eyebrow, PageTitle, Muted, StatusBadge, EmptyState } from "@/components/client-portal/ui";
+import { Card, Eyebrow, PageTitle, Muted, StatusBadge, EmptyState, LoadError } from "@/components/client-portal/ui";
 import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
@@ -43,9 +43,7 @@ export default async function ClientDashboardPage() {
       </Muted>
 
       {error && (
-        <Card className="p-5 mb-6 border-red-200">
-          <p className="text-small text-red-700">Couldn&apos;t load deliverables: {error.message}</p>
-        </Card>
+        <LoadError what="deliverables" />
       )}
 
       {!error && (!deliverables || deliverables.length === 0) && (

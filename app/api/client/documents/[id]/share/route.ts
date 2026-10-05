@@ -10,6 +10,7 @@ export const runtime = "nodejs";
 // recipient by email: they then verify with a one-time code before anything opens.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return NextResponse.json({ error: "Document not found." }, { status: 404 });
   const ctx = await getApiContext();
   if (ctx.error) return ctx.error;
 

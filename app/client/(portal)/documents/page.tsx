@@ -1,6 +1,6 @@
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
-import { Card, Eyebrow, PageTitle, Muted, EmptyState } from "@/components/client-portal/ui";
+import { Card, Eyebrow, PageTitle, Muted, EmptyState, LoadError } from "@/components/client-portal/ui";
 import { DocumentUpload, DeleteDocumentButton } from "@/components/client-portal/DocumentUpload";
 import { ShareControls, SharingSwitch, type ShareRow } from "@/components/client-portal/ShareControls";
 import { LocalDate } from "@/components/client-portal/LocalTime";
@@ -21,7 +21,7 @@ export default async function DocumentsPage() {
   const canUpload = ctx.role !== "viewer";
   const isAdmin = ctx.role === "owner" || ctx.role === "admin";
 
-  const [{ data: docs, error }, team, { data: tenant }, { data: shares }] = await Promise.all([
+  const [{ data: docs, error }, team, { data: tenant, error: tenantError }, { data: shares, error: sharesError }] = await Promise.all([
     supabase
       .from("documents")
       .select("id, name, size_bytes, created_by, by_staff, created_at")
@@ -57,7 +57,11 @@ export default async function DocumentsPage() {
         </Card>
       )}
 
-      {isAdmin && (
+      {(tenantError || sharesError) && (
+        <p className="ll-feedback warn mb-6">Sharing settings couldn&apos;t be loaded, so they may look switched off. Refresh before changing them.</p>
+      )}
+
+      {isAdmin && !tenantError && (
         <Card className="p-6 mb-6">
           <SharingSwitch enabled={sharingOn} regulated={regulated} />
         </Card>

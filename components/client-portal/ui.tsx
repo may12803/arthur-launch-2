@@ -71,6 +71,16 @@ export function StatusBadge({ status }: { status: string }) {
   return <span className={cn("ll-pill", tone[status])}>{text}</span>;
 }
 
+// A failed read is not an empty list: say so, plainly, and never show the database's own message.
+export function LoadError({ what }: { what: string }) {
+  return (
+    <Card className="p-8 text-center" >
+      <p role="alert" className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)] mb-2">Couldn&apos;t load {what}</p>
+      <Muted className="mx-auto max-w-[42ch]">This is on our side, not yours. Refresh in a moment; if it keeps happening, tell your LOVELEEDAY contact.</Muted>
+    </Card>
+  );
+}
+
 export function EmptyState({ title, body }: { title: string; body: string }) {
   return (
     <Card className="p-10 text-center">

@@ -1,6 +1,6 @@
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
-import { Card, Eyebrow, PageTitle, Muted, EmptyState } from "@/components/client-portal/ui";
+import { Card, Eyebrow, PageTitle, Muted, EmptyState, LoadError } from "@/components/client-portal/ui";
 import { LocalTime } from "@/components/client-portal/LocalTime";
 import { StaffGrantEnd } from "@/components/client-portal/StaffGrantEnd";
 
@@ -61,7 +61,7 @@ export default async function AccessHistoryPage() {
   }
 
   const supabase = await getLoveleedayServer();
-  const [{ data: rows }, team, { data: grants }] = await Promise.all([
+  const [{ data: rows, error: rowsError }, team, { data: grants }] = await Promise.all([
     supabase
       .from("audit_log")
       .select("id, actor, action, meta, at")
@@ -99,7 +99,9 @@ export default async function AccessHistoryPage() {
         </Card>
       )}
 
-      {!rows || rows.length === 0 ? (
+      {rowsError ? (
+        <LoadError what="access history" />
+      ) : !rows || rows.length === 0 ? (
         <EmptyState title="Nothing recorded yet" body="Activity on your documents and account will appear here." />
       ) : (
         <Card className="px-6 py-2 overflow-x-auto">

@@ -1,7 +1,7 @@
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { getDocument } from "@/lib/signwell";
-import { Card, Eyebrow, PageTitle, Muted, StatusBadge, EmptyState } from "@/components/client-portal/ui";
+import { Card, Eyebrow, PageTitle, Muted, StatusBadge, EmptyState, LoadError } from "@/components/client-portal/ui";
 import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
@@ -45,7 +45,7 @@ export default async function ContractsPage() {
     .order("created_at", { ascending: false })
     .returns<ContractRow[]>();
 
-  const rows = error ? [] : data || [];
+  const rows = data || [];
   const contracts: ContractView[] = await Promise.all(
     rows.map(async (row) => ({ ...row, signingUrl: await resolveSigningUrl(row) })),
   );
@@ -56,7 +56,9 @@ export default async function ContractsPage() {
       <PageTitle>Contracts</PageTitle>
       <Muted className="mb-8 max-w-[60ch]">Sign and manage your agreements with LOVELEEDAY.</Muted>
 
-      {contracts.length === 0 ? (
+      {error ? (
+        <LoadError what="contracts" />
+      ) : contracts.length === 0 ? (
         <EmptyState
           title="No contracts yet"
           body="LOVELEEDAY hasn't sent a contract to this account yet. Check back once one is on its way."
