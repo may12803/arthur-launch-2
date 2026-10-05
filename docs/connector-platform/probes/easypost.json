@@ -1,0 +1,10 @@
+{
+  "key": "easypost",
+  "at": "2026-10-05T19:25:18.048Z",
+  "status": "NOT_CONFIGURED",
+  "names": [
+    "EASYPOST_LOGIN_EMAIL",
+    "EASYPOST_LOGIN_PASSWORD"
+  ],
+  "steps": []
+}

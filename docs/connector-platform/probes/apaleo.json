@@ -1,0 +1,10 @@
+{
+  "key": "apaleo",
+  "at": "2026-10-05T19:25:18.047Z",
+  "status": "NOT_CONFIGURED",
+  "names": [
+    "APALEO_LOGIN_EMAIL",
+    "APALEO_LOGIN_PASSWORD"
+  ],
+  "steps": []
+}

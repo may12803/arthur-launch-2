@@ -1,0 +1,10 @@
+{
+  "key": "freshbooks",
+  "at": "2026-10-05T19:25:18.050Z",
+  "status": "NOT_CONFIGURED",
+  "names": [
+    "FRESHBOOKS_LOGIN_EMAIL",
+    "FRESHBOOKS_LOGIN_PASSWORD"
+  ],
+  "steps": []
+}

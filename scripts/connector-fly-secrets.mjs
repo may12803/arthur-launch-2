@@ -29,6 +29,10 @@ const ENDPOINTS = {
   monday: { authorize: "https://auth.monday.com/oauth2/authorize", token: "https://auth.monday.com/oauth2/token" }, // https://developer.monday.com/apps/docs/oauth
   pipedrive: { authorize: "https://oauth.pipedrive.com/oauth/authorize", token: "https://oauth.pipedrive.com/oauth/token" }, // https://pipedrive.readme.io/docs/marketplace-oauth-authorization
   typeform: { authorize: "https://api.typeform.com/oauth/authorize", token: "https://api.typeform.com/oauth/token" }, // https://www.typeform.com/developers/get-started/applications/
+  "help-scout": { authorize: "https://secure.helpscout.net/authentication/authorizeClientApplication", token: "https://api.helpscout.net/v2/oauth2/token" }, // https://developer.helpscout.com/mailbox-api/overview/authentication/
+  intercom: { authorize: "https://app.intercom.com/oauth", token: "https://api.intercom.io/auth/eagle/token" }, // https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/setting-up-oauth (US host; EU app.eu.intercom.com, AU app.au.intercom.com)
+  jobber: { authorize: "https://api.getjobber.com/api/oauth/authorize", token: "https://api.getjobber.com/api/oauth/token" }, // https://developer.getjobber.com/docs/building_your_app/app_authorization/
+  "zoho-crm": { authorize: "https://accounts.zoho.com/oauth/v2/auth", token: "https://accounts.zoho.com/oauth/v2/token" }, // https://www.zoho.com/crm/developer/docs/api/v6/auth-request.html and access-refresh.html (US data center; EU is accounts.zoho.eu)
   xero: { authorize: "https://login.xero.com/identity/connect/authorize", token: "https://identity.xero.com/connect/token" }, // https://identity.xero.com/.well-known/openid-configuration
 };
 
@@ -38,6 +42,11 @@ const SANDBOX_ONLY = {
   square: "vault holds SQUARE_SANDBOX_* keys only",
   gusto: "client verified against api.gusto-demo.com (demo app), not production",
   "quickbooks-online": "Intuit development keys (sandbox company); production keys need app assessment",
+};
+
+// Per-tenant endpoints: the OAuth host contains the customer's own subdomain, and oauthEndpoints() reads one static URL per system.
+const PER_TENANT = {
+  zendesk: "authorize https://{subdomain}.zendesk.com/oauth/authorizations/new, token https://{subdomain}.zendesk.com/oauth/tokens (https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/); needs a per-connection subdomain input in the portal before it can be staged",
 };
 
 const readJson = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -67,6 +76,7 @@ for (const key of keys) {
   const names = ["AUTHORIZE_URL", "TOKEN_URL", "CLIENT_ID", "CLIENT_SECRET", "SCOPES"].map((n) => P + n);
   const skip = (why) => { skipped.push(`${key}: ${why}`); console.log(`${key}: ${names.join(" ")} SKIP ${why}`); };
   if (SANDBOX_ONLY[key]) { skip(`sandbox-only credentials (${SANDBOX_ONLY[key]})`); continue; }
+  if (PER_TENANT[key]) { skip(`per-tenant endpoint (${PER_TENANT[key]})`); continue; }
   const ep = ENDPOINTS[key];
   if (!ep) { skip("no confirmed production authorize/token URL in table"); continue; }
   const c = clientCreds(key);
