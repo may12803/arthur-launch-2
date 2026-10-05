@@ -61,6 +61,7 @@ const PUBLIC_PREFIXES = [
   // to every real delivery; no inbound SMS was recorded after 2026-04-30 (sim lab, 2026-09-30).
   "/api/inbound/",
   "/api/stripe/webhook",
+  "/api/billing/",
   "/api/meta/webhook",
   "/api/email/inbound",
 ];
@@ -193,7 +194,7 @@ async function checkMfaRedirect(req: NextRequest, res: NextResponse): Promise<st
 // portal.loveleedaystudios.com is the client-facing address. It serves only the
 // client portal and outside-share pages; the admin app never answers on it.
 const PORTAL_HOST = "portal.loveleedaystudios.com";
-const PORTAL_ALLOWED = ["/client", "/api/client", "/api/v1/", "/api/cron/webhooks", "/api/public/connector-status", "/trust", "/connectors/logos/", "/share/", "/api/share/", "/brand/", "/_next/", "/favicon.ico"];
+const PORTAL_ALLOWED = ["/client", "/api/client", "/api/billing/", "/api/stripe/webhook", "/api/v1/", "/api/cron/webhooks", "/api/public/connector-status", "/trust", "/connectors/logos/", "/share/", "/api/share/", "/brand/", "/_next/", "/favicon.ico"];
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;

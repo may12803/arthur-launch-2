@@ -4,7 +4,12 @@ import { Card, Eyebrow, PageTitle, Muted } from "@/components/client-portal/ui";
 import { ManageBillingButton } from "@/components/client-portal/ManageBillingButton";
 import { UsageView, type Usage } from "@/components/client-portal/connectors/UsageView";
 
+import { PlanPicker } from "@/components/client-portal/PlanPicker";
+import { PLANS, money, stripeMode } from "@/lib/billing/plans";
+
 export const dynamic = "force-dynamic";
+
+type Sub = { plan_key: string | null; billing_interval: string | null; status: string; amount_cents: number | null; current_period_end: string | null; cancel_at_period_end: boolean; last_invoice_status: string | null; livemode: boolean };
 
 export default async function BillingPage() {
   const ctx = await requireClientPortal();
@@ -22,6 +27,18 @@ export default async function BillingPage() {
     .eq("id", ctx.tenantId)
     .maybeSingle<{ stripe_customer_id: string | null }>();
   if (!error) stripeCustomerId = data?.stripe_customer_id ?? null;
+
+  const subRes = await supabase
+    .from("tenant_subscriptions")
+    .select("plan_key, billing_interval, status, amount_cents, current_period_end, cancel_at_period_end, last_invoice_status, livemode")
+    .eq("tenant_id", ctx.tenantId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<Sub>();
+  const sub = subRes.error ? null : subRes.data;
+  const planName = PLANS.find((p) => p.key === sub?.plan_key)?.name ?? sub?.plan_key ?? "";
+  const canBuy = ctx.role === "owner" || ctx.role === "admin";
+  const active = !!sub && ["active", "trialing", "past_due"].includes(sub.status);
 
   const since = new Date(Date.now() - 30 * 864e5).toISOString();
   const [team, conns, runs, ups, docs, keys] = await Promise.all([
@@ -52,6 +69,20 @@ export default async function BillingPage() {
         Manage your payment method, invoices, and plan through Stripe.
       </Muted>
 
+      {stripeMode() === "test" && <p className="ll-feedback warn mb-4">Test mode: no real charges are made.</p>}
+      {sub && (
+        <Card className="p-8 mb-8">
+          <p className="font-serif text-h3 text-text-active mb-2">Current subscription</p>
+          <p data-testid="current-subscription" className="text-[15px] text-text-active">
+            {planName}{sub.billing_interval ? `, billed ${sub.billing_interval}` : ""}{sub.amount_cents != null ? `, ${money(sub.amount_cents)}` : ""}. Status: {sub.status}
+            {sub.cancel_at_period_end ? ", ends at period end" : ""}
+            {sub.current_period_end ? `. Renews or ends ${new Date(sub.current_period_end).toLocaleDateString("en-US", { timeZone: "America/New_York" })}` : ""}.
+            {sub.last_invoice_status === "payment_failed" ? " Your last payment failed. Update your payment method below." : ""}
+          </p>
+        </Card>
+      )}
+      {!error && <PlanPicker canBuy={canBuy} currentPlanKey={active ? sub?.plan_key ?? null : null} />}
+
       {error ? (
         <Card className="p-10 text-center">
           <p role="alert" className="font-serif text-h3 text-text-active mb-2">Couldn&apos;t load your billing details</p>
@@ -70,10 +101,9 @@ export default async function BillingPage() {
         </Card>
       ) : (
         <Card className="p-10 text-center">
-          <p className="font-serif text-h3 text-text-active mb-2">No billing set up yet</p>
+          <p className="font-serif text-h3 text-text-active mb-2">No subscription yet</p>
           <Muted className="mx-auto max-w-[46ch]">
-            LOVELEEDAY hasn&apos;t connected billing for {ctx.tenantName} yet. Reach out to your contact if
-            you were expecting to manage a subscription here.
+            Pick a plan above to start. Your payment method and invoices will appear here once you do.
           </Muted>
         </Card>
       )}
