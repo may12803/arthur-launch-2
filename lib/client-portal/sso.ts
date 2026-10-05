@@ -11,3 +11,15 @@ export function emailDomain(email: string): string | null {
   const domain = at > 0 ? email.trim().toLowerCase().slice(at + 1) : "";
   return /^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain) ? domain : null;
 }
+
+export async function passwordSignInAllowed(client: { rpc(name: string, args: { p_email: string }): PromiseLike<{ data: boolean | null; error: unknown }> }, email: string): Promise<boolean> {
+  const { data, error } = await client.rpc("sso_required_for_email", { p_email: email });
+  if (error) throw new Error("Sign-in options could not be checked. Try again.");
+  return data !== true;
+}
+
+export async function tenantSessionAllowed(client: { rpc(name: string, args: { p_tenant: string }): PromiseLike<{ data: boolean | null; error: unknown }> }, tenantId: string): Promise<boolean> {
+  const { data, error } = await client.rpc("sso_session_allowed", { p_tenant: tenantId });
+  if (error) throw new Error("Sign-in rules could not be checked. Try again.");
+  return data === true;
+}

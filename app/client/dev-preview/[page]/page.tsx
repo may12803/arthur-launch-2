@@ -40,17 +40,17 @@ const conns: ConnRow[] = [
 ];
 
 const runs = (rowsList: [number, number, SyncRun["status"], string | null][]): SyncRun[] =>
-  rowsList.map(([m, rows, status, error], i) => ({ id: `r${i}`, connection_id: "c4", object: ["Tenant ledger", "Work orders", "Rent roll", "Units"][i % 4], started_at: ago(m), finished_at: new Date(NOW - m * 60000 + (rows ? 150000 : 400)).toISOString(), status, rows_read: rows, rows_written: rows, error, cursor_before: null, cursor_after: null, attempt: 1 }));
+  rowsList.map(([m, rows, status, error], i) => ({ id: `r${i}`, connection_id: "c1", object: ["vendorBill", "invoice", "journalEntry"][i % 3], started_at: ago(m), finished_at: new Date(NOW - m * 60000 + (rows ? 150000 : 400)).toISOString(), status, rows_read: rows, rows_written: rows, error, cursor_before: null, cursor_after: null, attempt: 1 }));
 
 const voyagerRuns = runs([
   [390, 0, "failed", "Authentication refused: the service account is locked."], [450, 0, "failed", "Authentication refused: the service account is locked."], [840, 41902, "partial", "Timed out reading Work orders after 3 min 12 s."],
   [1270, 38114, "succeeded", null], [1700, 52330, "succeeded", null], [2130, 37805, "succeeded", null], [2560, 36990, "succeeded", null],
-]);
+]).map((r) => ({ ...r, connection_id: "c4" }));
 
 const approvals: Approval[] = [
   { id: "a1", entity_id: null, gate: "money", title: "Pay invoice 88214 from Greenfield Packaging, three-way match passed", detail: "Prepared at 7:41 AM. Purchase order, receipt and invoice agree. Due in 6 days.", proposed: { vendor: "Greenfield Packaging", invoice: "88214", amount: "12,480.00 USD", pay_on: "2026-10-11", matched_to: "PO-30551, receipt R-7782" }, source_ref: "netsuite:vendorbill/88214", status: "pending", decided_by: null, decided_at: null, reason: null, proof: null, created_at: ago(95) },
   { id: "a2", entity_id: null, gate: "money", title: "Refund 38 duplicate card charges", detail: "Detected by comparing Stripe charges with Shopify orders. 38 orders.", proposed: { orders: "38", total: "1,904.50 USD" }, source_ref: "stripe+shopify", status: "pending", decided_by: null, decided_at: null, reason: null, proof: null, created_at: ago(300) },
-  { id: "a3", entity_id: null, gate: "send", title: "Email 2,140 members about the autumn open day", detail: "Draft written in your approved voice. Sends 8 Oct, 9:00 AM.", proposed: { audience: "Active members", recipients: "2,140", send_at: "2026-10-08 09:00" }, source_ref: "mailchimp:campaign/draft-441", status: "pending", decided_by: null, decided_at: null, reason: null, proof: null, created_at: ago(500) },
+  { id: "a3", entity_id: null, gate: "send", title: "Email 2,140 members about the autumn open day", detail: "Draft written in your approved voice. Sends Oct 8, 2026, at 9:00 AM.", proposed: { audience: "Active members", recipients: "2,140", send_at: "2026-10-08 09:00" }, source_ref: "mailchimp:campaign/draft-441", status: "pending", decided_by: null, decided_at: null, reason: null, proof: null, created_at: ago(500) },
   { id: "a4", entity_id: null, gate: "send", title: "Late-delivery apology to 6 wholesale accounts", detail: "Each message cites the order and the carrier delay.", proposed: { recipients: "6" }, source_ref: null, status: "pending", decided_by: null, decided_at: null, reason: null, proof: null, created_at: ago(900) },
   { id: "a5", entity_id: null, gate: "legal", title: "Renewal of the lease amendment, clause 14 changed", detail: "Counsel review required before anything is signed.", proposed: { clause: "14", change: "Rent escalator from 3% to 3.5%" }, source_ref: "documents:lease-amend-2026", status: "pending", decided_by: null, decided_at: null, reason: null, proof: null, created_at: ago(2000) },
   { id: "a6", entity_id: null, gate: "money", title: "Pay invoice 88190 from Marrow Dairy", detail: "Approved by A. Castellanos at 8:02 AM.", proposed: null, source_ref: null, status: "approved", decided_by: "u1", decided_at: ago(40), reason: null, proof: "Paid: bank ref 7F2C-0914, matched 9:10 AM", created_at: ago(700) },
