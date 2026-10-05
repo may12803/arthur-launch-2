@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
-import { Eyebrow, PageTitle, Muted, StatusBadge, Card } from "@/components/client-portal/ui";
+import { requireClientPortal } from "@/lib/client-portal/session";
+import { Eyebrow, PageTitle, Muted, StatusBadge, Card, LoadError } from "@/components/client-portal/ui";
 import { LocalDate } from "@/components/client-portal/LocalTime";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ type DeliverableRow = {
 };
 
 export default async function DeliverablePage({ params }: { params: { slug: string } }) {
+  const ctx = await requireClientPortal();
   const supabase = await getLoveleedayServer();
 
   // RLS (deliverables_member_select) scopes this to the caller's own
@@ -33,10 +35,12 @@ export default async function DeliverablePage({ params }: { params: { slug: stri
   const { data, error } = await supabase
     .from("deliverables")
     .select("id, kind, title, slug, status, content, updated_at")
+    .eq("tenant_id", ctx.tenantId)
     .eq("slug", params.slug)
     .maybeSingle<DeliverableRow>();
 
-  if (error || !data) notFound();
+  if (error) return <LoadError what="this deliverable" />;
+  if (!data) notFound();
 
   const content = data.content || {};
   const embedUrl = content.iframe_url || content.url;

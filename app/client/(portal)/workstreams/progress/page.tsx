@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireClientPortal } from "@/lib/client-portal/session";
-import { Card, Eyebrow, PageTitle, Muted } from "@/components/client-portal/ui";
+import { Card, Eyebrow, PageTitle, Muted, LoadError } from "@/components/client-portal/ui";
 import { display, gradePoints, gradeTone, loadWorkstreams } from "@/lib/client-portal/workstreams";
 import { LocalDate } from "@/components/client-portal/LocalTime";
 
@@ -9,7 +9,8 @@ export const dynamic = "force-dynamic";
 // Every grade from the first review to today, and every finished task, newest first, with Was and Proof.
 export default async function ProgressPage() {
   const ctx = await requireClientPortal();
-  const { workstreams, tasks } = await loadWorkstreams(ctx.tenantId);
+  const { workstreams, tasks, error } = await loadWorkstreams(ctx.tenantId);
+  if (error) return <LoadError what="progress" />;
   const name = Object.fromEntries(workstreams.map((w) => [w.id, w.name]));
   const done = tasks.filter((t) => t.status === "done").sort((a, b) => String(b.done_at).localeCompare(String(a.done_at)));
   const pos = (g: string | null) => `${Math.max(0, gradePoints(g)) / 12 * 100}%`;

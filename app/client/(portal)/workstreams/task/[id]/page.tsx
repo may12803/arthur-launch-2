@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
-import { Card, Eyebrow, Muted } from "@/components/client-portal/ui";
+import { Card, Eyebrow, Muted, LoadError } from "@/components/client-portal/ui";
 import { STATUS_LABEL, STATUS_TONE, type Workstream, type WsTask } from "@/lib/client-portal/workstreams";
 import { DecisionForm } from "./DecisionForm";
 import { LocalDate } from "@/components/client-portal/LocalTime";
@@ -16,7 +16,8 @@ export default async function TaskPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const ctx = await requireClientPortal();
   const supabase = await getLoveleedayServer();
-  const { data: t } = await supabase.from("workstream_tasks").select("*").eq("id", id).eq("tenant_id", ctx.tenantId).eq("internal", false).maybeSingle<WsTask>();
+  const { data: t, error: taskError } = await supabase.from("workstream_tasks").select("*").eq("id", id).eq("tenant_id", ctx.tenantId).eq("internal", false).maybeSingle<WsTask>();
+  if (taskError) return <LoadError what="this task" />;
   if (!t) notFound();
   const [{ data: w }, { data: decisions }] = await Promise.all([
     supabase.from("workstreams").select("key, name").eq("id", t.workstream_id).maybeSingle<Pick<Workstream, "key" | "name">>(),
