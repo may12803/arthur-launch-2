@@ -1,5 +1,6 @@
 import { snowflakeJwt } from '../auth/jwt.ts';
 import { requestJson } from '../http.ts';
+import { guardedFetch } from '../net/safe-url.ts';
 import type { Adapter, Creds, FetchLike } from '../types.ts';
 import { decodeCursor, need } from './common.ts';
 import { assertIdent, assertTable, hostOk, HW_COL, rowsToObjects, SQL_PAGE, windowPage } from './sql-common.ts';
@@ -24,7 +25,8 @@ function headers(creds: Creds): Record<string, string> {
   };
 }
 
-async function run(creds: Creds, fetch: FetchLike, statement: string, bindings?: Record<string, { type: string; value: string }>) {
+async function run(creds: Creds, rawFetch: FetchLike, statement: string, bindings?: Record<string, { type: string; value: string }>) {
+  const fetch = guardedFetch(rawFetch);
   const base = host(creds);
   const h = headers(creds);
   const body: Record<string, unknown> = { statement, timeout: 60 };

@@ -1,4 +1,5 @@
 import { basicAuth, formBody, requestJson } from '../http.ts';
+import { guardedFetch } from '../net/safe-url.ts';
 import type { Adapter, Creds, FetchLike } from '../types.ts';
 import { decodeCursor, need } from './common.ts';
 import { assertIdent, assertTable, hostOk, HW_COL, rowsToObjects, SQL_PAGE, windowPage } from './sql-common.ts';
@@ -10,6 +11,7 @@ import { assertIdent, assertTable, hostOk, HW_COL, rowsToObjects, SQL_PAGE, wind
 async function token(creds: Creds, fetch: FetchLike): Promise<string> {
   if (creds.access_token) return creds.access_token;
   need(creds, 'host', 'client_id', 'client_secret');
+  if (!hostOk(creds.host)) throw new Error('invalid workspace host');
   const j = await requestJson<{ access_token: string }>(fetch, `https://${creds.host}/oidc/v1/token`, {
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded', authorization: basicAuth(creds.client_id, creds.client_secret) },
@@ -18,7 +20,8 @@ async function token(creds: Creds, fetch: FetchLike): Promise<string> {
   return j.access_token;
 }
 
-async function run(creds: Creds, fetch: FetchLike, statement: string, params?: { name: string; value: string; type: string }[]) {
+async function run(creds: Creds, rawFetch: FetchLike, statement: string, params?: { name: string; value: string; type: string }[]) {
+  const fetch = guardedFetch(rawFetch);
   need(creds, 'host', 'warehouse_id');
   if (!hostOk(creds.host)) throw new Error('invalid workspace host');
   const j = await requestJson<any>(fetch, `https://${creds.host}/api/2.0/sql/statements`, {

@@ -37,6 +37,7 @@ const connection = (root: string, fields: string, sortKey = true): RestObjectSpe
 
 export const shopify = makeRestAdapter({
   key: 'shopify',
+  guard: true,
   base(creds) {
     need(creds, 'shop');
     return `https://${shopHost(creds.shop)}/admin/api/${creds.api_version || DEFAULT_SHOPIFY_API_VERSION}/graphql.json`;

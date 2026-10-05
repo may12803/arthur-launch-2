@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   let result;
   try {
     const table = parseUpload(bytes, file.name);
-    result = applyMapping({ table, mapping, fields, targetObject: target.id, fileSha256: fileSha256(bytes), sourceSystem: "csv-excel-upload" });
+    result = applyMapping({ table, mapping, fields, targetObject: target.id, fileSha256: fileSha256(bytes), sourceSystem: "csv-excel-upload", rejectFormulas: true });
   } catch (e) {
     return NextResponse.json({ error: e instanceof UploadError ? e.message : "That file could not be read." }, { status: 400 });
   }
