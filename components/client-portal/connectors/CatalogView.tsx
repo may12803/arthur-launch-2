@@ -4,9 +4,12 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { GROUPS, connState, findConnection, type CatalogEntry, type ConnRow, type GroupId } from "@/lib/client-portal/connector-ui";
 import { Logo, Pill } from "../cp";
+import reads from "@/lib/client-portal/connector-reads.json";
 
 // Plain-language one-liner from the researched object list. Always read-only wording: nothing is written back.
 export function describe(e: CatalogEntry): string {
+  const written = (reads as Record<string, string>)[e.key];
+  if (written) return written;
   if (e.legacy?.uses && !e.objects.length) return e.legacy.uses;
   if (!e.objects.length) return "Reads the data you choose to share.";
   const list = e.objects.slice(0, 5).map((o) => o.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase());

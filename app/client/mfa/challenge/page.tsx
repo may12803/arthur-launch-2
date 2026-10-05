@@ -26,9 +26,9 @@ function ChallengeForm() {
   const [useBackup, setUseBackup] = useState(false);
   const [backup, setBackup] = useState("");
 
-  const bootstrap = useCallback(async () => {
+  const bootstrap = useCallback(async (keepError = false) => {
     setLoading(true);
-    setError("");
+    if (!keepError) setError("");
 
     const { data: userData, error: userError } = await loveleeday.auth.getUser();
     if (userError || !userData.user) {
@@ -102,7 +102,7 @@ function ChallengeForm() {
       setVerifying(false);
       setCode("");
       // A challenge is single-use and expires; get a fresh one so the next attempt can succeed.
-      bootstrap();
+      bootstrap(true);
       return;
     }
     window.location.href = next;
