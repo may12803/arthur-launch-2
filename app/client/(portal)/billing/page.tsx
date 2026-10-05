@@ -2,6 +2,7 @@ import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import { Card, Eyebrow, PageTitle, Muted } from "@/components/client-portal/ui";
 import { ManageBillingButton } from "@/components/client-portal/ManageBillingButton";
+import { UsageView, type Usage } from "@/components/client-portal/connectors/UsageView";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,27 @@ export default async function BillingPage() {
     .eq("id", ctx.tenantId)
     .maybeSingle<{ stripe_customer_id: string | null }>();
   if (!error) stripeCustomerId = data?.stripe_customer_id ?? null;
+
+  const since = new Date(Date.now() - 30 * 864e5).toISOString();
+  const [team, conns, runs, ups, docs, keys] = await Promise.all([
+    supabase.rpc("list_tenant_team", { p_tenant: ctx.tenantId }),
+    supabase.from("tenant_connections").select("id", { count: "exact", head: true }).eq("tenant_id", ctx.tenantId).not("status", "in", "(not_connected,disconnected)"),
+    supabase.from("sync_runs").select("rows_read").eq("tenant_id", ctx.tenantId).gte("started_at", since).order("started_at", { ascending: false }).limit(5000).returns<{ rows_read: number | null }[]>(),
+    supabase.from("upload_mappings").select("id", { count: "exact", head: true }).eq("tenant_id", ctx.tenantId).gte("created_at", since),
+    supabase.from("documents").select("id", { count: "exact", head: true }).eq("tenant_id", ctx.tenantId),
+    supabase.from("api_keys").select("id", { count: "exact", head: true }).eq("tenant_id", ctx.tenantId).is("revoked_at", null),
+  ]);
+  const usage: Usage = {
+    members: team.error ? null : ((team.data as unknown[] | null)?.length ?? 0),
+    connections: conns.error ? null : conns.count ?? 0,
+    rowsRead30d: runs.error ? null : (runs.data ?? []).reduce((a, r) => a + (r.rows_read ?? 0), 0),
+    rowsTruncated: (runs.data?.length ?? 0) >= 5000,
+    syncs30d: runs.error ? null : runs.data?.length ?? 0,
+    uploads30d: ups.error ? null : ups.count ?? 0,
+    documents: docs.error ? null : docs.count ?? 0,
+    apiKeys: keys.error ? null : keys.count ?? 0,
+  };
+  const usageErrors = [team.error && `Members: ${team.error.message}`, conns.error && `Connections: ${conns.error.message}`, runs.error && `Sync records: ${runs.error.message}`, ups.error && `Uploads: ${ups.error.message}`, docs.error && `Documents: ${docs.error.message}`, keys.error && `API keys: ${keys.error.message}`];
 
   return (
     <div>
@@ -48,6 +70,8 @@ export default async function BillingPage() {
           </Muted>
         </Card>
       )}
+
+      <UsageView u={usage} errors={usageErrors} />
     </div>
   );
 }

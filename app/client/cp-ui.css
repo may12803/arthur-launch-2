@@ -19,6 +19,12 @@
 .cp-table th { text-align: left; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #94949a; font-weight: 600; padding: 11px 16px; border-bottom: 1px solid var(--line); background: #fafbfd; white-space: nowrap; }
 .cp-table td { padding: 13px 16px; border-bottom: 1px solid #edf0f4; vertical-align: middle; color: #303238; }
 .cp-table tr:last-child td { border-bottom: 0; }
+/* The app's global button/input rules size every control for forms; restate the small ones. */
+.ll-portal .cp-switch { box-sizing: border-box; display: inline-block; width: 34px; height: 20px; min-width: 34px; min-height: 0; padding: 0; border-radius: 12px; }
+.ll-portal input[type=checkbox], .ll-portal input[type=radio] { width: 16px; height: 16px; min-width: 0; min-height: 0; padding: 0; flex: none; accent-color: var(--blue-action); }
+.ll-portal .cp-chip-x { min-height: 0; padding: 0; }
+.ll-portal .cp-sm { padding: 7px 14px; font-size: 11px; }
+.cp-twrap > .cp-table { min-width: 600px; }
 .cp-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .cp-table td .sub { display: block; font-size: 11px; color: var(--muted); margin-top: 1px; }
 .cp-table td b { font-weight: 550; color: var(--ink); }
@@ -60,7 +66,14 @@
 .cp-bar.wait i { background: #c9822f; } .cp-bar.info i { background: var(--blue-action); }
 .cp-copy { font-family: var(--font-geist-mono); font-size: 12.5px; background: #fafbfd; border: 1px solid #dce3ed; border-radius: 8px; padding: 10px 12px; word-break: break-all; color: #36475c; }
 
+/* Buttons inside the sub-navigation (approvals filters): global button rules center text, so restate the row layout. */
+.cp-subnav button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; text-align: left; background: none; border: 0; font: inherit; color: inherit; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+.cp-subnav button:hover { background: #f5f5f7; }
+.cp-subnav button[aria-current=page] { background: #f5f5f7; color: var(--ink); font-weight: 500; }
+
 @media (max-width: 900px) {
+  .cp-subnav button { width: auto; }
+  .cp-subnav a, .cp-subnav button { flex: none; white-space: nowrap; }
   .cp-split { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .cp-subnav { flex-direction: row; overflow-x: auto; gap: 4px; }
   .cp-subnav a { white-space: nowrap; }
