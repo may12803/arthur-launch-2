@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --test lib/client-portal/__tests__/*.test.mjs lib/connectors/__tests__/*.test.mjs lib/integrity/__tests__/*.test.mjs lib/market/__tests__/*.test.mjs lib/snapshot/__tests__/*.test.mjs lib/engine/__tests__/*.test.mjs lib/billing/__tests__/*.test.mjs",
+    "test": "node --test lib/client-portal/__tests__/*.test.mjs lib/connectors/__tests__/*.test.mjs lib/integrity/__tests__/*.test.mjs lib/market/__tests__/*.test.mjs lib/snapshot/__tests__/*.test.mjs lib/engine/__tests__/*.test.mjs lib/billing/__tests__/*.test.mjs lib/outreach/__tests__/*.test.mjs",
     "test:db": "bash scripts/db-test.sh",
     "gen:persona": "node scripts/gen-persona.mjs"
   },
