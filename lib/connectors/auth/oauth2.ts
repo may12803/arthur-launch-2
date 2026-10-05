@@ -1,5 +1,5 @@
 import { basicAuth, formBody, requestJson } from '../http.ts';
-import type { FetchLike } from '../types.ts';
+import { HttpError, type FetchLike } from '../types.ts';
 import { codeChallengeS256, generateCodeVerifier, generateState, hashState } from './pkce.ts';
 
 export interface TokenSet {
@@ -138,7 +138,19 @@ export async function tokenRequest(i: TokenRequestInput): Promise<TokenSet> {
     if (i.clientSecret) params.client_secret = i.clientSecret;
   }
   const now = i.now ?? Date.now();
-  const j = await requestJson<any>(i.fetch, i.tokenUrl, { method: 'POST', headers, body: formBody(params) });
+  let j: any;
+  try {
+    j = await requestJson<any>(i.fetch, i.tokenUrl, { method: 'POST', headers, body: formBody(params) });
+  } catch (error) {
+    if (error instanceof HttpError) {
+      try {
+        if (JSON.parse(error.body).error === 'invalid_grant') throw new OAuthError('token_error', 'invalid_grant');
+      } catch (parsed) {
+        if (parsed instanceof OAuthError) throw parsed;
+      }
+    }
+    throw error;
+  }
   if (!j.access_token) throw new OAuthError('token_error', 'token response had no access_token');
   return {
     access_token: j.access_token,
@@ -152,8 +164,8 @@ export async function tokenRequest(i: TokenRequestInput): Promise<TokenSet> {
 
 export interface TokenStore {
   get(): Promise<TokenSet>;
-  /** Atomically replace the stored token set only if the stored refresh token still equals `expectedRefresh`. */
-  compareAndSet(expectedRefresh: string | undefined, next: TokenSet): Promise<boolean>;
+  /** Atomically replace the set only if the stored rotated_at is older than the new value. */
+  compareAndSet(expectedRotatedAt: string, next: TokenSet): Promise<boolean>;
 }
 
 export interface RefreshInput {
@@ -180,11 +192,11 @@ export async function refreshTokens(i: RefreshInput): Promise<TokenSet> {
     clientId: i.clientId,
     clientSecret: i.clientSecret,
     clientAuth: i.clientAuth,
-    now: i.now,
+    now: Math.max(i.now ?? Date.now(), Date.parse(current.rotated_at) + 1 || 0),
     params: { grant_type: 'refresh_token', refresh_token: current.refresh_token },
   });
   const next: TokenSet = { ...fresh, refresh_token: fresh.refresh_token ?? current.refresh_token };
-  const ok = await i.store.compareAndSet(current.refresh_token, next);
+  const ok = await i.store.compareAndSet(current.rotated_at, next);
   return ok ? next : i.store.get();
 }
 
