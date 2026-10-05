@@ -11,6 +11,7 @@ const NAV: { href: string; label: string; match?: string[]; staffOnly?: boolean 
   { href: "/client/workstreams", label: "Workstreams" },
   { href: "/client/connections", label: "Connections" },
   { href: "/client/data/health", label: "Data health", match: ["/client/data"] },
+  { href: "/client/signals", label: "Signals" },
   { href: "/client/approvals", label: "Approvals" },
   { href: "/client/documents", label: "Documents" },
   { href: "/client/team", label: "Team" },
