@@ -5,6 +5,8 @@ import { UPLOAD_TARGETS } from "@/lib/client-portal/connector-ui";
 import { connectorsServerSecret, dbFail, isMemberRole } from "@/lib/client-portal/connector-api";
 import { parseUpload, UploadError } from "@/lib/connectors/upload/parse";
 import { applyMapping, fileSha256, type FieldType, type TargetField } from "@/lib/connectors/upload/map";
+import { SupabaseAuditStore } from "@/lib/audit/store";
+import { runPendingAudits } from "@/lib/audit/service";
 
 export const runtime = "nodejs";
 
@@ -84,6 +86,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `The rows were validated and the mapping saved, but importing them failed: ${message}` }, { status: 502 });
   }
 
+  await runPendingAudits({ store: new SupabaseAuditStore(anon, secret), log: console.error }, { tenantId: ctx.tenantId }).catch((e) => console.error("[audit] upload retry", e));
   return NextResponse.json({
     ok: true,
     upload_id: map.data ?? null,

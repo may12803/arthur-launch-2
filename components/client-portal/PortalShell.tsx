@@ -14,6 +14,7 @@ const NAV: { href: string; label: string; match?: string[]; staffOnly?: boolean 
   { href: "/client/signals", label: "Signals" },
   { href: "/client/approvals", label: "Approvals" },
   { href: "/client/documents", label: "Documents" },
+  { href: "/client/audits", label: "Pricing audits" },
   { href: "/client/team", label: "Team" },
   { href: "/client/billing", label: "Billing" },
   { href: "/client/organization", label: "Settings", match: ["/client/organization", "/client/security", "/client/audit", "/client/access", "/client/developer", "/client/status", "/client/contracts", "/client/account"] },

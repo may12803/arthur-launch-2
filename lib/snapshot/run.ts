@@ -50,6 +50,8 @@ export interface RunInput {
   source: 'upload' | 'sample';
   label?: string | null;
   catalog?: CatalogLite[];
+  /** Rows kept per finding. Defaults to the snapshot cap; the paid audit keeps every flagged row so each figure can be re-added by hand. */
+  maxRowsPerFinding?: number;
 }
 
 export function runSnapshot(input: RunInput): SnapshotResult {
@@ -184,6 +186,7 @@ export function runSnapshot(input: RunInput): SnapshotResult {
   if (!has('customer')) notes.push('No customer column was found, so customer checks were skipped and every row counts as one price list.');
   else if (!has('address') && !has('zip')) notes.push('Duplicate customers are matched on name alone because no address column was found; two real branches with the same name would be listed too. Review before merging.');
 
+  const cap = input.maxRowsPerFinding ?? MAX_STORED_ROWS_PER_FINDING;
   const volumeKnown = unitsKnown > 0;
   const raw = analyze(tables, { asOf, volumeKnown, skip });
 
@@ -193,9 +196,9 @@ export function runSnapshot(input: RunInput): SnapshotResult {
     const exposure = refuseUnsourced(f);
     return {
       ...rest, exposure,
-      rows: all.slice(0, MAX_STORED_ROWS_PER_FINDING),
+      rows: all.slice(0, cap),
       rows_total: all.length,
-      rows_truncated: all.length > MAX_STORED_ROWS_PER_FINDING,
+      rows_truncated: all.length > cap,
     };
   });
   if (!volumeKnown && has('cost')) notes.push('No units sold column was found, so below-cost figures are per-unit exposure, not loss.');

@@ -11,6 +11,8 @@ export interface WebhookDeps {
   whsec: string | undefined;
   serverSecret: () => string | null;
   db: () => WebhookDb;
+  // One-time payments (the ll_audit_* offers). Runs after the signature check, inside the same try, so a failure returns 500 and Stripe retries.
+  onPaymentCheckout?: (event: Stripe.Event, ctx: { db: WebhookDb; secret: string }) => Promise<void>;
 }
 
 const iso = (s?: number | null) => (s ? new Date(s * 1000).toISOString() : null);
@@ -66,6 +68,8 @@ export async function handleStripeWebhook(req: Request, deps: WebhookDeps): Prom
         if (s.mode === "subscription" && s.subscription) {
           const subId = typeof s.subscription === "string" ? s.subscription : s.subscription.id;
           await applySubscription(await stripe.subscriptions.retrieve(subId), `${event.id}:sub`);
+        } else if (s.mode === "payment" && deps.onPaymentCheckout) {
+          await deps.onPaymentCheckout(event, { db, secret });
         }
         break;
       }

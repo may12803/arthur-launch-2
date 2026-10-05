@@ -1,0 +1,9 @@
+@media print {
+  body { background: white !important; color: black !important; }
+  .audit-actions, nav, aside, header, footer { display: none !important; }
+  .audit-print { max-width: none !important; padding: 0 !important; }
+  .audit-finding { break-inside: avoid-page; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { border-bottom: 1px solid #aaa; padding: 4px; text-align: left; }
+  tr { break-inside: avoid; }
+}

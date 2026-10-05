@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiContext, clientIp, rpcErrorResponse, MAX_DOCUMENT_BYTES } from "@/lib/client-portal/api";
+import { connectorsServerSecret } from "@/lib/client-portal/connector-api";
+import { loveleedayAnon } from "@/lib/client-portal/anon";
+import { SupabaseAuditStore } from "@/lib/audit/store";
+import { runPendingAudits } from "@/lib/audit/service";
 
 export const runtime = "nodejs";
 
@@ -33,5 +37,10 @@ export async function POST(req: NextRequest) {
     p_ip: clientIp(req),
   });
   if (error) return rpcErrorResponse(error.message);
+  const secret = connectorsServerSecret();
+  if (secret) {
+    const store = new SupabaseAuditStore(loveleedayAnon(), secret);
+    await runPendingAudits({ store, log: console.error }, { tenantId: ctx.tenantId }).catch((e) => console.error("[audit] upload retry", e));
+  }
   return NextResponse.json({ id: data });
 }

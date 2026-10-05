@@ -9,6 +9,7 @@ export const JOBS: Job[] = [
   // Market data (FRED, BLS, EIA): once a day, plus one run two minutes after boot. Idempotent upserts, so a restart rerun is harmless.
   { path: "/api/cron/market-refresh", everyMs: 24 * 60 * 60 * 1000, firstRunMs: 2 * 60 * 1000 },
   { path: "/api/cron/snapshot-purge", everyMs: 60 * 60 * 1000 },
+  { path: "/api/cron/audits", everyMs: 5 * 60 * 1000, firstRunMs: 4 * 60 * 1000 },
   // Client-tenant engine pipeline (lib/engine): every 5 minutes, first run 3 minutes after boot. Cursor-based and idempotent.
   { path: "/api/cron/tenant-pipeline", everyMs: 5 * 60 * 1000, firstRunMs: 3 * 60 * 1000 },
   // Atlassian Personal Data Reporting: weekly (the vendor limit is 15 days), plus a run ten minutes after boot so frequent restarts cannot starve it.
