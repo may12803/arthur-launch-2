@@ -8,6 +8,7 @@ export const JOBS: Job[] = [
   { path: "/api/cron/webhooks", everyMs: 5 * 60 * 1000 },
   // Market data (FRED, BLS, EIA): once a day, plus one run two minutes after boot. Idempotent upserts, so a restart rerun is harmless.
   { path: "/api/cron/market-refresh", everyMs: 24 * 60 * 60 * 1000, firstRunMs: 2 * 60 * 1000 },
+  { path: "/api/cron/snapshot-purge", everyMs: 60 * 60 * 1000 },
 ];
 
 export function startScheduler(env: Record<string, string | undefined> = process.env, doFetch: typeof fetch = fetch): (() => void) | null {

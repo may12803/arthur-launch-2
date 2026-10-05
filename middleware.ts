@@ -53,6 +53,9 @@ const PUBLIC_PREFIXES = [
   "/api/public/connector-status",
   "/api/public/market-snapshot",
   "/api/cron/market-refresh",
+  // Anonymous Free Snapshot (CORS-limited to loveleedaystudios.com, per-IP rate limited, 7-day retention) and its purge cron (secret-guarded).
+  "/api/public/snapshot",
+  "/api/cron/snapshot-purge",
   "/api/v1/",
   // Outside-sharing recipients have no account: the share page and its API
   // are gated by the link token + an emailed one-time code instead.
@@ -196,7 +199,7 @@ async function checkMfaRedirect(req: NextRequest, res: NextResponse): Promise<st
 // portal.loveleedaystudios.com is the client-facing address. It serves only the
 // client portal and outside-share pages; the admin app never answers on it.
 const PORTAL_HOST = "portal.loveleedaystudios.com";
-const PORTAL_ALLOWED = ["/client", "/api/client", "/api/billing/", "/api/stripe/webhook", "/api/v1/", "/api/cron/webhooks", "/api/public/connector-status", "/api/public/market-snapshot", "/trust", "/connectors/logos/", "/share/", "/api/share/", "/brand/", "/_next/", "/favicon.ico"];
+const PORTAL_ALLOWED = ["/client", "/api/client", "/api/billing/", "/api/stripe/webhook", "/api/v1/", "/api/cron/webhooks", "/api/public/connector-status", "/api/public/market-snapshot", "/api/public/snapshot", "/trust", "/connectors/logos/", "/share/", "/api/share/", "/brand/", "/_next/", "/favicon.ico"];
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;

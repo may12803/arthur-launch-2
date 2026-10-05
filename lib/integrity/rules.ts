@@ -94,6 +94,10 @@ function severityByShare(share: number): Severity {
 export interface AnalyzeOptions {
   /** The "today" of the dataset, ISO date. Required: the engine never reads the clock. */
   asOf: string;
+  /** Whether the sales rows carry real unit volume. Defaults to "any sales row exists". Flat uploads can supply a last-sale date with no volume. */
+  volumeKnown?: boolean;
+  /** Rules the data cannot support even though their tables are non-empty (reason shown to the reader). They produce no finding and no score penalty. */
+  skip?: Partial<Record<RuleId, string>>;
 }
 
 export function analyze(tables: Tables, opts: AnalyzeOptions): IntegrityResult {
@@ -147,7 +151,7 @@ export function analyze(tables: Tables, opts: AnalyzeOptions): IntegrityResult {
       });
     }
     rows.sort((a, b) => (b.exposure as number) - (a.exposure as number) || (a.id < b.id ? -1 : 1));
-    const volume = hasSales;
+    const volume = opts.volumeKnown ?? hasSales;
     const exposure: Exposure = volume
       ? {
           amount: round2(total), kind: 'loss',
@@ -203,7 +207,7 @@ export function analyze(tables: Tables, opts: AnalyzeOptions): IntegrityResult {
       rule: 'cost_lag', title: 'Prices not updated after a cost increase', severity: rows.length === 0 ? 'low' : 'high',
       count: rows.length, unit: 'price records', population: prices.length, flaggedInPopulation: rows.length,
       sample: rows.slice(0, SAMPLE_SIZE), rows, action: 'reprice',
-      exposure: hasSales
+      exposure: (opts.volumeKnown ?? hasSales)
         ? {
             amount: round2(total), kind: 'loss',
             formula: 'sum over flagged price records, over each sale on or after the date cost first rose 5% or more above the cost at the price date, of (cost on the sale date - cost at the price date) x qty',
@@ -321,6 +325,11 @@ export function analyze(tables: Tables, opts: AnalyzeOptions): IntegrityResult {
     });
   }
 
+  for (const [rule, reason] of Object.entries(opts.skip ?? {}) as [RuleId, string][]) {
+    const i = findings.findIndex((f) => f.rule === rule);
+    if (i >= 0) findings.splice(i, 1);
+    if (!skipped.some((s) => s.rule === rule)) skipped.push({ rule, reason });
+  }
   const score = scoreFindings(findings);
   return {
     asOf, findings, skipped, score,
