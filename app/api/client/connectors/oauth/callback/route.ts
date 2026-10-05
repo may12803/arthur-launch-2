@@ -4,6 +4,7 @@ import { loveleedayAnon } from "@/lib/client-portal/anon";
 import { tokenRequest } from "@/lib/connectors/auth/oauth2";
 import { oauthEndpoints } from "@/lib/client-portal/connector-ui";
 import { connectorsServerSecret } from "@/lib/client-portal/connector-api";
+import { zendeskEndpoints } from "@/lib/connectors/auth/zendesk";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,12 @@ export async function GET(req: NextRequest) {
   const st = (Array.isArray(consumed.data) ? consumed.data[0] : consumed.data) as StateRow | null;
   if (!st) return back(null, "That sign-in link expired or was already used. Start again from the connector page.");
 
-  const ep = oauthEndpoints(st.connector_key);
+  let ep = oauthEndpoints(st.connector_key);
+  if (st.connector_key === "zendesk") {
+    // The token exchange goes to the customer's own subdomain, saved on the connection when sign-in started.
+    const cfg = await anon.rpc("connection_config_get", { p_secret: secret, p_connection: st.connection_id });
+    ep = zendeskEndpoints((cfg.data as { subdomain?: string } | null)?.subdomain);
+  }
   if (!ep) return back(st.connector_key, "Sign-in for this system is not configured on the server.");
 
   let tokens;

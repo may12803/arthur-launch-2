@@ -79,7 +79,13 @@ export function DetailView({
 
   async function startOAuth() {
     setBusy(true); setMsg(null);
-    const r = await post(`/api/client/connectors/${entry.key}/oauth/start`, {});
+    const needsSubdomain = entry.key === "zendesk";
+    if (needsSubdomain && !/^[a-z0-9-]+$/.test((vals.subdomain ?? "").trim().toLowerCase())) {
+      setBusy(false);
+      setMsg({ ok: false, text: "Enter your Zendesk subdomain: the part before .zendesk.com, using only lowercase letters, numbers and hyphens." });
+      return;
+    }
+    const r = await post(`/api/client/connectors/${entry.key}/oauth/start`, needsSubdomain ? { subdomain: (vals.subdomain ?? "").trim().toLowerCase() } : {});
     if (r.ok && typeof r.json.url === "string") { window.location.assign(r.json.url); return; }
     setBusy(false);
     setMsg({ ok: false, text: String(r.json.error ?? "Sign-in could not start.") });
@@ -169,7 +175,12 @@ export function DetailView({
                 ) : entry.gate.kind === "partner" ? (
                   <button type="button" className="ll-primary justify-self-start" disabled={busy || st.id === "requested"} onClick={() => act("request", undefined, "Requested. We will start the vendor approval with you and show progress here.")}>{st.id === "requested" ? "Requested" : busy ? "Saving..." : `Request ${entry.name} access`}</button>
                 ) : m === "oauth2_authcode" ? (
-                  <button type="button" className="ll-primary justify-self-start" disabled={busy} onClick={startOAuth}>{busy ? "Opening..." : `Continue to ${entry.name}`}</button>
+                  <div className="grid gap-3">
+                    {entry.key === "zendesk" ? (
+                      <label className="ll-field"><span>Zendesk subdomain</span><input className="ll-input" type="text" autoComplete="off" spellCheck={false} placeholder="yourcompany" pattern="[a-z0-9\-]+" value={vals.subdomain ?? ""} onChange={(e) => setVals({ ...vals, subdomain: e.target.value })} required /><span className="text-[12px] text-[var(--muted)]">The part before .zendesk.com in your Zendesk address.</span></label>
+                    ) : null}
+                    <button type="button" className="ll-primary justify-self-start" disabled={busy} onClick={startOAuth}>{busy ? "Opening..." : `Continue to ${entry.name}`}</button>
+                  </div>
                 ) : m === "none" || m === "upload" ? (
                   <Link href="/client/data/upload" className="ll-primary justify-self-start">Upload a file</Link>
                 ) : m === "service_account" ? (

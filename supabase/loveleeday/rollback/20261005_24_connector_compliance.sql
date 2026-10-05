@@ -1,0 +1,10 @@
+drop function if exists public.connection_config_get(text, uuid);
+drop function if exists public.connection_config_set(text, uuid, jsonb);
+drop function if exists public.atlassian_account_apply(text, text, text);
+drop function if exists public.atlassian_accounts_list(text);
+drop function if exists public.compliance_request_log(text, text, text, text, jsonb);
+drop function if exists public.shopify_customer_redact(text, text, text, text, text[]);
+drop function if exists public.shopify_shop_redact(text, text);
+drop function if exists private.connections_for_shop(text, text);
+drop table if exists public.compliance_requests;
+alter table public.tenant_connections drop column if exists config;

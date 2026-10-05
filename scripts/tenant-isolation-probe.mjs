@@ -191,7 +191,9 @@ const CLASSES = {
     "sync_run_finish", "ingest_records", "connection_health_record", "approval_propose", "api_key_verify", "ingested_records_since",
     "workstream_task_propose", "approvals_approved", "approval_claim", "approval_record_proof",
     // 20261005_14: public API reads, webhook worker, atomic token rotation (all gated by the connectors-server secret)
-    "public_api_connections", "public_api_records", "public_api_approvals", "webhook_deliveries_due", "webhook_delivery_record", "connection_rotate_tokens"],
+    "public_api_connections", "public_api_records", "public_api_approvals", "webhook_deliveries_due", "webhook_delivery_record", "connection_rotate_tokens",
+    // 20261005_24: vendor compliance (Shopify privacy webhooks, Atlassian personal data reporting, per-connection config), all gated by the connectors-server secret
+    "shopify_shop_redact", "shopify_customer_redact", "compliance_request_log", "atlassian_accounts_list", "atlassian_account_apply", "connection_config_set", "connection_config_get"],
   helper: ["is_staff", "session_is_strong", "role_rank", "is_tenant_admin", "entity_in_scope", "sso_required_for_me", "sso_required_for_tenant", "sso_session_allowed"],
 };
 const CLASS_OF = Object.fromEntries(Object.entries(CLASSES).flatMap(([c, names]) => names.map((n) => [n, c])));

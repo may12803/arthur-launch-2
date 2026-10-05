@@ -6,6 +6,7 @@ import { SupabaseRpcStore } from "@/lib/connectors/runner/supabase-store";
 import { getAdapter } from "@/lib/connectors/adapters/registry";
 import { getDefinition } from "@/lib/connectors/definitions";
 import { oauthEndpoints } from "@/lib/client-portal/connector-ui";
+import { zendeskEndpoints, zendeskUrls } from "@/lib/connectors/auth/zendesk";
 import type { TokenSet } from "@/lib/connectors/auth/oauth2";
 
 export const runtime = "nodejs";
@@ -42,7 +43,15 @@ async function handle(req: NextRequest) {
       if (s.error || !s.data) throw new Error("no stored credential");
       const raw = JSON.parse(String(s.data)) as Record<string, unknown>;
       const creds = Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, typeof v === "string" ? v : JSON.stringify(v)]));
-      const ep = c.auth_method?.startsWith("oauth2") ? oauthEndpoints(key) : null;
+      if (key === "zendesk") {
+        // Per-tenant subdomain (saved on the connection at connect time) drives the token refresh and every API call.
+        const cfg = await anon.rpc("connection_config_get", { p_secret: secret, p_connection: c.id });
+        const sub = (cfg.data as { subdomain?: string } | null)?.subdomain;
+        if (!sub) throw new Error("no Zendesk subdomain saved");
+        creds.subdomain = sub;
+        creds.api_base = zendeskUrls(sub).apiBase;
+      }
+      const ep = c.auth_method?.startsWith("oauth2") ? (key === "zendesk" ? zendeskEndpoints(creds.subdomain) : oauthEndpoints(key)) : null;
       const tokenStore = ep ? {
         get: async (): Promise<TokenSet> => {
           const latest = await anon.rpc("connection_secret", { p_secret: secret, p_connection: c.id });
