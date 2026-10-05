@@ -5,7 +5,7 @@ import { ManageBillingButton } from "@/components/client-portal/ManageBillingBut
 import { UsageView, type Usage } from "@/components/client-portal/connectors/UsageView";
 
 import { PlanPicker } from "@/components/client-portal/PlanPicker";
-import { PLANS, money, stripeMode } from "@/lib/billing/plans";
+import { PLANS, currentLookupKey, money, stripeMode } from "@/lib/billing/plans";
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +81,7 @@ export default async function BillingPage() {
           </p>
         </Card>
       )}
-      {!error && <PlanPicker canBuy={canBuy} currentPlanKey={active ? sub?.plan_key ?? null : null} />}
+      {!error && <PlanPicker canBuy={canBuy} currentLookupKey={active ? currentLookupKey(sub?.plan_key, sub?.billing_interval) : null} />}
 
       {error ? (
         <Card className="p-10 text-center">

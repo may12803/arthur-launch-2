@@ -20,6 +20,12 @@ export const AUDITS: AuditOffer[] = [
 ];
 
 export const priceKey = (planKey: string, interval: Interval) => `${planKey}_${interval}`;
+// The tenant's current price as a catalog lookup key, or null when the plan or interval is unknown. Matching on the
+// full key (plan and interval) keeps annual Starter from reading as "Current plan" under the monthly Starter card.
+export function currentLookupKey(planKey: string | null | undefined, interval: string | null | undefined): string | null {
+  if (!planKey || (interval !== "monthly" && interval !== "annual")) return null;
+  return priceKey(planKey, interval);
+}
 export const annualCents = (p: Plan) => p.monthlyCents * 10;
 
 // Accepts a catalog lookup key and returns what it is, or null. The only prices a checkout may be created for.

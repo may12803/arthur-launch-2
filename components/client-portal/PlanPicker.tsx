@@ -4,7 +4,7 @@ import { useState } from "react";
 import { PortalButton, Card, Muted } from "./ui";
 import { PLANS, AUDITS, priceKey, annualCents, money, type Interval } from "@/lib/billing/plans";
 
-export function PlanPicker({ canBuy, currentPlanKey }: { canBuy: boolean; currentPlanKey: string | null }) {
+export function PlanPicker({ canBuy, currentLookupKey }: { canBuy: boolean; currentLookupKey: string | null }) {
   const [interval, setInterval] = useState<Interval>("monthly");
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
@@ -34,7 +34,7 @@ export function PlanPicker({ canBuy, currentPlanKey }: { canBuy: boolean; curren
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {PLANS.map((p) => {
-          const current = currentPlanKey === p.key;
+          const current = currentLookupKey === priceKey(p.key, interval);
           const cents = interval === "monthly" ? p.monthlyCents : annualCents(p);
           return (
             <Card key={p.key} className="p-6 flex flex-col gap-3">

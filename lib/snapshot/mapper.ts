@@ -2,6 +2,7 @@
 // LLM fallback (Cerebras gpt-oss-120b) for what is still unmapped. The result always carries a confidence and a
 // reason per column; the person confirms or corrects it before any rule runs. With no LLM the heuristic result stands.
 import { isBlank, parseDate, parseMoney } from './values.ts';
+import type { LlmUsage } from '../billing/cost.ts';
 
 export type FieldId =
   | 'item' | 'customer' | 'price' | 'cost' | 'last_sale_date' | 'on_hand' | 'price_date' | 'units_12m'
@@ -156,6 +157,8 @@ export interface LlmOptions {
   fetch?: typeof fetch;
   model?: string;
   timeoutMs?: number;
+  /** Called once per model call with the token counts the provider reported (the per-tenant cost tracker's hook). A throw is swallowed. */
+  onUsage?: (usage: LlmUsage) => void | Promise<unknown>;
 }
 
 const CEREBRAS_URL = 'https://api.cerebras.ai/v1/chat/completions';
@@ -198,7 +201,11 @@ export async function llmMapping(
     signal: AbortSignal.timeout(opts.timeoutMs ?? 20000),
   });
   if (!res.ok) throw new Error(`LLM HTTP ${res.status}`);
-  const body = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+  const body = (await res.json()) as { choices?: { message?: { content?: string } }[]; usage?: { prompt_tokens?: number; completion_tokens?: number } };
+  if (opts.onUsage) {
+    // Tokens are spent even when the reply is unusable, so meter before the empty-content check.
+    try { await opts.onUsage({ provider: 'cerebras', model, tokensIn: body.usage?.prompt_tokens ?? 0, tokensOut: body.usage?.completion_tokens ?? 0 }); } catch { /* metering never breaks the mapping */ }
+  }
   const content = body.choices?.[0]?.message?.content ?? '';
   if (!content.trim()) throw new Error('LLM returned empty content');
   const parsed = extractJson(content) as { mappings?: { column?: unknown; field?: unknown; confidence?: unknown }[] };

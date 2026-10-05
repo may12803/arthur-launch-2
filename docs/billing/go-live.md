@@ -2,7 +2,7 @@
 
 Billing runs in Stripe test mode until Daniel decides otherwise. One switch: `STRIPE_MODE=test|live` (default test). Public prices stay hidden: `PUBLIC_PRICING_ENABLED` (default off) is the flag any public page must check before showing a price.
 
-Test mode today: catalog `scripts/stripe-catalog.mjs` (lookup keys `ll_<plan>_monthly|annual`, `ll_audit_standard|plus`), webhook endpoint at `https://portal.loveleedaystudios.com/api/stripe/webhook`, Fly secrets staged (not deployed): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_MODE`, `PUBLIC_PRICING_ENABLED`. Tables: `tenant_subscriptions`, `stripe_events`, `tenant_cost_usage` (migration 23).
+Test mode today: catalog `scripts/stripe-catalog.mjs` (lookup keys `ll_<plan>_monthly|annual`, `ll_audit_standard|plus`), webhook endpoint at `https://portal.loveleedaystudios.com/api/stripe/webhook`, Fly secrets staged (not deployed): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_MODE`, `PUBLIC_PRICING_ENABLED`. Tables: `tenant_subscriptions`, `stripe_events`, `tenant_cost_usage` (migration 23). Per-tenant LLM usage (provider, model, tokens, estimated cost) goes to `tenant_llm_usage` through `billing_record_llm_usage` (migration 28, rollback in `supabase/loveleeday/rollback/`); apply it before any tenant-scoped caller sets `usage` in the snapshot `Deps`.
 
 Go live, in order, sequential:
 

@@ -8,6 +8,7 @@ import { buildMarket, type MarketExposure } from './market.ts';
 import { sampleCsv, SAMPLE_LABEL } from './sample.ts';
 import { RETENTION_DAYS, newRunId, type RunRow, type SnapshotStore } from './store.ts';
 import type { CatalogLite } from './coverage.ts';
+import type { LlmUsage } from '../billing/cost.ts';
 
 export const PUBLIC_LIMITS = { maxBytes: 10 * 1024 * 1024, maxRows: 100_000, maxColumns: 100 };
 export const PREVIEW_ROWS = 5;
@@ -22,6 +23,8 @@ export class ApiError extends Error {
 export interface Deps {
   store: SnapshotStore;
   llm?: LlmOptions;
+  /** Set by a caller that knows the tenant: LLM token usage from the column mapper is recorded against it. The public snapshot API has no tenant, so it leaves this unset. */
+  usage?: { tenantId: string; record: (tenantId: string, usage: LlmUsage) => Promise<unknown> };
   catalog?: () => CatalogLite[];
   now?: () => Date;
   env?: Record<string, string | undefined>;
@@ -76,7 +79,9 @@ export async function startRun(deps: Deps, input: StartInput) {
   };
   await deps.store.create(row, input.data);
   if (input.mapping !== undefined) return { id, ...(await executeRun(deps, row, table, input.mapping)) };
-  const sug = await suggestMapping(table.header, table.rows, deps.llm);
+  const { usage } = deps;
+  const llm = deps.llm && usage ? { ...deps.llm, onUsage: (u: LlmUsage) => usage.record(usage.tenantId, u) } : deps.llm;
+  const sug = await suggestMapping(table.header, table.rows, llm);
   await deps.store.update(id, { mapping_meta: sug });
   return {
     id, status: 'mapping' as const, expires_at: row.expires_at, filename: row.filename, source: row.source, rows_total: table.rows.length,

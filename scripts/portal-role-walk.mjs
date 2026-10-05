@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 // Walks every client-portal route at 1440 and 390 as the QA login in its current tenant role, saving screenshots and
-// recording overflow, console/HTTP errors, copy-rule hits ("Arthur", prices, emojis) and broken links.
+// recording overflow, console/HTTP errors, copy-rule hits ("Arthur", prices outside the signed-in /client/billing page, emojis) and broken links.
 // Usage: arthur-cred run --use loveleeday-portal-qa -- node scripts/portal-role-walk.mjs <role-label> [outdir]
 // First run enrolls a throwaway authenticator and keeps the session in $STATE (default scratch dir); later runs reuse it.
 import { chromium } from "playwright";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { priceViolations } from "./portal-copy-rules.mjs";
 
 const BASE = process.env.PORTAL_BASE || "http://localhost:3417";
 const ROLE = process.argv[2] || "role";
@@ -95,11 +96,12 @@ while (queue.length) {
       const doc = document.documentElement, over = [];
       if (doc.scrollWidth > window.innerWidth + 1) for (const el of document.querySelectorAll("main *")) { const r = el.getBoundingClientRect(); if (r.right > window.innerWidth + 1 && r.width > 0) { over.push(`${el.tagName.toLowerCase()}.${String(el.className).slice(0, 30)} r=${Math.round(r.right)}`); if (over.length > 3) break; } }
       const t = document.body.innerText;
-      return { sw: doc.scrollWidth, iw: window.innerWidth, over, arthur: /\barthur\b/i.test(t), price: (t.match(/[$€£]\s?\d[\d,.]*/g) || []).slice(0, 3), emoji: (t.match(/\p{Extended_Pictographic}/gu) || []).slice(0, 3), odd: (t.match(/.{0,30}\b(undefined|NaN|null|\[object Object\]|Invalid Date)\b.{0,30}/g) || []).slice(0, 3), h: (document.querySelector("h1")?.innerText || "").slice(0, 70), links: [...document.querySelectorAll("a[href]")].map((a) => a.getAttribute("href")), brokenImgs: [...document.querySelectorAll("img")].filter((i) => i.complete && i.naturalWidth === 0).length };
+      return { sw: doc.scrollWidth, iw: window.innerWidth, over, arthur: /\barthur\b/i.test(t), text: t, emoji: (t.match(/\p{Extended_Pictographic}/gu) || []).slice(0, 3), odd: (t.match(/.{0,30}\b(undefined|NaN|null|\[object Object\]|Invalid Date)\b.{0,30}/g) || []).slice(0, 3), h: (document.querySelector("h1")?.innerText || "").slice(0, 70), links: [...document.querySelectorAll("a[href]")].map((a) => a.getAttribute("href")), brokenImgs: [...document.querySelectorAll("img")].filter((i) => i.complete && i.naturalWidth === 0).length };
     });
     if (info.over.length) add("overflow", `scrollWidth ${info.sw}>${info.iw}: ${info.over.join(" | ")}`);
     if (info.arthur) add("copy", "word Arthur visible");
-    if (info.price.length) add("copy", "price-like text: " + info.price.join(", "));
+    const prices = priceViolations(route, info.text);
+    if (prices.length) add("copy", "price-like text: " + prices.join(", "));
     if (info.emoji.length) add("copy", "emoji: " + info.emoji.join(""));
     for (const o of info.odd) add("text", o);
     if (info.brokenImgs) add("image", `${info.brokenImgs} broken`);
