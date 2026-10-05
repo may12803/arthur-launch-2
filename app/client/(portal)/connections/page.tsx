@@ -19,6 +19,10 @@ export default async function ConnectionsPage() {
   // A sign-in connector is only offered once its vendor app credentials are configured on this server; otherwise the
   // card would promise a connection we cannot complete.
   const notReady = entries.filter((e) => e.methods.includes("Sign in") && !oauthEndpoints(e.key)).map((e) => e.key);
+  // Clients see what they can connect today plus anything they already have. Where we stand with a vendor (approval
+  // pending, sign-in not switched on) is our business, not theirs (Daniel, 2026-10-05).
+  const conns0 = mine.data ?? [];
+  const offered = entries.filter((e) => conns0.some((c) => c.connector_key === e.key || c.definition_key === e.key) || (e.gate.kind !== "partner" && !notReady.includes(e.key)));
   const conns = mine.data ?? [];
   const now = Date.now();
   const live = conns.filter((c) => connState(c, now).id === "live").length;
@@ -39,7 +43,7 @@ export default async function ConnectionsPage() {
         }
       />
       <ErrorBanner label="Connection data did not load" errors={[legacy.error && `Connector list: ${legacy.error.message}`, mine.error && `Your connections: ${mine.error.message}`]} />
-      <CatalogView entries={entries} conns={conns} now={now} canManage={canManage} notReady={notReady} />
+      <CatalogView entries={offered} conns={conns} now={now} canManage={canManage} notReady={notReady} />
     </div>
   );
 }
