@@ -1,4 +1,4 @@
-scratch cluster: 14.24 (Homebrew) on port 49215 (temp dir removed on exit)
+scratch cluster: 14.24 (Homebrew) on port 50592 (temp dir removed on exit)
 PASS: stubs applied (roles, auth, vault, extensions)
 PASS: applied 20261005_00_base_schema.sql to an empty database
 PASS: applied 20261005_10_connector_platform.sql to an empty database

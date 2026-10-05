@@ -1,10 +1,14 @@
 {
   "key": "square",
-  "at": "2026-10-05T14:38:33.873Z",
+  "at": "2026-10-05T14:58:34.393Z",
   "status": "NOT_CONFIGURED",
   "names": [
+    "SQUARE_APPLICATION_ID",
     "SQUARE_LOGIN_EMAIL",
-    "SQUARE_LOGIN_PASSWORD"
+    "SQUARE_LOGIN_PASSWORD",
+    "SQUARE_SANDBOX_ACCESS_TOKEN",
+    "SQUARE_SANDBOX_APPLICATION_ID",
+    "SQUARE_SANDBOX_OAUTH_SECRET"
   ],
   "steps": []
 }

@@ -1,10 +1,17 @@
 {
   "key": "gusto",
-  "at": "2026-10-05T14:38:33.873Z",
+  "at": "2026-10-05T14:58:34.393Z",
   "status": "NOT_CONFIGURED",
   "names": [
+    "GUSTO_APPLICATION_ID",
+    "GUSTO_CLIENT_ID",
+    "GUSTO_CLIENT_SECRET",
+    "GUSTO_DEMO_COMPANY_EMAIL",
+    "GUSTO_DEMO_COMPANY_PASSWORD",
     "GUSTO_LOGIN_EMAIL",
-    "GUSTO_LOGIN_PASSWORD"
+    "GUSTO_LOGIN_PASSWORD",
+    "GUSTO_RECOVERY_CODES",
+    "GUSTO_TOTP_SECRET"
   ],
   "steps": []
 }

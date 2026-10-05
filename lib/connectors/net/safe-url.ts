@@ -1,6 +1,7 @@
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 import { request as httpsRequest } from 'node:https';
+import { createBrotliDecompress, createGunzip, createInflate } from 'node:zlib';
 import type { FetchLike } from '../types.ts';
 
 /**
@@ -158,18 +159,39 @@ const SENSITIVE = /^(authorization|proxy-authorization|cookie|x-esri-authorizati
 
 export type SafeConnector = (url: string, init: RequestInit, lookup: (host: string) => Promise<{ address: string; family: 4 | 6 }>) => Promise<Response>;
 
+// The socket's DNS lookup, answered only with the address that was checked. Node asks with { all: true } when it races
+// address families (autoSelectFamily, the default) and then expects an array; answering a single address there throws
+// ERR_INVALID_IP_ADDRESS, which broke every guarded adapter in production while injected-fetch unit tests stayed green.
+export function pinnedLookup(address: { address: string; family: 4 | 6 }) {
+  return (_host: string, options: { all?: boolean } | number | undefined, cb: (...args: unknown[]) => void) =>
+    typeof options === 'object' && options && options.all
+      ? cb(null, [{ address: address.address, family: address.family }])
+      : cb(null, address.address, address.family);
+}
+
 const nativeConnector: SafeConnector = async (raw, init, checkedLookup) => {
   const u = new URL(raw);
   const address = await checkedLookup(u.hostname);
   return new Promise<Response>((resolve, reject) => {
     const req = httpsRequest(u, {
       method: init.method ?? 'GET', headers: Object.fromEntries(new Headers(init.headers)),
-      lookup: (_host, _options, cb) => cb(null, address.address, address.family),
+      lookup: pinnedLookup(address) as never,
       servername: u.hostname, rejectUnauthorized: true,
     }, (res) => {
+      // Unlike fetch, node:https hands back the raw encoded bytes; decode them so callers get what fetch would give.
+      const enc = String(res.headers['content-encoding'] || '').toLowerCase();
+      const stream = enc === 'gzip' || enc === 'x-gzip' ? res.pipe(createGunzip()) : enc === 'deflate' ? res.pipe(createInflate())
+        : enc === 'br' ? res.pipe(createBrotliDecompress()) : res;
+      const headers = new Headers();
+      for (const [k, v] of Object.entries(res.headers)) {
+        if (v == null || (stream !== res && (k === 'content-encoding' || k === 'content-length'))) continue;
+        for (const one of Array.isArray(v) ? v : [v]) headers.append(k, String(one));
+      }
+      const status = res.statusCode ?? 500;
       const chunks: Buffer[] = [];
-      res.on('data', (chunk: Buffer) => chunks.push(chunk));
-      res.on('end', () => resolve(new Response(Buffer.concat(chunks), { status: res.statusCode ?? 500, headers: res.headers as Record<string, string> })));
+      stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+      stream.on('end', () => resolve(new Response([101, 204, 205, 304].includes(status) ? null : Buffer.concat(chunks), { status, headers })));
+      stream.on('error', reject);
       res.on('error', reject);
     });
     req.on('error', reject);

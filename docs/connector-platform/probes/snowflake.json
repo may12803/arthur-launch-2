@@ -1,6 +1,6 @@
 {
   "key": "snowflake",
-  "at": "2026-10-05T14:38:32.040Z",
+  "at": "2026-10-05T14:59:14.145Z",
   "status": "DATA_FLOWED_SANDBOX",
   "names": [
     "SNOWFLAKE_ACCOUNT",
@@ -16,6 +16,7 @@
   ],
   "evidence": {
     "object": "SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS",
-    "source_ref": "228804"
+    "record_count": 1000,
+    "source_ref_sha256_prefix": "0eaebcc1d5a9"
   }
 }

@@ -135,7 +135,7 @@ async function probe(key) {
   if (Object.keys(creds).length) {
     const { getAdapter } = await import(path.join(root, "lib/connectors/adapters/registry.ts"));
     let adapter; try { adapter = getAdapter(key); } catch { out.steps.push("no adapter for this key"); return out; }
-    const f = (url, init) => fetch(url, { ...init, redirect: "manual" });
+    const f = globalThis.fetch; // the SSRF guard pins real connections only for the native fetch; a wrapper is refused
     try {
       const v = await adapter.validate(creds, f);
       out.steps.push(`validate: ok=${v.ok}`); // vendor detail text is not printed: it can echo a submitted credential
