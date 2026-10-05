@@ -1,0 +1,22 @@
+{
+  "key": "plaid",
+  "at": "2026-10-05T20:22:37.594Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "PLAID_CLIENT_ID",
+    "PLAID_LOGIN_EMAIL",
+    "PLAID_LOGIN_PASSWORD",
+    "PLAID_MFA_RECOVERY_CODE",
+    "PLAID_SANDBOX_SECRET",
+    "PLAID_TOTP_SECRET"
+  ],
+  "steps": [
+    "institutions: HTTP 200 5 record(s)",
+    "wrong-credential control: HTTP 400"
+  ],
+  "evidence": {
+    "object": "institutions",
+    "record_count": 5,
+    "via": "vendor list/token endpoint (no adapter)"
+  }
+}

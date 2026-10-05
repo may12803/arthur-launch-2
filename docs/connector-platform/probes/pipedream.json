@@ -1,0 +1,22 @@
+{
+  "key": "pipedream",
+  "at": "2026-10-05T20:22:35.707Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "PIPEDREAM_CLIENT_ID",
+    "PIPEDREAM_CLIENT_SECRET",
+    "PIPEDREAM_LOGIN_EMAIL",
+    "PIPEDREAM_LOGIN_PASSWORD",
+    "PIPEDREAM_PROJECT_ID",
+    "PIPEDREAM_WORKSPACE_ID"
+  ],
+  "steps": [
+    "oauth token: HTTP 200 1 record(s)",
+    "wrong-credential control: HTTP 401"
+  ],
+  "evidence": {
+    "object": "oauth token",
+    "record_count": 1,
+    "via": "vendor list/token endpoint (no adapter)"
+  }
+}

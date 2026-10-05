@@ -24,6 +24,7 @@ import { createHash } from "node:crypto";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 import { VAULT, loadEnv, VENDOR_FILES, FILE_KEY, vendorEnv } from "./lib/connector-vault.mjs";
+import { AGGREGATOR_PROBES, aggregatorProbe } from "./lib/aggregator-probes.mjs";
 const REDIRECT = "https://portal.loveleedaystudios.com/api/client/connectors/oauth/callback";
 
 // Only an RFC 6749 error code is ever echoed; any other vendor text (which can contain what we sent) is not.
@@ -182,6 +183,11 @@ const getDefinitionKeys = () => new Set(readdirSync(path.join(root, "data/connec
 async function probe(key) {
   if (key === "gusto") return gustoProbe();
   if (key === "square") return squareProbe();
+  if (AGGREGATOR_PROBES[key]) {
+    const f = path.join(VAULT, `${key}.env`);
+    if (!existsSync(f)) return { key, at: new Date().toISOString(), status: "NOT_CONFIGURED", names: [], steps: [`no vault file ${key}.env`] };
+    return aggregatorProbe(key, loadEnv(f));
+  }
   if (BEARER_PROBES[key]) return bearerProbe(key);
   if (TOKEN_PROBES[key]) return tokenProbe(key);
   const out = { key, at: new Date().toISOString(), status: "NOT_CONFIGURED", names: [], steps: [] };

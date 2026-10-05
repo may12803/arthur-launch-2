@@ -1,0 +1,16 @@
+{
+  "key": "finch",
+  "at": "2026-10-05T20:22:39.618Z",
+  "status": "CONFIGURED",
+  "names": [
+    "FINCH_CLIENT_ID",
+    "FINCH_CLIENT_SECRET",
+    "FINCH_LOGIN_EMAIL",
+    "FINCH_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "token grant: HTTP 400 0 record(s)",
+    "wrong-credential control: HTTP 400",
+    "control answered the same as the real secret: client validity unproven"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "key": "merge",
+  "at": "2026-10-05T20:22:27.768Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "MERGE_LOGIN_EMAIL",
+    "MERGE_LOGIN_PASSWORD",
+    "MERGE_TEST_API_KEY"
+  ],
+  "steps": [
+    "organization integrations: HTTP 200 143 record(s)",
+    "wrong-credential control: HTTP 401"
+  ],
+  "evidence": {
+    "object": "organization integrations",
+    "record_count": 143,
+    "via": "vendor list/token endpoint (no adapter)"
+  }
+}
