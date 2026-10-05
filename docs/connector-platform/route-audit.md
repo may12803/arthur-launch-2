@@ -49,3 +49,9 @@ Severity: B blocker, M major, m minor. Status says what this branch did.
 ## Not covered
 
 member and viewer live walks, staff-grant role, Dabney tenant, data-bearing workstream/task/deliverable pages, writes (upload, share, invite, decide, connect), tablet widths.
+
+## After the fixes
+
+`npm run typecheck` and `npm run build` pass on commit 1c5509b. The fixed pages were not re-screenshotted: the shared node_modules (symlinked to ~/Projects/arthur-launch) lost its playwright package mid-session to another session's install, and the follow-up dev run could not be driven. The error states only appear when a query fails, so the Harbor & Vine walk would not have shown them regardless; the contracts table in particular is documented in its page as not yet applied, so /client/contracts will now show "Couldn't load contracts" until that table exists, where it used to say "No contracts yet".
+
+The QA login's temporary Harbor & Vine membership and its authenticator were removed after the walk. A separate Dabney & Co. admin membership for the QA login (created 2026-09-27) pre-existed and was left alone.
