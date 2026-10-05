@@ -3642,11 +3642,18 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "source": "default_unverified"
     },
     "scopes": [
-      "accounting.transactions.read",
+      "accounting.invoices.read",
+      "accounting.payments.read",
+      "accounting.banktransactions.read",
+      "accounting.manualjournals.read",
       "accounting.contacts.read",
       "accounting.settings.read",
-      "accounting.reports.read",
-      "offline_access (scope names UNVERIFIED on a fetched page)"
+      "accounting.reports.profitandloss.read",
+      "accounting.reports.balancesheet.read",
+      "accounting.reports.trialbalance.read",
+      "accounting.reports.aged.read",
+      "accounting.reports.banksummary.read",
+      "offline_access"
     ],
     "build_status": "implemented",
     "logo": "/connectors/logos/xero.svg",
@@ -3663,7 +3670,6 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "api_base_url",
       "token_lifetime",
       "refresh",
-      "scopes",
       "sandbox",
       "time_to_approval",
       "openapi_spec_url"

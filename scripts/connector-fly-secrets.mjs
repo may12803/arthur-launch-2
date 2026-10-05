@@ -65,6 +65,18 @@ function scopesFor(sys) {
 const probesDir = path.join(root, "docs/connector-platform/probes");
 const keys = (await import("node:fs")).readdirSync(probesDir).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)).sort();
 const lines = [], staged = [], skipped = [];
+// --probe-authorize: open each vendor's real authorize URL (no login) and check the VENDOR accepts our client_id
+// and redirect_uri. Building a URL proves nothing; a vendor rejecting the client says so on this first page.
+const REDIRECT = "https://portal.loveleedaystudios.com/api/client/connectors/oauth/callback";
+const authorizeTargets = [];
+function authorizeUrl(base, clientId, scopes) {
+  const u = new URL(base);
+  u.searchParams.set("response_type", "code"); u.searchParams.set("client_id", clientId);
+  u.searchParams.set("redirect_uri", REDIRECT); u.searchParams.set("state", "authorize-probe");
+  if (scopes.length) u.searchParams.set("scope", scopes.join(" "));
+  return u.toString();
+}
+const REJECT_RE = /invalid[_ ]client|unauthori[sz]ed[_ ]client|invalid[_ ]redirect|redirect[_ ]uri[_ ]mismatch|redirect_uri.{0,40}(not|invalid|mismatch)|app(lication)? (not found|does not exist)|client.{0,20}(not found|disabled|invalid)|invalid_scope|Error 400/i;
 
 for (const key of keys) {
   const status = readJson(path.join(probesDir, `${key}.json`)).status;
@@ -84,11 +96,24 @@ for (const key of keys) {
   if (!c.id || !c.secret) { skip("vault file lacks client id or secret"); continue; }
   lines.push(`${P}AUTHORIZE_URL=${ep.authorize}`, `${P}TOKEN_URL=${ep.token}`, `${P}CLIENT_ID=${c.id}`, `${P}CLIENT_SECRET=${c.secret}`, `${P}SCOPES=${scopesFor(sys).join(" ")}`);
   staged.push(key);
+  if (process.argv.includes("--probe-authorize")) authorizeTargets.push({ key, url: authorizeUrl(ep.authorize, c.id, scopesFor(sys)) });
   console.log(`${key}: ${names.join(" ")} OK`);
 }
 
 console.log(`\neligible OK: ${staged.length} (${staged.join(", ")}); skipped: ${skipped.length}`);
 for (const s of skipped) console.log(`  skip ${s}`);
+
+if (authorizeTargets.length) {
+  console.log("\nauthorize probe (vendor's own first page, no login):");
+  for (const t of authorizeTargets) {
+    try {
+      const r = await fetch(t.url, { redirect: "follow", headers: { "user-agent": "Mozilla/5.0 (Macintosh) LOVELEEDAY-authorize-probe" } });
+      const body = (await r.text()).slice(0, 200000);
+      const hit = (decodeURIComponent(r.url) + " " + body).match(REJECT_RE);
+      console.log(`  ${t.key}: HTTP ${r.status} ${hit ? `REJECTED (${hit[0]})` : r.ok ? "accepted (login/consent page)" : "UNPROVEN (vendor answered non-2xx; likely bot-blocked, verify in a real browser)"} -> ${new URL(r.url).host}`);
+    } catch (e) { console.log(`  ${t.key}: ERROR ${e.message}`); }
+  }
+}
 
 if (STAGE) {
   if (!staged.length) { console.log("nothing to stage"); process.exit(2); }
