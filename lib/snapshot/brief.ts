@@ -27,7 +27,9 @@ export function buildBrief(r: SnapshotResult): Brief {
   if (loss.length) {
     const sum = loss.reduce((a, f) => a + (f.exposure.amount ?? 0), 0);
     const parts = loss.map((f) => `${usd(f.exposure.amount ?? 0)} from ${f.title.toLowerCase()}`);
-    paras.push(`Traced to specific rows, ${usd(sum)} of margin loss was found: ${parts.join('; ')}. Each figure comes with its formula and the rows behind it.`);
+    paras.push(loss.length === 1
+      ? `Traced to specific rows, ${usd(sum)} of margin loss was found under "${loss[0].title.toLowerCase()}". The figure comes with its formula and the rows behind it.`
+      : `Traced to specific rows, ${usd(sum)} of margin loss was found: ${parts.join('; ')}. Each figure comes with its formula and the rows behind it.`);
     for (const f of loss) figures.push({ label: `Loss: ${f.title}`, value: usd(f.exposure.amount ?? 0), rule: f.rule, rows: f.rows_total });
   }
   const expo = r.findings.filter((f) => f.exposure.kind === 'exposure' && f.count > 0);
@@ -37,7 +39,7 @@ export function buildBrief(r: SnapshotResult): Brief {
   }
   const others = flagged.filter((f) => f.exposure.kind === 'none');
   if (others.length) {
-    paras.push(`Other findings are counted but not priced, because the file holds no dollar basis for them: ${others.map((f) => `${num(f.count)} ${f.unit} (${f.title.toLowerCase()})`).join('; ')}.`);
+    paras.push(`Other findings are counted but not priced, because the file holds no dollar basis for them. ${others.map((f) => `${f.title}: ${num(f.count)} ${f.unit}`).join('; ')}.`);
     for (const f of others) figures.push({ label: f.title, value: `${num(f.count)} ${f.unit}`, rule: f.rule, rows: f.rows_total });
   }
   if (!flagged.length) paras.push('None of the checks that could run flagged a record.');

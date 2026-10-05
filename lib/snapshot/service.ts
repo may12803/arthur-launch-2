@@ -166,6 +166,8 @@ export async function viewRun(deps: Deps, id: string) {
     id, status: 'done' as const, expires_at: row.expires_at, filename: row.filename, source: row.source,
     header: row.header, mapping: row.mapping, fields: FIELDS.map((f) => ({ id: f.id, label: f.label, required: !!f.required })),
     result: view, brief: buildBrief(result), market,
+    // Plan and checkout buttons stay hidden until Daniel confirms public tier prices and sets PUBLIC_PRICING_ENABLED=1.
+    pricing_enabled: (deps.env ?? process.env).PUBLIC_PRICING_ENABLED === '1',
     retention: `The file and this result are deleted ${RETENTION_DAYS} days after upload.`,
   };
 }
