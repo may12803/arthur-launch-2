@@ -133,11 +133,11 @@ end $$;
 
 revoke all on function public.audit_record_purchase(text,text,text,timestamptz,uuid,text,text,text,integer,text,boolean),
   public.audit_claim(text,uuid),public.audit_input_documents(text,uuid,integer),
-  public.audit_input_document(text,uuid),
+  public.audit_input_document(text,uuid,uuid),
   public.audit_save(text,uuid,text,text,uuid,text,date,integer,numeric,text,jsonb,integer),
   public.audit_pending(text,integer,uuid) from public;
 grant execute on function public.audit_record_purchase(text,text,text,timestamptz,uuid,text,text,text,integer,text,boolean),
   public.audit_claim(text,uuid),public.audit_input_documents(text,uuid,integer),
-  public.audit_input_document(text,uuid),
+  public.audit_input_document(text,uuid,uuid),
   public.audit_save(text,uuid,text,text,uuid,text,date,integer,numeric,text,jsonb,integer),
   public.audit_pending(text,integer,uuid) to anon,authenticated;
