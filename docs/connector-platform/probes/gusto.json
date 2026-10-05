@@ -1,0 +1,10 @@
+{
+  "key": "gusto",
+  "at": "2026-10-05T14:38:33.873Z",
+  "status": "NOT_CONFIGURED",
+  "names": [
+    "GUSTO_LOGIN_EMAIL",
+    "GUSTO_LOGIN_PASSWORD"
+  ],
+  "steps": []
+}

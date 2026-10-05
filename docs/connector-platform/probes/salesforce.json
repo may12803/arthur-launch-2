@@ -1,0 +1,14 @@
+{
+  "key": "salesforce",
+  "at": "2026-10-05T14:38:33.873Z",
+  "status": "NOT_CONFIGURED",
+  "names": [
+    "SALESFORCE_LOGIN_EMAIL",
+    "SALESFORCE_LOGIN_PASSWORD",
+    "SALESFORCE_MY_DOMAIN",
+    "SALESFORCE_SECURITY_A",
+    "SALESFORCE_SECURITY_Q",
+    "SALESFORCE_USERNAME"
+  ],
+  "steps": []
+}

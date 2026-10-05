@@ -1,0 +1,10 @@
+{
+  "key": "square",
+  "at": "2026-10-05T14:38:33.873Z",
+  "status": "NOT_CONFIGURED",
+  "names": [
+    "SQUARE_LOGIN_EMAIL",
+    "SQUARE_LOGIN_PASSWORD"
+  ],
+  "steps": []
+}

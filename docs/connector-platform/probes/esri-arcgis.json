@@ -1,0 +1,17 @@
+{
+  "key": "esri-arcgis",
+  "at": "2026-10-05T14:38:31.526Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "ESRI_APP_ITEM_ID",
+    "ESRI_CLIENT_ID",
+    "ESRI_CLIENT_SECRET",
+    "ESRI_LOGIN_EMAIL",
+    "ESRI_LOGIN_PASSWORD",
+    "ESRI_SECURITY_ANSWER"
+  ],
+  "steps": [
+    "client_credentials: HTTP 200 token_issued=true"
+  ],
+  "client_token_issued": true
+}

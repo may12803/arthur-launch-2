@@ -1,0 +1,21 @@
+{
+  "key": "snowflake",
+  "at": "2026-10-05T14:38:32.040Z",
+  "status": "DATA_FLOWED_SANDBOX",
+  "names": [
+    "SNOWFLAKE_ACCOUNT",
+    "SNOWFLAKE_LOGIN_EMAIL",
+    "SNOWFLAKE_LOGIN_PASSWORD",
+    "SNOWFLAKE_LOGIN_USER",
+    "SNOWFLAKE_PRIVATE_KEY_PATH",
+    "SNOWFLAKE_USER"
+  ],
+  "steps": [
+    "validate: ok=true",
+    "pull SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS: 1000 record(s)"
+  ],
+  "evidence": {
+    "object": "SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS",
+    "source_ref": "228804"
+  }
+}

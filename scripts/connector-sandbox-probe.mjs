@@ -36,19 +36,69 @@ function loadEnv(file) {
   return env;
 }
 
+// The developer-access session writes vendor-named files (dropbox.env with DROPBOX_CLIENT_ID, ...). Map them onto the
+// standard names the portal reads. Token URLs are the vendors' documented endpoints; a wrong one fails safe (no
+// invalid_grant, so the rung stays CONFIGURED). creds_from turns vault names into adapter credential fields.
+const VENDOR_FILES = {
+  "dropbox-business": { file: "dropbox", oauth: { CLIENT_ID: "DROPBOX_CLIENT_ID", CLIENT_SECRET: "DROPBOX_CLIENT_SECRET" },
+    TOKEN_URL: "https://api.dropboxapi.com/oauth2/token" },
+  "esri-arcgis": { file: "esri", oauth: { CLIENT_ID: "ESRI_CLIENT_ID", CLIENT_SECRET: "ESRI_CLIENT_SECRET" },
+    TOKEN_URL: "https://www.arcgis.com/sharing/rest/oauth2/token", client_credentials: true },
+  procore: { file: "procore", oauth: { CLIENT_ID: "PROCORE_SANDBOX_CLIENT_ID", CLIENT_SECRET: "PROCORE_SANDBOX_CLIENT_SECRET" },
+    TOKEN_URL: "https://login-sandbox.procore.com/oauth/token" },
+  snowflake: { file: "snowflake", creds_from: { account: "SNOWFLAKE_ACCOUNT", user: "SNOWFLAKE_USER", "@private_key": "SNOWFLAKE_PRIVATE_KEY_PATH" },
+    // every Snowflake account ships this read-only sample share; it proves the key-pair login and a real SQL API read
+    creds_fixed: { warehouse: "COMPUTE_WH", updated_at_column: "O_ORDERDATE", primary_key: "O_ORDERKEY" },
+    objects: ["SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS"] },
+};
+
+const getDefinitionKeys = () => new Set(readdirSync(path.join(root, "data/connectors/systems")).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)));
+
+function vendorEnv(key) {
+  const v = VENDOR_FILES[key];
+  if (!v) return null;
+  const file = path.join(VAULT, `${v.file}.env`);
+  if (!existsSync(file)) return { file, env: null };
+  const raw = loadEnv(file), P = key.toUpperCase().replace(/[^A-Z0-9]/g, "_"), env = {};
+  for (const [std, name] of Object.entries(v.oauth || {})) if (raw[name]) env[`CONNECTOR_OAUTH_${P}_${std}`] = raw[name];
+  if (v.oauth && env[`CONNECTOR_OAUTH_${P}_CLIENT_ID`]) env[`CONNECTOR_OAUTH_${P}_TOKEN_URL`] = v.TOKEN_URL;
+  for (const [field, name] of Object.entries(v.creds_from || {})) {
+    if (!raw[name]) continue;
+    if (field.startsWith("@")) { const p = raw[name].replace(/^~/, homedir()); if (existsSync(p)) env[`CONNECTOR_CREDS_${P}_${field.slice(1).toUpperCase()}`] = readFileSync(p, "utf8"); }
+    else env[`CONNECTOR_CREDS_${P}_${field.toUpperCase()}`] = raw[name];
+  }
+  if (Object.keys(v.creds_from || {}).length) for (const [f, val] of Object.entries(v.creds_fixed || {})) env[`CONNECTOR_CREDS_${P}_${f.toUpperCase()}`] = val;
+  return { file, env, names: Object.keys(raw).sort() };
+}
+
 async function probe(key) {
   const out = { key, at: new Date().toISOString(), status: "NOT_CONFIGURED", names: [], steps: [] };
-  const file = path.join(VAULT, `${key}.env`);
+  const mapped = vendorEnv(key);
+  const file = mapped ? mapped.file : path.join(VAULT, `${key}.env`);
   if (!existsSync(file)) { out.steps.push(`no vault file ${file}`); return out; }
-  const env = loadEnv(file);
-  out.names = Object.keys(env).sort();
+  const env = mapped ? mapped.env : loadEnv(file);
+  out.names = mapped ? mapped.names : Object.keys(env).sort();
+  const vendor = VENDOR_FILES[key] || {};
   const P = key.toUpperCase().replace(/[^A-Z0-9]/g, "_");
   const o = (n) => env[`CONNECTOR_OAUTH_${P}_${n}`];
   const credPrefix = `CONNECTOR_CREDS_${P}_`;
   const creds = Object.fromEntries(Object.entries(env).filter(([k]) => k.startsWith(credPrefix)).map(([k, v]) => [k.slice(credPrefix.length).toLowerCase(), v]));
   if (o("CLIENT_ID") || Object.keys(creds).length) out.status = "CONFIGURED";
 
-  if (o("TOKEN_URL") && o("CLIENT_ID") && o("CLIENT_SECRET")) {
+  // Systems that allow the client-credentials grant prove the app directly: the vendor issues a token or it does not.
+  if (vendor.client_credentials && o("TOKEN_URL") && o("CLIENT_ID") && o("CLIENT_SECRET")) {
+    try {
+      const r = await fetch(o("TOKEN_URL"), { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },
+        body: new URLSearchParams({ grant_type: "client_credentials", client_id: o("CLIENT_ID"), client_secret: o("CLIENT_SECRET"), f: "json" }), redirect: "manual" });
+      let j = {}; try { j = await r.json(); } catch { /* non-JSON answer proves nothing */ }
+      const issued = typeof j.access_token === "string" && j.access_token.length > 10;
+      out.steps.push(`client_credentials: HTTP ${r.status} token_issued=${issued}`);
+      if (issued) { out.status = "CLIENT_VERIFIED"; out.client_token_issued = true; }
+      else if (j.error) out.status = "CLIENT_REJECTED";
+    } catch (e) { out.steps.push(`token endpoint unreachable: ${e?.cause?.code || e?.name || "error"}`); }
+  }
+
+  if (out.status !== "CLIENT_VERIFIED" && o("TOKEN_URL") && o("CLIENT_ID") && o("CLIENT_SECRET")) {
     const body = new URLSearchParams({ grant_type: "authorization_code", code: "loveleeday-probe-invalid-code", redirect_uri: REDIRECT });
     // Vendors take client credentials one of two ways (RFC 6749 2.3.1): Basic header or form body. Try each alone.
     // Only invalid_grant proves the client was accepted (the vendor got past client auth and refused the bogus code);
@@ -84,7 +134,7 @@ async function probe(key) {
       const v = await adapter.validate(creds, f);
       out.steps.push(`validate: ok=${v.ok}`); // vendor detail text is not printed: it can echo a submitted credential
       if (!v.ok) { out.status = "VALIDATE_FAILED"; return out; }
-      for (const object of adapter.objects) {
+      for (const object of vendor.objects || adapter.objects) {
         const page = await adapter.pull(object, null, creds, f);
         out.steps.push(`pull ${object}: ${page.records.length} record(s)`);
         if (page.records.length) { out.status = "DATA_FLOWED_SANDBOX"; out.evidence = { object, source_ref: page.records[0].source_ref }; break; }
@@ -97,7 +147,7 @@ async function probe(key) {
 
 const arg = process.argv[2];
 if (!arg) { console.error("usage: connector-sandbox-probe.mjs <key>|--all"); process.exit(64); }
-const keys = arg === "--all" ? (existsSync(VAULT) ? readdirSync(VAULT).filter((f) => f.endsWith(".env")).map((f) => f.slice(0, -4)) : []) : [arg];
+const keys = arg === "--all" ? [...new Set([...Object.keys(VENDOR_FILES), ...(existsSync(VAULT) ? readdirSync(VAULT).filter((f) => /^[a-z0-9-]+\.env$/.test(f)).map((f) => f.slice(0, -4)).filter((k) => getDefinitionKeys().has(k)) : [])])] : [arg];
 mkdirSync(path.join(root, "docs/connector-platform/probes"), { recursive: true });
 let worst = 0;
 for (const k of keys) {

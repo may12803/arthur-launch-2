@@ -1,0 +1,14 @@
+{
+  "key": "dropbox-business",
+  "at": "2026-10-05T14:38:30.878Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "DROPBOX_CLIENT_ID",
+    "DROPBOX_CLIENT_SECRET",
+    "DROPBOX_LOGIN_EMAIL",
+    "DROPBOX_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "token endpoint (client_secret_basic): HTTP 400 error=invalid_grant"
+  ]
+}

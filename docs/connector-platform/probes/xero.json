@@ -1,0 +1,10 @@
+{
+  "key": "xero",
+  "at": "2026-10-05T14:38:33.874Z",
+  "status": "NOT_CONFIGURED",
+  "names": [
+    "XERO_LOGIN_EMAIL",
+    "XERO_LOGIN_PASSWORD"
+  ],
+  "steps": []
+}

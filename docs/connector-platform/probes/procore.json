@@ -1,0 +1,14 @@
+{
+  "key": "procore",
+  "at": "2026-10-05T14:38:31.770Z",
+  "status": "CLIENT_VERIFIED",
+  "names": [
+    "PROCORE_LOGIN_EMAIL",
+    "PROCORE_LOGIN_PASSWORD",
+    "PROCORE_SANDBOX_CLIENT_ID",
+    "PROCORE_SANDBOX_CLIENT_SECRET"
+  ],
+  "steps": [
+    "token endpoint (client_secret_basic): HTTP 401 error=invalid_grant"
+  ]
+}
