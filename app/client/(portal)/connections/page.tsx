@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireClientPortal } from "@/lib/client-portal/session";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
 import type { Connector } from "@/lib/client-portal/connections";
-import { buildCatalog, connState, type ConnRow } from "@/lib/client-portal/connector-ui";
+import { buildCatalog, connState, oauthEndpoints, type ConnRow } from "@/lib/client-portal/connector-ui";
 import { CatalogView } from "@/components/client-portal/connectors/CatalogView";
 import { ErrorBanner, PageHead } from "@/components/client-portal/cp";
 
@@ -16,6 +16,9 @@ export default async function ConnectionsPage() {
     supabase.from("tenant_connections").select("*").eq("tenant_id", ctx.tenantId).returns<ConnRow[]>(),
   ]);
   const entries = buildCatalog(legacy.data ?? []);
+  // A sign-in connector is only offered once its vendor app credentials are configured on this server; otherwise the
+  // card would promise a connection we cannot complete.
+  const notReady = entries.filter((e) => e.methods.includes("Sign in") && !oauthEndpoints(e.key)).map((e) => e.key);
   const conns = mine.data ?? [];
   const now = Date.now();
   const live = conns.filter((c) => connState(c, now).id === "live").length;
@@ -36,7 +39,7 @@ export default async function ConnectionsPage() {
         }
       />
       <ErrorBanner label="Connection data did not load" errors={[legacy.error && `Connector list: ${legacy.error.message}`, mine.error && `Your connections: ${mine.error.message}`]} />
-      <CatalogView entries={entries} conns={conns} now={now} canManage={canManage} />
+      <CatalogView entries={entries} conns={conns} now={now} canManage={canManage} notReady={notReady} />
     </div>
   );
 }

@@ -83,7 +83,7 @@ export function Logo({ src, name, size = 40 }: { src?: string | null; name: stri
     return (
       <span className="cp-logo" style={{ width: size, height: size }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt="" loading="lazy" />
+        <img src={src} alt="" decoding="async" />
       </span>
     );
   }

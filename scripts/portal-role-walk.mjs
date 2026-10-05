@@ -29,6 +29,12 @@ function totp(secret) {
 const browser = await chromium.launch().catch(() => chromium.launch({ channel: "chrome", headless: true }));
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, ...(fs.existsSync(STATE) ? { storageState: STATE } : {}) });
 const page = await ctx.newPage();
+const fail = async (e) => {
+  const shot = path.join(OUT, "FAILED.png");
+  await page.screenshot({ path: shot }).catch(() => {});
+  console.error(`FAILED at ${page.url()}: ${e?.message?.split("\n")[0]} (screenshot ${shot})`);
+  process.exit(1);
+};
 const findings = [];
 let current = "";
 const add = (kind, detail, width) => findings.push({ role: ROLE, route: current, width: width ?? page.viewportSize().width, kind, detail: String(detail).slice(0, 260) });
@@ -48,6 +54,9 @@ if (page.url().includes("/mfa/enroll")) {
   await page.waitForSelector("#enroll-code", { timeout: 20000 });
   const secret = (await page.locator(".select-all").innerText()).trim();
   fs.writeFileSync(STATE + ".secret", secret);
+  // Keep it in the vault too: a scratch-only copy got lost once and locked the QA login out of every later run.
+  const vf = path.join(process.env.HOME, ".arthur/vault/loveleeday-portal-qa.env");
+  if (fs.existsSync(vf)) fs.writeFileSync(vf, fs.readFileSync(vf, "utf8").replace(/^LOVELEEDAY_PORTAL_QA_TOTP_SECRET=.*\n?/m, "") + `LOVELEEDAY_PORTAL_QA_TOTP_SECRET=${secret}\n`, { mode: 0o600 });
   await page.fill("#enroll-code", totp(secret));
   await page.click('button[type="submit"]');
   const saved = page.getByText("I've saved these somewhere safe");
@@ -55,11 +64,14 @@ if (page.url().includes("/mfa/enroll")) {
     await page.locator('input[type="checkbox"]').check();
     await page.getByRole("button", { name: "Continue" }).click();
   }
-  await page.waitForURL((u) => !/\/(login|mfa)/.test(u.pathname), { timeout: 20000 });
+  await page.waitForURL((u) => !/\/(login|mfa)/.test(u.pathname), { timeout: 20000 }).catch(fail);
 } else if (page.url().includes("/mfa/challenge")) {
-  await page.fill('input[inputmode="numeric"], input[name="code"], #challenge-code', totp(fs.readFileSync(STATE + ".secret", "utf8")));
-  await page.keyboard.press("Enter");
-  await page.waitForURL((u) => !/\/(login|mfa)/.test(u.pathname), { timeout: 20000 });
+  // The form clears anything typed before hydration and keeps Verify disabled until the challenge id exists.
+  await page.waitForTimeout(2500);
+  const box = page.locator('input[inputmode="numeric"]');
+  await box.pressSequentially(totp(process.env.LOVELEEDAY_PORTAL_QA_TOTP_SECRET || fs.readFileSync(STATE + ".secret", "utf8")), { delay: 40 });
+  await page.locator('button[type="submit"]:not([disabled])').first().click({ timeout: 10000 });
+  await page.waitForURL((u) => !/\/(login|mfa)/.test(u.pathname), { timeout: 20000 }).catch(fail);
 }
 await ctx.storageState({ path: STATE });
 

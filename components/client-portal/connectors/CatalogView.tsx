@@ -13,7 +13,7 @@ export function describe(e: CatalogEntry): string {
   return `Reads ${list.join(", ")}${e.objects.length > 5 ? ` and ${e.objects.length - 5} more` : ""}. Read-only.`;
 }
 
-export function CatalogView({ entries, conns, now, canManage }: { entries: CatalogEntry[]; conns: ConnRow[]; now: number; canManage: boolean }) {
+export function CatalogView({ entries, conns, now, canManage, notReady = [] }: { entries: CatalogEntry[]; conns: ConnRow[]; now: number; canManage: boolean; notReady?: string[] }) {
   const [tab, setTab] = useState<GroupId | "all">("all");
   const [q, setQ] = useState("");
 
@@ -75,6 +75,7 @@ export function CatalogView({ entries, conns, now, canManage }: { entries: Catal
                     const row = findConnection(conns, e);
                     const st = connState(row, now);
                     const connected = st.id !== "none" && st.id !== "disconnected";
+                    const soon = !connected && e.gate.kind !== "partner" && notReady.includes(e.key);
                     return (
                       <Link key={e.key} href={`/client/connections/${e.key}`} className="cp-card-link">
                         <span className="flex items-start gap-3">
@@ -84,7 +85,7 @@ export function CatalogView({ entries, conns, now, canManage }: { entries: Catal
                             <span className="block truncate text-[11.5px] text-[var(--muted)]">{e.categoryLabel}</span>
                           </span>
                           <Pill tone={connected ? st.tone : e.gate.kind === "partner" ? "wait" : "off"} dot={connected}>
-                            {connected ? st.label : e.gate.kind === "partner" ? "Vendor approval" : "Available"}
+                            {connected ? st.label : e.gate.kind === "partner" ? "Vendor approval" : soon ? "Coming soon" : "Available"}
                           </Pill>
                         </span>
                         <span className="text-[13px] leading-[1.6] text-[#4a4f58]">{describe(e)}</span>
@@ -95,7 +96,7 @@ export function CatalogView({ entries, conns, now, canManage }: { entries: Catal
                             ))}
                           </span>
                           <span className="text-[12px] text-[var(--blue)]">
-                            {connected ? (st.id === "failing" ? "Re-authorize" : "Manage") : canManage ? (e.gate.kind === "partner" ? "Request access" : "Connect") : "View"}
+                            {connected ? (st.id === "failing" ? "Re-authorize" : "Manage") : canManage && !soon ? (e.gate.kind === "partner" ? "Request access" : "Connect") : "View"}
                           </span>
                         </span>
                         {connected ? <span className="-mt-1 text-[11.5px] text-[var(--muted)]">{st.reason}</span> : null}
