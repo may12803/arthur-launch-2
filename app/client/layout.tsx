@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./portal-theme.css";
+import "./cp-ui.css";
 
 export const metadata: Metadata = {
   title: { absolute: "Client portal — LOVELEEDAY" },

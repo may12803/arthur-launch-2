@@ -13,6 +13,7 @@ export function SiteFooter() {
           <span>&copy; 2026 LOVELEEDAY Studios</span>
           <a href="/client/privacy">Privacy</a>
           <a href="/client/terms">Terms</a>
+          <a href="/trust">Trust center</a>
           <a href="https://loveleedaystudios.com/principles">Principles</a>
         </div>
       </div>

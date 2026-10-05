@@ -7,16 +7,15 @@ import { SignOutButton } from "./SignOutButton";
 import { Wordmark } from "./LogoMark";
 import { SiteFooter } from "./SiteFooter";
 
-const NAV = [
+const NAV: { href: string; label: string; match?: string[]; staffOnly?: boolean }[] = [
   { href: "/client/workstreams", label: "Workstreams" },
-  { href: "/client", label: "Deliverables" },
   { href: "/client/connections", label: "Connections" },
+  { href: "/client/data/health", label: "Data health", match: ["/client/data"] },
+  { href: "/client/approvals", label: "Approvals" },
   { href: "/client/documents", label: "Documents" },
   { href: "/client/team", label: "Team" },
-  { href: "/client/contracts", label: "Contracts" },
   { href: "/client/billing", label: "Billing" },
-  { href: "/client/access", label: "Access history", adminOnly: true },
-  { href: "/client/account", label: "Account" },
+  { href: "/client/organization", label: "Settings", match: ["/client/organization", "/client/security", "/client/audit", "/client/access", "/client/developer", "/client/status", "/client/contracts", "/client/account"] },
   { href: "/client/staff", label: "Staff console", staffOnly: true },
 ];
 
@@ -35,10 +34,9 @@ export function PortalShell({
   children: ReactNode;
 }) {
   const activePath = usePathname() || "/client";
-  const isAdmin = role === "owner" || role === "admin";
   const isStaff = role === "staff";
-  const links = NAV.filter((item) => (!item.adminOnly || isAdmin) && (!item.staffOnly || isStaff)).map((item) => {
-    const active = item.href === "/client" ? activePath === "/client" : activePath.startsWith(item.href);
+  const links = NAV.filter((item) => !item.staffOnly || isStaff).map((item) => {
+    const active = (item.match ?? [item.href]).some((m) => activePath === m || activePath.startsWith(m + "/"));
     return (
       <Link
         key={item.href}
