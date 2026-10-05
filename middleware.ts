@@ -49,6 +49,8 @@ const PUBLIC_PREFIXES = [
   "/trust",
   "/connectors/logos/",
   "/api/cron/sync",
+  "/api/cron/webhooks",
+  "/api/v1/",
   // Outside-sharing recipients have no account: the share page and its API
   // are gated by the link token + an emailed one-time code instead.
   "/share/",
@@ -190,7 +192,7 @@ async function checkMfaRedirect(req: NextRequest, res: NextResponse): Promise<st
 // portal.loveleedaystudios.com is the client-facing address. It serves only the
 // client portal and outside-share pages; the admin app never answers on it.
 const PORTAL_HOST = "portal.loveleedaystudios.com";
-const PORTAL_ALLOWED = ["/client", "/api/client", "/trust", "/connectors/logos/", "/share/", "/api/share/", "/brand/", "/_next/", "/favicon.ico"];
+const PORTAL_ALLOWED = ["/client", "/api/client", "/api/v1/", "/api/cron/webhooks", "/trust", "/connectors/logos/", "/share/", "/api/share/", "/brand/", "/_next/", "/favicon.ico"];
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
