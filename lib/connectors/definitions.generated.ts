@@ -589,6 +589,62 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     ]
   },
   {
+    "key": "clickup",
+    "name": "ClickUp",
+    "vendor": "Mango Technologies, Inc. (ClickUp)",
+    "category": "project_management",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": false,
+      "how_to_get": "No separate sandbox; Free Forever workspace 'Loveleedaystudios' used for testing"
+    },
+    "objects": [
+      "workspaces (teams)",
+      "spaces",
+      "folders",
+      "lists",
+      "tasks",
+      "comments",
+      "time entries",
+      "goals"
+    ],
+    "incremental_sync": "UNVERIFIED (tasks endpoint supports date_updated_gt filter per ClickUp docs; not fetched)",
+    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "None: ClickUp OAuth apps have no scope picker; access is the authorizing user's workspaces (status file clickup.json)"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/clickup.svg",
+    "source_file": "data/connectors/systems/clickup.json",
+    "api_base_url": "https://api.clickup.com/api/v2",
+    "token_lifetime": "UNVERIFIED (ClickUp OAuth tokens are documented as non-expiring; not fetched)",
+    "refresh": "UNVERIFIED",
+    "build_effort_days": 4,
+    "blockers": [
+      "Redirect field stores only the origin https://portal.loveleedaystudios.com; the localhost URL was not retained (redirect_uris_set: partial).",
+      "No scope picker means read-only cannot be enforced at the token level; enforce in our adapter.",
+      "Rate limits UNVERIFIED."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
+      "openapi_spec_url"
+    ]
+  },
+  {
     "key": "clio-manage",
     "name": "Clio Manage",
     "vendor": "Clio (Themis Solutions)",
@@ -783,6 +839,61 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "rate_limits",
       "incremental_sync",
       "sandbox",
+      "openapi_spec_url"
+    ]
+  },
+  {
+    "key": "docusign",
+    "name": "DocuSign eSignature",
+    "vendor": "DocuSign, Inc.",
+    "category": "esignature",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "Free demo developer account at developers.docusign.com (self-serve); demo account id on file"
+    },
+    "objects": [
+      "envelopes",
+      "envelope recipients",
+      "envelope documents",
+      "templates",
+      "folders",
+      "account users"
+    ],
+    "incremental_sync": "UNVERIFIED (Envelopes: listStatusChanges with from_date; DocuSign Connect webhooks for deltas)",
+    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "signature",
+      "extended"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/docusign.svg",
+    "source_file": "data/connectors/systems/docusign.json",
+    "api_base_url": "https://account-d.docusign.com (auth, demo); eSignature API base is per-account via /oauth/userinfo",
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "Auth code grant returns refresh token when scope 'extended' is requested",
+    "build_effort_days": 4,
+    "blockers": [
+      "Production requires Go-Live review and integration key promotion.",
+      "Read-only scope 'signature' also permits sending; read-only enforcement is in our adapter."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "rate_limits",
+      "incremental_sync",
+      "time_to_approval",
+      "cost_to_us",
       "openapi_spec_url"
     ]
   },
@@ -1218,6 +1329,62 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     ]
   },
   {
+    "key": "help-scout",
+    "name": "Help Scout",
+    "vendor": "Help Scout PBC",
+    "category": "support",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "15-day trial account, no card asked (status file); sandbox otherwise UNVERIFIED"
+    },
+    "objects": [
+      "conversations",
+      "customers",
+      "mailboxes",
+      "threads",
+      "users",
+      "tags"
+    ],
+    "incremental_sync": "UNVERIFIED (conversations list supports modifiedAt filter per docs; not fetched)",
+    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "UNVERIFIED (Mailbox API v2 OAuth grants the app's access as the authorizing user; no scope list fetched)"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/helpscout.svg",
+    "source_file": "data/connectors/systems/help-scout.json",
+    "api_base_url": "https://api.helpscout.net/v2",
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "POST https://api.helpscout.net/v2/oauth2/token with refresh token (UNVERIFIED lifetime)",
+    "build_effort_days": 4,
+    "blockers": [
+      "Only ONE redirect URL allowed; only the portal callback is set (no localhost).",
+      "OAuth app disappears if the 15-day trial lapses without a paid plan.",
+      "Rate limits UNVERIFIED."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
+      "scopes",
+      "sandbox",
+      "openapi_spec_url"
+    ]
+  },
+  {
     "key": "homebase",
     "name": "Homebase",
     "vendor": "Homebase (joinhomebase.com)",
@@ -1383,6 +1550,119 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     ]
   },
   {
+    "key": "intercom",
+    "name": "Intercom",
+    "vendor": "Intercom, Inc.",
+    "category": "support",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "Free development workspace 'LOVELEEDAY Studios LLC [DEV]' via Developer Hub (status file)"
+    },
+    "objects": [
+      "contacts",
+      "companies",
+      "conversations",
+      "admins",
+      "tags",
+      "articles"
+    ],
+    "incremental_sync": "UNVERIFIED (search endpoints with updated_at filter per Intercom docs; not fetched)",
+    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "Read-only permission set in Developer Hub: read users and companies, read conversations, read admins, read tags (exact labels UNVERIFIED; write/update/delete/merge/manage left unchecked)"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/intercom.svg",
+    "source_file": "data/connectors/systems/intercom.json",
+    "api_base_url": "https://api.intercom.io",
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "UNVERIFIED",
+    "build_effort_days": 4,
+    "blockers": [
+      "Rate limits UNVERIFIED.",
+      "Regional workspaces (EU/AU) use different API hosts: UNVERIFIED."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
+      "scopes",
+      "openapi_spec_url"
+    ]
+  },
+  {
+    "key": "jira",
+    "name": "Jira Cloud",
+    "vendor": "Atlassian Corporation",
+    "category": "project_management",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "UNVERIFIED (free Atlassian Jira site can be created for testing; not confirmed in status file)"
+    },
+    "objects": [
+      "issues",
+      "projects",
+      "boards",
+      "sprints",
+      "users",
+      "comments",
+      "worklogs"
+    ],
+    "incremental_sync": "UNVERIFIED (JQL 'updated >=' search with pagination; not fetched)",
+    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "read:jira-work",
+      "read:jira-user",
+      "offline_access"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/jira.svg",
+    "source_file": "data/connectors/systems/jira.json",
+    "api_base_url": "https://api.atlassian.com/ex/jira/{cloudid}/rest/api/3",
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "offline_access scope returns a refresh token; exchange at https://auth.atlassian.com/oauth/token (UNVERIFIED lifetime)",
+    "build_effort_days": 4,
+    "blockers": [
+      "Only ONE 3LO callback URL allowed; only the portal callback is registered (no localhost).",
+      "Status probe is not discriminating (same 400/403 for real and wrong secrets); credentials unproven beyond the console.",
+      "Rate limits UNVERIFIED."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
+      "sandbox",
+      "time_to_approval",
+      "openapi_spec_url"
+    ]
+  },
+  {
     "key": "laserfiche",
     "name": "Laserfiche",
     "vendor": "Laserfiche",
@@ -1544,6 +1824,67 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "sandbox",
       "time_to_approval",
       "cost_to_us",
+      "openapi_spec_url"
+    ]
+  },
+  {
+    "key": "monday",
+    "name": "monday.com",
+    "vendor": "monday.com Ltd.",
+    "category": "project_management",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "Free developer account loveleedaystudios.monday.com via Developer Center (self-serve)"
+    },
+    "objects": [
+      "boards",
+      "items",
+      "groups",
+      "columns",
+      "updates",
+      "docs",
+      "workspaces",
+      "users"
+    ],
+    "incremental_sync": "UNVERIFIED (items_page cursor with query rules; activity_logs; not fetched)",
+    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "me:read",
+      "boards:read",
+      "docs:read",
+      "workspaces:read",
+      "users:read",
+      "account:read",
+      "updates:read"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/monday.png",
+    "source_file": "data/connectors/systems/monday.json",
+    "api_base_url": "https://api.monday.com/v2",
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "UNVERIFIED",
+    "build_effort_days": 4,
+    "blockers": [
+      "GraphQL complexity budget applies: UNVERIFIED figures."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
+      "time_to_approval",
       "openapi_spec_url"
     ]
   },
@@ -1717,6 +2058,68 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "token_lifetime",
       "rate_limits",
       "scopes",
+      "openapi_spec_url"
+    ]
+  },
+  {
+    "key": "pipedrive",
+    "name": "Pipedrive",
+    "vendor": "Pipedrive OU",
+    "category": "crm",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "Developer sandbox account at developers.pipedrive.com (daniel-sandbox12), self-serve"
+    },
+    "objects": [
+      "deals",
+      "persons",
+      "organizations",
+      "activities",
+      "products",
+      "leads",
+      "pipelines",
+      "users"
+    ],
+    "incremental_sync": "UNVERIFIED (updated_since on list endpoints and webhooks; not fetched)",
+    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "deals:read",
+      "activities:read",
+      "contacts:read",
+      "products:read",
+      "leads:read",
+      "base"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/pipedrive.png",
+    "source_file": "data/connectors/systems/pipedrive.json",
+    "api_base_url": "https://api.pipedrive.com/v1 (per-company domain returned as api_domain at token exchange)",
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "POST https://oauth.pipedrive.com/oauth/token with refresh_token (UNVERIFIED lifetime)",
+    "build_effort_days": 4,
+    "blockers": [
+      "Only ONE callback URL allowed; only the portal callback is set (no localhost).",
+      "Status file notes 'Read users data' scope may not have saved.",
+      "Rate limits UNVERIFIED."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
+      "time_to_approval",
       "openapi_spec_url"
     ]
   },
@@ -2633,6 +3036,119 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "scopes",
       "time_to_approval",
       "cost_to_us"
+    ]
+  },
+  {
+    "key": "zendesk",
+    "name": "Zendesk",
+    "vendor": "Zendesk, Inc.",
+    "category": "support",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "14-day trial account loveleedaystudios.zendesk.com, no card (status file); Zendesk sandboxes need Enterprise plan (EXPANSION-A, third-party)"
+    },
+    "objects": [
+      "tickets",
+      "users",
+      "organizations",
+      "ticket comments",
+      "ticket fields",
+      "groups"
+    ],
+    "incremental_sync": "UNVERIFIED (incremental export endpoints with start_time cursor per Zendesk docs; not fetched)",
+    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "read"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/zendesk.svg",
+    "source_file": "data/connectors/systems/zendesk.json",
+    "api_base_url": "https://{subdomain}.zendesk.com/api/v2",
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "UNVERIFIED",
+    "build_effort_days": 4,
+    "blockers": [
+      "The OAuth client lives in a 14-day trial and vanishes on lapse; re-create or convert before 2026-10-19.",
+      "Global OAuth for multi-customer apps needs Zendesk approval: UNVERIFIED.",
+      "Rate limits UNVERIFIED."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
+      "openapi_spec_url"
+    ]
+  },
+  {
+    "key": "zoho-crm",
+    "name": "Zoho CRM",
+    "vendor": "Zoho Corporation",
+    "category": "crm",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": false,
+      "how_to_get": "UNVERIFIED (no separate sandbox confirmed; Zoho CRM sandbox is a paid-plan feature per general knowledge, not fetched)"
+    },
+    "objects": [
+      "Leads",
+      "Contacts",
+      "Accounts",
+      "Deals",
+      "Products",
+      "Tasks",
+      "Users"
+    ],
+    "incremental_sync": "UNVERIFIED (Modified_Time filtering and COQL; not fetched)",
+    "rate_limits": "UNVERIFIED (not fetched)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "ZohoCRM.modules.READ",
+      "ZohoCRM.settings.READ",
+      "ZohoCRM.users.READ",
+      "ZohoCRM.org.READ"
+    ],
+    "build_status": "planned",
+    "logo": "/connectors/logos/zohocrm.svg",
+    "source_file": "data/connectors/systems/zoho-crm.json",
+    "api_base_url": "https://www.zohoapis.com/crm/v8 (US data center; EU/IN/AU use different domains)",
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "POST https://accounts.zoho.com/oauth/v2/token with refresh_token (UNVERIFIED lifetime)",
+    "build_effort_days": 4,
+    "blockers": [
+      "US data center only (accounts.zoho.com); EU/IN/AU customers need per-data-center clients (status file).",
+      "Rate limits UNVERIFIED."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
+      "sandbox",
+      "cost_to_us",
+      "openapi_spec_url"
     ]
   }
 ];

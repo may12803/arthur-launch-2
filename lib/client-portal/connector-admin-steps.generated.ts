@@ -44,6 +44,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
   "admin": "Expose the Cityworks web services (often behind VPN/firewall, on-prem or Trimble-hosted) to us and create a dedicated service user..",
   "wait": "Depends on customer IT"
  },
+ "clickup": {
+  "admin": "Workspace member authorizes the LOVELEEDAY app and picks the workspaces to share; access equals that user's permissions.",
+  "wait": "Immediate"
+ },
  "clio-manage": {
   "admin": "A user at the firm authorizes our app via the OAuth consent screen (in their region); firm admin approval may be required by firm policy.",
   "wait": "Immediate for unlisted apps"
@@ -58,6 +62,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
  },
  "databricks": {
   "admin": "Create a service principal, generate an OAuth secret, grant Unity Catalog privileges and CAN USE on a SQL warehouse, then send us workspace host, client ID and secret via our secure form. Alternative with no credentials: Delta Sharing.",
+  "wait": ""
+ },
+ "docusign": {
+  "admin": "Account admin or user consents to the integration key in the DocuSign consent screen; org admins may need to pre-authorize for JWT grant.",
   "wait": ""
  },
  "dropbox-business": {
@@ -92,6 +100,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
   "admin": "Company admin approves the OAuth consent for the app",
   "wait": ""
  },
+ "help-scout": {
+  "admin": "Help Scout user (account admin recommended) accepts the LOVELEEDAY app.",
+  "wait": "Immediate"
+ },
  "homebase": {
   "admin": "",
   "wait": ""
@@ -103,6 +115,14 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
  "infor-cloudsuite": {
   "admin": "In Infor OS: API Gateway > Authorized Apps > + > type Backend Service, save, Download Credentials with Create Service Account enabled and a user chosen, then send us the.ionapi file securely. The product (M3, LN, CloudSuite Industrial/SyteLine, etc.) must be exposed through ION API and the service-account user needs security roles.",
   "wait": "Days, customer admin driven"
+ },
+ "intercom": {
+  "admin": "Workspace admin authorizes the LOVELEEDAY app from our OAuth link and accepts the read-only permissions.",
+  "wait": "Immediate"
+ },
+ "jira": {
+  "admin": "Jira site admin or user consents to the LOVELEEDAY app and selects the Atlassian site; access equals that user's permissions.",
+  "wait": "Immediate for a private app;"
  },
  "laserfiche": {
   "admin": "Cloud admin creates a Service Principal user (Laserfiche doc: authenticates with a rotatable API key, no MFA), registers a service app in the Developer Console with that principal as service account, creates an access key, and grants the principal read rights on the target repository folders.",
@@ -116,6 +136,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
   "admin": "Tenant Global Admin (or Privileged Role Admin) grants admin consent to our multi-tenant app via the admin-consent URL for the application permissions above; for SharePoint minimal access, admin grants Sites.Selected then grants our app per-site permission via POST /sites/{id}/permissions.",
   "wait": ""
  },
+ "monday": {
+  "admin": "Account member (admin if workspace policy restricts apps) installs the LOVELEEDAY app and accepts the read scopes.",
+  "wait": "Immediate for the draft app;"
+ },
  "mri-software": {
   "admin": "Provide their own MRI installation credentials (per Apideck: consumers provide only their own MRI installation credentials) and, if sponsoring, introduce us to MRI.(MRI portal gated).",
   "wait": "Per Apideck (secondary): 5-7 business days from application to intro call, then NDA, agreement, provisioning"
@@ -127,6 +151,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
  "oracle-fusion-cloud-erp": {
   "admin": "Create an integration user with a role that carries the needed Financials REST privileges (e.g. Accounts Receivable/Payables inquiry duties) and, for OAuth, register a confidential application in the Fusion IAM identity domain with grant types and scopes, then send us client ID/secret, pod URL.",
   "wait": "Days to weeks driven by customer IT/security; no vendor approval"
+ },
+ "pipedrive": {
+  "admin": "Pipedrive user with access installs the LOVELEEDAY app and accepts the scopes; admin may be needed for company-wide data.",
+  "wait": ""
  },
  "procore": {
   "admin": "Company admin installs the app (custom or Marketplace) in their Procore company and, for DMSA, creates the service account and grants project permissions..",
@@ -191,5 +219,13 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
  "yardi-voyager": {
   "admin": "Customer must authorize the vendor with Yardi and request the interface be enabled on their Voyager database; Yardi then issues the web-services URL, interface credentials and license.(vendor page blocked).",
   "wait": ""
+ },
+ "zendesk": {
+  "admin": "Zendesk admin authorizes the LOVELEEDAY OAuth client; each customer subdomain is entered at connect time.",
+  "wait": "Immediate"
+ },
+ "zoho-crm": {
+  "admin": "Zoho CRM user authorizes the scopes requested at connect time (scopes are chosen per authorization request, not on the client).",
+  "wait": "Immediate"
  }
 };

@@ -1,0 +1,67 @@
+{
+  "system": "Help Scout",
+  "vendor": "Help Scout PBC",
+  "category": "support",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.helpscout.net/v2",
+    "openapi_spec_url": "UNVERIFIED (not fetched)",
+    "docs_url": "https://developer.helpscout.com/mailbox-api/overview/authentication/"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "UNVERIFIED (Mailbox API v2 OAuth grants the app's access as the authorizing user; no scope list fetched)"
+    ],
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "POST https://api.helpscout.net/v2/oauth2/token with refresh token (UNVERIFIED lifetime)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "App Directory listing not requested (status file); not required for OAuth install",
+    "customer_admin_must_do": "Help Scout user (account admin recommended) accepts the LOVELEEDAY app.",
+    "cost_to_us": "$0 during trial; the 15-day trial account hosting the OAuth app lapses without a paid plan",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "15-day trial account, no card asked (status file); sandbox otherwise UNVERIFIED"
+  },
+  "rate_limits": "UNVERIFIED (not fetched)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "UNVERIFIED (webhooks exist per Help Scout docs; event list not fetched)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "conversations",
+    "customers",
+    "mailboxes",
+    "threads",
+    "users",
+    "tags"
+  ],
+  "incremental_sync": "UNVERIFIED (conversations list supports modifiedAt filter per docs; not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "Only ONE redirect URL allowed; only the portal callback is set (no localhost).",
+    "OAuth app disappears if the 15-day trial lapses without a paid plan.",
+    "Rate limits UNVERIFIED."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/helpscout.json - app created, probe 400 invalid_request 'Invalid code' (client accepted)",
+    "../connectors/EXPANSION-B.json - Help Scout row (marked UNVERIFIED)",
+    "https://developer.helpscout.com/mailbox-api/overview/authentication/"
+  ]
+}

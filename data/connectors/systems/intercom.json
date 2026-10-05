@@ -1,0 +1,66 @@
+{
+  "system": "Intercom",
+  "vendor": "Intercom, Inc.",
+  "category": "support",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.intercom.io",
+    "openapi_spec_url": "UNVERIFIED (not fetched)",
+    "docs_url": "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "Read-only permission set in Developer Hub: read users and companies, read conversations, read admins, read tags (exact labels UNVERIFIED; write/update/delete/merge/manage left unchecked)"
+    ],
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "UNVERIFIED"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "App Store listing / App Partner Program optional and not submitted (status file)",
+    "customer_admin_must_do": "Workspace admin authorizes the LOVELEEDAY app from our OAuth link and accepts the read-only permissions.",
+    "cost_to_us": "$0 (free development workspace)",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Free development workspace 'LOVELEEDAY Studios LLC [DEV]' via Developer Hub (status file)"
+  },
+  "rate_limits": "UNVERIFIED (not fetched)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "UNVERIFIED (topics not fetched)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "contacts",
+    "companies",
+    "conversations",
+    "admins",
+    "tags",
+    "articles"
+  ],
+  "incremental_sync": "UNVERIFIED (search endpoints with updated_at filter per Intercom docs; not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "Rate limits UNVERIFIED.",
+    "Regional workspaces (EU/AU) use different API hosts: UNVERIFIED."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/intercom.json - OAuth enabled, read-only permissions, probe 401 unauthorized_code (client accepted)",
+    "../connectors/EXPANSION-B.json - Intercom row (marked UNVERIFIED)",
+    "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication"
+  ]
+}

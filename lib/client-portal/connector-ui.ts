@@ -99,12 +99,17 @@ export type SyncRun = {
 export type MethodBadge = "Sign in" | "Key" | "Invite" | "File";
 
 export const GROUPS = [
-  { id: "erp", label: "ERP and accounting", categories: ["erp", "accounting"] },
-  { id: "sales", label: "CRM, sales and commerce", categories: ["crm", "commerce", "pos", "payments", "marketing"] },
+  { id: "accounting", label: "Accounting and ERP", categories: ["erp", "accounting"] },
+  { id: "crm", label: "CRM and sales", categories: ["crm"] },
+  { id: "commerce", label: "Commerce, POS and payments", categories: ["commerce", "pos", "payments"] },
+  { id: "marketing", label: "Marketing and email", categories: ["marketing"] },
+  { id: "support", label: "Customer support", categories: ["support"] },
+  { id: "work", label: "Projects and work management", categories: ["project_management"] },
+  { id: "documents", label: "Files, documents and e-signature", categories: ["files", "esignature", "productivity"] },
+  { id: "people", label: "Payroll and HR", categories: ["hr_payroll"] },
   { id: "property", label: "Property and construction", categories: ["property", "construction"] },
-  { id: "people", label: "Payroll and people", categories: ["hr_payroll"] },
   { id: "public", label: "Public sector, nonprofit and legal", categories: ["public_sector", "nonprofit", "legal"] },
-  { id: "data", label: "Data, files and email", categories: ["warehouse", "files", "ingest", "productivity"] },
+  { id: "data", label: "Data warehouses and uploads", categories: ["warehouse", "ingest"] },
   { id: "other", label: "Other systems", categories: [] as string[] },
 ] as const;
 export type GroupId = (typeof GROUPS)[number]["id"];
@@ -114,6 +119,7 @@ export const CATEGORY_LABEL: Record<string, string> = {
   marketing: "Email marketing", property: "Property management", construction: "Construction", hr_payroll: "Payroll and HR",
   public_sector: "Public sector", nonprofit: "Donor management", legal: "Legal practice", warehouse: "Data warehouse",
   files: "Files", ingest: "File upload", productivity: "Email and documents",
+  support: "Customer support", project_management: "Project management", esignature: "E-signature",
 };
 
 export const AUTH_LABEL: Record<string, string> = {

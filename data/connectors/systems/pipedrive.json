@@ -1,0 +1,74 @@
+{
+  "system": "Pipedrive",
+  "vendor": "Pipedrive OU",
+  "category": "crm",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.pipedrive.com/v1 (per-company domain returned as api_domain at token exchange)",
+    "openapi_spec_url": "UNVERIFIED (not fetched)",
+    "docs_url": "https://pipedrive.readme.io/docs/marketplace-oauth-authorization"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "deals:read",
+      "activities:read",
+      "contacts:read",
+      "products:read",
+      "leads:read",
+      "base"
+    ],
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "POST https://oauth.pipedrive.com/oauth/token with refresh_token (UNVERIFIED lifetime)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "Marketplace publishing requires app review (EXPANSION-A); app stays DRAFT and is unlisted",
+    "customer_admin_must_do": "Pipedrive user with access installs the LOVELEEDAY app and accepts the scopes; admin may be needed for company-wide data.",
+    "cost_to_us": "$0 (developer sandbox)",
+    "time_to_approval": "UNVERIFIED (Marketplace review time not stated)"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Developer sandbox account at developers.pipedrive.com (daniel-sandbox12), self-serve"
+  },
+  "rate_limits": "UNVERIFIED (not fetched)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "UNVERIFIED (event list not fetched)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "deals",
+    "persons",
+    "organizations",
+    "activities",
+    "products",
+    "leads",
+    "pipelines",
+    "users"
+  ],
+  "incremental_sync": "UNVERIFIED (updated_since on list endpoints and webhooks; not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "Only ONE callback URL allowed; only the portal callback is set (no localhost).",
+    "Status file notes 'Read users data' scope may not have saved.",
+    "Rate limits UNVERIFIED."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/pipedrive.json - public app DRAFT, read-only scopes checked, probe 400 invalid_grant",
+    "../connectors/EXPANSION-A.json and EXPANSION-B.json - Pipedrive rows",
+    "https://pipedrive.readme.io/docs/marketplace-registering-the-app"
+  ]
+}

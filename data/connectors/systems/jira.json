@@ -1,0 +1,69 @@
+{
+  "system": "Jira Cloud",
+  "vendor": "Atlassian Corporation",
+  "category": "project_management",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.atlassian.com/ex/jira/{cloudid}/rest/api/3",
+    "openapi_spec_url": "UNVERIFIED (not fetched)",
+    "docs_url": "https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "read:jira-work",
+      "read:jira-user",
+      "offline_access"
+    ],
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "offline_access scope returns a refresh token; exchange at https://auth.atlassian.com/oauth/token (UNVERIFIED lifetime)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "Distribution (Marketplace/sharing) not started; app is private (status file)",
+    "customer_admin_must_do": "Jira site admin or user consents to the LOVELEEDAY app and selects the Atlassian site; access equals that user's permissions.",
+    "cost_to_us": "$0 (free Atlassian account and developer console)",
+    "time_to_approval": "Immediate for a private app; sharing/distribution review UNVERIFIED"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "UNVERIFIED (free Atlassian Jira site can be created for testing; not confirmed in status file)"
+  },
+  "rate_limits": "UNVERIFIED (not fetched)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "UNVERIFIED (webhook events not fetched)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "issues",
+    "projects",
+    "boards",
+    "sprints",
+    "users",
+    "comments",
+    "worklogs"
+  ],
+  "incremental_sync": "UNVERIFIED (JQL 'updated >=' search with pagination; not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "Only ONE 3LO callback URL allowed; only the portal callback is registered (no localhost).",
+    "Status probe is not discriminating (same 400/403 for real and wrong secrets); credentials unproven beyond the console.",
+    "Rate limits UNVERIFIED."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/atlassian.json - app LOVELEEDAY, OAuth 2.0 3LO, Jira scopes read:jira-work and read:jira-user",
+    "https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "system": "monday.com",
+  "vendor": "monday.com Ltd.",
+  "category": "project_management",
+  "api": {
+    "type": "GraphQL",
+    "base_url": "https://api.monday.com/v2",
+    "openapi_spec_url": "UNVERIFIED (not fetched)",
+    "docs_url": "https://developer.monday.com/apps/docs/oauth"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "me:read",
+      "boards:read",
+      "docs:read",
+      "workspaces:read",
+      "users:read",
+      "account:read",
+      "updates:read"
+    ],
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "UNVERIFIED"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "Promoting the app to live / marketplace listing is optional and not submitted (app is v1 Draft); marketplace review UNVERIFIED",
+    "customer_admin_must_do": "Account member (admin if workspace policy restricts apps) installs the LOVELEEDAY app and accepts the read scopes.",
+    "cost_to_us": "$0 (free developer account)",
+    "time_to_approval": "Immediate for the draft app; marketplace review time UNVERIFIED"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Free developer account loveleedaystudios.monday.com via Developer Center (self-serve)"
+  },
+  "rate_limits": "UNVERIFIED (not fetched)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "UNVERIFIED (webhook triggers not fetched)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "boards",
+    "items",
+    "groups",
+    "columns",
+    "updates",
+    "docs",
+    "workspaces",
+    "users"
+  ],
+  "incremental_sync": "UNVERIFIED (items_page cursor with query rules; activity_logs; not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "GraphQL complexity budget applies: UNVERIFIED figures."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/monday.json - app id on file, read scopes saved, probe 401 invalid_grant (client accepted)",
+    "../connectors/EXPANSION-A.json and EXPANSION-B.json - monday.com rows (self-serve, GraphQL)",
+    "https://developer.monday.com/apps/docs/oauth"
+  ]
+}

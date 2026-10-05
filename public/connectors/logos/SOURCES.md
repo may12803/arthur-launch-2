@@ -89,3 +89,12 @@ Still missing: Tyler Munis, Procore, Buildium, Cityworks
 | Blackbaud RE NXT | blackbaudrenxt.png | Commons File:Blackbaud logo.png |
 QAD, Cityworks, Azure Synapse: MISSING official asset; shown as monogram (QAD, Cityworks) or Microsoft mark (Azure Synapse) until the vendor press kit is pulled.
 | QAD Adaptive ERP | qadadaptiveerp.svg | vendor homepage header logo | https://cdn.prod.website-files.com/6a2f8136c43acbb69981ffa6/6a310ae0b0d905ff33a0a824_logo.svg |
+| clickup | clickup.svg | moodboard asset (arthur briefs) | n/a | ~/arthur/briefs/loveleeday-full-review-2026-10-05/moodboard/assets/logos |
+| docusign | docusign.svg | moodboard asset (arthur briefs) | n/a | ~/arthur/briefs/loveleeday-full-review-2026-10-05/moodboard/assets/logos |
+| helpscout | helpscout.svg | moodboard asset (arthur briefs) | n/a | ~/arthur/briefs/loveleeday-full-review-2026-10-05/moodboard/assets/logos |
+| intercom | intercom.svg | moodboard asset (arthur briefs) | n/a | ~/arthur/briefs/loveleeday-full-review-2026-10-05/moodboard/assets/logos |
+| monday | monday.png | moodboard asset (arthur briefs) | n/a | ~/arthur/briefs/loveleeday-full-review-2026-10-05/moodboard/assets/logos |
+| pipedrive | pipedrive.png | moodboard asset (arthur briefs) | n/a | ~/arthur/briefs/loveleeday-full-review-2026-10-05/moodboard/assets/logos |
+| zendesk | zendesk.svg | moodboard asset (arthur briefs) | n/a | ~/arthur/briefs/loveleeday-full-review-2026-10-05/moodboard/assets/logos |
+| zohocrm | zohocrm.svg | moodboard asset (arthur briefs) | n/a | ~/arthur/briefs/loveleeday-full-review-2026-10-05/moodboard/assets/logos |
+| Jira Cloud | jira.svg | moodboard asset atlassian.svg | n/a | ~/arthur/briefs/loveleeday-full-review-2026-10-05/moodboard/assets/logos |

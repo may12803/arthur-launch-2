@@ -1,0 +1,67 @@
+{
+  "system": "ClickUp",
+  "vendor": "Mango Technologies, Inc. (ClickUp)",
+  "category": "project_management",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.clickup.com/api/v2",
+    "openapi_spec_url": "UNVERIFIED (not fetched)",
+    "docs_url": "https://developer.clickup.com/docs/authentication"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "None: ClickUp OAuth apps have no scope picker; access is the authorizing user's workspaces (status file clickup.json)"
+    ],
+    "token_lifetime": "UNVERIFIED (ClickUp OAuth tokens are documented as non-expiring; not fetched)",
+    "refresh": "UNVERIFIED"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None for OAuth on unlisted apps (status file: nothing to submit); App Directory listing UNVERIFIED",
+    "customer_admin_must_do": "Workspace member authorizes the LOVELEEDAY app and picks the workspaces to share; access equals that user's permissions.",
+    "cost_to_us": "$0 (Free Forever workspace)",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": {
+    "available": false,
+    "how_to_get": "No separate sandbox; Free Forever workspace 'Loveleedaystudios' used for testing"
+  },
+  "rate_limits": "UNVERIFIED (not fetched)",
+  "webhooks": {
+    "available": true,
+    "events": []
+  },
+  "data_objects_to_pull": [
+    "workspaces (teams)",
+    "spaces",
+    "folders",
+    "lists",
+    "tasks",
+    "comments",
+    "time entries",
+    "goals"
+  ],
+  "incremental_sync": "UNVERIFIED (tasks endpoint supports date_updated_gt filter per ClickUp docs; not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "Redirect field stores only the origin https://portal.loveleedaystudios.com; the localhost URL was not retained (redirect_uris_set: partial).",
+    "No scope picker means read-only cannot be enforced at the token level; enforce in our adapter.",
+    "Rate limits UNVERIFIED."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/clickup.json - app LOVELEEDAY registered, token endpoint probe 401 OAUTH_013 'Code not found' (client accepted)",
+    "../connectors/EXPANSION-B.json - ClickUp row (self-serve, REST, OAuth2; marked UNVERIFIED)",
+    "https://developer.clickup.com/docs/authentication"
+  ]
+}

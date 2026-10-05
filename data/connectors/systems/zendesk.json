@@ -1,0 +1,67 @@
+{
+  "system": "Zendesk",
+  "vendor": "Zendesk, Inc.",
+  "category": "support",
+  "api": {
+    "type": "REST",
+    "base_url": "https://{subdomain}.zendesk.com/api/v2",
+    "openapi_spec_url": "UNVERIFIED (not fetched)",
+    "docs_url": "https://developer.zendesk.com/api-reference/introduction/security-and-auth/"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "read"
+    ],
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "UNVERIFIED"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "Marketplace app listing requires review (EXPANSION-A); a per-account OAuth client needs none",
+    "customer_admin_must_do": "Zendesk admin authorizes the LOVELEEDAY OAuth client; each customer subdomain is entered at connect time.",
+    "cost_to_us": "$0 on a 14-day trial; permanent sponsored (d3v-) account only for Marketplace partners (status file)",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "14-day trial account loveleedaystudios.zendesk.com, no card (status file); Zendesk sandboxes need Enterprise plan (EXPANSION-A, third-party)"
+  },
+  "rate_limits": "UNVERIFIED (not fetched)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "UNVERIFIED (event list not fetched)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "tickets",
+    "users",
+    "organizations",
+    "ticket comments",
+    "ticket fields",
+    "groups"
+  ],
+  "incremental_sync": "UNVERIFIED (incremental export endpoints with start_time cursor per Zendesk docs; not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "The OAuth client lives in a 14-day trial and vanishes on lapse; re-create or convert before 2026-10-19.",
+    "Global OAuth for multi-customer apps needs Zendesk approval: UNVERIFIED.",
+    "Rate limits UNVERIFIED."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/zendesk.json - confidential client LOVELEEDAY, probe 400 invalid_grant",
+    "../connectors/EXPANSION-A.json and EXPANSION-B.json - Zendesk rows",
+    "https://developer.zendesk.com/api-reference/introduction/security-and-auth/"
+  ]
+}

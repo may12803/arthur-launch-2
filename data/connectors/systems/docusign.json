@@ -1,0 +1,71 @@
+{
+  "system": "DocuSign eSignature",
+  "vendor": "DocuSign, Inc.",
+  "category": "esignature",
+  "api": {
+    "type": "REST",
+    "base_url": "https://account-d.docusign.com (auth, demo); eSignature API base is per-account via /oauth/userinfo",
+    "openapi_spec_url": "UNVERIFIED (not fetched)",
+    "docs_url": "https://developers.docusign.com/platform/auth/authcode/"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "signature",
+      "extended"
+    ],
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "Auth code grant returns refresh token when scope 'extended' is requested"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "Go-Live review required to promote the integration key from demo to production (status file: not submitted; app is Development, Ready to Submit)",
+    "customer_admin_must_do": "Account admin or user consents to the integration key in the DocuSign consent screen; org admins may need to pre-authorize for JWT grant.",
+    "cost_to_us": "$0 developer account; production use needs a production DocuSign plan per EXPANSION-A (UNVERIFIED on vendor page)",
+    "time_to_approval": "UNVERIFIED (Go-Live review time not stated in sources)"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Free demo developer account at developers.docusign.com (self-serve); demo account id on file"
+  },
+  "rate_limits": "UNVERIFIED (not fetched)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "envelope-sent",
+      "envelope-delivered",
+      "envelope-completed",
+      "envelope-declined",
+      "envelope-voided"
+    ]
+  },
+  "data_objects_to_pull": [
+    "envelopes",
+    "envelope recipients",
+    "envelope documents",
+    "templates",
+    "folders",
+    "account users"
+  ],
+  "incremental_sync": "UNVERIFIED (Envelopes: listStatusChanges with from_date; DocuSign Connect webhooks for deltas)",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "Production requires Go-Live review and integration key promotion.",
+    "Read-only scope 'signature' also permits sending; read-only enforcement is in our adapter."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/docusign.json - Private custom integration, Development, Ready to Submit; probe 400 invalid_grant",
+    "../connectors/EXPANSION-A.json and EXPANSION-B.json - DocuSign rows (self-serve sandbox; go-live review)",
+    "https://developers.docusign.com/platform/auth/authcode/"
+  ]
+}

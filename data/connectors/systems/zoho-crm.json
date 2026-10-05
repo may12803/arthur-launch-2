@@ -1,0 +1,70 @@
+{
+  "system": "Zoho CRM",
+  "vendor": "Zoho Corporation",
+  "category": "crm",
+  "api": {
+    "type": "REST",
+    "base_url": "https://www.zohoapis.com/crm/v8 (US data center; EU/IN/AU use different domains)",
+    "openapi_spec_url": "UNVERIFIED (not fetched)",
+    "docs_url": "https://www.zoho.com/crm/developer/docs/api/v8/oauth-overview.html"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "ZohoCRM.modules.READ",
+      "ZohoCRM.settings.READ",
+      "ZohoCRM.users.READ",
+      "ZohoCRM.org.READ"
+    ],
+    "token_lifetime": "UNVERIFIED (not fetched)",
+    "refresh": "POST https://accounts.zoho.com/oauth/v2/token with refresh_token (UNVERIFIED lifetime)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None stated for a registered server-based client",
+    "customer_admin_must_do": "Zoho CRM user authorizes the scopes requested at connect time (scopes are chosen per authorization request, not on the client).",
+    "cost_to_us": "$0 for the API Console client; API access may require a paid or trial CRM plan (EXPANSION-A, UNVERIFIED on vendor page)",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": {
+    "available": false,
+    "how_to_get": "UNVERIFIED (no separate sandbox confirmed; Zoho CRM sandbox is a paid-plan feature per general knowledge, not fetched)"
+  },
+  "rate_limits": "UNVERIFIED (not fetched)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "UNVERIFIED (notification channels; not fetched)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "Leads",
+    "Contacts",
+    "Accounts",
+    "Deals",
+    "Products",
+    "Tasks",
+    "Users"
+  ],
+  "incremental_sync": "UNVERIFIED (Modified_Time filtering and COQL; not fetched)",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "US data center only (accounts.zoho.com); EU/IN/AU customers need per-data-center clients (status file).",
+    "Rate limits UNVERIFIED."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/zoho.json - server-based client LOVELEEDAY, probe returned invalid_code (client accepted)",
+    "../connectors/EXPANSION-A.json and EXPANSION-B.json - Zoho CRM rows",
+    "https://www.zoho.com/crm/developer/docs/api/v8/register-client.html"
+  ]
+}
