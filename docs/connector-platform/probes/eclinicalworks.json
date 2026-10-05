@@ -1,0 +1,25 @@
+{
+  "key": "eclinicalworks",
+  "at": "2026-10-05T19:25:14.059Z",
+  "status": "CONFIGURED",
+  "names": [
+    "ADDR_CITY",
+    "ADDR_STATE",
+    "ADDR_STREET",
+    "ADDR_ZIP",
+    "ECLINICALWORKS_LOGIN_EMAIL",
+    "ECLINICALWORKS_LOGIN_PASSWORD",
+    "ECLINICALWORKS_SANDBOX_CLIENT_ID",
+    "ECLINICALWORKS_SANDBOX_CLIENT_SECRET",
+    "ECW_OTP",
+    "SEC_ANSWER_1",
+    "SEC_ANSWER_2",
+    "SEC_ANSWER_3",
+    "SEC_QUESTIONS"
+  ],
+  "steps": [
+    "real secret: HTTP 401 error=invalid_client",
+    "wrong-secret control: HTTP 401 error=invalid_client",
+    "no grant-level error: client validity unproven"
+  ]
+}

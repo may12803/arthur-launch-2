@@ -1175,6 +1175,62 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     ]
   },
   {
+    "key": "eclinicalworks",
+    "name": "eClinicalWorks",
+    "vendor": "eClinicalWorks, LLC",
+    "category": "healthcare",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "Open developer portal registers a Standalone app with a staging FHIR server (status file)"
+    },
+    "objects": [
+      "Patient",
+      "Encounter",
+      "Observation",
+      "Condition",
+      "MedicationRequest"
+    ],
+    "incremental_sync": "FHIR _lastUpdated search parameter and Bulk Data export; support per resource UNVERIFIED this run",
+    "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "patient/*.read",
+      "user/*.read"
+    ],
+    "build_status": "planned",
+    "logo": "",
+    "source_file": "data/connectors/systems/eclinicalworks.json",
+    "api_base_url": "https://staging-fhir.ecwcloud.com/fhir/r4/{practice code} (sandbox; production host per practice UNVERIFIED)",
+    "token_lifetime": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "refresh": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "build_effort_days": 15,
+    "blockers": [
+      "Healthcare data is PHI: HIPAA business associate terms and a security review precede any customer connection.",
+      "The authorize endpoint answered 401 for the registered and a bogus client id alike (status file), so the client is unproven.",
+      "The object list is the standard FHIR resource names, not a confirmed eClinicalWorks supported-resources list."
+    ],
+    "unverified": [
+      "api_base_url",
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
+      "time_to_approval",
+      "openapi_spec_url"
+    ]
+  },
+  {
     "key": "epicor-prophet-21",
     "name": "Epicor Prophet 21",
     "vendor": "Epicor",
@@ -1278,6 +1334,59 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "unverified": [
       "token_lifetime",
       "rate_limits"
+    ]
+  },
+  {
+    "key": "fleetio",
+    "name": "Fleetio",
+    "vendor": "Fleetio, Inc.",
+    "category": "fleet",
+    "auth_method": "api_key",
+    "auth_methods": [
+      "api_key"
+    ],
+    "access_gate": "unverified",
+    "recommended_path": "direct",
+    "partner_program": "Fleetio partner program for OAuth apps (status file)",
+    "sandbox": {
+      "available": false,
+      "how_to_get": "None; a 14-day product trial account is used and its key stops at trial end 2026-10-19 (status file)"
+    },
+    "objects": [
+      "vehicles",
+      "contacts",
+      "fuel_entries",
+      "service_entries",
+      "issues",
+      "work_orders"
+    ],
+    "incremental_sync": "Cursor pagination (status file: vehicles returned cursor JSON); per-object updated-since filters UNVERIFIED",
+    "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "None: Authorization Token plus Account-Token headers"
+    ],
+    "build_status": "planned",
+    "logo": "",
+    "source_file": "data/connectors/systems/fleetio.json",
+    "api_base_url": "https://secure.fleetio.com/api/v1",
+    "token_lifetime": "API keys do not expire until revoked (UNVERIFIED from a vendor page this run)",
+    "refresh": "Not applicable (static key)",
+    "build_effort_days": 4,
+    "blockers": [
+      "NO-DEV-PROGRAM: only a trial; the key dies at trial end and the trial account was created before the developer-accounts-only rule (Daniel decides keep or discard).",
+      "OAuth for multi-customer use needs the partner program."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "rate_limits",
+      "incremental_sync",
+      "time_to_approval",
+      "openapi_spec_url"
     ]
   },
   {
@@ -1820,6 +1929,66 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     ]
   },
   {
+    "key": "jobber",
+    "name": "Jobber",
+    "vendor": "Jobber Technologies Inc.",
+    "category": "project_management",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": false,
+      "how_to_get": "A developer test account exists in the Developer Center; the status file says OAuth against it was not exercised"
+    },
+    "objects": [
+      "clients",
+      "requests",
+      "quotes",
+      "jobs",
+      "invoices",
+      "users"
+    ],
+    "incremental_sync": "GraphQL connections with cursor pagination; filter-by-updatedAt support UNVERIFIED this run",
+    "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "read Clients",
+      "read Requests",
+      "read Quotes",
+      "read Jobs",
+      "read Invoices",
+      "read Users"
+    ],
+    "build_status": "planned",
+    "logo": "",
+    "source_file": "data/connectors/systems/jobber.json",
+    "api_base_url": "https://api.getjobber.com/api/graphql",
+    "token_lifetime": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "refresh": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "build_effort_days": 6,
+    "blockers": [
+      "Draft app: OAuth against a real Jobber account has not been exercised.",
+      "The authorize endpoint redirects to /login for a registered and a bogus client id alike (status file), so the client is unproven.",
+      "Every call needs the X-JOBBER-GRAPHQL-VERSION header; the current value is UNVERIFIED."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
+      "time_to_approval",
+      "openapi_spec_url"
+    ]
+  },
+  {
     "key": "laserfiche",
     "name": "Laserfiche",
     "vendor": "Laserfiche",
@@ -1921,6 +2090,60 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     ],
     "unverified": [
       "incremental_sync",
+      "openapi_spec_url"
+    ]
+  },
+  {
+    "key": "mews",
+    "name": "Mews",
+    "vendor": "Mews Systems B.V.",
+    "category": "property",
+    "auth_method": "api_key",
+    "auth_methods": [
+      "api_key"
+    ],
+    "access_gate": "unverified",
+    "recommended_path": "direct",
+    "partner_program": "Mews integration/partner program (application required, per status file)",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "Public demo ClientToken and AccessToken against https://api.mews-demo.com, shared and not for real data (status file)"
+    },
+    "objects": [
+      "reservations",
+      "customers",
+      "bills",
+      "payments",
+      "resources",
+      "services"
+    ],
+    "incremental_sync": "Most getAll operations take UpdatedUtc time intervals and cursor limits; exact per-object support UNVERIFIED this run",
+    "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "None: ClientToken plus a per-property AccessToken in the request body"
+    ],
+    "build_status": "planned",
+    "logo": "",
+    "source_file": "data/connectors/systems/mews.json",
+    "api_base_url": "https://api.mews.com/api/connector/v1 (demo: https://api.mews-demo.com)",
+    "token_lifetime": "UNVERIFIED (AccessToken lifetime not confirmed this run)",
+    "refresh": "Not applicable to ClientToken and AccessToken (no refresh flow documented in the status file)",
+    "build_effort_days": 8,
+    "blockers": [
+      "No self-serve production credentials: the ClientToken needs Mews certification.",
+      "The demo tokens are shared and public, so a data-flow proof against them says nothing about any customer property."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "rate_limits",
+      "incremental_sync",
+      "time_to_approval",
+      "cost_to_us",
       "openapi_spec_url"
     ]
   },
@@ -2160,6 +2383,59 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     ]
   },
   {
+    "key": "notion",
+    "name": "Notion",
+    "vendor": "Notion Labs, Inc.",
+    "category": "productivity",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": false,
+      "how_to_get": "No sandbox; a free Notion workspace is used for testing"
+    },
+    "objects": [
+      "pages",
+      "databases",
+      "blocks",
+      "users",
+      "comments"
+    ],
+    "incremental_sync": "POST /v1/search and database queries can filter and sort on last_edited_time; cursor pagination via next_cursor; page_size maximum UNVERIFIED this run",
+    "rate_limits": "Average of 3 requests per second per integration, with bursts allowed (Notion request-limits page); the exact figure is UNVERIFIED this run",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "Read content (capability, not an OAuth scope string)",
+      "Read user information including email addresses (capability)"
+    ],
+    "build_status": "planned",
+    "logo": "",
+    "source_file": "data/connectors/systems/notion.json",
+    "api_base_url": "https://api.notion.com/v1",
+    "token_lifetime": "UNVERIFIED (access token lifetime and refresh support not confirmed this run)",
+    "refresh": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "build_effort_days": 5,
+    "blockers": [
+      "Access is limited to the pages and databases the customer explicitly shares with the integration, so coverage is whatever the customer picked.",
+      "The Basic auth token exchange cannot tell a wrong secret from a bogus code in the probe (status file): client validity is unproven until a real authorization runs."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
+      "openapi_spec_url"
+    ]
+  },
+  {
     "key": "oracle-fusion-cloud-erp",
     "name": "Oracle Fusion Cloud ERP",
     "vendor": "Oracle",
@@ -2211,6 +2487,58 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "unverified": [
       "token_lifetime",
       "rate_limits",
+      "scopes",
+      "openapi_spec_url"
+    ]
+  },
+  {
+    "key": "pandadoc",
+    "name": "PandaDoc",
+    "vendor": "PandaDoc Inc.",
+    "category": "esignature",
+    "auth_method": "api_key",
+    "auth_methods": [
+      "api_key"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "Free sandbox at developers.pandadoc.com gives a sandbox API key limited to 10 requests per minute (status file); GET /templates returned 200"
+    },
+    "objects": [
+      "documents",
+      "templates",
+      "contacts",
+      "members"
+    ],
+    "incremental_sync": "GET /documents supports modified_from and modified_to; UNVERIFIED this run",
+    "rate_limits": "Sandbox: 10 requests per minute (status file); production limits UNVERIFIED",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "None: API-Key in the Authorization header (sandbox key); OAuth scopes UNVERIFIED"
+    ],
+    "build_status": "planned",
+    "logo": "",
+    "source_file": "data/connectors/systems/pandadoc.json",
+    "api_base_url": "https://api.pandadoc.com/public/v1",
+    "token_lifetime": "API keys do not expire until revoked (UNVERIFIED from a vendor page this run)",
+    "refresh": "Not applicable (static key); OAuth refresh UNVERIFIED",
+    "build_effort_days": 4,
+    "blockers": [
+      "OAuth custom applications need the paid API Developer plan, so multi-customer OAuth is not available to us today (status file).",
+      "Sandbox documents carry a developer prefix and are not representative of production content."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
       "scopes",
       "openapi_spec_url"
     ]
@@ -2665,6 +2993,58 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "unverified": []
   },
   {
+    "key": "shippo",
+    "name": "Shippo",
+    "vendor": "Shippo, Inc.",
+    "category": "commerce",
+    "auth_method": "api_key",
+    "auth_methods": [
+      "api_key"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": true,
+      "how_to_get": "Test token (shippo_test_ prefix) from a free account; GET /addresses returned 200 and a bogus token 401 (status file)"
+    },
+    "objects": [
+      "addresses",
+      "shipments",
+      "transactions",
+      "rates",
+      "tracks",
+      "orders"
+    ],
+    "incremental_sync": "List endpoints take page and results parameters; a server-side modified-since filter is UNVERIFIED this run",
+    "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "None: ShippoToken in the Authorization header"
+    ],
+    "build_status": "planned",
+    "logo": "",
+    "source_file": "data/connectors/systems/shippo.json",
+    "api_base_url": "https://api.goshippo.com",
+    "token_lifetime": "Tokens do not expire until rotated (UNVERIFIED from a vendor page this run)",
+    "refresh": "Not applicable (static API token)",
+    "build_effort_days": 3,
+    "blockers": [
+      "A live token is requested through Shippo API experts (status file); only test-mode data is proven.",
+      "Page size limit and modified-since filtering are UNVERIFIED."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "rate_limits",
+      "incremental_sync",
+      "openapi_spec_url"
+    ]
+  },
+  {
     "key": "shopify",
     "name": "Shopify",
     "vendor": "Shopify Inc.",
@@ -2949,6 +3329,61 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     ]
   },
   {
+    "key": "trello",
+    "name": "Trello",
+    "vendor": "Atlassian Pty Ltd",
+    "category": "project_management",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": false,
+      "how_to_get": "No sandbox; the LOVELEEDAY board in the Trello account is used for testing"
+    },
+    "objects": [
+      "boards",
+      "lists",
+      "cards",
+      "members",
+      "organizations",
+      "actions"
+    ],
+    "incremental_sync": "GET /boards/{id}/actions supports since and before; card and board dateLastActivity gives a cursor; UNVERIFIED which is cheaper",
+    "rate_limits": "300 requests per 10 seconds per API key and 100 requests per 10 seconds per token (Trello rate-limit page); not re-fetched this run",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "read:board",
+      "read:organization",
+      "read:member"
+    ],
+    "build_status": "planned",
+    "logo": "",
+    "source_file": "data/connectors/systems/trello.json",
+    "api_base_url": "https://api.trello.com/1",
+    "token_lifetime": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "refresh": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "build_effort_days": 4,
+    "blockers": [
+      "The status file registered an OAuth 2.0 client in the Atlassian Apps administration; the Trello token endpoint and grant for it are UNVERIFIED.",
+      "The probe is not discriminating: the Atlassian token endpoint answers real and wrong secrets identically (status file)."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "incremental_sync",
+      "cost_to_us",
+      "openapi_spec_url"
+    ]
+  },
+  {
     "key": "tyler-munis",
     "name": "Tyler Munis",
     "vendor": "Tyler Technologies",
@@ -3116,6 +3551,60 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "scopes",
       "sandbox",
       "time_to_approval",
+      "cost_to_us",
+      "openapi_spec_url"
+    ]
+  },
+  {
+    "key": "wrike",
+    "name": "Wrike",
+    "vendor": "Wrike, Inc.",
+    "category": "project_management",
+    "auth_method": "oauth2_authcode",
+    "auth_methods": [
+      "oauth2_authcode"
+    ],
+    "access_gate": "self-serve",
+    "recommended_path": "direct",
+    "partner_program": "",
+    "sandbox": {
+      "available": false,
+      "how_to_get": "No sandbox and no developer program (status file dev_program NONE); a 14-day trial account is used"
+    },
+    "objects": [
+      "tasks",
+      "folders",
+      "projects",
+      "contacts",
+      "timelogs"
+    ],
+    "incremental_sync": "Task and folder queries accept updatedDate ranges; pagination via nextPageToken; UNVERIFIED this run",
+    "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "rate_limit": {
+      "rps": 2,
+      "burst": 2,
+      "source": "default_unverified"
+    },
+    "scopes": [
+      "wsReadOnly"
+    ],
+    "build_status": "planned",
+    "logo": "",
+    "source_file": "data/connectors/systems/wrike.json",
+    "api_base_url": "https://www.wrike.com/api/v4 (the data-center host is returned in the token response)",
+    "token_lifetime": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "refresh": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "build_effort_days": 4,
+    "blockers": [
+      "Trial expires 2026-10-19; the app may not survive a downgrade to the free plan (UNVERIFIED).",
+      "Only the portal redirect URL is registered; Wrike allows localhost only without a path (status file).",
+      "The probe answers invalid_grant for real and wrong secrets alike, so the secret is stored but unproven."
+    ],
+    "unverified": [
+      "token_lifetime",
+      "refresh",
+      "rate_limits",
+      "incremental_sync",
       "cost_to_us",
       "openapi_spec_url"
     ]

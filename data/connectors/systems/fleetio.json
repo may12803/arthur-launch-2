@@ -1,0 +1,65 @@
+{
+  "system": "Fleetio",
+  "vendor": "Fleetio, Inc.",
+  "category": "fleet",
+  "api": {
+    "type": "REST",
+    "base_url": "https://secure.fleetio.com/api/v1",
+    "openapi_spec_url": "UNVERIFIED (none confirmed)",
+    "docs_url": "https://developer.fleetio.com/docs/getting-started/introduction"
+  },
+  "auth": {
+    "method": "api_key",
+    "scopes_needed_read": [
+      "None: Authorization Token plus Account-Token headers"
+    ],
+    "token_lifetime": "API keys do not expire until revoked (UNVERIFIED from a vendor page this run)",
+    "refresh": "Not applicable (static key)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": false,
+    "partner_program_required": false,
+    "partner_program_name": "Fleetio partner program for OAuth apps (status file)",
+    "app_review_or_marketplace_listing": "A Fleetio OAuth/partner app needs the partner program (status file)",
+    "customer_admin_must_do": "The customer creates an API key and shares the account token from Fleetio Manage API Keys.",
+    "cost_to_us": "$0 only for the 14-day trial; no free developer program or sandbox (status file)",
+    "time_to_approval": "UNVERIFIED"
+  },
+  "sandbox": {
+    "available": false,
+    "how_to_get": "None; a 14-day product trial account is used and its key stops at trial end 2026-10-19 (status file)"
+  },
+  "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "UNVERIFIED (event names not confirmed this run)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "vehicles",
+    "contacts",
+    "fuel_entries",
+    "service_entries",
+    "issues",
+    "work_orders"
+  ],
+  "incremental_sync": "Cursor pagination (status file: vehicles returned cursor JSON); per-object updated-since filters UNVERIFIED",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 4,
+  "blockers": [
+    "NO-DEV-PROGRAM: only a trial; the key dies at trial end and the trial account was created before the developer-accounts-only rule (Daniel decides keep or discard).",
+    "OAuth for multi-customer use needs the partner program."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/fleetio.json",
+    "https://developer.fleetio.com/docs/getting-started/introduction"
+  ]
+}

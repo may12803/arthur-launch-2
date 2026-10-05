@@ -1,10 +1,14 @@
 {
   "key": "pandadoc",
-  "at": "2026-10-05T18:25:38.308Z",
-  "status": "NOT_CONFIGURED",
+  "at": "2026-10-05T19:25:16.507Z",
+  "status": "CLIENT_VERIFIED",
   "names": [
     "PANDADOC_LOGIN_EMAIL",
-    "PANDADOC_LOGIN_PASSWORD"
+    "PANDADOC_LOGIN_PASSWORD",
+    "PANDADOC_SANDBOX_API_KEY"
   ],
-  "steps": []
+  "steps": [
+    "templates read: HTTP 200 0 record(s)",
+    "bogus-credential control: HTTP 401"
+  ]
 }

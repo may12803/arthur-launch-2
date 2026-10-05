@@ -1,12 +1,12 @@
 {
-  "key": "jira",
-  "at": "2026-10-05T19:25:11.316Z",
+  "key": "trello",
+  "at": "2026-10-05T19:25:12.678Z",
   "status": "CONFIGURED",
   "names": [
-    "ATLASSIAN_CLIENT_ID",
-    "ATLASSIAN_CLIENT_SECRET",
-    "ATLASSIAN_LOGIN_EMAIL",
-    "ATLASSIAN_LOGIN_PASSWORD"
+    "TRELLO_CLIENT_ID",
+    "TRELLO_CLIENT_SECRET",
+    "TRELLO_LOGIN_EMAIL",
+    "TRELLO_LOGIN_PASSWORD"
   ],
   "steps": [
     "real secret: HTTP 403 error=unauthorized_client",

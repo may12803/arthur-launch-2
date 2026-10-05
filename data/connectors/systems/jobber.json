@@ -1,0 +1,71 @@
+{
+  "system": "Jobber",
+  "vendor": "Jobber Technologies Inc.",
+  "category": "project_management",
+  "api": {
+    "type": "GraphQL",
+    "base_url": "https://api.getjobber.com/api/graphql",
+    "openapi_spec_url": "UNVERIFIED (none confirmed)",
+    "docs_url": "https://developer.getjobber.com/docs/"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "read Clients",
+      "read Requests",
+      "read Quotes",
+      "read Jobs",
+      "read Invoices",
+      "read Users"
+    ],
+    "token_lifetime": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "refresh": "UNVERIFIED (not confirmed from a vendor page this run)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "UNVERIFIED (status file: draft app, marketplace listing needs a logo and review and is not submitted)",
+    "customer_admin_must_do": "A Jobber account owner authorizes the LOVELEEDAY app.",
+    "cost_to_us": "$0 (free Developer Center account)",
+    "time_to_approval": "Immediate for a draft app; marketplace review time UNVERIFIED"
+  },
+  "sandbox": {
+    "available": false,
+    "how_to_get": "A developer test account exists in the Developer Center; the status file says OAuth against it was not exercised"
+  },
+  "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "UNVERIFIED (event names not confirmed this run)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "clients",
+    "requests",
+    "quotes",
+    "jobs",
+    "invoices",
+    "users"
+  ],
+  "incremental_sync": "GraphQL connections with cursor pagination; filter-by-updatedAt support UNVERIFIED this run",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 6,
+  "blockers": [
+    "Draft app: OAuth against a real Jobber account has not been exercised.",
+    "The authorize endpoint redirects to /login for a registered and a bogus client id alike (status file), so the client is unproven.",
+    "Every call needs the X-JOBBER-GRAPHQL-VERSION header; the current value is UNVERIFIED."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/jobber.json",
+    "https://developer.getjobber.com/docs/"
+  ]
+}

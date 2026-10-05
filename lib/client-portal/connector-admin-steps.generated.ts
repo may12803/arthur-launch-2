@@ -88,6 +88,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
   "admin": "Entra admin registers/consents our app (multi-tenant); then in F&O: System administration > Setup > Microsoft Entra applications > New, enter Client Id, Name, and a service-account User ID with least-privilege security roles, Save. Needs data entities marked IsPublic.",
   "wait": "Same day after customer admin action"
  },
+ "eclinicalworks": {
+  "admin": "A practice administrator enables the LOVELEEDAY app for the practice, and a user authorizes it; PHI handling and a BAA are required before any live data.",
+  "wait": "Sandbox immediate;"
+ },
  "epicor-prophet-21": {
   "admin": "",
   "wait": ""
@@ -95,6 +99,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
  "esri-arcgis": {
   "admin": "In ArcGIS Online/Enterprise: register an app (OAuth client id/secret) or create an API key with item access, and share the target feature layers with it (or provide a read-only service account). Customer-hosted Enterprise servers must be reachable from us.",
   "wait": "Immediate"
+ },
+ "fleetio": {
+  "admin": "The customer creates an API key and shares the account token from Fleetio Manage API Keys.",
+  "wait": ""
  },
  "freshdesk": {
   "admin": "Customer opens Profile settings in Freshdesk, copies their API key, and pastes it with their Freshdesk domain (https://<domain>.freshdesk.com) into LOVELEEDAY. No OAuth app exists.",
@@ -136,6 +144,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
   "admin": "Jira site admin or user consents to the LOVELEEDAY app and selects the Atlassian site; access equals that user's permissions.",
   "wait": "Immediate for a private app;"
  },
+ "jobber": {
+  "admin": "A Jobber account owner authorizes the LOVELEEDAY app.",
+  "wait": "Immediate for a draft app;"
+ },
  "laserfiche": {
   "admin": "Cloud admin creates a Service Principal user (Laserfiche doc: authenticates with a rotatable API key, no MFA), registers a service app in the Developer Console with that principal as service account, creates an access key, and grants the principal read rights on the target repository folders.",
   "wait": "Immediate once admin creates principal and key"
@@ -143,6 +155,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
  "mailchimp": {
   "admin": "Customer logs in at login.mailchimp.com authorize URL and approves; we call login.mailchimp.com/oauth2/metadata to obtain the dc (data center) for their API host. Alternative: customer generates an API key in Account > Extras > API keys and shares it.",
   "wait": "Immediate"
+ },
+ "mews": {
+  "admin": "The property creates an AccessToken for the integration in its Mews account.",
+  "wait": ""
  },
  "microsoft-365": {
   "admin": "Tenant Global Admin (or Privileged Role Admin) grants admin consent to our multi-tenant app via the admin-consent URL for the application permissions above; for SharePoint minimal access, admin grants Sites.Selected then grants our app per-site permission via POST /sites/{id}/permissions.",
@@ -160,9 +176,17 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
   "admin": "Admin (or user with Integration Application permission) goes to Setup > Integration > Manage Integrations > New, sets State Enabled, ticks Authorization Code Grant (https redirect URI) and/or Client Credentials (M2M), ticks REST Web Services scope, saves, and copies client ID and secret (shown only once).",
   "wait": "Same day if customer admin cooperates; no vendor approval"
  },
+ "notion": {
+  "admin": "A workspace member authorizes the LOVELEEDAY public integration and picks the pages and databases to share with it.",
+  "wait": "Immediate for an unlisted public integration"
+ },
  "oracle-fusion-cloud-erp": {
   "admin": "Create an integration user with a role that carries the needed Financials REST privileges (e.g. Accounts Receivable/Payables inquiry duties) and, for OAuth, register a confidential application in the Fusion IAM identity domain with grant types and scopes, then send us client ID/secret, pod URL.",
   "wait": "Days to weeks driven by customer IT/security; no vendor approval"
+ },
+ "pandadoc": {
+  "admin": "The customer generates an API key in Settings > API and Integrations, or authorizes OAuth once a paid developer plan exists.",
+  "wait": "Immediate for the sandbox"
  },
  "pipedrive": {
   "admin": "Pipedrive user with access installs the LOVELEEDAY app and accepts the scopes; admin may be needed for company-wide data.",
@@ -196,6 +220,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
   "admin": "Customer sends an SSH public key and nightly-export job pushes CSV to the drop host using our supplied host key fingerprint.",
   "wait": ""
  },
+ "shippo": {
+  "admin": "The customer creates an API token in Shippo Settings > API and pastes it in.",
+  "wait": "Immediate"
+ },
  "shopify": {
   "admin": "Option A (custom per-store app): store admin creates a custom app in Settings > Apps > Develop apps, selects read scopes, installs, and gives us the Admin API token. Option B (public/unlisted distribution): merchant clicks install link and approves scopes.",
   "wait": ""
@@ -216,6 +244,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
   "admin": "Restaurant admin grants API access to the specific integration partner in Toast Web (partner access is per restaurant). Customer then supplies restaurant GUID / external ID. Fallback with no partner status: customer enables Toast Data Export nightly SFTP to our host (Toast Web > Integrations / data export).",
   "wait": ""
  },
+ "trello": {
+  "admin": "A Trello member authorizes the LOVELEEDAY app and grants the read scopes.",
+  "wait": "Immediate"
+ },
  "tyler-munis": {
   "admin": "Customer (the municipality) must have an active Tyler license and engage Tyler professional services to provision API credentials for us..",
   "wait": ""
@@ -227,6 +259,10 @@ export const ADMIN_STEPS: Record<string, { admin: string; wait: string }> = {
  "workday": {
   "admin": "Per doc.workday.com search result: customer admin runs the 'Register API Client' task (Set Up: Tenant Setup - Security / Security Administration domains), supplying a unique client name and an x509 certificate public key plus the ISU user; creates an Integration System User and assigns it to a security group with view access to the needed domains and activates security policy changes.",
   "wait": ""
+ },
+ "wrike": {
+  "admin": "A Wrike user authorizes the LOVELEEDAY app; access follows that user's account.",
+  "wait": "Immediate"
  },
  "xero": {
   "admin": "User with Standard or Advisor role clicks Connect and authorizes the organisation(s) in Xero consent screen; connection list via /connections.",

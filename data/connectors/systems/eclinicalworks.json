@@ -1,0 +1,64 @@
+{
+  "system": "eClinicalWorks",
+  "vendor": "eClinicalWorks, LLC",
+  "category": "healthcare",
+  "api": {
+    "type": "REST (FHIR R4, SMART on FHIR)",
+    "base_url": "https://staging-fhir.ecwcloud.com/fhir/r4/{practice code} (sandbox; production host per practice UNVERIFIED)",
+    "openapi_spec_url": "UNVERIFIED (none confirmed)",
+    "docs_url": "https://fhir.eclinicalworks.com/ecwopendev"
+  },
+  "auth": {
+    "method": "oauth2_authcode",
+    "scopes_needed_read": [
+      "patient/*.read",
+      "user/*.read"
+    ],
+    "token_lifetime": "UNVERIFIED (not confirmed from a vendor page this run)",
+    "refresh": "UNVERIFIED (not confirmed from a vendor page this run)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "Production Configuration tab requires eClinicalWorks review before any live practice (status file); not submitted",
+    "customer_admin_must_do": "A practice administrator enables the LOVELEEDAY app for the practice, and a user authorizes it; PHI handling and a BAA are required before any live data (UNVERIFIED which contracts eClinicalWorks asks for).",
+    "cost_to_us": "$0 for the sandbox",
+    "time_to_approval": "Sandbox immediate; production review time UNVERIFIED"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Open developer portal registers a Standalone app with a staging FHIR server (status file)"
+  },
+  "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+  "webhooks": {
+    "available": false,
+    "events": []
+  },
+  "data_objects_to_pull": [
+    "Patient",
+    "Encounter",
+    "Observation",
+    "Condition",
+    "MedicationRequest"
+  ],
+  "incremental_sync": "FHIR _lastUpdated search parameter and Bulk Data export; support per resource UNVERIFIED this run",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 15,
+  "blockers": [
+    "Healthcare data is PHI: HIPAA business associate terms and a security review precede any customer connection.",
+    "The authorize endpoint answered 401 for the registered and a bogus client id alike (status file), so the client is unproven.",
+    "The object list is the standard FHIR resource names, not a confirmed eClinicalWorks supported-resources list."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/eclinicalworks.json",
+    "https://staging-fhir.ecwcloud.com/fhir/r4/FFBJCD/.well-known/smart-configuration (returned 200 with a token_endpoint supporting client_secret_basic and client_secret_post)"
+  ]
+}

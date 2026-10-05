@@ -1,0 +1,14 @@
+{
+  "key": "notion",
+  "at": "2026-10-05T19:25:12.069Z",
+  "status": "CONFIGURED",
+  "names": [
+    "NOTION_CLIENT_ID",
+    "NOTION_CLIENT_SECRET"
+  ],
+  "steps": [
+    "real secret: HTTP 403 error=test_env_error",
+    "wrong-secret control: HTTP 401 error=invalid_client",
+    "no grant-level error: client validity unproven"
+  ]
+}

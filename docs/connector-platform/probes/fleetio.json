@@ -1,0 +1,20 @@
+{
+  "key": "fleetio",
+  "at": "2026-10-05T19:25:16.039Z",
+  "status": "DATA_FLOWED_SANDBOX",
+  "names": [
+    "FLEETIO_ACCOUNT_TOKEN",
+    "FLEETIO_API_KEY",
+    "FLEETIO_LOGIN_EMAIL",
+    "FLEETIO_LOGIN_PASSWORD"
+  ],
+  "steps": [
+    "vehicles read: HTTP 200 6 record(s)",
+    "bogus-credential control: HTTP 401"
+  ],
+  "evidence": {
+    "object": "vehicles",
+    "record_count": 6,
+    "via": "vendor REST API with the vendor test/demo credential (no adapter)"
+  }
+}

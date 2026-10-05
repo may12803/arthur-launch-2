@@ -1,0 +1,65 @@
+{
+  "system": "Shippo",
+  "vendor": "Shippo, Inc.",
+  "category": "commerce",
+  "api": {
+    "type": "REST",
+    "base_url": "https://api.goshippo.com",
+    "openapi_spec_url": "UNVERIFIED (none confirmed)",
+    "docs_url": "https://docs.goshippo.com/"
+  },
+  "auth": {
+    "method": "api_key",
+    "scopes_needed_read": [
+      "None: ShippoToken in the Authorization header"
+    ],
+    "token_lifetime": "Tokens do not expire until rotated (UNVERIFIED from a vendor page this run)",
+    "refresh": "Not applicable (static API token)"
+  },
+  "access_requirements": {
+    "self_serve_dev_account": true,
+    "partner_program_required": false,
+    "partner_program_name": "",
+    "app_review_or_marketplace_listing": "None for a customer-pasted token; Shippo has no developer program (status file)",
+    "customer_admin_must_do": "The customer creates an API token in Shippo Settings > API and pastes it in.",
+    "cost_to_us": "$0 (free Shippo account; status file flags the account for Daniel to keep or discard)",
+    "time_to_approval": "Immediate"
+  },
+  "sandbox": {
+    "available": true,
+    "how_to_get": "Test token (shippo_test_ prefix) from a free account; GET /addresses returned 200 and a bogus token 401 (status file)"
+  },
+  "rate_limits": "UNVERIFIED (not confirmed from a vendor page this run)",
+  "webhooks": {
+    "available": true,
+    "events": [
+      "track_updated, transaction_created, transaction_updated, batch_created, batch_purchased (UNVERIFIED this run)"
+    ]
+  },
+  "data_objects_to_pull": [
+    "addresses",
+    "shipments",
+    "transactions",
+    "rates",
+    "tracks",
+    "orders"
+  ],
+  "incremental_sync": "List endpoints take page and results parameters; a server-side modified-since filter is UNVERIFIED this run",
+  "unified_api_coverage": {
+    "merge_dev": "UNVERIFIED",
+    "codat": "UNVERIFIED",
+    "apideck": "UNVERIFIED",
+    "nango": "UNVERIFIED",
+    "airbyte_source": "UNVERIFIED"
+  },
+  "recommended_path": "direct",
+  "build_effort_days": 3,
+  "blockers": [
+    "A live token is requested through Shippo API experts (status file); only test-mode data is proven.",
+    "Page size limit and modified-since filtering are UNVERIFIED."
+  ],
+  "sources": [
+    "~/arthur/briefs/loveleeday-full-review-2026-10-05/connectors/status/shippo.json",
+    "https://docs.goshippo.com/"
+  ]
+}

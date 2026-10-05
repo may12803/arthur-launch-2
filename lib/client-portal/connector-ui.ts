@@ -119,6 +119,7 @@ export const CATEGORY_LABEL: Record<string, string> = {
   marketing: "Email marketing", property: "Property management", construction: "Construction", hr_payroll: "Payroll and HR",
   public_sector: "Public sector", nonprofit: "Donor management", legal: "Legal practice", warehouse: "Data warehouse",
   files: "Files", ingest: "File upload", productivity: "Email and documents",
+  healthcare: "Healthcare records", fleet: "Fleet management",
   support: "Customer support", project_management: "Project management", esignature: "E-signature",
 };
 

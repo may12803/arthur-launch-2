@@ -18,6 +18,7 @@ export function loadEnv(file) {
 // The developer-access session writes vendor-named files (dropbox.env with DROPBOX_CLIENT_ID, ...). Map them onto the
 // standard names the portal reads. Token URLs are the vendors' documented endpoints; a wrong one fails safe (no
 // invalid_grant, so the rung stays CONFIGURED). creds_from turns vault names into adapter credential fields.
+const oauth = (file, P, TOKEN_URL) => ({ file, oauth: { CLIENT_ID: `${P}_CLIENT_ID`, CLIENT_SECRET: `${P}_CLIENT_SECRET` }, ...(TOKEN_URL ? { TOKEN_URL } : {}) });
 export const VENDOR_FILES = {
   "dropbox-business": { file: "dropbox", oauth: { CLIENT_ID: "DROPBOX_CLIENT_ID", CLIENT_SECRET: "DROPBOX_CLIENT_SECRET" },
     TOKEN_URL: "https://api.dropboxapi.com/oauth2/token" },
@@ -34,6 +35,35 @@ export const VENDOR_FILES = {
     // every Snowflake account ships this read-only sample share; it proves the key-pair login and a real SQL API read
     creds_fixed: { warehouse: "COMPUTE_WH", updated_at_column: "O_ORDERDATE", primary_key: "O_ORDERKEY" },
     objects: ["SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS"] },
+  // Developer-access batch 2 (2026-10-05). The sandbox probe checks these with its own discriminating token/bearer probes
+  // (scripts/connector-sandbox-probe.mjs TOKEN_PROBES / BEARER_PROBES); the entries here map the vault names for the Fly stager.
+  "quickbooks-online": oauth("intuit", "INTUIT", "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"),
+  xero: oauth("xero", "XERO", "https://identity.xero.com/connect/token"),
+  salesforce: oauth("salesforce", "SALESFORCE", "https://login.salesforce.com/services/oauth2/token"), // per-org host: probe uses SALESFORCE_MY_DOMAIN
+  hubspot: oauth("hubspot", "HUBSPOT", "https://api.hubapi.com/oauth/v1/token"),
+  "google-workspace": oauth("google", "GOOGLE", "https://oauth2.googleapis.com/token"),
+  box: oauth("box", "BOX", "https://api.box.com/oauth2/token"),
+  "clio-manage": oauth("clio", "CLIO", "https://auth.api.clio.com/oauth/token"),
+  docusign: oauth("docusign", "DOCUSIGN", "https://account-d.docusign.com/oauth/token"), // demo (developer) host
+  zendesk: oauth("zendesk", "ZENDESK"), // token URL is per subdomain
+  intercom: oauth("intercom", "INTERCOM", "https://api.intercom.io/auth/eagle/token"),
+  "help-scout": oauth("helpscout", "HELPSCOUT", "https://api.helpscout.net/v2/oauth2/token"),
+  pipedrive: oauth("pipedrive", "PIPEDRIVE", "https://oauth.pipedrive.com/oauth/token"),
+  "zoho-crm": oauth("zoho", "ZOHO", "https://accounts.zoho.com/oauth/v2/token"),
+  typeform: oauth("typeform", "TYPEFORM", "https://api.typeform.com/oauth/token"),
+  calendly: oauth("calendly", "CALENDLY", "https://auth.calendly.com/oauth/token"),
+  monday: oauth("monday", "MONDAY", "https://auth.monday.com/oauth2/token"),
+  clickup: oauth("clickup", "CLICKUP", "https://api.clickup.com/api/v2/oauth/token"),
+  jira: oauth("atlassian", "ATLASSIAN", "https://auth.atlassian.com/oauth/token"),
+  airtable: oauth("airtable", "AIRTABLE", "https://airtable.com/oauth2/v1/token"),
+  notion: oauth("notion", "NOTION", "https://api.notion.com/v1/oauth/token"),
+  trello: oauth("trello", "TRELLO", "https://auth.atlassian.com/oauth/token"),
+  wrike: oauth("wrike", "WRIKE", "https://login.wrike.com/oauth2/token"),
+  jobber: oauth("jobber", "JOBBER", "https://api.getjobber.com/api/oauth/token"),
+  eclinicalworks: oauth("eclinicalworks", "ECLINICALWORKS_SANDBOX", "https://staging-oauthserver.ecwcloud.com/oauth/oauth2/token"),
+  // Static-credential vendors: no OAuth app, so nothing maps to CONNECTOR_OAUTH_*; listed so --all and the stager see the file.
+  square: { file: "square" }, gusto: { file: "gusto" }, shippo: { file: "shippo" }, fleetio: { file: "fleetio" }, pandadoc: { file: "pandadoc" }, mews: { file: "mews" },
+  stripe: { file: "stripe" }, // no connector OAuth client (status file: Stripe path is Connect onboarding or a customer-pasted restricted key)
 };
 
 

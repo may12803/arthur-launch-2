@@ -1,10 +1,15 @@
 {
   "key": "jobber",
-  "at": "2026-10-05T18:25:33.574Z",
-  "status": "NOT_CONFIGURED",
+  "at": "2026-10-05T19:25:13.665Z",
+  "status": "CLIENT_VERIFIED",
   "names": [
+    "JOBBER_CLIENT_ID",
+    "JOBBER_CLIENT_SECRET",
     "JOBBER_LOGIN_EMAIL",
     "JOBBER_LOGIN_PASSWORD"
   ],
-  "steps": []
+  "steps": [
+    "real secret: HTTP 401 error=invalid_grant",
+    "wrong-secret control: HTTP 401 error=invalid_client"
+  ]
 }
