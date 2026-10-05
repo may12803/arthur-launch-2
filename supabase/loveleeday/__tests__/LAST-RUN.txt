@@ -1,11 +1,13 @@
-scratch cluster: 14.24 (Homebrew) on port 60840 (temp dir removed on exit)
+scratch cluster: 14.24 (Homebrew) on port 51166 (temp dir removed on exit)
 PASS: stubs applied (roles, auth, vault, extensions)
 PASS: applied 20261005_00_base_schema.sql to an empty database
 PASS: applied 20261005_10_connector_platform.sql to an empty database
 PASS: applied 20261005_11_connector_definitions_seed.sql to an empty database
+PASS: applied 20261005_12_staff_permissions.sql to an empty database
 PASS: re-applied 20261005_00_base_schema.sql (idempotent)
 PASS: re-applied 20261005_10_connector_platform.sql (idempotent)
 PASS: re-applied 20261005_11_connector_definitions_seed.sql (idempotent)
+PASS: re-applied 20261005_12_staff_permissions.sql (idempotent)
 PASS: seed: 48 connector definitions loaded
 PASS: seed: no definition claims build_status live
 PASS: seed: build_status live is rejected by the table (raised: new row for relation "connector_definitions" violates check constraint "connector_definiti)
@@ -248,9 +250,66 @@ PASS: engine proposes a task into the tenant workstream (needs_you)
 PASS: a duplicate open title reuses the task
 PASS: the proposed task lands in tenant A only
 PASS: an unknown workstream raises (raised: unknown workstream)
+PASS: owner sets up documents and an external share
+PASS: staff (live grant) can request a connection
+PASS: staff (live grant) can set a connection key
+PASS: staff (live grant) can disconnect
+PASS: staff (live grant) can upload a document
+PASS: staff (live grant) can delete a document
+PASS: staff cannot create an external share (raised: not allowed to share this document)
+PASS: staff cannot revoke an external share (raised: not allowed to revoke this link)
+PASS: staff cannot flip the sharing toggle (raised: only an owner or admin can change sharing)
+PASS: staff cannot invite (raised: new row violates row-level security policy for table "invites")
+PASS: staff cannot change a membership scope (raised: not allowed)
+PASS: staff cannot create an API key (raised: not allowed)
+PASS: staff cannot add a webhook (raised: not allowed)
+PASS: staff cannot change security settings (raised: not allowed)
+PASS: a member still cannot delete a document (raised: only an owner or admin can delete documents)
+PASS: an owner can still delete a document
+PASS: an owner can still create an external share
+PASS: an owner can still revoke a share
+PASS: expired grant: cannot set a key (raised: only an owner or admin can manage connections)
+PASS: expired grant: cannot disconnect (raised: only an owner or admin can manage connections)
+PASS: expired grant: cannot request (raised: only an owner or admin can manage connections)
+PASS: expired grant: cannot upload (raised: not allowed to add documents here)
+PASS: expired grant: cannot delete (raised: only an owner or admin can delete documents)
+PASS: expired grant: cannot download (raised: document not found)
+PASS: expired grant: cannot share (raised: not allowed to share this document)
+PASS: expired grant: sees no documents
+PASS: closed grant: cannot set a key (raised: only an owner or admin can manage connections)
+PASS: closed grant: cannot delete (raised: only an owner or admin can delete documents)
+PASS: closed grant: cannot upload (raised: not allowed to add documents here)
+PASS: closed grant: sees no documents
+PASS: seed is a no-op when no tenant has the slug
+PASS: seed: 4 workstreams, 12 tasks, 9 grades, 3 deliverables, 14 coverage areas, 2 contracts
+PASS: seed: entities are an org, 3 stores and a warehouse; 5 approvals across money, send and legal
+PASS: applying the seed twice more leaves identical row counts and ids
+PASS: seed leaves every other tenant byte-identical (twin Dabney tenant, shared fixtures)
+PASS: seed adds nothing to the other tenants (Dabney twin still has exactly its own rows)
+PASS: square is live because it has succeeded runs and ingested records
+PASS: shopify reads error with its failed run, never live
+PASS: mailchimp stays requested with no runs
+PASS: no Harbor connection is live without a succeeded run and ingested rows
+PASS: every evidence task carries source_system, source_ref, observed_at and proof
+PASS: every square source_ref cited by a task is a real ingested record
+PASS: done tasks carry an outcome and proof; no approval is left approved for the engine
+PASS: workstream review links point at published or draft deliverables of the same tenant
+PASS: a viewer cannot decide a task (raised: only owners, admins and members can decide)
+PASS: a member can decide a needs_you task
+PASS: a done task cannot be decided again (raised: this task is already done)
+PASS: an unknown task is not found (raised: task not found)
+PASS: the Harbor owner reads 4 workstreams, 12 tasks and 3 deliverables under RLS
+PASS: cleanup removes the QA documents and their shares
+PASS: cleanup keeps the real demo document
+PASS: cleanup removes the pending QA invites but not a real invite
+PASS: cleanup removes the QA toast and stripe connection rows but keeps the seeded connections
+PASS: cleanup touches no other tenant (including a qa-named document and an arthur+harborqa invite on the Dabney twin)
+PASS: a second cleanup run matches nothing and the seed survives it
 PASS: mutation caught: with tenant_connections_member_select = using (true) the RLS test reports -> FAIL: tenant A user cannot read tenant B tenant_connections
 PASS: policy restored, RLS test green again
 PASS: rollback removed every connector-platform table and function checked
-PASS: rollback kept base data (3 tenants) and dropped the tenant_connections additions
+PASS: rollback kept base data (6 tenants) and dropped the tenant_connections additions
 PASS: forward migration re-applies after rollback
-RESULT: 254 passed, 0 failed
+PASS: 12 rollback restored the previous document_delete (no staff branch)
+PASS: 12 forward migration re-applies after its rollback
+RESULT: 313 passed, 0 failed
