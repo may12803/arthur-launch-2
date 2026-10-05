@@ -48,6 +48,9 @@ const VENDOR_FILES = {
     TOKEN_URL: "https://login-sandbox.procore.com/oauth/token" },
   "blackbaud-raisers-edge-nxt": { file: "blackbaud", oauth: { CLIENT_ID: "BLACKBAUD_CLIENT_ID", CLIENT_SECRET: "BLACKBAUD_CLIENT_SECRET" },
     TOKEN_URL: "https://oauth2.sky.blackbaud.com/token" },
+  // Shopify's token endpoint is per shop (https://<shop>.myshopify.com/admin/oauth/access_token): until a development
+  // store exists there is nothing to test the client against, so this reads CONFIGURED, never verified.
+  shopify: { file: "shopify", oauth: { CLIENT_ID: "SHOPIFY_CLIENT_ID", CLIENT_SECRET: "SHOPIFY_CLIENT_SECRET" } },
   snowflake: { file: "snowflake", creds_from: { account: "SNOWFLAKE_ACCOUNT", user: "SNOWFLAKE_USER", "@private_key": "SNOWFLAKE_PRIVATE_KEY_PATH" },
     // every Snowflake account ships this read-only sample share; it proves the key-pair login and a real SQL API read
     creds_fixed: { warehouse: "COMPUTE_WH", updated_at_column: "O_ORDERDATE", primary_key: "O_ORDERKEY" },

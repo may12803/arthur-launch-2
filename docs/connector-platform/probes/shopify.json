@@ -1,12 +1,15 @@
 {
   "key": "shopify",
-  "at": "2026-10-05T14:38:33.873Z",
-  "status": "NOT_CONFIGURED",
+  "at": "2026-10-05T14:53:54.626Z",
+  "status": "CONFIGURED",
   "names": [
     "ADDR_CITY",
     "ADDR_STATE",
     "ADDR_STREET",
     "ADDR_ZIP",
+    "SHOPIFY_APP_ID",
+    "SHOPIFY_CLIENT_ID",
+    "SHOPIFY_CLIENT_SECRET",
     "SHOPIFY_LOGIN_EMAIL",
     "SHOPIFY_LOGIN_PASSWORD",
     "SHOPIFY_PARTNER_ORG_ID"
