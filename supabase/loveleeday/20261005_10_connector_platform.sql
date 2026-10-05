@@ -759,6 +759,23 @@ begin
   return private.refresh_connection_health(p_connection);
 end $$;
 
+-- Runner reads: the cursor a resumed run starts from, and recent runs for the runner's log line (the DB health above is the authority).
+create or replace function public.sync_cursor_get(p_secret text, p_connection uuid, p_object text) returns text
+language plpgsql stable security definer set search_path = '' as $$
+begin
+  if not private.server_ok_named(p_secret, 'connectors-server') then raise exception 'server only'; end if;
+  return (select cursor from public.sync_cursors where connection_id = p_connection and object = p_object);
+end $$;
+
+create or replace function public.sync_runs_recent(p_secret text, p_connection uuid, p_limit integer default 50) returns jsonb
+language plpgsql stable security definer set search_path = '' as $$
+begin
+  if not private.server_ok_named(p_secret, 'connectors-server') then raise exception 'server only'; end if;
+  return coalesce((select jsonb_agg(to_jsonb(x) order by x.started_at desc) from (
+    select object, status, started_at, finished_at, rows_read, rows_written from public.sync_runs
+    where connection_id = p_connection order by started_at desc limit least(greatest(coalesce(p_limit, 50), 1), 200)) x), '[]'::jsonb);
+end $$;
+
 create or replace function public.approval_propose(p_secret text, p_tenant uuid, p_gate text, p_title text, p_detail text, p_proposed jsonb, p_source_ref text default null, p_entity uuid default null)
 returns uuid language plpgsql security definer set search_path = '' as $$
 declare v_id uuid;
@@ -894,11 +911,11 @@ revoke all on function public.oauth_state_consume(text, text, uuid, uuid), publi
   public.connection_health_record(text, uuid), public.approval_propose(text, uuid, text, text, text, jsonb, text, uuid),
   public.api_key_verify(text, text), public.ingested_records_since(text, text, bigint, integer),
   public.workstream_task_propose(text, text, text, text, text, text, jsonb, text), public.approvals_approved(text, text, integer),
-  public.approval_claim(text, uuid), public.approval_record_proof(text, uuid, text) from public;
+  public.approval_claim(text, uuid), public.approval_record_proof(text, uuid, text), public.sync_cursor_get(text, uuid, text), public.sync_runs_recent(text, uuid, integer) from public;
 grant execute on function public.oauth_state_consume(text, text, uuid, uuid), public.connection_store_tokens(text, uuid, jsonb, timestamptz),
   public.connections_due(text), public.sync_run_start(text, uuid, text), public.sync_cursor_set(text, uuid, text, text),
   public.sync_run_finish(text, uuid, text, integer, integer, text, text), public.ingest_records(text, uuid, jsonb),
   public.connection_health_record(text, uuid), public.approval_propose(text, uuid, text, text, text, jsonb, text, uuid),
   public.api_key_verify(text, text), public.ingested_records_since(text, text, bigint, integer),
   public.workstream_task_propose(text, text, text, text, text, text, jsonb, text), public.approvals_approved(text, text, integer),
-  public.approval_claim(text, uuid), public.approval_record_proof(text, uuid, text) to anon, authenticated, service_role;
+  public.approval_claim(text, uuid), public.approval_record_proof(text, uuid, text), public.sync_cursor_get(text, uuid, text), public.sync_runs_recent(text, uuid, integer) to anon, authenticated, service_role;

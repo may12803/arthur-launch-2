@@ -21,6 +21,9 @@ select t.raises('a record without a source_ref is rejected', format($q$select pu
 select t.check('run counters accumulate (read 10, wrote 4)', (select rows_read from public.sync_runs where id = (select run from _ing)) = 10
   and (select rows_written from public.sync_runs where id = (select run from _ing)) = 4);
 select t.check('finishing the run reports a computed health status', public.sync_run_finish(t.sec(), (select run from _ing), 'succeeded', null, null, null, 'cur-1') in ('healthy', 'stale'));
+select t.check('sync_cursor_get reads the advanced cursor', public.sync_cursor_get(t.sec(), 'c1000000-0000-0000-0000-0000000000a1', 'orders') = 'cur-1');
+select t.check('sync_runs_recent returns the finished run with its counts',
+  (public.sync_runs_recent(t.sec(), 'c1000000-0000-0000-0000-0000000000a1', 5) -> 0 ->> 'rows_written')::int = 4);
 select t.check('cursor advanced on success', (select cursor from public.sync_cursors where connection_id = 'c1000000-0000-0000-0000-0000000000a1' and object = 'orders') = 'cur-1');
 select t.raises('a finished run rejects further ingest', format($q$select public.ingest_records(t.sec(), %L, '[{"source_ref":"o9","payload":{"a":1}}]')$q$, (select run from _ing)), '%not open%');
 create temp table _ing2 as select public.sync_run_start(t.sec(), 'c1000000-0000-0000-0000-0000000000a1', 'orders') as run;

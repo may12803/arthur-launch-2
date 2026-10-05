@@ -6,6 +6,8 @@ from (values
   ($$public.connection_secret(t.badsec(), 'c1000000-0000-0000-0000-00000000000a')$$),
   ($$public.connections_due(t.badsec())$$),
   ($$public.sync_run_start(t.badsec(), 'c1000000-0000-0000-0000-00000000000a', 'charges')$$),
+  ($$public.sync_cursor_get(t.badsec(), 'c1000000-0000-0000-0000-00000000000a', 'charges')$$),
+  ($$public.sync_runs_recent(t.badsec(), 'c1000000-0000-0000-0000-00000000000a', 5)$$),
   ($$public.sync_cursor_set(t.badsec(), 'c1000000-0000-0000-0000-00000000000a', 'charges', 'x')$$),
   ($$public.sync_run_finish(t.badsec(), 'd1000000-0000-0000-0000-00000000000a', 'succeeded')$$),
   ($$public.ingest_records(t.badsec(), 'd1000000-0000-0000-0000-00000000000a', '[]')$$),
