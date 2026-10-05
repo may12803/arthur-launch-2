@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiContext, publicOrigin } from "@/lib/client-portal/api";
+import { getApiContext } from "@/lib/client-portal/api";
+import { oauthRedirectUri } from "@/lib/client-portal/oauth-redirect";
 import { CONNECTOR_DEFINITIONS } from "@/lib/connectors/definitions";
 import { codeChallengeS256, generateCodeVerifier, generateState } from "@/lib/connectors/auth/pkce";
 import { oauthEndpoints } from "@/lib/client-portal/connector-ui";
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ key
 
   const state = generateState();
   const verifier = generateCodeVerifier();
-  const redirectUri = `${publicOrigin(req)}/api/connectors/oauth/callback`;
+  const redirectUri = oauthRedirectUri();
   const { error } = await ctx.supabase.rpc("connector_oauth_begin", {
     p_tenant: ctx.tenantId,
     p_connector: key,

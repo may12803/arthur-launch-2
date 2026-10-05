@@ -57,6 +57,6 @@ export async function GET(req: NextRequest) {
   }
 
   const stored = await anon.rpc("connection_store_tokens", { p_secret: secret, p_connection: st.connection_id, p_tokens: tokens, p_rotated_at: tokens.rotated_at });
-  if (stored.error) return back(st.connector_key, `The sign-in worked but could not be stored: ${stored.error.message}`);
+  if (stored.error) return back(st.connector_key, "The sign-in worked but the connection could not be saved. Start again from the connector page.");
   return back(st.connector_key);
 }

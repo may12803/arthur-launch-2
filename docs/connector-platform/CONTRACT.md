@@ -70,7 +70,7 @@ Every theme branch builds against this file. Change it only on feat/connector-pl
   injectable `store` (Supabase RPC store in prod, in-memory in tests).
 - `lib/connectors/adapters/<key>.ts`: `{ key, objects, validate(creds), pull(object, cursor, creds, fetch) -> {records, nextCursor, hasMore} }`.
 - `lib/connectors/upload/{parse,map}.ts`: CSV/XLSX parse with formula-injection guard and column mapping.
-- Routes (theme C): `app/api/client/connectors/[key]/oauth/start`, `app/api/connectors/oauth/callback`,
+- Routes (theme C): `app/api/client/connectors/[key]/oauth/start`, `app/api/client/connectors/oauth/callback` (the one registered redirect URI; see lib/client-portal/oauth-redirect.ts),
   `app/api/client/uploads`, `app/api/client/approvals`, `app/api/client/audit/export`, `app/api/client/entities`,
   `app/api/client/developer/{keys,webhooks}`, `app/api/client/security`, `app/api/cron/sync` (server secret header).
 - Pages (theme C) under `app/client/(portal)/`: connections (catalog), connections/[key] (connect + detail/health),

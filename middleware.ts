@@ -44,11 +44,10 @@ const PUBLIC_PREFIXES = [
   // this area's own session + MFA gate instead.
   "/client",
   "/api/client",
-  // Public trust center, connector logos, and the connector routes that authenticate themselves: the OAuth callback
-  // (state row bound to a tenant + user, consumed once) and the sync cron (constant-time x-connectors-secret header).
+  // Public trust center, connector logos, and the sync cron, which authenticates itself (constant-time
+  // x-connectors-secret header). The OAuth callback lives under /api/client and resolves the signed-in session itself.
   "/trust",
   "/connectors/logos/",
-  "/api/connectors/oauth/",
   "/api/cron/sync",
   // Outside-sharing recipients have no account: the share page and its API
   // are gated by the link token + an emailed one-time code instead.
@@ -191,7 +190,7 @@ async function checkMfaRedirect(req: NextRequest, res: NextResponse): Promise<st
 // portal.loveleedaystudios.com is the client-facing address. It serves only the
 // client portal and outside-share pages; the admin app never answers on it.
 const PORTAL_HOST = "portal.loveleedaystudios.com";
-const PORTAL_ALLOWED = ["/client", "/api/client", "/trust", "/connectors/logos/", "/api/connectors/oauth/", "/share/", "/api/share/", "/brand/", "/_next/", "/favicon.ico"];
+const PORTAL_ALLOWED = ["/client", "/api/client", "/trust", "/connectors/logos/", "/share/", "/api/share/", "/brand/", "/_next/", "/favicon.ico"];
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
