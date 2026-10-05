@@ -1,4 +1,6 @@
 import { payloadSha256 } from '../hash.ts';
+import { needsRefresh, refreshTokens } from '../auth/oauth2.ts';
+import type { RefreshInput, TokenSet } from '../auth/oauth2.ts';
 import type { Adapter, ConnectorDefinition, FetchLike } from '../types.ts';
 import { withBackoff } from './backoff.ts';
 import { computeHealth } from './health.ts';
@@ -18,6 +20,7 @@ export interface RunOptions {
   sleep?: (ms: number) => Promise<void>;
   random?: () => number;
   staleAfterMs?: number;
+  oauth?: Omit<RefreshInput, 'fetch' | 'store'> & { store: RefreshInput['store'] };
 }
 
 export interface ObjectOutcome {
@@ -52,6 +55,7 @@ export async function runConnection(conn: ConnectionRef, adapter: Adapter, store
   const limiter = createRateLimiter({ rps: rate.rps, burst: Math.max(1, rate.burst), now, sleep });
   const maxPages = opts.maxPagesPerObject ?? 10_000;
   const outcomes: ObjectOutcome[] = [];
+  let creds = conn.creds;
 
   for (const object of opts.objects ?? adapter.objects) {
     const { runId, cursor: startCursor } = await store.startRun(conn, object);
@@ -62,11 +66,22 @@ export async function runConnection(conn: ConnectionRef, adapter: Adapter, store
     let rowsWritten = 0;
     let attempts = 1;
     try {
+      if (opts.oauth && needsRefresh(creds as unknown as TokenSet, now(), 5 * 60_000)) {
+        const tokens = await refreshTokens({ ...opts.oauth, fetch: opts.fetch, now: now() });
+        creds = { ...creds, ...tokens } as Record<string, string>;
+      }
       for (;;) {
         const { value: page, attempts: a } = await withBackoff(
           async () => {
             await limiter.take();
-            return adapter.pull(object, cursor, conn.creds, opts.fetch);
+            try {
+              return await adapter.pull(object, cursor, creds, opts.fetch);
+            } catch (error) {
+              if (!opts.oauth || (error as { status?: number }).status !== 401) throw error;
+              const tokens = await refreshTokens({ ...opts.oauth, fetch: opts.fetch, now: now() });
+              creds = { ...creds, ...tokens } as Record<string, string>;
+              return adapter.pull(object, cursor, creds, opts.fetch);
+            }
           },
           { maxAttempts: opts.maxAttempts ?? 5, baseMs: opts.baseBackoffMs ?? 1000, capMs: opts.capBackoffMs ?? 60_000, sleep, random },
         );
@@ -96,7 +111,8 @@ export async function runConnection(conn: ConnectionRef, adapter: Adapter, store
       outcomes.push({ object, runId, status: 'succeeded', pages, rowsRead, rowsWritten, attempts, cursorAfter: persisted });
     } catch (e) {
       const status = (e as { status?: number }).status;
-      const error = (status ? `HTTP ${status}: ` : '') + (e instanceof Error ? e.message : 'unknown error');
+      const invalidGrant = e instanceof Error && /invalid_grant/.test(e.message);
+      const error = invalidGrant ? 'The vendor sign-in expired. Re-authorize this connection.' : (status ? `HTTP ${status}: ` : '') + (e instanceof Error ? e.message : 'unknown error');
       const att = (e as { attempts?: number }).attempts ?? attempts;
       await store.finishRun(runId, { status: pages > 0 ? 'partial' : 'failed', rowsRead, rowsWritten, error, cursorAfter: persisted, attempt: att });
       outcomes.push({ object, runId, status: 'failed', pages, rowsRead, rowsWritten, attempts: att, cursorAfter: persisted, error });

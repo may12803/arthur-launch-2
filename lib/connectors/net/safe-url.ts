@@ -1,5 +1,6 @@
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
+import { request as httpsRequest } from 'node:https';
 import type { FetchLike } from '../types.ts';
 
 /**
@@ -7,10 +8,8 @@ import type { FetchLike } from '../types.ts';
  * assertPublicHttpsUrl parses the URL, requires https and no userinfo, rejects IP literals and DNS answers that are not
  * public unicast addresses. safeFetch repeats the assertion before EVERY request and handles redirects manually.
  *
- * Known limit: the resolver answer checked here and the one the HTTP client later connects to are two separate lookups
- * (DNS rebinding window). Pinning the connection to the checked address needs a custom undici dispatcher at the
- * runtime layer; this guard stops static private targets, private DNS answers and redirects, not a hostile
- * authoritative nameserver that flips answers between the two lookups.
+ * The HTTPS connector checks DNS at connection time and passes the checked address to the socket lookup callback.
+ * TLS still uses the original hostname for SNI and certificate verification. Every redirect gets a new check.
  */
 
 export type Resolver = (hostname: string) => Promise<string[]>;
@@ -157,13 +156,46 @@ export async function publicHttpsUrlError(raw: string, opts: { resolve?: Resolve
 const MAX_REDIRECTS = 3;
 const SENSITIVE = /^(authorization|proxy-authorization|cookie|x-esri-authorization|x-shopify-access-token|bb-api-subscription-key)$/i;
 
+export type SafeConnector = (url: string, init: RequestInit, lookup: (host: string) => Promise<{ address: string; family: 4 | 6 }>) => Promise<Response>;
+
+const nativeConnector: SafeConnector = async (raw, init, checkedLookup) => {
+  const u = new URL(raw);
+  const address = await checkedLookup(u.hostname);
+  return new Promise<Response>((resolve, reject) => {
+    const req = httpsRequest(u, {
+      method: init.method ?? 'GET', headers: Object.fromEntries(new Headers(init.headers)),
+      lookup: (_host, _options, cb) => cb(null, address.address, address.family),
+      servername: u.hostname, rejectUnauthorized: true,
+    }, (res) => {
+      const chunks: Buffer[] = [];
+      res.on('data', (chunk: Buffer) => chunks.push(chunk));
+      res.on('end', () => resolve(new Response(Buffer.concat(chunks), { status: res.statusCode ?? 500, headers: res.headers as Record<string, string> })));
+      res.on('error', reject);
+    });
+    req.on('error', reject);
+    if (init.body) req.write(init.body as string);
+    req.end();
+  });
+};
+
+export interface SafeFetchOptions { resolve?: Resolver; connect?: SafeConnector }
+
 /** Asserts the target before every request, never lets the platform follow a redirect, and re-asserts each hop. */
-export async function safeFetch(fetch: FetchLike, url: string, init: RequestInit = {}, opts: { resolve?: Resolver } = {}): Promise<Response> {
+export async function safeFetch(fetch: FetchLike, url: string, init: RequestInit = {}, opts: SafeFetchOptions = {}): Promise<Response> {
   let target = url;
   let cur: RequestInit = { ...init, redirect: 'manual' };
   for (let hop = 0; ; hop++) {
     await assertPublicHttpsUrl(target, opts);
-    const res = await fetch(target, cur);
+    const checked = async (host: string) => {
+      const answers = await (opts.resolve ?? defaultResolver)(host);
+      if (!answers.length) throw new UnsafeUrlError('host did not resolve');
+      if (answers.some((a) => !isPublicAddress(a))) throw new UnsafeUrlError('host resolves to a non-public address');
+      return { address: answers[0], family: isIP(answers[0]) as 4 | 6 };
+    };
+    const res = await (opts.connect ?? (fetch === globalThis.fetch ? nativeConnector : async (u, i, lookup) => {
+      await lookup(new URL(u).hostname);
+      return fetch(u, i);
+    }))(target, cur, checked);
     if (res.status < 300 || res.status >= 400 || res.status === 304) return res;
     const loc = res.headers.get('location');
     if (!loc) return res;
@@ -180,6 +212,6 @@ export async function safeFetch(fetch: FetchLike, url: string, init: RequestInit
 }
 
 /** Wrap a FetchLike so every call goes through safeFetch. */
-export function guardedFetch(fetch: FetchLike, opts: { resolve?: Resolver } = {}): FetchLike {
+export function guardedFetch(fetch: FetchLike, opts: SafeFetchOptions = {}): FetchLike {
   return (url, init) => safeFetch(fetch, url, init, opts);
 }
