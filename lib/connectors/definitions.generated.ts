@@ -41,7 +41,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "api",
       "offline_access (api scope grants contract-based REST and SOAP per Acumatica doc)"
     ],
-    "build_status": "planned",
+    "build_status": "implemented",
     "logo": "/connectors/logos/acumatica.svg",
     "source_file": "data/connectors/systems/acumatica.json",
     "api_base_url": "https://{instance}/entity/{endpointName}/{version}/ e.g. /entity/Default/24.200.001 (path convention from general knowledge, UNVERIFIED on fetched page); token at https://{instance}/identity/connect/token",
@@ -569,7 +569,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "scopes": [
       "A Cityworks user/role with read access to the needed work orders, service requests, assets"
     ],
-    "build_status": "planned",
+    "build_status": "implemented",
     "logo": "",
     "source_file": "data/connectors/systems/cityworks.json",
     "api_base_url": "https://<customer-cityworks-host>/Cityworks/Services (per customer instance; documented at the instance's /apidocs)",
@@ -933,7 +933,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "scopes": [
       "https://{environmentUrl}/.default (resource = environment URL, no trailing slash)"
     ],
-    "build_status": "planned",
+    "build_status": "implemented",
     "logo": "",
     "source_file": "data/connectors/systems/dynamics-365-finance-operations.json",
     "api_base_url": "https://{environmentUrl}/data (service root); metadata at /data/$metadata and /Metadata/DataEntities",
@@ -986,7 +986,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "scopes": [
       "UNVERIFIED"
     ],
-    "build_status": "planned",
+    "build_status": "implemented",
     "logo": "/connectors/logos/epicorprophet21.png",
     "source_file": "data/connectors/systems/epicor-prophet-21.json",
     "api_base_url": "UNVERIFIED: per-customer P21 Middleware / API host (customer's own https://{host}/api path); not published on a public Epicor page found",
@@ -1251,7 +1251,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "source": "default_unverified"
     },
     "scopes": [],
-    "build_status": "planned",
+    "build_status": "implemented",
     "logo": "/connectors/logos/homebase.png",
     "source_file": "data/connectors/systems/homebase.json",
     "api_base_url": "https://app.joinhomebase.com/api/public",
@@ -1641,7 +1641,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "scopes": [
       "REST Web Services (rest_webservices)"
     ],
-    "build_status": "planned",
+    "build_status": "implemented",
     "logo": "/connectors/logos/netsuite.png",
     "source_file": "data/connectors/systems/netsuite.json",
     "api_base_url": "https://{accountId}.suitetalk.api.netsuite.com/services/rest (record/v1, query/v1/suiteql). Token URL https://{accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token (from Nango providers.yaml netsuite-client-credentials; base path itself UNVERIFIED on a fetched Oracle page, the Oracle overview page checked omitted base URL)",
@@ -1700,7 +1700,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "scopes": [
       "Fusion resource scope configured on the IAM confidential application (scope string per Oracle doc configure_oauth, exact value UNVERIFIED)"
     ],
-    "build_status": "planned",
+    "build_status": "implemented",
     "logo": "",
     "source_file": "data/connectors/systems/oracle-fusion-cloud-erp.json",
     "api_base_url": "https://{pod}.fa.{region}.oraclecloud.com/fscmRestApi/resources/11.13.18.05/ (e.g. /invoices, /receivablesInvoices)",
@@ -2050,7 +2050,7 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
     "scopes": [
       "Business One user license/authorizations on the SAP user (no scopes)"
     ],
-    "build_status": "planned",
+    "build_status": "implemented",
     "logo": "/connectors/logos/sapbusinessone.svg",
     "source_file": "data/connectors/systems/sap-business-one.json",
     "api_base_url": "https://{host}:50000/b1s/v1 (OData v3) and /b1s/v2 (OData v4); login POST /b1s/v1/Login",

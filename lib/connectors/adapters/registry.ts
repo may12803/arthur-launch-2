@@ -23,6 +23,7 @@ import {
   stripeAdapter,
   xeroAdapter,
 } from './rest-systems.ts';
+import { acumatica, cityworks, dynamics365FinanceOperations, epicorProphet21, homebase, netsuite, oracleFusionCloudErp, sapBusinessOne } from './planned-http.ts';
 import { sftpDrop } from './sftp-drop.ts';
 import { shopify } from './shopify.ts';
 import { snowflake } from './snowflake.ts';
@@ -32,10 +33,18 @@ import { square } from './square.ts';
  * Every adapter that exists in this branch, keyed by definition key. build_status 'implemented' is derived from
  * this map (scripts/gen-connector-definitions.mjs), never typed by hand. csv-excel-upload and sftp-drop here are
  * unwired defaults; production builds them with createUploadAdapter(source) / createSftpAdapter(lister).
- * Azure Synapse is TDS-only (no HTTP list endpoint), so it is deliberately absent.
+ * Azure Synapse needs a separately injected TDS driver; QAD has no verified REST pull endpoint. Neither is registered.
  */
 export const ADAPTERS: Record<string, Adapter> = {
   'amazon-s3': amazonS3,
+  acumatica,
+  cityworks,
+  'dynamics-365-finance-operations': dynamics365FinanceOperations,
+  'epicor-prophet-21': epicorProphet21,
+  homebase,
+  netsuite,
+  'oracle-fusion-cloud-erp': oracleFusionCloudErp,
+  'sap-business-one': sapBusinessOne,
   'blackbaud-raisers-edge-nxt': blackbaudRaisersEdgeNxt,
   box,
   brevo: brevoAdapter,
