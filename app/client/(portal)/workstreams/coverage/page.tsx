@@ -16,7 +16,14 @@ export default async function CoveragePage() {
   const { data, error } = await supabase.from("coverage_areas").select("grp, area, status, note, rank, sort").eq("tenant_id", ctx.tenantId).order("sort").returns<CoverageArea[]>();
   if (error) return <LoadError what="coverage" />;
   const areas = data ?? [];
-  if (!areas.length) return <EmptyState title="Coverage map coming" body="We're mapping every area your business runs on. It appears here with what we've reviewed and what we'd look at next." />;
+  if (!areas.length) return (
+    <div>
+      <p className="text-[12px] text-[var(--muted)]"><Link href="/client/workstreams">Workstreams</Link> / <b className="font-medium text-[var(--ink)]">Coverage</b></p>
+      <div className="mt-4"><Eyebrow>{ctx.tenantName} · Coverage</Eyebrow></div>
+      <PageTitle>Coverage</PageTitle>
+      <EmptyState title="Coverage map coming" body="We're mapping every area your business runs on. It appears here with what we've reviewed and what we'd look at next." />
+    </div>
+  );
   const n = (s: CoverageArea["status"]) => areas.filter((a) => a.status === s).length;
   const groups = [...new Set(areas.map((a) => a.grp))];
   const next = areas.filter((a) => a.rank).sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99)).slice(0, 5);

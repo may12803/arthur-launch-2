@@ -43,12 +43,12 @@ echo "scratch cluster: $("$BIN/psql" -X -t -A -h "$TMP" -p "$PORT" -U postgres -
 out="$(psqlq -v ON_ERROR_STOP=1 -f "$ROOT/scripts/db-test-stubs.sql")" || { echo "$out"; echo "FAIL: stubs did not apply"; exit 1; }
 echo "PASS: stubs applied (roles, auth, vault, extensions)"; PASSES=$((PASSES + 1))
 
-for f in "$MIG"/20261005_00_*.sql "$MIG"/20261005_10_*.sql "$MIG"/20261005_11_*.sql; do
+for f in "$MIG"/20261005_00_*.sql "$MIG"/20261005_10_*.sql "$MIG"/20261005_11_*.sql "$MIG"/20261005_12_*.sql; do
   name="$(basename "$f")"
   out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$f")" || { echo "$out" | tail -5; echo "FAIL: migration $name did not apply on an empty database"; FAILS=$((FAILS + 1)); echo "RESULT: $PASSES passed, $FAILS failed"; exit 1; }
   echo "PASS: applied $name to an empty database"; PASSES=$((PASSES + 1))
 done
-for f in "$MIG"/20261005_00_*.sql "$MIG"/20261005_10_*.sql "$MIG"/20261005_11_*.sql; do
+for f in "$MIG"/20261005_00_*.sql "$MIG"/20261005_10_*.sql "$MIG"/20261005_11_*.sql "$MIG"/20261005_12_*.sql; do
   name="$(basename "$f")"
   out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$f")" || { echo "$out" | tail -5; echo "FAIL: migration $name is not idempotent (second apply failed)"; FAILS=$((FAILS + 1)); continue; }
   echo "PASS: re-applied $name (idempotent)"; PASSES=$((PASSES + 1))
@@ -88,6 +88,16 @@ if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$RB")"; then
   if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$MIG"/20261005_10_*.sql)"; then echo "PASS: forward migration re-applies after rollback"; PASSES=$((PASSES + 1)); else echo "$out" | tail -3; echo "FAIL: forward migration does not re-apply after rollback"; FAILS=$((FAILS + 1)); fi
 else
   echo "$out" | tail -5; echo "FAIL: rollback did not apply"; FAILS=$((FAILS + 1))
+fi
+
+# Staff-permissions rollback round trip: rolling back 20261005_12 restores the old document_delete (no staff branch), re-applying restores the new rule.
+RB12="$MIG/rollback/20261005_12_staff_permissions.sql"
+dd_has_staff="select position('''staff''' in pg_get_functiondef('public.document_delete(uuid,text)'::regprocedure))"
+if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$RB12")"; then
+  if [ "$(psqlq -c "$dd_has_staff")" = "0" ]; then echo "PASS: 12 rollback restored the previous document_delete (no staff branch)"; PASSES=$((PASSES + 1)); else echo "FAIL: 12 rollback left the staff branch in document_delete"; FAILS=$((FAILS + 1)); fi
+  if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$MIG"/20261005_12_*.sql)" && [ "$(psqlq -c "$dd_has_staff")" != "0" ]; then echo "PASS: 12 forward migration re-applies after its rollback"; PASSES=$((PASSES + 1)); else echo "$out" | tail -3; echo "FAIL: 12 forward migration does not re-apply after rollback"; FAILS=$((FAILS + 1)); fi
+else
+  echo "$out" | tail -5; echo "FAIL: 12 rollback did not apply"; FAILS=$((FAILS + 1))
 fi
 
 echo "RESULT: $PASSES passed, $FAILS failed"

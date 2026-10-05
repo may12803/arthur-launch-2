@@ -3,6 +3,7 @@ import { getLoveleedayRouteClient } from "@/lib/supabase/loveleeday-server";
 import { publicOrigin } from "@/lib/client-portal/api";
 import { sendPortalMail } from "@/lib/client-portal/mailer";
 import { provisionTenant } from "@/lib/client-portal/provision";
+import { staffGate } from "@/lib/client-portal/staff-gate";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,9 @@ export async function POST(req: NextRequest) {
   const staff = await getLoveleedayRouteClient();
   const { data: userData } = await staff.auth.getUser();
   if (!userData.user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  // Authorize before validating the payload: a non-staff caller learns nothing about the payload rules.
+  const gate = await staffGate(staff);
+  if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
   const body = await req.json().catch(() => ({}));
   const result = await provisionTenant(

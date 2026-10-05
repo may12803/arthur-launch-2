@@ -14,7 +14,7 @@ import { VoiceContext } from './VoiceContext';
  *
  * Standalone routes (/login, /lock) render full-screen with NO shell.
  */
-const STANDALONE = ['/login', '/lock', '/client'];
+const STANDALONE = ['/login', '/lock', '/client', '/trust'];
 
 export function AppShellWrapper({ children }: { children: React.ReactNode }) {
   const [voiceActive, setVoiceActive] = useState(false);

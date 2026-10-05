@@ -11,6 +11,16 @@ const nextConfig = {
   // live app to avoid breaking inline scripts/styles, and is tracked separately.
   // frame-ancestors 'none' + X-Frame-Options give clickjacking protection now.
   headers: async () => [
+    // Every portal HTML response is per-visitor or session-dependent: never cached by the browser or an intermediary. Static
+    // prerender (login, forgot, reset...) otherwise ships `s-maxage=31536000, stale-while-revalidate` (second route audit, minor 11).
+    {
+      source: "/client/:path*",
+      headers: [{ key: "Cache-Control", value: "private, no-store" }],
+    },
+    {
+      source: "/client",
+      headers: [{ key: "Cache-Control", value: "private, no-store" }],
+    },
     {
       source: "/:path*",
       headers: [

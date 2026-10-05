@@ -185,7 +185,7 @@ export function DetailView({
                     <button type="button" className="ll-primary justify-self-start" disabled={busy || st.id === "requested"} onClick={() => act("request", undefined, "Requested. We will set this up with you and show progress here.")}>{st.id === "requested" ? "Requested" : busy ? "Saving..." : "Request setup"}</button>
                   </div>
                 ) : (
-                  <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); act("key", { payload: vals }, "Credential stored encrypted. A live read will confirm it and the proof will appear here."); }}>
+                  <form className="grid gap-3" noValidate onSubmit={(e) => { e.preventDefault(); const missing = fields.filter((f) => f.name !== "account" && !(vals[f.name] ?? "").trim()); if (missing.length) { setMsg({ ok: false, text: `Enter ${missing.map((f) => f.label).join(", ")} before storing the credential.` }); return; } act("key", { payload: vals }, "Credential stored encrypted. A live read will confirm it and the proof will appear here."); }}>
                     {fields.map((f) => (
                       <label key={f.name} className="ll-field"><span>{f.label}</span>
                         <input className="ll-input" type={f.secret ? "password" : "text"} autoComplete="off" value={vals[f.name] ?? ""} onChange={(e) => setVals({ ...vals, [f.name]: e.target.value })} required={f.name !== "account"} />

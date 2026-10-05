@@ -3,6 +3,7 @@ import { getLoveleedayRouteClient } from "@/lib/supabase/loveleeday-server";
 import { rpcErrorResponse } from "@/lib/client-portal/api";
 import { ACTIVE_TENANT_COOKIE } from "@/lib/client-portal/active-tenant";
 import { sendPortalMail } from "@/lib/client-portal/mailer";
+import { staffGate, signedInGate, UUID_RE } from "@/lib/client-portal/staff-gate";
 
 export const runtime = "nodejs";
 
@@ -11,7 +12,10 @@ export const runtime = "nodejs";
 // Opening access emails the client's owners and admins, so it is never silent.
 export async function POST(req: NextRequest) {
   const supabase = await getLoveleedayRouteClient();
+  const gate = await staffGate(supabase);
+  if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const body = await req.json().catch(() => ({}));
+  if (!UUID_RE.test(String(body.tenant || ""))) return NextResponse.json({ error: "Choose a client." }, { status: 400 });
   const { data: grantId, error } = await supabase.rpc("staff_open_access", {
     p_tenant: String(body.tenant || ""), p_reason: String(body.reason || ""), p_hours: Number(body.hours || 0),
   });
@@ -47,7 +51,10 @@ export async function POST(req: NextRequest) {
 // Staff set a client's data classification (standard | regulated).
 export async function PATCH(req: NextRequest) {
   const supabase = await getLoveleedayRouteClient();
+  const gate = await staffGate(supabase);
+  if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const body = await req.json().catch(() => ({}));
+  if (!UUID_RE.test(String(body.tenant || ""))) return NextResponse.json({ error: "Choose a client." }, { status: 400 });
   const { error } = await supabase.rpc("staff_set_data_class", { p_tenant: String(body.tenant || ""), p_class: String(body.data_class || "") });
   if (error) return rpcErrorResponse(error.message);
   return NextResponse.json({ ok: true });
@@ -55,7 +62,10 @@ export async function PATCH(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const supabase = await getLoveleedayRouteClient();
+  const gate = await signedInGate(supabase);
+  if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const grant = new URL(req.url).searchParams.get("grant") || "";
+  if (!UUID_RE.test(grant)) return NextResponse.json({ error: "Choose an access grant." }, { status: 400 });
   const { error } = await supabase.rpc("staff_close_access", { p_grant: grant });
   if (error) return rpcErrorResponse(error.message);
   return NextResponse.json({ ok: true });
