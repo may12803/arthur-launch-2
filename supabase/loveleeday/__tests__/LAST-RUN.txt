@@ -1,0 +1,246 @@
+scratch cluster: 14.24 (Homebrew) on port 58938 (temp dir removed on exit)
+PASS: stubs applied (roles, auth, vault, extensions)
+PASS: applied 20261005_00_base_schema.sql to an empty database
+PASS: applied 20261005_10_connector_platform.sql to an empty database
+PASS: applied 20261005_11_connector_definitions_seed.sql to an empty database
+PASS: re-applied 20261005_00_base_schema.sql (idempotent)
+PASS: re-applied 20261005_10_connector_platform.sql (idempotent)
+PASS: re-applied 20261005_11_connector_definitions_seed.sql (idempotent)
+PASS: seed: 48 connector definitions loaded
+PASS: seed: no definition claims build_status live
+PASS: seed: build_status live is rejected by the table (raised: new row for relation "connector_definitions" violates check constraint "connector_definiti)
+PASS: seed: UNVERIFIED labels preserved verbatim
+PASS: seed: every definition has an auth method from the contract list
+PASS: seed: an unknown platform key cannot be attached to a connection
+PASS: connection key guard: unknown connector_key is rejected (raised: unknown platform)
+PASS: A sees own tenant_connections (control)
+PASS: A sees own ingested_records (control)
+PASS: A sees own sync_runs (control)
+PASS: A sees own approvals (control)
+PASS: A sees own entities (control)
+PASS: A sees own audit_log (control)
+PASS: A sees own connection_health (control)
+PASS: A sees own upload_mappings (control)
+PASS: A sees own tenant_security (control)
+PASS: A sees own webhook_deliveries (control)
+PASS: A sees own api_keys (control)
+PASS: A sees own webhook_endpoints (control)
+PASS: tenant A user cannot read tenant B tenant_connections
+PASS: tenant A user cannot read tenant B ingested_records
+PASS: tenant A user cannot read tenant B sync_runs
+PASS: tenant A user cannot read tenant B approvals
+PASS: tenant A user cannot read tenant B entities
+PASS: tenant A user cannot read tenant B audit_log
+PASS: tenant A user cannot read tenant B connection_health
+PASS: tenant A user cannot read tenant B upload_mappings
+PASS: tenant A user cannot read tenant B tenant_security
+PASS: tenant A user cannot read tenant B webhook_deliveries
+PASS: tenant A user cannot read tenant B api_keys
+PASS: tenant A user cannot read tenant B webhook_endpoints
+PASS: tenant A user cannot read tenant B sync_cursors
+PASS: tenant A user cannot read tenant B membership_scopes
+PASS: tenant A user cannot read tenant B tenants/memberships
+PASS: an unfiltered select over tenant_connections returns only A rows
+PASS: api_keys.key_hash is not readable through the API (raised: permission denied for table api_keys)
+PASS: webhook_endpoints.secret_ct is not readable through the API (raised: permission denied for table webhook_endpoints)
+PASS: no direct client INSERT into approvals (raised: permission denied for table approvals)
+PASS: no direct client UPDATE of tenant_connections (raised: permission denied for table tenant_connections)
+PASS: no direct client DELETE of audit_log (raised: permission denied for table audit_log)
+PASS: private.oauth_states is not reachable by clients (raised: permission denied for schema private)
+PASS: a plain member cannot read A api_keys (admin only)
+PASS: a plain member can read A tenant_connections
+PASS: tenant B owner sees B rows and no A rows (tenant_connections)
+PASS: aal1 sees 0 tenants
+PASS: aal1 sees 0 memberships
+PASS: aal1 sees 0 tenant_connections
+PASS: aal1 sees 0 ingested_records
+PASS: aal1 sees 0 sync_runs
+PASS: aal1 sees 0 connection_health
+PASS: aal1 sees 0 approvals
+PASS: aal1 sees 0 entities
+PASS: aal1 sees 0 audit_log
+PASS: aal1 sees 0 upload_mappings
+PASS: aal1 sees 0 tenant_security
+PASS: aal1 sees 0 webhook_deliveries
+PASS: aal1 sees 0 documents
+PASS: aal1 sees 0 workstreams
+PASS: aal1 sees 0 api_keys
+PASS: aal1 cannot call a client RPC (raised: two-factor sign-in required)
+PASS: aal1 cannot export the audit log (raised: two-factor sign-in required)
+PASS: same user at aal2 sees rows (control)
+PASS: sync_run_start returns an open run
+PASS: first ingest of 3 records inserts 3
+PASS: the same 3 records again insert 0
+PASS: table holds exactly 3 rows after the replay
+PASS: key order and spacing do not change the content hash
+PASS: one changed payload adds exactly 1 new row
+PASS: table now holds 4 rows (3 + 1 changed)
+PASS: the original and the changed version of o2 both exist
+PASS: rows carry the tenant, source system and run from the run, not the caller
+PASS: a record without a source_ref is rejected (raised: every record needs a source_ref and an object payload)
+PASS: run counters accumulate (read 10, wrote 4)
+PASS: finishing the run reports a computed health status
+PASS: cursor advanced on success
+PASS: a finished run rejects further ingest (raised: run is not open)
+PASS: a failed run does not advance the cursor
+PASS: never run -> not_running
+PASS: recent success that moved rows -> healthy (control)
+PASS: last success older than stale_after -> stale
+PASS: stale reason names the age
+PASS: the same run is healthy when evaluated 2h after it finished (age is real, not a constant)
+PASS: widening stale_after to 48h turns the same data healthy
+PASS: latest successful run moved 0 rows -> stale
+PASS: zero-row reason says so
+PASS: last run failed -> failing
+PASS: failing reason carries the error
+PASS: only a partial run so far -> stale (never claimed healthy)
+PASS: record returns healthy
+PASS: record: healthy connected -> status live
+PASS: record returns stale
+PASS: record: stale live connection is downgraded to connected
+PASS: record returns failing
+PASS: record: failing live connection moves to error and keeps the reason
+PASS: record returns not_running
+PASS: record: never-run connection is not promoted to live
+PASS: health of an unknown connection raises (raised: unknown connection)
+PASS: owner can begin an OAuth flow
+PASS: state is stored under its sha256 hash
+PASS: state table holds no plaintext state or verifier
+PASS: consume returns the verifier and connection for the right tenant + user
+PASS: second consume of the same state raises (raised: invalid or expired sign-in state)
+PASS: an expired state raises (raised: invalid or expired sign-in state)
+PASS: tenant A state cannot be consumed for tenant B (raised: invalid or expired sign-in state)
+PASS: tenant A state cannot be consumed by tenant B user (raised: invalid or expired sign-in state)
+PASS: a state cannot be consumed by a different user of the same tenant (raised: invalid or expired sign-in state)
+PASS: a refused cross-tenant attempt does not burn the state; the real owner still consumes it
+PASS: an unknown state raises (raised: invalid or expired sign-in state)
+PASS: a plain member cannot begin an OAuth flow (raised: not allowed)
+PASS: tenant B owner cannot begin a flow in tenant A (raised: not allowed)
+PASS: aal1 cannot begin an OAuth flow (raised: two-factor sign-in required)
+PASS: a platform that is not one-click is refused (raised: this platform does not use one-click sign-in)
+PASS: a plain-http redirect is refused (raised: redirect address must be https)
+PASS: first token set is stored
+PASS: storing tokens connects the connection and records expiry + scopes
+PASS: a newer rotation (T2) replaces it
+PASS: a stale writer holding the older rotated_at is rejected
+PASS: an equal rotated_at is also rejected (strictly newer wins)
+PASS: the stored tokens are still T2 after the rejected writes
+PASS: rotated_at is stored inside the token set
+PASS: a rejected write left the connection row untouched
+PASS: a still newer rotation (T3) is accepted after the rejections
+PASS: T3 is now the stored set
+PASS: ciphertext does not contain the token in the clear
+PASS: only one secrets row exists for the connection
+PASS: missing rotated_at raises (raised: rotated_at is required)
+PASS: missing access_token raises (raised: access_token is required)
+PASS: the legacy connections-server secret still reads credentials
+PASS: wrong secret: public.oauth_state_consume(t.badsec(), 'x', 'aaaaaaaa-0000-0000-0000-00000000000a', 'a0000000-0000-0000-0000-000000000001') (raised: server only)
+PASS: wrong secret: public.connection_store_tokens(t.badsec(), 'c1000000-0000-0000-0000-00000000000a', '{"access_token":"x"}', now()) (raised: server only)
+PASS: wrong secret: public.connection_secret(t.badsec(), 'c1000000-0000-0000-0000-00000000000a') (raised: server only)
+PASS: wrong secret: public.connections_due(t.badsec()) (raised: server only)
+PASS: wrong secret: public.sync_run_start(t.badsec(), 'c1000000-0000-0000-0000-00000000000a', 'charges') (raised: server only)
+PASS: wrong secret: public.sync_cursor_set(t.badsec(), 'c1000000-0000-0000-0000-00000000000a', 'charges', 'x') (raised: server only)
+PASS: wrong secret: public.sync_run_finish(t.badsec(), 'd1000000-0000-0000-0000-00000000000a', 'succeeded') (raised: server only)
+PASS: wrong secret: public.ingest_records(t.badsec(), 'd1000000-0000-0000-0000-00000000000a', '[]') (raised: server only)
+PASS: wrong secret: public.connection_health_record(t.badsec(), 'c1000000-0000-0000-0000-00000000000a') (raised: server only)
+PASS: wrong secret: public.approval_propose(t.badsec(), 'aaaaaaaa-0000-0000-0000-00000000000a', 'auto', 'x', null, '{}') (raised: server only)
+PASS: wrong secret: public.api_key_verify(t.badsec(), 'lld_x') (raised: server only)
+PASS: wrong secret: public.ingested_records_since(t.badsec(), 'tenant-a', 0, 10) (raised: server only)
+PASS: wrong secret: public.workstream_task_propose(t.badsec(), 'tenant-a', 'finance', 'x', null, null, '{}', 'p') (raised: server only)
+PASS: wrong secret: public.approvals_approved(t.badsec(), 'tenant-a', 10) (raised: server only)
+PASS: wrong secret: public.approval_claim(t.badsec(), 'f1000000-0000-0000-0000-00000000000a') (raised: server only)
+PASS: wrong secret: public.approval_record_proof(t.badsec(), 'f1000000-0000-0000-0000-00000000000a', 'p') (raised: server only)
+PASS: short secret rejected (raised: server only)
+PASS: NULL secret rejected (raised: server only)
+PASS: the old connections-server secret does not open the new RPCs (raised: server only)
+PASS: right secret passes (control)
+PASS: anon role with a wrong secret is rejected (raised: server only)
+PASS: anon role with the right secret works
+PASS: anon cannot select tenant rows directly (raised: permission denied for table tenant_connections)
+PASS: anon cannot call client RPCs (raised: permission denied for function api_key_create)
+PASS: plaintext key is returned on create
+PASS: prefix is the first characters of the key
+PASS: stored hash is sha256 of the plaintext
+PASS: no column of the stored row contains the plaintext
+PASS: the audit entry does not contain the plaintext
+PASS: api_key_verify finds the key by hash and returns the tenant
+PASS: verify stamped last_used_at
+PASS: verify returns nothing for an unknown key
+PASS: a plain member cannot create a key (raised: not allowed)
+PASS: an unknown scope is refused (raised: choose valid scopes)
+PASS: the owner of A cannot create a key in B (raised: not allowed)
+PASS: a second create yields a different key
+PASS: a revoked key no longer verifies
+PASS: revocation is recorded
+PASS: tenant B cannot revoke tenant A key (raised: not allowed)
+PASS: owner stores a credential
+PASS: a tenant key now exists in the vault
+PASS: ciphertext does not contain the credential
+PASS: round trip: the server reads the credential back through the tenant key
+PASS: direct decryption with the vault key agrees
+PASS: a token set stored for the same tenant uses the same key (one key per tenant)
+PASS: crypto shred runs
+PASS: the vault key is gone
+PASS: after shredding, the credential is unreadable (raised: no key for this client)
+PASS: page 1 returns the requested 2 rows
+PASS: page 2 starts after page 1 (no overlap, strictly increasing ids)
+PASS: paging by id reaches every row exactly once
+PASS: export never returns another tenant's rows
+PASS: the export itself is audited once, on the first page only
+PASS: limit is clamped to at least 1
+PASS: an admin can export
+PASS: a member cannot export (raised: not allowed)
+PASS: a viewer cannot export (raised: not allowed)
+PASS: tenant B owner cannot export tenant A (raised: not allowed)
+PASS: owner creates a child entity
+PASS: an entity cannot be moved under itself (raised: an entity cannot sit under itself)
+PASS: a parent from another tenant is refused (raised: parent not found)
+PASS: an entity with children cannot be deleted (raised: move or remove the entities inside this one first)
+PASS: tenant B cannot delete tenant A entity (raised: not allowed)
+PASS: a member cannot decide a money approval (raised: not allowed)
+PASS: a viewer cannot decide anything (raised: not allowed)
+PASS: an admin can approve a money gate
+PASS: an approval cannot be decided twice (raised: this request was already decided)
+PASS: a scoped member cannot decide outside their entity (raised: not allowed)
+PASS: a scoped member can decide inside their entity
+PASS: declining needs a reason (raised: say why this was declined)
+PASS: edit returns status edited
+PASS: edit merged the edited details into proposed
+PASS: an admin cannot change tenant security (owner only) (raised: not allowed)
+PASS: settings persisted
+PASS: enforcing SSO without a domain is refused (raised: add at least one domain before enforcing single sign-on)
+PASS: retention below the floor is refused (raised: retention must be 30 to 3650 days)
+PASS: webhook create returns the signing secret once
+PASS: an http webhook is refused (raised: webhook address must be an https URL)
+PASS: a webhook to a private address is refused (raised: webhook address must be a public host)
+PASS: updating an endpoint returns no new secret
+PASS: the signing secret is stored encrypted, not in the clear
+PASS: a viewer cannot save an upload mapping (raised: not allowed)
+PASS: an upload mapping needs a real document from this tenant (raised: document not found)
+PASS: approval_claim succeeds once (returns the row)
+PASS: claimed_at is set by the claim
+PASS: the second claim returns null
+PASS: a pending approval cannot be claimed
+PASS: a rejected approval cannot be claimed
+PASS: an unknown id claims nothing
+PASS: claiming is audited once
+PASS: approvals_approved lists approved, unclaimed rows for tenant-b only
+PASS: a tenant-a slug never returns tenant-b approvals
+PASS: a claimed approval drops out of the tenant-a list while unclaimed ones stay
+PASS: an unknown slug raises (raised: unknown client)
+PASS: proof cannot be recorded before the claim (raised: approval is not claimed or already has proof)
+PASS: proof is recorded on a claimed approval
+PASS: proof is written once (raised: approval is not claimed or already has proof)
+PASS: empty proof is refused (raised: proof is required)
+PASS: tenant-a feed returns only tenant-a records
+PASS: tenant-b feed contains ch_b1 and no tenant-a source_ref
+PASS: the keyset cursor pages without overlap
+PASS: the cursor past the end returns nothing
+PASS: feed for an unknown slug raises (raised: unknown client)
+PASS: engine proposes a task into the tenant workstream (needs_you)
+PASS: a duplicate open title reuses the task
+PASS: the proposed task lands in tenant A only
+PASS: an unknown workstream raises (raised: unknown workstream)
+PASS: mutation caught: with tenant_connections_member_select = using (true) the RLS test reports -> FAIL: tenant A user cannot read tenant B tenant_connections
+PASS: policy restored, RLS test green again
+RESULT: 244 passed, 0 failed
