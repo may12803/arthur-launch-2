@@ -1,4 +1,4 @@
-scratch cluster: 14.24 (Homebrew) on port 58938 (temp dir removed on exit)
+scratch cluster: 14.24 (Homebrew) on port 60840 (temp dir removed on exit)
 PASS: stubs applied (roles, auth, vault, extensions)
 PASS: applied 20261005_00_base_schema.sql to an empty database
 PASS: applied 20261005_10_connector_platform.sql to an empty database
@@ -80,6 +80,8 @@ PASS: rows carry the tenant, source system and run from the run, not the caller
 PASS: a record without a source_ref is rejected (raised: every record needs a source_ref and an object payload)
 PASS: run counters accumulate (read 10, wrote 4)
 PASS: finishing the run reports a computed health status
+PASS: sync_cursor_get reads the advanced cursor
+PASS: sync_runs_recent returns the finished run with its counts
 PASS: cursor advanced on success
 PASS: a finished run rejects further ingest (raised: run is not open)
 PASS: a failed run does not advance the cursor
@@ -139,6 +141,8 @@ PASS: wrong secret: public.connection_store_tokens(t.badsec(), 'c1000000-0000-00
 PASS: wrong secret: public.connection_secret(t.badsec(), 'c1000000-0000-0000-0000-00000000000a') (raised: server only)
 PASS: wrong secret: public.connections_due(t.badsec()) (raised: server only)
 PASS: wrong secret: public.sync_run_start(t.badsec(), 'c1000000-0000-0000-0000-00000000000a', 'charges') (raised: server only)
+PASS: wrong secret: public.sync_cursor_get(t.badsec(), 'c1000000-0000-0000-0000-00000000000a', 'charges') (raised: server only)
+PASS: wrong secret: public.sync_runs_recent(t.badsec(), 'c1000000-0000-0000-0000-00000000000a', 5) (raised: server only)
 PASS: wrong secret: public.sync_cursor_set(t.badsec(), 'c1000000-0000-0000-0000-00000000000a', 'charges', 'x') (raised: server only)
 PASS: wrong secret: public.sync_run_finish(t.badsec(), 'd1000000-0000-0000-0000-00000000000a', 'succeeded') (raised: server only)
 PASS: wrong secret: public.ingest_records(t.badsec(), 'd1000000-0000-0000-0000-00000000000a', '[]') (raised: server only)
@@ -201,6 +205,9 @@ PASS: a member cannot decide a money approval (raised: not allowed)
 PASS: a viewer cannot decide anything (raised: not allowed)
 PASS: an admin can approve a money gate
 PASS: an approval cannot be decided twice (raised: this request was already decided)
+PASS: a scoped member reads the approval inside their entity
+PASS: a scoped member cannot read an approval outside their entity
+PASS: a scoped member cannot read a company-wide approval
 PASS: a scoped member cannot decide outside their entity (raised: not allowed)
 PASS: a scoped member can decide inside their entity
 PASS: declining needs a reason (raised: say why this was declined)
@@ -243,4 +250,7 @@ PASS: the proposed task lands in tenant A only
 PASS: an unknown workstream raises (raised: unknown workstream)
 PASS: mutation caught: with tenant_connections_member_select = using (true) the RLS test reports -> FAIL: tenant A user cannot read tenant B tenant_connections
 PASS: policy restored, RLS test green again
-RESULT: 244 passed, 0 failed
+PASS: rollback removed every connector-platform table and function checked
+PASS: rollback kept base data (3 tenants) and dropped the tenant_connections additions
+PASS: forward migration re-applies after rollback
+RESULT: 254 passed, 0 failed

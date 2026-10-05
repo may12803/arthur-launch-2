@@ -32,17 +32,18 @@ drop function if exists public.workstream_task_propose(text, text, text, text, t
 drop function if exists public.approvals_approved(text, text, integer);
 drop function if exists public.approval_claim(text, uuid);
 drop function if exists public.approval_record_proof(text, uuid, text);
+drop table if exists public.webhook_deliveries, public.webhook_endpoints, public.api_keys, public.tenant_security,
+  public.approvals, public.membership_scopes, public.entities, public.upload_mappings, public.connection_health,
+  public.ingested_records, public.sync_cursors, public.sync_runs cascade;
+drop table if exists private.oauth_states;
+
+-- Helpers last: the dropped tables' read policies used them.
 drop function if exists public.is_tenant_admin(uuid);
 drop function if exists private.compute_connection_health(uuid, timestamptz);
 drop function if exists private.refresh_connection_health(uuid);
 drop function if exists private.require_role(uuid, text, boolean);
 drop function if exists public.entity_in_scope(uuid, uuid);
 drop function if exists private.entity_in_scope(uuid, uuid);
-
-drop table if exists public.webhook_deliveries, public.webhook_endpoints, public.api_keys, public.tenant_security,
-  public.approvals, public.membership_scopes, public.entities, public.upload_mappings, public.connection_health,
-  public.ingested_records, public.sync_cursors, public.sync_runs cascade;
-drop table if exists private.oauth_states;
 
 -- Connections created through the new catalog have keys that the legacy catalog does not know; they cannot satisfy the restored FK.
 drop trigger if exists tenant_connections_key_guard on public.tenant_connections;

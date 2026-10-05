@@ -73,5 +73,22 @@ fi
 after="$(psqlq -v ON_ERROR_STOP=0 -f "$RLS" | sed -E 's/^psql:[^ ]+ NOTICE:  //' | grep -c '^FAIL' || true)"
 if [ "${after:-1}" = "0" ]; then echo "PASS: policy restored, RLS test green again"; PASSES=$((PASSES + 1)); else echo "FAIL: RLS test still failing after the policy was restored"; FAILS=$((FAILS + 1)); fi
 
+# Rollback round trip: the rollback removes every connector-platform object, keeps the base schema and its data,
+# and the forward migration applies again afterwards.
+RB="$MIG/rollback/20261005_10_connector_platform.sql"
+newobj="select (select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace where c.relkind = 'r' and (n.nspname, c.relname) in (('public','sync_runs'),('public','ingested_records'),('public','approvals'),('public','api_keys'),('public','entities'),('private','oauth_states'),('public','connector_definitions'))) + (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname in ('sync_run_start','sync_cursor_get','sync_runs_recent','ingest_records','approval_decide','entity_in_scope','api_key_create'))"
+basecount="select count(*) from public.tenants"
+before_tenants="$(psqlq -c "$basecount")"
+if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$RB")"; then
+  left="$(psqlq -c "$newobj")"; after_tenants="$(psqlq -c "$basecount")"
+  if [ "$left" = "0" ]; then echo "PASS: rollback removed every connector-platform table and function checked"; PASSES=$((PASSES + 1)); else echo "FAIL: rollback left $left connector-platform objects"; FAILS=$((FAILS + 1)); fi
+  if [ "$after_tenants" = "$before_tenants" ] && [ "$(psqlq -c "select count(*) from information_schema.columns where table_schema='public' and table_name='tenant_connections' and column_name='health'")" = "0" ]; then
+    echo "PASS: rollback kept base data ($after_tenants tenants) and dropped the tenant_connections additions"; PASSES=$((PASSES + 1))
+  else echo "FAIL: rollback changed base data or left tenant_connections additions"; FAILS=$((FAILS + 1)); fi
+  if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$MIG"/20261005_10_*.sql)"; then echo "PASS: forward migration re-applies after rollback"; PASSES=$((PASSES + 1)); else echo "$out" | tail -3; echo "FAIL: forward migration does not re-apply after rollback"; FAILS=$((FAILS + 1)); fi
+else
+  echo "$out" | tail -5; echo "FAIL: rollback did not apply"; FAILS=$((FAILS + 1))
+fi
+
 echo "RESULT: $PASSES passed, $FAILS failed"
 [ "$FAILS" -eq 0 ]
