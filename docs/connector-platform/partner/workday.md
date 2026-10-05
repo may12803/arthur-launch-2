@@ -1,0 +1,107 @@
+# Workday: partner path
+
+Generated from data/connectors/systems/workday.json. Text in quotes of vendor research is copied verbatim; UNVERIFIED means no primary vendor source confirmed it and it must not be treated as fact.
+
+Matrix recommended path: unified_api:merge. Estimated build effort once access exists: 15 days. Auth when live: oauth2_authcode.
+
+## Program
+- Program: Workday Partner / Developer program (UNVERIFIED exact name)
+- Review or listing: Workday Marketplace listing for a product integration; customer-built integrations via ISU need no listing (UNVERIFIED)
+- Self-serve developer account: no; partner program required: yes
+
+## What to apply with
+- Company: LOVELEEDAY Studios LLC. Use case: read-only data ingestion into the customer's own workspace for reporting and review.
+- Objects requested (read):
+- workers
+- organizations
+- job profiles
+- compensation
+- time off
+- payroll results
+- GL journals (Financials)
+- Scopes or permissions: Registered API Client functional-area scopes (e.g. Staffing, Contact Information) plus ISU security-group domain access; exact names UNVERIFIED
+- Base URL per vendor research: tenant-specific: https://<host>.workday.com/ccx/api/v1/<tenant> (UNVERIFIED exact pattern; not fetched)
+- What the customer does on their side: Per doc.workday.com search result: customer admin runs the 'Register API Client' task (Set Up: Tenant Setup - Security / Security Administration domains), supplying a unique client name and an x509 certificate public key plus the ISU user; creates an Integration System User and assigns it to a security group with view access to the needed domains and activates security policy changes.
+
+## Security questionnaire items
+Typical items partner programs ask (not confirmed per vendor unless the Program line above says a questionnaire exists):
+- Company legal name, address, year founded, number of employees, named security contact.
+- Data flow diagram: which objects are read, where they are stored, which sub-processors touch them.
+- Authentication: how customer credentials and tokens are stored, rotated and revoked; who inside the company can read them.
+- Encryption in transit and at rest; key management and rotation.
+- Tenant isolation model and how one customer cannot see another customer's data.
+- Access control and MFA for staff; audit logging and retention.
+- Vulnerability management, penetration testing cadence, dependency scanning.
+- Incident response and breach notification timelines.
+- Data retention and deletion on disconnect or contract end.
+- Compliance attestations (SOC 2, ISO 27001) and sub-processor list.
+
+Evidence this codebase can supply today:
+- Secrets at rest: AES-256-GCM envelope (random 12-byte IV, authentication tag, key id, versioned format) in lib/connectors/crypto.ts; OAuth token sets live in Postgres encrypted with a per-tenant Vault key, and deleting that key crypto-shreds the tenant (docs/connector-platform/CONTRACT.md).
+- OAuth: authorization code with PKCE S256, 32-byte random state stored hashed, bound to tenant + user + connector, single use, 10 minute TTL; refresh tokens rotate and the newest is always persisted with compare-and-set.
+- Tenant isolation: row level security on every tenant table, restrictive MFA (aal2) policy, writes only through audited SECURITY DEFINER functions, audit log of actor/action/target.
+- Least privilege: read scopes only are requested for the objects listed below; no service-role key exists in the pipeline; server jobs authenticate with a named server secret.
+- File intake: per-tenant SFTP user chrooted to /tenants/<tenant_id>/inbox, ed25519 keys only, files processed by content hash so replays are no-ops, CSV formula-injection guard, size and row caps.
+- Not evidenced in this repository (confirm outside the repo before answering a questionnaire): SOC 2 report, third-party penetration test, written incident response plan, data processing agreement template, cyber insurance certificate. UNVERIFIED.
+
+## Sandbox path
+- Available: true
+- How to get it: Customer-owned sandbox tenant; Workday partners get a partner sandbox via program (UNVERIFIED). No public self-serve.
+
+## Cost and time
+- Cost to us: UNVERIFIED (partner membership fees not published in pages checked)
+- Time to approval: UNVERIFIED
+- Rate limits per vendor research: UNVERIFIED
+
+## Blockers recorded in the research
+- No self-serve developer access; needs customer tenant ISU plus API client registration by the customer admin
+- Partner program terms/cost unverified
+- Per-tenant URLs and per-customer security-group setup make direct build heavy
+
+## Interim SFTP/CSV path
+Until the partner credentials exist, data reaches us as files.
+
+1. The customer exports the objects below from Workday (or schedules the export, where the vendor supports scheduled delivery; scheduled delivery is UNVERIFIED unless stated in the vendor notes above).
+2. Files are uploaded in the portal (CSV or XLSX) or delivered by SFTP to `/tenants/<tenant_id>/inbox/<object>/` with a `<file>.done` marker file once complete.
+3. Each file is parsed (RFC 4180 CSV or XLSX), formula-like cells are flagged, columns are mapped, and rows land in ingested_records with source_ref = file sha256 + ':' + row number, so re-sending a file adds nothing.
+
+Expected layouts:
+
+### workers.csv (object: workers)
+
+Worker roster (no compensation fields requested). Header names must match the field names below for automatic mapping; any other export is mapped column by column in the upload screen.
+
+| field | type | required |
+|---|---|---|
+| worker_id | string | yes |
+| legal_name | string | yes |
+| job_title | string |  |
+| department | string |  |
+| hire_date | date |  |
+| status | string |  |
+| manager_id | string |  |
+
+### time_off.csv (object: time_off)
+
+Approved time off. Header names must match the field names below for automatic mapping; any other export is mapped column by column in the upload screen.
+
+| field | type | required |
+|---|---|---|
+| worker_id | string | yes |
+| plan | string |  |
+| start_date | date | yes |
+| end_date | date |  |
+| hours | number |  |
+
+### gl_journals.csv (object: gl_journals)
+
+Financials journal lines. Header names must match the field names below for automatic mapping; any other export is mapped column by column in the upload screen.
+
+| field | type | required |
+|---|---|---|
+| journal_id | string | yes |
+| accounting_date | date | yes |
+| ledger_account | string | yes |
+| debit | money |  |
+| credit | money |  |
+| memo | string |  |
