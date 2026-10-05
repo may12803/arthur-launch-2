@@ -20,7 +20,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "timeToApproval": "Same day after customer admin step",
   "scopes": [
    "api",
-   "offline_access (api scope grants contract-based REST and SOAP per Acumatica doc)"
+   "offline_access"
   ],
   "objects": [
    "Customer",
@@ -72,7 +72,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "partnerProgram": "",
   "selfServeDev": true,
   "customerAdmin": "Create an IAM role in their account with the trust policy and read-only policy in customer_grant_statements, then send us the role ARN. We generate the ExternalId, unique per customer: per AWS 'The ExternalId value must be unique among Example Corp's customers and controlled by Example Corp, not its customers.'",
-  "timeToApproval": "none",
+  "timeToApproval": "",
   "scopes": [
    "s3:ListBucket",
    "s3:GetObject",
@@ -81,7 +81,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "objects": [
    "CSV/JSON/Parquet/PDF objects under agreed prefixes"
   ],
-  "incremental": "S3 Event Notifications to SQS in the customer account (needs extra grant) or ListObjectsV2 with StartAfter / LastModified high-water mark; S3 Inventory for large buckets",
+  "incremental": "",
   "sandbox": true,
   "logo": "/connectors/logos/amazons3.png"
  },
@@ -93,9 +93,9 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "oauth2_client_credentials",
   "recommendedPath": "sftp_csv",
   "partnerRequired": true,
-  "partnerProgram": "AppFolio Stack Partner program (appfolio.com/stack/partners)",
+  "partnerProgram": "AppFolio Stack Partner program (appfolio.com/stack/partners",
   "selfServeDev": false,
-  "customerAdmin": ". Partner integrations are enabled for a customer account by AppFolio/the customer through the Stack marketplace; exact steps not on pages read.",
+  "customerAdmin": "Partner integrations are enabled for a customer account by AppFolio/the customer through the Stack marketplace; exact steps not on pages read.",
   "timeToApproval": "",
   "scopes": [],
   "objects": [
@@ -123,7 +123,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "partnerProgram": "",
   "selfServeDev": true,
   "customerAdmin": "A Microsoft Entra admin on the workspace creates a user for our Entra app in the target database and grants read, and opens the workspace firewall to our egress IPs. Note: Microsoft banner on the doc page states Fabric Data Warehouse is the new recommended path and dedicated pools can upgrade to Fabric.",
-  "timeToApproval": "none",
+  "timeToApproval": "",
   "scopes": [
    "database users with db_datareader or custom read role"
   ],
@@ -146,9 +146,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "selfServeDev": true,
   "customerAdmin": "A Blackbaud user with rights authorizes our registered app through the OAuth authorization code flow for their Raiser's Edge NXT environment (environment/tenant selection happens at consent). Customer may also need to be entitled to the API under their RE NXT license.",
   "timeToApproval": "",
-  "scopes": [
-   "(403 'Insufficient Scope' reports on community.blackbaud.com show app configuration must..."
-  ],
+  "scopes": [],
   "objects": [
    "constituents",
    "gifts/donations",
@@ -157,9 +155,9 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "actions/interactions",
    "addresses/emails/phones"
   ],
-  "incremental": ". SKY endpoints commonly accept last_modified filters (e.g. constituents list) - confirm per endpoint.",
+  "incremental": "",
   "sandbox": true,
-  "logo": "/connectors/logos/blackbaudraisersedgenxt.png"
+  "logo": null
  },
  {
   "key": "bloomerang",
@@ -169,12 +167,12 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "oauth2_authcode",
   "recommendedPath": "direct",
   "partnerRequired": true,
-  "partnerProgram": "OAuth app registration with Bloomerang (no named program on the page read)",
+  "partnerProgram": "OAuth app registration with Bloomerang (no named program on the page read",
   "selfServeDev": false,
-  "customerAdmin": "Authorize our app at https://crm.bloomerang.com/Authorize with a Bloomerang user (OrgAdmin may be needed to grant higher scopes). Alternatively generate a private API key in their Bloomerang settings (secondary source;.",
-  "timeToApproval": "(manual issuance of client credentials)",
+  "customerAdmin": "",
+  "timeToApproval": "Manual issuance of client credentials",
   "scopes": [
-   "Standard (read; other scopes: StandardEditFinancialData, OrgAdmin). Default if..."
+   "Standard"
   ],
   "objects": [
    "constituents",
@@ -184,7 +182,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "households",
    "tasks"
   ],
-  "incremental": ". Lists paginated with skip/take (take default 50); confirm a last-modified filter in the API reference.",
+  "incremental": "",
   "sandbox": null,
   "logo": "/connectors/logos/bloomerang.png"
  },
@@ -199,9 +197,9 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "partnerProgram": "",
   "selfServeDev": true,
   "customerAdmin": "Per Box docs: server-side apps (CCG, JWT) 'must be authorized' by the enterprise admin in Admin Console > Apps > Custom Apps Manager; OAuth 2.0 apps only need enablement 'when your enterprise leaves unpublished apps inactive by default'. Customer creates a service-account-scoped collaboration or grants app access.",
-  "timeToApproval": "none for custom app; admin approval only",
+  "timeToApproval": "",
   "scopes": [
-   "root_readonly (read all files and folders)"
+   "root_readonly"
   ],
   "objects": [
    "folders",
@@ -252,9 +250,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "selfServeDev": true,
   "customerAdmin": "Per Propexo's Buildium guide (secondary, matches Buildium help): admin user on a Premium subscription turns on Settings > Application settings > System preferences > API settings > Open API toggle, then Settings > Developer Tools > Create API Key, names it, and copies the client ID and secret to us.",
   "timeToApproval": "Immediate once customer creates key",
-  "scopes": [
-   "API key permissions are set per key by the customer admin when creating the key"
-  ],
+  "scopes": [],
   "objects": [
    "rental properties",
    "units",
@@ -282,9 +278,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "selfServeDev": false,
   "customerAdmin": "Expose the Cityworks web services (often behind VPN/firewall, on-prem or Trimble-hosted) to us and create a dedicated service user..",
   "timeToApproval": "Depends on customer IT",
-  "scopes": [
-   "A Cityworks user/role with read access to the needed work orders, service requests, assets"
-  ],
+  "scopes": [],
   "objects": [
    "work orders",
    "service requests",
@@ -293,7 +287,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "labor and material costs",
    "permits/cases (PLL)"
   ],
-  "incremental": "(search methods generally support date filters; confirm in customer's /apidocs)",
+  "incremental": "",
   "sandbox": false,
   "logo": null
  },
@@ -310,7 +304,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "customerAdmin": "A user at the firm authorizes our app via the OAuth consent screen (in their region); firm admin approval may be required by firm policy.",
   "timeToApproval": "Immediate for unlisted apps",
   "scopes": [
-   "Per Clio permissions section (docs.developers.clio.com/api-docs/clio-manage/permissions/);"
+   "Per Clio permissions section"
   ],
   "objects": [
    "matters",
@@ -322,7 +316,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "calendar entries",
    "users"
   ],
-  "incremental": "(Clio v4 list endpoints commonly accept updated_since; confirm in reference).",
+  "incremental": "",
   "sandbox": true,
   "logo": "/connectors/logos/cliomanage.png"
  },
@@ -337,14 +331,14 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "partnerProgram": "Clover Developer Program / App Market",
   "selfServeDev": true,
   "customerAdmin": "Merchant owner installs our app from the Clover App Market (or private install link) and approves permissions; changing permissions later requires uninstall and reinstall.",
-  "timeToApproval": "('approval timelines can vary'; contact Developer Relations)",
+  "timeToApproval": "",
   "scopes": [
    "Orders read",
    "Payments read",
    "Customers read",
    "Inventory read",
    "Employees read",
-   "Merchant read (permissions set per app in Clover dev dashboard)"
+   "Merchant read"
   ],
   "objects": [
    "orders",
@@ -369,7 +363,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "partnerProgram": "",
   "selfServeDev": true,
   "customerAdmin": "Export report to CSV or XLSX from their system and upload via portal.",
-  "timeToApproval": "none",
+  "timeToApproval": "",
   "scopes": [],
   "objects": [
    "any tabular export mapped by user to a canonical schema"
@@ -389,9 +383,9 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "partnerProgram": "",
   "selfServeDev": true,
   "customerAdmin": "Create a service principal, generate an OAuth secret, grant Unity Catalog privileges and CAN USE on a SQL warehouse, then send us workspace host, client ID and secret via our secure form. Alternative with no credentials: Delta Sharing.",
-  "timeToApproval": "none",
+  "timeToApproval": "",
   "scopes": [
-   "all-apis (default) or scoped secret such as 'sql'"
+   "all-apis"
   ],
   "objects": [
    "Unity Catalog tables and views"
@@ -424,7 +418,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "file content",
    "shared links"
   ],
-  "incremental": "files/list_folder returns a cursor; files/list_folder/continue and longpoll for changes",
+  "incremental": "",
   "sandbox": true,
   "logo": "/connectors/logos/dropboxbusiness.svg"
  },
@@ -441,7 +435,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "customerAdmin": "Entra admin consents to our multi-tenant app (admin consent URL); BC admin opens Microsoft Entra Applications page in the environment, adds our client ID, sets state Enabled and assigns permission sets (e.g. D365 READ / API-access sets).(S2S doc page found by search only).",
   "timeToApproval": "Same day after customer admin consent",
   "scopes": [
-   "https://api.businesscentral.dynamics.com/.default (application permission..."
+   "https://api.businesscentral.dynamics.com/.default"
   ],
   "objects": [
    "customers",
@@ -470,9 +464,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "selfServeDev": false,
   "customerAdmin": "Entra admin registers/consents our app (multi-tenant); then in F&O: System administration > Setup > Microsoft Entra applications > New, enter Client Id, Name, and a service-account User ID with least-privilege security roles, Save. Needs data entities marked IsPublic.",
   "timeToApproval": "Same day after customer admin action",
-  "scopes": [
-   "https://{environmentUrl}/.default (resource = environment URL, no trailing slash)"
-  ],
+  "scopes": [],
   "objects": [
    "CustomersV3",
    "VendorsV2",
@@ -484,7 +476,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "MainAccounts",
    "LegalEntities"
   ],
-  "incremental": "$filter on ModifiedDateTime where entity has it (not on all entities); otherwise Change tracking on entity (Enable change tracking) or Export to Data Lake.",
+  "incremental": "",
   "sandbox": true,
   "logo": "/connectors/logos/microsoftdynamics365.svg"
  },
@@ -496,9 +488,9 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "basic",
   "recommendedPath": "sftp_csv",
   "partnerRequired": false,
-  "partnerProgram": "(API access per customer license, possibly Epicor Professional Services/ISV program)",
+  "partnerProgram": "",
   "selfServeDev": false,
-  "customerAdmin": ". Likely: customer P21 admin provides an API user, enables the Middleware/API service, exposes it via reverse proxy/VPN, and (per third-party sources) supplies consumer key. Confirm with Epicor docs under customer login (Epicor Learning Center).",
+  "customerAdmin": "",
   "timeToApproval": "",
   "scopes": [],
   "objects": [
@@ -525,9 +517,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "selfServeDev": true,
   "customerAdmin": "In ArcGIS Online/Enterprise: register an app (OAuth client id/secret) or create an API key with item access, and share the target feature layers with it (or provide a read-only service account). Customer-hosted Enterprise servers must be reachable from us.",
   "timeToApproval": "Immediate",
-  "scopes": [
-   "Read access to the customer's feature services / items shared with the app or its service..."
-  ],
+  "scopes": [],
   "objects": [
    "feature layers (assets, parcels, permits, work orders)",
    "tables",
@@ -548,7 +538,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "partnerProgram": "",
   "selfServeDev": true,
   "customerAdmin": "Grant our service account dataset-level viewer plus a job-running role in a project that bills queries. Org policy may block external principals (domain-restricted sharing); admin must allow our domain/principal.",
-  "timeToApproval": "none",
+  "timeToApproval": "",
   "scopes": [
    "https://www.googleapis.com/auth/bigquery.readonly"
   ],
@@ -570,7 +560,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "partnerProgram": "",
   "selfServeDev": true,
   "customerAdmin": "Workspace admin allowlists our OAuth client ID in Admin console > Security > API controls > App access control, or for domain-wide delegation authorizes our service account client ID and scopes..",
-  "timeToApproval": "not stated by Google on pages fetched",
+  "timeToApproval": "",
   "scopes": [
    "https://www.googleapis.com/auth/gmail.readonly",
    "https://www.googleapis.com/auth/drive.readonly",
@@ -620,9 +610,9 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "api_key",
   "recommendedPath": "direct",
   "partnerRequired": false,
-  "partnerProgram": "(no partner program page found)",
+  "partnerProgram": "",
   "selfServeDev": false,
-  "customerAdmin": "Customer admin must obtain an API token for their Homebase account (a third-party summary says API access is Enterprise-plan only with keys issued after contacting support; not confirmed in a Homebase primary source).",
+  "customerAdmin": "",
   "timeToApproval": "",
   "scopes": [],
   "objects": [
@@ -647,7 +637,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "oauth2_authcode",
   "recommendedPath": "direct",
   "partnerRequired": false,
-  "partnerProgram": "HubSpot App Partner Program (only for Marketplace listing)",
+  "partnerProgram": "HubSpot App Partner Program (only for Marketplace listing",
   "selfServeDev": true,
   "customerAdmin": "Super Admin installs the app from our install link and approves scopes. Alternative: customer creates a Private App / service key with read scopes and shares the token.",
   "timeToApproval": "Immediate for unlisted OAuth app;",
@@ -684,9 +674,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "selfServeDev": false,
   "customerAdmin": "In Infor OS: API Gateway > Authorized Apps > + > type Backend Service, save, Download Credentials with Create Service Account enabled and a user chosen, then send us the.ionapi file securely. The product (M3, LN, CloudSuite Industrial/SyteLine, etc.) must be exposed through ION API and the service-account user needs security roles.",
   "timeToApproval": "Days, customer admin driven",
-  "scopes": [
-   "none; access controlled by the Service Account user's roles/security in the target product"
-  ],
+  "scopes": [],
   "objects": [
    "customers",
    "suppliers",
@@ -713,7 +701,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "timeToApproval": "Immediate once admin creates principal and key",
   "scopes": [
    "repository.Read",
-   "table.Read (OData table API)"
+   "table.Read"
   ],
   "objects": [
    "entries (folders, documents) and metadata fields",
@@ -721,7 +709,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "OData tables (business data)",
    "workflow/process instances (separate APIs)"
   ],
-  "incremental": ". Repository search/entry listing supports metadata and modification-time queries; confirm in the Repository API reference.",
+  "incremental": "",
   "sandbox": true,
   "logo": "/connectors/logos/laserfiche.svg"
  },
@@ -737,9 +725,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "selfServeDev": true,
   "customerAdmin": "Customer logs in at login.mailchimp.com authorize URL and approves; we call login.mailchimp.com/oauth2/metadata to obtain the dc (data center) for their API host. Alternative: customer generates an API key in Account > Extras > API keys and shares it.",
   "timeToApproval": "Immediate",
-  "scopes": [
-   "No granular scopes documented; token inherits the authorizing user's access"
-  ],
+  "scopes": [],
   "objects": [
    "audiences/lists",
    "members (contacts)",
@@ -749,7 +735,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "automations",
    "templates"
   ],
-  "incremental": "since_last_changed / since_timestamp_opt filters on list members; since_send_time on campaigns; count/offset pagination",
+  "incremental": "",
   "sandbox": false,
   "logo": "/connectors/logos/mailchimp.svg"
  },
@@ -766,12 +752,11 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "customerAdmin": "Tenant Global Admin (or Privileged Role Admin) grants admin consent to our multi-tenant app via the admin-consent URL for the application permissions above; for SharePoint minimal access, admin grants Sites.Selected then grants our app per-site permission via POST /sites/{id}/permissions.",
   "timeToApproval": "",
   "scopes": [
-   "Mail.Read (app: admin consent Yes; delegated: No)",
-   "Files.Read.All (admin consent Yes both)",
-   "Sites.Selected (app and delegated; admin consent No per permissions reference, but admin...",
-   "ChannelMessage.Read.All (admin consent Yes both)",
-   "Chat.Read.All (app) for chats",
-   "Calendars.Read, Sites.Read.All"
+   "Mail.Read",
+   "Files.Read.All",
+   "Sites.Selected",
+   "ChannelMessage.Read.All",
+   "Chat.Read.All"
   ],
   "objects": [
    "Outlook messages/events",
@@ -796,9 +781,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "selfServeDev": false,
   "customerAdmin": "Provide their own MRI installation credentials (per Apideck: consumers provide only their own MRI installation credentials) and, if sponsoring, introduce us to MRI.(MRI portal gated).",
   "timeToApproval": "Per Apideck (secondary): 5-7 business days from application to intro call, then NDA, agreement, provisioning",
-  "scopes": [
-   "Determined by the customer's MRI user credentials plus our MIX key"
-  ],
+  "scopes": [],
   "objects": [
    "properties",
    "leases",
@@ -807,7 +790,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "AP invoices and vendors",
    "AR"
   ],
-  "incremental": "(depends on registered MIX API)",
+  "incremental": "",
   "sandbox": null,
   "logo": "/connectors/logos/mrisoftware.png"
  },
@@ -824,7 +807,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "customerAdmin": "Admin (or user with Integration Application permission) goes to Setup > Integration > Manage Integrations > New, sets State Enabled, ticks Authorization Code Grant (https redirect URI) and/or Client Credentials (M2M), ticks REST Web Services scope, saves, and copies client ID and secret (shown only once).",
   "timeToApproval": "Same day if customer admin cooperates; no vendor approval",
   "scopes": [
-   "REST Web Services (rest_webservices)"
+   "REST Web Services"
   ],
   "objects": [
    "customer",
@@ -869,7 +852,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "purchaseOrders",
    "payments"
   ],
-  "incremental": "q=LastUpdateDate>'{cursor}' filter on resource collections with limit/offset paging; bulk GL via BI Publisher reports or ESS-scheduled exports (not verified on a fetched page)",
+  "incremental": "",
   "sandbox": false,
   "logo": "/connectors/logos/oraclefusioncloud.svg"
  },
@@ -881,13 +864,11 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "oauth2_authcode",
   "recommendedPath": "unified_api:nango",
   "partnerRequired": true,
-  "partnerProgram": "Procore App Marketplace partner program (needed for Marketplace distribution; secondary source says partner-program approval)",
+  "partnerProgram": "",
   "selfServeDev": true,
   "customerAdmin": "Company admin installs the app (custom or Marketplace) in their Procore company and, for DMSA, creates the service account and grants project permissions..",
   "timeToApproval": "",
-  "scopes": [
-   "Procore uses permission-based access via the authorizing user or a Developer Managed..."
-  ],
+  "scopes": [],
   "objects": [
    "projects",
    "commitments / subcontracts",
@@ -898,7 +879,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "vendors",
    "RFIs and submittals"
   ],
-  "incremental": "(webhooks plus updated_at filters on list endpoints).",
+  "incremental": "",
   "sandbox": true,
   "logo": "/connectors/logos/procore.jpg"
  },
@@ -910,9 +891,9 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "basic",
   "recommendedPath": "sftp_csv",
   "partnerRequired": false,
-  "partnerProgram": "(QAD documentation portal is customer/partner login)",
+  "partnerProgram": "QAD documentation portal is customer/partner login",
   "selfServeDev": false,
-  "customerAdmin": ". QAD docs show QXtend must be installed and linked to the ERP databases (QXtend 1.10 required for Adaptive ERP 2022.1); customer would need QXtend Inbound/Outbound configured, and a service user. Alternatively the customer produces scheduled report/export files.",
+  "customerAdmin": "QAD docs show QXtend must be installed and linked to the ERP databases (QXtend 1.10 required for Adaptive ERP 2022.1); customer would need QXtend Inbound/Outbound configured, and a service user. Alternatively the customer produces scheduled report/export files.",
   "timeToApproval": "",
   "scopes": [],
   "objects": [
@@ -925,7 +906,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "price lists",
    "GL (via reports/exports)"
   ],
-  "incremental": "practical option is QXtend Outbound events or scheduled delta export by modified date",
+  "incremental": "",
   "sandbox": false,
   "logo": null
  },
@@ -972,9 +953,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "selfServeDev": false,
   "customerAdmin": "Create a Web Services user (Company > Admin > Web Services Users > Add) with a role of needed permissions; then Company > Setup > Company > Edit > Security > Authorized Client Applications > Add, enter our Client ID and the Web Services user ID. For legacy XML also authorize our Web Services sender ID. Customer's subscription must include Web Services.",
   "timeToApproval": "",
-  "scopes": [
-   "(permissions come from the Web Services user's role, not scopes)"
-  ],
+  "scopes": [],
   "objects": [
    "customers",
    "vendors",
@@ -999,7 +978,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "oauth2_authcode",
   "recommendedPath": "direct",
   "partnerRequired": false,
-  "partnerProgram": "Salesforce Partner Program (only for AppExchange listing)",
+  "partnerProgram": "Salesforce Partner Program (only for AppExchange listing",
   "selfServeDev": true,
   "customerAdmin": "Org admin installs our External Client App / authorizes it (or approves the OAuth app), assigns permission set, and the user logs in and allows. API access requires Enterprise, Unlimited, Performance, Developer edition, or Professional with API add-on.",
   "timeToApproval": "Immediate for private use;",
@@ -1036,7 +1015,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "customerAdmin": "Provide an externally reachable Service Layer URL (port 50000 or reverse proxy / VPN / IP allow-list), the CompanyDB name, and a dedicated B1 user with a license (e.g. Indirect Access/Professional) and read authorizations. Hosted customers: ask hosting partner to expose Service Layer.",
   "timeToApproval": "Days, driven by customer IT/network",
   "scopes": [
-   "Business One user license/authorizations on the SAP user (no scopes)"
+   "Business One user license/authorizations on the SAP user"
   ],
   "objects": [
    "BusinessPartners",
@@ -1048,7 +1027,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "IncomingPayments",
    "PurchaseInvoices"
   ],
-  "incremental": "$filter=UpdateDate ge '{date}' (+UpdateTime) on entities; $skip/$top paging",
+  "incremental": "",
   "sandbox": false,
   "logo": "/connectors/logos/sapbusinessone.svg"
  },
@@ -1063,10 +1042,8 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "partnerProgram": "",
   "selfServeDev": true,
   "customerAdmin": "Customer sends an SSH public key and nightly-export job pushes CSV to the drop host using our supplied host key fingerprint.",
-  "timeToApproval": "none",
-  "scopes": [
-   "customer uploads to /<customer>/inbox only"
-  ],
+  "timeToApproval": "",
+  "scopes": [],
   "objects": [
    "customer-defined CSV/TSV/XLSX exports, one folder per..."
   ],
@@ -1082,7 +1059,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "oauth2_authcode",
   "recommendedPath": "direct",
   "partnerRequired": true,
-  "partnerProgram": "Shopify Partner Program (free Partner account needed to create public apps)",
+  "partnerProgram": "Shopify Partner Program (free Partner account needed to create public apps",
   "selfServeDev": true,
   "customerAdmin": "Option A (custom per-store app): store admin creates a custom app in Settings > Apps > Develop apps, selects read scopes, installs, and gives us the Admin API token. Option B (public/unlisted distribution): merchant clicks install link and approves scopes.",
   "timeToApproval": "",
@@ -1091,7 +1068,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "read_customers",
    "read_products",
    "read_inventory",
-   "read_all_orders (needed beyond 60 days)"
+   "read_all_orders"
   ],
   "objects": [
    "orders",
@@ -1117,10 +1094,8 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "partnerProgram": "",
   "selfServeDev": true,
   "customerAdmin": "Option A (preferred for zero-credential): create a secure share and add our account. Option B: create a SERVICE user with our public key and a read-only role (statements below). Admin needs USERADMIN/SECURITYADMIN (CREATE USER requires USERADMIN or higher) and ACCOUNTADMIN for shares.",
-  "timeToApproval": "none",
-  "scopes": [
-   "ROLE with USAGE on warehouse, database, schema and SELECT on tables"
-  ],
+  "timeToApproval": "",
+  "scopes": [],
   "objects": [
    "customer-chosen tables and views"
   ],
@@ -1175,12 +1150,12 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "oauth2_authcode",
   "recommendedPath": "direct",
   "partnerRequired": false,
-  "partnerProgram": "Stripe Connect platform (enable in Dashboard)",
+  "partnerProgram": "Stripe Connect platform (enable in Dashboard",
   "selfServeDev": true,
   "customerAdmin": "Customer admin clicks Connect with Stripe, signs in, selects the account and approves read_only access. Alternative with no Connect: customer creates a restricted API key (read-only on Charges, Customers, Invoices, Subscriptions, Balance transactions, Payouts) and pastes it.",
   "timeToApproval": "Immediate for OAuth read_only; Connect profile may require Stripe review",
   "scopes": [
-   "read_only (default scope)"
+   "read_only"
   ],
   "objects": [
    "customers",
@@ -1194,7 +1169,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "refunds",
    "disputes"
   ],
-  "incremental": "created[gte] filter and starting_after cursor; Events API (/v1/events) for changes; Data Pipeline for full export",
+  "incremental": "",
   "sandbox": true,
   "logo": "/connectors/logos/stripe.svg"
  },
@@ -1206,12 +1181,12 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "oauth2_client_credentials",
   "recommendedPath": "sftp_csv",
   "partnerRequired": true,
-  "partnerProgram": "Toast Integration Partner program (Partner API account)",
+  "partnerProgram": "Toast Integration Partner program (Partner API account",
   "selfServeDev": false,
   "customerAdmin": "Restaurant admin grants API access to the specific integration partner in Toast Web (partner access is per restaurant). Customer then supplies restaurant GUID / external ID. Fallback with no partner status: customer enables Toast Data Export nightly SFTP to our host (Toast Web > Integrations / data export).",
-  "timeToApproval": "(weeks to months per partner reports; no primary source)",
+  "timeToApproval": "",
   "scopes": [
-   "orders.orders:read (via ordersBulk)",
+   "orders.orders:read",
    "menus:read",
    "labor:read",
    "restaurants:read",
@@ -1228,7 +1203,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "restaurant config",
    "discounts"
   ],
-  "incremental": "ordersBulk with startDate/endDate on modified time (businessDate for single-day); pagination by page; used in repo by day/month windows",
+  "incremental": "",
   "sandbox": true,
   "logo": "/connectors/logos/toast.svg"
  },
@@ -1240,7 +1215,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "oauth2_client_credentials",
   "recommendedPath": "sftp_csv",
   "partnerRequired": true,
-  "partnerProgram": "Tyler Platform Alliance (named by secondary source; Tyler's own page for it not found)",
+  "partnerProgram": "",
   "selfServeDev": false,
   "customerAdmin": "Customer (the municipality) must have an active Tyler license and engage Tyler professional services to provision API credentials for us..",
   "timeToApproval": "",
@@ -1271,7 +1246,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "customerAdmin": "Per doc.workday.com search result: customer admin runs the 'Register API Client' task (Set Up: Tenant Setup - Security / Security Administration domains), supplying a unique client name and an x509 certificate public key plus the ISU user; creates an Integration System User and assigns it to a security group with view access to the needed domains and activates security policy changes.",
   "timeToApproval": "",
   "scopes": [
-   "Registered API Client functional-area scopes (e.g. Staffing, Contact Information) plus..."
+   "Registered API Client functional-area scopes"
   ],
   "objects": [
    "workers",
@@ -1297,7 +1272,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "partnerProgram": "Xero App Store tiers (new from 2 March 2026): Starter, Core, Plus, Advanced, Enterprise",
   "selfServeDev": true,
   "customerAdmin": "User with Standard or Advisor role clicks Connect and authorizes the organisation(s) in Xero consent screen; connection list via /connections.",
-  "timeToApproval": "(certification review time not found)",
+  "timeToApproval": "",
   "scopes": [
    "accounting.transactions.read",
    "accounting.contacts.read",
@@ -1329,13 +1304,11 @@ export const CATALOG_SOURCES: CatalogSource[] = [
   "authMethod": "basic",
   "recommendedPath": "sftp_csv",
   "partnerRequired": true,
-  "partnerProgram": "Yardi Interface Partner Program (Standard Interface Partnership Program, SIPP)",
+  "partnerProgram": "Yardi Interface Partner Program (Standard Interface Partnership Program, SIPP",
   "selfServeDev": false,
   "customerAdmin": "Customer must authorize the vendor with Yardi and request the interface be enabled on their Voyager database; Yardi then issues the web-services URL, interface credentials and license.(vendor page blocked).",
-  "timeToApproval": "(secondary sources: multi-step approval)",
-  "scopes": [
-   "(e.g. resident, GL, work orders) determines which SOAP operations are callable"
-  ],
+  "timeToApproval": "",
+  "scopes": [],
   "objects": [
    "properties",
    "units",
@@ -1346,7 +1319,7 @@ export const CATALOG_SOURCES: CatalogSource[] = [
    "GL accounts and journal",
    "work orders"
   ],
-  "incremental": ". Interfaces are request/response SOAP; expect full or date-range pulls. No documented change feed.",
+  "incremental": "",
   "sandbox": true,
   "logo": "/connectors/logos/yardivoyager.png"
  }

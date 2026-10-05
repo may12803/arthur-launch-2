@@ -1,31 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiContext } from "@/lib/client-portal/api";
-import { UPLOAD_TARGETS, neutralizeCell } from "@/lib/client-portal/connector-ui";
+import { UPLOAD_TARGETS, neutralizeCell, parseDateValue as parseDate, parseNumberValue as parseNumber } from "@/lib/client-portal/connector-ui";
 import { clip, dbFail, isMemberRole } from "@/lib/client-portal/connector-api";
 
 export const runtime = "nodejs";
 
 const MAX_ROWS = 50_000;
 const MAX_BYTES = 20 * 1024 * 1024;
-const MONTHS = "jan feb mar apr may jun jul aug sep oct nov dec".split(" ");
-
-function parseDate(v: string): string | null {
-  const s = v.trim();
-  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  let y: number, mo: number, d: number;
-  if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; }
-  else if ((m = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/))) { mo = +m[1]; d = +m[2]; y = +m[3] < 100 ? 2000 + +m[3] : +m[3]; }
-  else if ((m = s.match(/^(\d{1,2})\s([A-Za-z]{3})[a-z]*\s(\d{4})$/))) { d = +m[1]; mo = MONTHS.indexOf(m[2].toLowerCase()) + 1; y = +m[3]; }
-  else return null;
-  const dt = new Date(Date.UTC(y, mo - 1, d));
-  return dt.getUTCFullYear() === y && dt.getUTCMonth() === mo - 1 && dt.getUTCDate() === d ? dt.toISOString().slice(0, 10) : null;
-}
-
-function parseNumber(v: string): number | null {
-  const s = v.trim().replace(/^\((.*)\)$/, "-$1").replace(/[$,\s]/g, "");
-  return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : null;
-}
-
 // Receives a parsed, mapped file. The browser reads CSV/XLSX locally; this route re-validates every cell on the server
 // (the client is never trusted), neutralizes formula-injection prefixes, and records the mapping and the clean rows
 // through connection_upload_mapping. Rows that fail validation are reported with their row number and are not imported.

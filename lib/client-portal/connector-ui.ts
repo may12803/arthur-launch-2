@@ -400,6 +400,26 @@ export function neutralizeCell(v: string): string {
   return /^[=+\-@\t\r]/.test(v) && !/^-?[\d.,]+$/.test(v) ? `'${v}` : v;
 }
 
+const MONTHS = "jan feb mar apr may jun jul aug sep oct nov dec".split(" ");
+
+// Dates arrive as ISO, US numeric (m/d/y) or "5 Oct 2026". Returns YYYY-MM-DD or null, never a guess.
+export function parseDateValue(v: string): string | null {
+  const s = v.trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  let y: number, mo: number, d: number;
+  if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+  else if ((m = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/))) { mo = +m[1]; d = +m[2]; y = +m[3] < 100 ? 2000 + +m[3] : +m[3]; }
+  else if ((m = s.match(/^(\d{1,2})\s([A-Za-z]{3})[a-z]*\s(\d{4})$/))) { d = +m[1]; mo = MONTHS.indexOf(m[2].toLowerCase()) + 1; y = +m[3]; }
+  else return null;
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === mo - 1 && dt.getUTCDate() === d ? dt.toISOString().slice(0, 10) : null;
+}
+
+export function parseNumberValue(v: string): number | null {
+  const s = v.trim().replace(/^\((.*)\)$/, "-$1").replace(/[$,\s]/g, "");
+  return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : null;
+}
+
 // ---- OAuth hooks (declared here, reconciled with lib/connectors/auth/oauth2.ts at merge) ----------------------------
 
 export type OAuthEndpoints = { authorizeUrl: string; tokenUrl: string; clientId: string; clientSecret: string; scopes: string[] };

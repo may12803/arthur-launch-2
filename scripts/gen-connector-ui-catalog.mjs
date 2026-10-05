@@ -34,6 +34,14 @@ function clean(s, max = 320) {
   return t;
 }
 
+// Research notes become customer copy only when they read as a statement: strip stray leading punctuation, and drop
+// anything that is really a note to ourselves ("none", "not found", "no primary source", "(possibly ...)").
+function note(t) {
+  const s = t.replace(/^[.\s(]+/, "").replace(/\)$/, "").trim();
+  if (!s || /^(none|n\/a|not |no |likely|possibly)/i.test(s) || /(source|not found|not stated|possibly|can vary)/i.test(s)) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 const out = [];
 const unmatched = [];
 for (const file of fs.readdirSync(dir).filter((f) => f.endsWith(".json")).sort()) {
@@ -55,13 +63,13 @@ for (const file of fs.readdirSync(dir).filter((f) => f.endsWith(".json")).sort()
     authMethod: d.auth?.method ?? "none",
     recommendedPath: d.recommended_path,
     partnerRequired: ar.partner_program_required === true,
-    partnerProgram: clean(ar.partner_program_name, 140),
+    partnerProgram: note(clean(ar.partner_program_name, 140)),
     selfServeDev: ar.self_serve_dev_account === true,
-    customerAdmin: clean(ar.customer_admin_must_do, 420),
-    timeToApproval: clean(ar.time_to_approval, 120),
-    scopes: (d.auth?.scopes_needed_read || []).map((s) => clean(String(s), 90)).filter(Boolean),
+    customerAdmin: note(clean(ar.customer_admin_must_do, 420)),
+    timeToApproval: note(clean(ar.time_to_approval, 120)),
+    scopes: (d.auth?.scopes_needed_read || []).map((s) => clean(String(s).split(" (")[0], 90)).filter((s) => /^[A-Za-z][A-Za-z0-9:._\/ -]{1,70}$/.test(s)),
     objects: (d.data_objects_to_pull || []).map((s) => clean(String(s), 60)).filter(Boolean).slice(0, 14),
-    incremental: clean(d.incremental_sync, 200),
+    incremental: ((t) => (/^[A-Z][A-Za-z]/.test(t) ? t : ""))(clean(d.incremental_sync, 200)),
     sandbox: sandbox === true ? true : sandbox === false ? false : null,
     logo: logo ? `/connectors/logos/${logo}` : null,
   });
