@@ -193,33 +193,21 @@ export const esriArcgis = makeRestAdapter({
   },
 });
 
-// ---- Google Workspace. Vendor JSON: Drive changes.list with startPageToken (standard behaviour, UNVERIFIED this run).
-// drive_files backfills by modifiedTime; drive_changes then follows the change feed from a start token.
+// ---- Google Workspace. Scopes on the consent screen are calendar.readonly and spreadsheets.readonly only (Drive scopes are
+// restricted and need a CASA assessment, so no Drive endpoint is called). Calendar events.list: syncToken incremental
+// (nextSyncToken arrives on the last page); a 410 means the token expired and the caller restarts from a full list.
 const GAPI = 'https://www.googleapis.com';
-const DRIVE_FIELDS = 'id,name,mimeType,modifiedTime,md5Checksum,size,trashed,parents';
 export const googleWorkspace = makeRestAdapter({
   key: 'google-workspace',
   base: () => GAPI,
   headers: (creds) => bearer(creds.access_token),
-  validate: { url: (b) => `${b}/drive/v3/about?fields=user`, account: (j) => j?.user?.emailAddress },
+  validate: { url: (b) => `${b}/calendar/v3/calendars/primary`, account: (j) => j?.id },
   objects: {
-    drive_files: {
-      req: (c) => ({ url: `${c.base}/drive/v3/files?${qs({ pageSize: 1000, orderBy: 'modifiedTime', fields: `nextPageToken,files(${DRIVE_FIELDS})`, pageToken: c.pg, ...(c.hw ? { q: `modifiedTime > '${c.hw}'` } : {}) })}` }),
-      list: (j) => j?.files ?? [],
-      id: (r) => r.id,
-      ts: (r) => iso(r.modifiedTime),
-      next: (j) => j?.nextPageToken,
-    },
-    drive_changes: {
-      req: (c) => {
-        const token = c.pg ?? c.hw;
-        return token
-          ? { url: `${c.base}/drive/v3/changes?${qs({ pageToken: token, pageSize: 1000, fields: `nextPageToken,newStartPageToken,changes(fileId,removed,time,file(${DRIVE_FIELDS}))` })}` }
-          : { url: `${c.base}/drive/v3/changes/startPageToken` };
-      },
-      list: (j) => j?.changes ?? [],
-      id: (r) => `${r.fileId}@${r.time}`,
-      hwOf: (j) => j?.newStartPageToken ?? j?.startPageToken,
+    calendar_events: {
+      req: (c) => ({ url: `${c.base}/calendar/v3/calendars/primary/events?${qs({ maxResults: 2500, showDeleted: 'true', ...(c.hw ? { syncToken: c.hw } : {}), ...(c.pg ? { pageToken: c.pg } : {}) })}` }),
+      list: (j) => j?.items ?? [],
+      id: (r) => `${r.id}@${r.updated}`,
+      hwOf: (j) => j?.nextSyncToken,
       next: (j) => j?.nextPageToken,
     },
   },

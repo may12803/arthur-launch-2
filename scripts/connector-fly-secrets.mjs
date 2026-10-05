@@ -11,7 +11,7 @@ import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
-import { clientCreds } from "./lib/connector-vault.mjs";
+import { clientCreds as sandboxCreds, loadEnv, VENDOR_FILES, VAULT } from "./lib/connector-vault.mjs";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const STAGE = process.argv.includes("--stage");
@@ -21,6 +21,8 @@ const APP = "arthur-online";
 const ENDPOINTS = {
   airtable: { authorize: "https://airtable.com/oauth2/v1/authorize", token: "https://airtable.com/oauth2/v1/token" }, // https://airtable.com/developers/web/api/oauth-reference
   box: { authorize: "https://account.box.com/api/oauth2/authorize", token: "https://api.box.com/oauth2/token" }, // https://developer.box.com/reference/get-authorize/
+  "quickbooks-online": { authorize: "https://appcenter.intuit.com/connect/oauth2", token: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer" }, // https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0
+  square: { authorize: "https://connect.squareup.com/oauth2/authorize", token: "https://connect.squareup.com/oauth2/token" }, // https://developer.squareup.com/docs/oauth-api/overview
   calendly: { authorize: "https://calendly.com/oauth/authorize", token: "https://calendly.com/oauth/token" }, // https://calendly.com/.well-known/oauth-authorization-server
   clickup: { authorize: "https://app.clickup.com/api", token: "https://api.clickup.com/api/v2/oauth/token" }, // https://developer.clickup.com/docs/authentication
   "clio-manage": { authorize: "https://app.clio.com/oauth/authorize", token: "https://app.clio.com/oauth/token" }, // https://docs.developers.clio.com/api-docs/clio-manage/authorization/ (US region)
@@ -39,15 +41,27 @@ const ENDPOINTS = {
 // Credentials the vault holds are for a vendor sandbox/development app, not a production one.
 const SANDBOX_ONLY = {
   procore: "vault holds PROCORE_SANDBOX_* app keys only",
-  square: "vault holds SQUARE_SANDBOX_* keys only",
   gusto: "client verified against api.gusto-demo.com (demo app), not production",
-  "quickbooks-online": "Intuit development keys (sandbox company); production keys need app assessment",
 };
 
 // Per-tenant endpoints: the OAuth host contains the customer's own subdomain, and oauthEndpoints() reads one static URL per system.
 const PER_TENANT = {
   zendesk: "authorize https://{subdomain}.zendesk.com/oauth/authorizations/new, token https://{subdomain}.zendesk.com/oauth/tokens (https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/); needs a per-connection subdomain input in the portal before it can be staged",
 };
+
+// Production app credentials win over the sandbox ones the probe reads: <VENDOR>_PROD_CLIENT_ID/_SECRET, or Square's
+// SQUARE_PROD_APPLICATION_ID/_SECRET. Falls back to the sandbox lookup when no prod pair exists.
+const PROD_NAMES = { square: ["SQUARE_PROD_APPLICATION_ID", "SQUARE_PROD_APPLICATION_SECRET"] };
+function clientCreds(key) {
+  const stem = VENDOR_FILES[key]?.file || key.replace(/-.*/, "");
+  const file = path.join(VAULT, `${stem}.env`);
+  if (existsSync(file)) {
+    const raw = loadEnv(file), U = stem.toUpperCase().replace(/[^A-Z0-9]/g, "_");
+    const [idN, secN] = PROD_NAMES[key] || [`${U}_PROD_CLIENT_ID`, `${U}_PROD_CLIENT_SECRET`];
+    if (raw[idN] && raw[secN]) return { file, prod: true, id: raw[idN], secret: raw[secN] };
+  }
+  return sandboxCreds(key);
+}
 
 const readJson = (f) => JSON.parse(readFileSync(f, "utf8"));
 const upper = (k) => k.toUpperCase().replace(/[^A-Z0-9]/g, "_");

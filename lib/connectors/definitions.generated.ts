@@ -1519,7 +1519,6 @@ export const CONNECTOR_DEFINITIONS: ConnectorDefinition[] = [
       "source": "default_unverified"
     },
     "scopes": [
-      "https://www.googleapis.com/auth/drive.metadata.readonly",
       "https://www.googleapis.com/auth/calendar.readonly",
       "https://www.googleapis.com/auth/spreadsheets.readonly"
     ],
