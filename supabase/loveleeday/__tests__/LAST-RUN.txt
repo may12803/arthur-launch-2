@@ -1,4 +1,4 @@
-scratch cluster: 14.24 (Homebrew) on port 51166 (temp dir removed on exit)
+scratch cluster: 14.24 (Homebrew) on port 51807 (temp dir removed on exit)
 PASS: stubs applied (roles, auth, vault, extensions)
 PASS: applied 20261005_00_base_schema.sql to an empty database
 PASS: applied 20261005_10_connector_platform.sql to an empty database
@@ -305,6 +305,7 @@ PASS: cleanup removes the pending QA invites but not a real invite
 PASS: cleanup removes the QA toast and stripe connection rows but keeps the seeded connections
 PASS: cleanup touches no other tenant (including a qa-named document and an arthur+harborqa invite on the Dabney twin)
 PASS: a second cleanup run matches nothing and the seed survives it
+PASS: seed id collision: the other tenant's row keeps its tenant and content
 PASS: mutation caught: with tenant_connections_member_select = using (true) the RLS test reports -> FAIL: tenant A user cannot read tenant B tenant_connections
 PASS: policy restored, RLS test green again
 PASS: rollback removed every connector-platform table and function checked
@@ -312,4 +313,4 @@ PASS: rollback kept base data (6 tenants) and dropped the tenant_connections add
 PASS: forward migration re-applies after rollback
 PASS: 12 rollback restored the previous document_delete (no staff branch)
 PASS: 12 forward migration re-applies after its rollback
-RESULT: 313 passed, 0 failed
+RESULT: 314 passed, 0 failed

@@ -36,7 +36,8 @@ begin
     (ws_rec, v_t, 'wholesale-receivables', 'Wholesale receivables', 'Restaurant and retailer accounts paying late, with terms that are not on the invoice and no statement cycle.', 'C', 'B-', 'A-', 'hv-wholesale-aging', 3),
     (ws_ret, v_t, 'customer-retention', 'Customer retention', 'Wine-club and repeat shoppers are not identifiable across the three tills, so no one is winning back the lapsed.', 'D', 'C-', 'B', null, 4)
   on conflict (id) do update set name = excluded.name, summary = excluded.summary, grade_start = excluded.grade_start, grade_now = excluded.grade_now,
-    grade_target = excluded.grade_target, review_slug = excluded.review_slug, sort = excluded.sort, updated_at = now();
+    grade_target = excluded.grade_target, review_slug = excluded.review_slug, sort = excluded.sort, updated_at = now()
+    where public.workstreams.tenant_id = excluded.tenant_id;
 
   insert into public.workstream_grades (id, tenant_id, workstream_id, dimension, grade_start, grade_now, grade_target, sort) values
     ('7a2b0003-0000-4000-8000-000000000001', v_t, ws_fin, 'Speed of close', 'D', 'C', 'A-', 1),
@@ -48,7 +49,8 @@ begin
     ('7a2b0003-0000-4000-8000-000000000007', v_t, ws_rec, 'Terms clarity', 'D+', 'C+', 'A', 2),
     ('7a2b0003-0000-4000-8000-000000000008', v_t, ws_ret, 'Customer identity across stores', 'D-', 'D+', 'B', 1),
     ('7a2b0003-0000-4000-8000-000000000009', v_t, ws_ret, 'Win-back', 'D', 'C-', 'B', 2)
-  on conflict (id) do update set dimension = excluded.dimension, grade_start = excluded.grade_start, grade_now = excluded.grade_now, grade_target = excluded.grade_target, sort = excluded.sort;
+  on conflict (id) do update set dimension = excluded.dimension, grade_start = excluded.grade_start, grade_now = excluded.grade_now, grade_target = excluded.grade_target, sort = excluded.sort
+    where public.workstream_grades.tenant_id = excluded.tenant_id;
 
   -- ── tasks. evidence = {columns, rows, note} (what the task page renders) plus lineage: source_system, source_ref, observed_at, proof ──
   insert into public.workstream_tasks (id, tenant_id, workstream_id, title, detail, recommendation, status, kind, evidence, outcome, was, proof, rank, done_at, internal) values
@@ -136,7 +138,8 @@ begin
       'Members who have not bought in 90 days are the cheapest customers to win back. A short offer to them waits on the tagging above.',
       'Send one email with a free tasting, to members lapsed 90 to 180 days.', 'planned', 'plan', null, null, null, null, 2, null, false)
   on conflict (id) do update set title = excluded.title, detail = excluded.detail, recommendation = excluded.recommendation, status = excluded.status, kind = excluded.kind,
-    evidence = excluded.evidence, outcome = excluded.outcome, was = excluded.was, proof = excluded.proof, rank = excluded.rank, done_at = excluded.done_at, updated_at = now();
+    evidence = excluded.evidence, outcome = excluded.outcome, was = excluded.was, proof = excluded.proof, rank = excluded.rank, done_at = excluded.done_at, updated_at = now()
+    where public.workstream_tasks.tenant_id = excluded.tenant_id;
 
   -- ── deliverables ─────────────────────────────────────────────────────────
   insert into public.deliverables (id, tenant_id, kind, title, slug, content, status) values
@@ -152,7 +155,8 @@ begin
     ('7a2b0004-0000-4000-8000-000000000003', v_t, 'portfolio', 'Wholesale receivables aging and collection plan', 'hv-wholesale-aging',
       jsonb_build_object('summary', 'Draft. $102,350 is owed by 27 accounts; $41,300 of it is more than 60 days old.',
         'sections', jsonb_build_array(jsonb_build_object('heading', 'Aging', 'body', 'Fourteen accounts 1 to 30 days, seven accounts 31 to 60 days, six accounts over 60 days.'))), 'draft')
-  on conflict (id) do update set kind = excluded.kind, title = excluded.title, slug = excluded.slug, content = excluded.content, status = excluded.status, updated_at = now();
+  on conflict (id) do update set kind = excluded.kind, title = excluded.title, slug = excluded.slug, content = excluded.content, status = excluded.status, updated_at = now()
+    where public.deliverables.tenant_id = excluded.tenant_id;
 
   -- ── coverage map ─────────────────────────────────────────────────────────
   insert into public.coverage_areas (id, tenant_id, grp, area, status, note, rank, sort) values
@@ -170,13 +174,15 @@ begin
     ('7a2b0005-0000-4000-8000-00000000000c', v_t, 'Sales and customers', 'Online store', 'none', 'Order sync and fees', 5, 12),
     ('7a2b0005-0000-4000-8000-00000000000d', v_t, 'People and compliance', 'Alcohol license renewals', 'none', 'Three store licenses and the distributor permit', null, 13),
     ('7a2b0005-0000-4000-8000-00000000000e', v_t, 'People and compliance', 'Staff scheduling and labor cost', 'none', null, null, 14)
-  on conflict (id) do update set grp = excluded.grp, area = excluded.area, status = excluded.status, note = excluded.note, rank = excluded.rank, sort = excluded.sort;
+  on conflict (id) do update set grp = excluded.grp, area = excluded.area, status = excluded.status, note = excluded.note, rank = excluded.rank, sort = excluded.sort
+    where public.coverage_areas.tenant_id = excluded.tenant_id;
 
   -- ── contracts (no signed_url, no document id: nothing here pretends to be a real signed file) ──
   insert into public.contracts (id, tenant_id, title, status) values
     ('7a2b0006-0000-4000-8000-000000000001', v_t, 'Master services agreement (demo)', 'signed'),
     ('7a2b0006-0000-4000-8000-000000000002', v_t, 'Scope addition: wholesale receivables (demo)', 'sent')
-  on conflict (id) do update set title = excluded.title, status = excluded.status;
+  on conflict (id) do update set title = excluded.title, status = excluded.status
+    where public.contracts.tenant_id = excluded.tenant_id;
 
   -- one honest base-schema connection: requested, nothing flowing
   insert into public.tenant_connections (id, tenant_id, connector_key, status, access, managed_by, note) values
@@ -189,6 +195,7 @@ begin
       insert into public.entities (id, tenant_id, parent_id, kind, name, code, meta) values
         ('7a2b0007-0000-4000-8000-000000000001', $1, null, 'org', 'Harbor & Vine', 'HV', '{}'::jsonb)
       on conflict (id) do update set name = excluded.name, code = excluded.code, kind = excluded.kind
+      where public.entities.tenant_id = excluded.tenant_id
     $cp$ using v_t;
     execute $cp$
       insert into public.entities (id, tenant_id, parent_id, kind, name, code, meta) values
@@ -197,6 +204,7 @@ begin
         ('7a2b0007-0000-4000-8000-000000000004', $1, '7a2b0007-0000-4000-8000-000000000001', 'location', 'Riverside Shop', 'HV-RIVR', '{"type":"store"}'::jsonb),
         ('7a2b0007-0000-4000-8000-000000000005', $1, '7a2b0007-0000-4000-8000-000000000001', 'location', 'Distribution Warehouse', 'HV-WH', '{"type":"warehouse"}'::jsonb)
       on conflict (id) do update set name = excluded.name, code = excluded.code, kind = excluded.kind, parent_id = excluded.parent_id, meta = excluded.meta
+      where public.entities.tenant_id = excluded.tenant_id
     $cp$ using v_t;
 
     -- approvals: pending / rejected / expired only, so the engine can never claim and execute one from the demo
@@ -208,6 +216,7 @@ begin
         ('7a2b000a-0000-4000-8000-000000000004', $1, '7a2b0007-0000-4000-8000-000000000001', 'money', 'Two percent early-pay discount for all wholesale accounts', 'Offered to speed collections.', '{"discount_pct":2}'::jsonb, 'idea:early-pay-discount', 'rejected', $2, now() - interval '4 days', 'Costs about $8,000 a year and the late accounts are not the ones that would use it.', now() - interval '6 days'),
         ('7a2b000a-0000-4000-8000-000000000005', $1, '7a2b0007-0000-4000-8000-000000000003', 'send', 'Holiday tasting invitation to club members', 'Time-boxed invitation; the window passed before a decision.', '{"recipients":454}'::jsonb, 'campaign:holiday-tasting', 'expired', null, null, null, now() - interval '12 days')
       on conflict (id) do update set title = excluded.title, detail = excluded.detail, proposed = excluded.proposed, status = excluded.status, gate = excluded.gate, reason = excluded.reason
+      where public.approvals.tenant_id = excluded.tenant_id
     $cp$ using v_t, v_owner;
 
     -- connections: inserted 'connected', health derived below from the sync_runs and ingested_records inserted here
@@ -223,6 +232,7 @@ begin
         ('7a2b0009-0000-4000-8000-000000000002', $1, '7a2b0008-0000-4000-8000-000000000002', 'daily_sales', now() - interval '6 hours 2 minutes', now() - interval '6 hours', 'succeeded', 3, 3, null),
         ('7a2b0009-0000-4000-8000-000000000003', $1, '7a2b0008-0000-4000-8000-000000000003', 'orders', now() - interval '3 hours 1 minute', now() - interval '3 hours', 'failed', 0, 0, 'Demo failure: the store access token was rejected (401).')
       on conflict (id) do update set started_at = excluded.started_at, finished_at = excluded.finished_at, status = excluded.status, rows_read = excluded.rows_read, rows_written = excluded.rows_written, error = excluded.error
+      where public.sync_runs.tenant_id = excluded.tenant_id
     $cp$ using v_t;
     execute $cp$
       insert into public.ingested_records (tenant_id, connection_id, source_system, object, source_ref, payload, payload_sha256, observed_at, valid_from, ingested_run)
@@ -236,8 +246,9 @@ begin
         ('sq-daily-riverside-d1','{"store":"Riverside Shop","gross_usd":3068,"transactions":219,"demo":true}'::jsonb, now() - interval '6 hours', '7a2b0009-0000-4000-8000-000000000002'::uuid)
       ) as r(ref, payload, at, run)
       on conflict (connection_id, object, source_ref, payload_sha256) do update set observed_at = excluded.observed_at, valid_from = excluded.valid_from, ingested_run = excluded.ingested_run
+      where public.ingested_records.tenant_id = excluded.tenant_id
     $cp$ using v_t;
-    update public.tenant_connections set last_rows = 3 where id = '7a2b0008-0000-4000-8000-000000000002';
+    update public.tenant_connections set last_rows = 3 where id = '7a2b0008-0000-4000-8000-000000000002' and tenant_id = v_t;
     perform private.refresh_connection_health('7a2b0008-0000-4000-8000-000000000002');
     perform private.refresh_connection_health('7a2b0008-0000-4000-8000-000000000003');
   end if;

@@ -139,3 +139,12 @@ select t.check('cleanup touches no other tenant (including a qa-named document a
   and (select count(*) from public.documents where id = '97bbbbbb-0000-0000-0000-00000000000c') = 1 and (select count(*) from public.invites where id = '97bbbbbb-0000-0000-0000-00000000000d') = 1);
 \ir ../seed/harbor-vine-qa-cleanup.sql
 select t.check('a second cleanup run matches nothing and the seed survives it', (select count(*) from public.workstream_tasks where tenant_id = '97aaaaaa-0000-0000-0000-000000000001') = 12);
+
+-- R2-01: a fixed seed id owned by ANOTHER tenant must never be updated by the seed's upserts.
+delete from public.coverage_areas where id = '7a2b0005-0000-4000-8000-000000000001';
+insert into public.coverage_areas (id, tenant_id, grp, area, status, note) values
+  ('7a2b0005-0000-4000-8000-000000000001', '97aaaaaa-0000-0000-0000-000000000009', 'Ops', 'Owned by the other tenant', 'none', 'collision');
+\ir ../seed/harbor-vine-demo.sql
+select t.check('seed id collision: the other tenant''s row keeps its tenant and content',
+  (select tenant_id::text || '|' || area || '|' || note from public.coverage_areas where id = '7a2b0005-0000-4000-8000-000000000001')
+    = '97aaaaaa-0000-0000-0000-000000000009|Owned by the other tenant|collision');

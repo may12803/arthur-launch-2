@@ -36,9 +36,12 @@ export interface ParsedTable {
 const FORMULA_START = /^[=+\-@\t\r]/;
 const PLAIN_NUMBER = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
 
-/** A cell a spreadsheet would execute as a formula. Plain numbers like -5 or +3.2 cannot be formulas and are exempt. */
+/** A cell a spreadsheet would execute as a formula. Plain numbers like -5 or +3.2 cannot be formulas and are exempt.
+ *  Leading whitespace is ignored the same way the mapper trims stored strings, so " =HYPERLINK(...)" is caught (R2-02). */
 export function isFormulaLike(v: string): boolean {
-  return FORMULA_START.test(v) && !PLAIN_NUMBER.test(v);
+  if (FORMULA_START.test(v) && !PLAIN_NUMBER.test(v.trim())) return true;
+  const t = v.trim();
+  return FORMULA_START.test(t) && !PLAIN_NUMBER.test(t);
 }
 
 /** Export side: prefix a single quote so Excel/Sheets treat the cell as text. */

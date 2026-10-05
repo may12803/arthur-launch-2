@@ -24,6 +24,9 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const VAULT = process.env.CONNECTOR_VAULT_DIR || path.join(homedir(), ".arthur/vault/connectors");
 const REDIRECT = "https://portal.loveleedaystudios.com/api/client/connectors/oauth/callback";
 
+// Only an RFC 6749 error code is ever echoed; any other vendor text (which can contain what we sent) is not.
+const code = (s) => (/^[a-z_]{1,40}$/.test(s) ? s : s ? "(unrecognized, not printed)" : "(none)");
+
 function loadEnv(file) {
   const env = {};
   for (const line of readFileSync(file, "utf8").split("\n")) {
@@ -62,10 +65,10 @@ async function probe(key) {
         const r = await fetch(o("TOKEN_URL"), { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json", ...extra }, body: form, redirect: "manual" });
         const text = await r.text();
         let err = ""; try { err = String(JSON.parse(text).error || ""); } catch { err = /invalid_grant|invalid_client|unauthorized_client/.exec(text)?.[0] || ""; }
-        out.steps.push(`token endpoint (${how}): HTTP ${r.status} error=${err || "(none)"}`);
+        out.steps.push(`token endpoint (${how}): HTTP ${r.status} error=${code(err)}`);
         if (err === "invalid_grant") { out.status = "CLIENT_VERIFIED"; break; }
         if (/invalid_client|unauthorized_client/.test(err) || r.status === 401) rejected = true;
-      } catch (e) { out.steps.push(`token endpoint unreachable (${how}): ${e.message}`); }
+      } catch (e) { out.steps.push(`token endpoint unreachable (${how}): ${e?.cause?.code || e?.name || "error"}`); }
     }
     if (out.status !== "CLIENT_VERIFIED") {
       if (rejected) out.status = "CLIENT_REJECTED";
@@ -79,7 +82,7 @@ async function probe(key) {
     const f = (url, init) => fetch(url, { ...init, redirect: "manual" });
     try {
       const v = await adapter.validate(creds, f);
-      out.steps.push(`validate: ok=${v.ok} ${v.ok ? "" : v.detail}`.trim());
+      out.steps.push(`validate: ok=${v.ok}`); // vendor detail text is not printed: it can echo a submitted credential
       if (!v.ok) { out.status = "VALIDATE_FAILED"; return out; }
       for (const object of adapter.objects) {
         const page = await adapter.pull(object, null, creds, f);
@@ -87,7 +90,7 @@ async function probe(key) {
         if (page.records.length) { out.status = "DATA_FLOWED_SANDBOX"; out.evidence = { object, source_ref: page.records[0].source_ref }; break; }
       }
       if (out.status !== "DATA_FLOWED_SANDBOX") out.steps.push("validate passed but every object returned 0 records; sandbox may be empty");
-    } catch (e) { out.status = "VALIDATE_FAILED"; out.steps.push(`adapter error: ${String(e.message).slice(0, 200)}`); }
+    } catch (e) { out.status = "VALIDATE_FAILED"; out.steps.push(`adapter error: ${e?.name || "Error"}${typeof e?.status === "number" ? ` HTTP ${e.status}` : ""}`); }
   }
   return out;
 }
