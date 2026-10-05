@@ -6,5 +6,5 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const db = loveleedayAnon();
-  return handlePublicApi(req, "approvals", (name, args) => db.rpc(name, args), connectorsServerSecret());
+  return handlePublicApi(req, "approvals", async (name, args) => await db.rpc(name, args), connectorsServerSecret());
 }

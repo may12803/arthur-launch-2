@@ -1,3 +1,4 @@
+-- Roll back 20261005_14 first if it is applied (its triggers sit on tables this file changes).
 -- Rollback for 20261005_10_connector_platform.sql + 20261005_11_connector_definitions_seed.sql. Run in the Supabase SQL editor on the
 -- SAME project the migration was applied to. DESTRUCTIVE: drops every connector-platform table with its data (ingested records, sync
 -- history, approvals, api keys, webhooks, entities). Export what you need first. The base schema (20261005_00) is not rolled back:

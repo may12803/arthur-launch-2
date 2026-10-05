@@ -139,23 +139,32 @@ create trigger webhook_connection_health after update of health on public.tenant
 
 -- ── delivery worker RPCs ─────────────────────────────────────────────────────────────────────────────
 -- Leases due rows for 5 minutes so a second worker run skips them; the record call releases or finishes the row.
+-- An endpoint whose signing secret cannot be decrypted (e.g. its tenant key was shredded) fails that delivery alone;
+-- it never stops the rest of the batch.
 create or replace function public.webhook_deliveries_due(p_secret text, p_limit integer)
 returns table(id uuid, url text, secret text, payload jsonb, attempt integer)
 language plpgsql security definer set search_path = '' as $$
 #variable_conflict use_column
+declare r record; v_secret text;
 begin
   if not private.server_ok_named(p_secret, 'connectors-server') then raise exception 'server only'; end if;
-  return query
-  with due as (
-    select d.id from public.webhook_deliveries d join public.webhook_endpoints e on e.id = d.endpoint_id and e.tenant_id = d.tenant_id
-    where d.status in ('pending', 'retry') and d.next_at <= now() and e.active and d.payload is not null
-    order by d.next_at, d.id limit least(greatest(coalesce(p_limit, 20), 1), 20)
-    for update of d skip locked),
-  leased as (
-    update public.webhook_deliveries d set next_at = now() + interval '5 minutes' from due where d.id = due.id
-    returning d.id, d.endpoint_id, d.tenant_id, d.payload, d.attempt)
-  select l.id, e.url, extensions.pgp_sym_decrypt(e.secret_ct, private.tenant_key(l.tenant_id, false)), l.payload, l.attempt
-    from leased l join public.webhook_endpoints e on e.id = l.endpoint_id;
+  for r in
+    select d.id, d.tenant_id, d.payload, d.attempt, e.url, e.secret_ct
+      from public.webhook_deliveries d join public.webhook_endpoints e on e.id = d.endpoint_id and e.tenant_id = d.tenant_id
+     where d.status in ('pending', 'retry') and d.next_at <= now() and e.active and d.payload is not null
+     order by d.next_at, d.id limit least(greatest(coalesce(p_limit, 20), 1), 20)
+     for update of d skip locked
+  loop
+    begin
+      v_secret := extensions.pgp_sym_decrypt(r.secret_ct, private.tenant_key(r.tenant_id, false));
+    exception when others then
+      update public.webhook_deliveries set status = 'failed', at = now() where webhook_deliveries.id = r.id;
+      continue;
+    end;
+    update public.webhook_deliveries set next_at = now() + interval '5 minutes' where webhook_deliveries.id = r.id;
+    id := r.id; url := r.url; secret := v_secret; payload := r.payload; attempt := r.attempt;
+    return next;
+  end loop;
 end $$;
 
 create or replace function public.webhook_delivery_record(p_secret text, p_id uuid, p_status text, p_response_code integer, p_attempt integer, p_next_at timestamptz)

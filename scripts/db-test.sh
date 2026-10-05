@@ -43,12 +43,12 @@ echo "scratch cluster: $("$BIN/psql" -X -t -A -h "$TMP" -p "$PORT" -U postgres -
 out="$(psqlq -v ON_ERROR_STOP=1 -f "$ROOT/scripts/db-test-stubs.sql")" || { echo "$out"; echo "FAIL: stubs did not apply"; exit 1; }
 echo "PASS: stubs applied (roles, auth, vault, extensions)"; PASSES=$((PASSES + 1))
 
-for f in "$MIG"/20261005_00_*.sql "$MIG"/20261005_10_*.sql "$MIG"/20261005_11_*.sql "$MIG"/20261005_12_*.sql "$MIG"/20261005_13_*.sql; do
+for f in $(ls "$MIG"/20261005_*.sql | sort); do
   name="$(basename "$f")"
   out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$f")" || { echo "$out" | tail -5; echo "FAIL: migration $name did not apply on an empty database"; FAILS=$((FAILS + 1)); echo "RESULT: $PASSES passed, $FAILS failed"; exit 1; }
   echo "PASS: applied $name to an empty database"; PASSES=$((PASSES + 1))
 done
-for f in "$MIG"/20261005_00_*.sql "$MIG"/20261005_10_*.sql "$MIG"/20261005_11_*.sql "$MIG"/20261005_12_*.sql "$MIG"/20261005_13_*.sql; do
+for f in $(ls "$MIG"/20261005_*.sql | sort); do
   name="$(basename "$f")"
   out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$f")" || { echo "$out" | tail -5; echo "FAIL: migration $name is not idempotent (second apply failed)"; FAILS=$((FAILS + 1)); continue; }
   echo "PASS: re-applied $name (idempotent)"; PASSES=$((PASSES + 1))
@@ -73,6 +73,18 @@ fi
 after="$(psqlq -v ON_ERROR_STOP=0 -f "$RLS" | sed -E 's/^psql:[^ ]+ NOTICE:  //' | grep -c '^FAIL' || true)"
 if [ "${after:-1}" = "0" ]; then echo "PASS: policy restored, RLS test green again"; PASSES=$((PASSES + 1)); else echo "FAIL: RLS test still failing after the policy was restored"; FAILS=$((FAILS + 1)); fi
 
+# 14 rollback round trip. It runs first and leaves 14 rolled back, because 10 cannot roll back underneath 14's triggers;
+# 14 is re-applied after the 10 round trip below.
+RB14="$MIG/rollback/20261005_14_public_api_and_webhooks.sql"
+fn14="select count(*) from pg_proc where proname in ('public_api_connections','webhook_deliveries_due','connection_rotate_tokens','webhook_enqueue')"
+if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$RB14")"; then
+  if [ "$(psqlq -c "$fn14")" = "0" ]; then echo "PASS: 14 rollback removed the public API, webhook and rotation functions"; PASSES=$((PASSES + 1)); else echo "FAIL: 14 rollback left functions behind"; FAILS=$((FAILS + 1)); fi
+  if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$MIG"/20261005_14_*.sql)" && [ "$(psqlq -c "$fn14")" = "4" ]; then echo "PASS: 14 forward migration re-applies after its rollback"; PASSES=$((PASSES + 1)); else echo "$out" | tail -3; echo "FAIL: 14 does not re-apply after its rollback"; FAILS=$((FAILS + 1)); fi
+  psqlq -v ON_ERROR_STOP=1 -1 -f "$RB14" >/dev/null
+else
+  echo "$out" | tail -5; echo "FAIL: 14 rollback did not apply"; FAILS=$((FAILS + 1))
+fi
+
 # Rollback round trip: the rollback removes every connector-platform object, keeps the base schema and its data,
 # and the forward migration applies again afterwards.
 RB="$MIG/rollback/20261005_10_connector_platform.sql"
@@ -85,7 +97,7 @@ if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$RB")"; then
   if [ "$after_tenants" = "$before_tenants" ] && [ "$(psqlq -c "select count(*) from information_schema.columns where table_schema='public' and table_name='tenant_connections' and column_name='health'")" = "0" ]; then
     echo "PASS: rollback kept base data ($after_tenants tenants) and dropped the tenant_connections additions"; PASSES=$((PASSES + 1))
   else echo "FAIL: rollback changed base data or left tenant_connections additions"; FAILS=$((FAILS + 1)); fi
-  if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$MIG"/20261005_10_*.sql)"; then echo "PASS: forward migration re-applies after rollback"; PASSES=$((PASSES + 1)); else echo "$out" | tail -3; echo "FAIL: forward migration does not re-apply after rollback"; FAILS=$((FAILS + 1)); fi
+  if out="$(psqlq -v ON_ERROR_STOP=1 -1 -f "$MIG"/20261005_10_*.sql)"; then echo "PASS: forward migration re-applies after rollback"; PASSES=$((PASSES + 1)); psqlq -v ON_ERROR_STOP=1 -1 -f "$MIG"/20261005_14_*.sql >/dev/null; else echo "$out" | tail -3; echo "FAIL: forward migration does not re-apply after rollback"; FAILS=$((FAILS + 1)); fi
 else
   echo "$out" | tail -5; echo "FAIL: rollback did not apply"; FAILS=$((FAILS + 1))
 fi

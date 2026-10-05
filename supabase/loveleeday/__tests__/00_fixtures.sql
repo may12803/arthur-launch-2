@@ -51,8 +51,8 @@ insert into public.webhook_endpoints (id, tenant_id, url, events, secret_ct) val
   ('99000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-00000000000a', 'https://a.example.test/hook', '{sync.failed}', '\x00'),
   ('99000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-00000000000b', 'https://b.example.test/hook', '{sync.failed}', '\x00');
 insert into public.webhook_deliveries (endpoint_id, tenant_id, event, status) values
-  ('99000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-00000000000a', 'sync.failed', 'ok'),
-  ('99000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-00000000000b', 'sync.failed', 'ok');
+  ('99000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-00000000000a', 'sync.failed', 'delivered'),
+  ('99000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-00000000000b', 'sync.failed', 'delivered');
 insert into public.tenant_security (tenant_id) values ('aaaaaaaa-0000-0000-0000-00000000000a'), ('bbbbbbbb-0000-0000-0000-00000000000b');
 insert into public.upload_mappings (tenant_id, target_object) values
   ('aaaaaaaa-0000-0000-0000-00000000000a', 'invoices'), ('bbbbbbbb-0000-0000-0000-00000000000b', 'invoices');

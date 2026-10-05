@@ -1,13 +1,17 @@
-scratch cluster: 14.24 (Homebrew) on port 51807 (temp dir removed on exit)
+scratch cluster: 14.24 (Homebrew) on port 56327 (temp dir removed on exit)
 PASS: stubs applied (roles, auth, vault, extensions)
 PASS: applied 20261005_00_base_schema.sql to an empty database
 PASS: applied 20261005_10_connector_platform.sql to an empty database
 PASS: applied 20261005_11_connector_definitions_seed.sql to an empty database
 PASS: applied 20261005_12_staff_permissions.sql to an empty database
+PASS: applied 20261005_13_notifications_and_sso.sql to an empty database
+PASS: applied 20261005_14_public_api_and_webhooks.sql to an empty database
 PASS: re-applied 20261005_00_base_schema.sql (idempotent)
 PASS: re-applied 20261005_10_connector_platform.sql (idempotent)
 PASS: re-applied 20261005_11_connector_definitions_seed.sql (idempotent)
 PASS: re-applied 20261005_12_staff_permissions.sql (idempotent)
+PASS: re-applied 20261005_13_notifications_and_sso.sql (idempotent)
+PASS: re-applied 20261005_14_public_api_and_webhooks.sql (idempotent)
 PASS: seed: 48 connector definitions loaded
 PASS: seed: no definition claims build_status live
 PASS: seed: build_status live is rejected by the table (raised: new row for relation "connector_definitions" violates check constraint "connector_definiti)
@@ -306,11 +310,63 @@ PASS: cleanup removes the QA toast and stripe connection rows but keeps the seed
 PASS: cleanup touches no other tenant (including a qa-named document and an arthur+harborqa invite on the Dabney twin)
 PASS: a second cleanup run matches nothing and the seed survives it
 PASS: seed id collision: the other tenant's row keeps its tenant and content
+PASS: enforced domain requires SSO
+PASS: email domain check ignores case
+PASS: unenforced and unknown domains do not require SSO
+PASS: invalid email does not reveal a domain
+PASS: email function exposes only a boolean
+PASS: staff with live grant can use a password session
+PASS: enforced tenant refuses password session
+PASS: own tenant requires SSO
+PASS: other tenant SSO policy is hidden
+PASS: other tenant session is refused
+PASS: enforced tenant accepts SSO session
+PASS: non-enforced tenant accepts password session
+PASS: another tenant cannot set notification preferences
+PASS: other tenant notification write refused (raised: not allowed)
+PASS: member reads own notification row
+PASS: member cannot read another tenant notification row
+PASS: setting preferences writes an audit entry
+PASS: invalid digest refused (raised: choose valid notification settings)
+PASS: another member cannot read owner preferences
+PASS: another member writes only own row
+PASS: weak session cannot read preferences
+PASS: weak session cannot write preferences (raised: two-factor sign-in required)
+PASS: rotate: first write with expected null succeeds
+PASS: rotate: a second writer that also expected null loses
+PASS: rotate: the right expected value wins
+PASS: rotate: a writer that started from the old set loses even with a newer timestamp
+PASS: rotate: R2 is the stored refresh token
+PASS: rotate: wrong secret refused (raised: server only)
+PASS: api connections: tenant A sees its own rows and none of B's
+PASS: api connections: keyset cursor skips what was already returned
+PASS: api records: tenant B gets nothing of tenant A
+PASS: api limit is capped at 101
+PASS: api reads refuse a wrong secret (raised: server only)
+PASS: webhook: approval.proposed queued once, for the active A endpoint only
+PASS: webhook: tenant B's endpoint received nothing about tenant A
+PASS: webhook: approval.decided queued when the status leaves pending
+PASS: webhook: an update that does not change status queues nothing
+PASS: webhook: a finished sync queues sync.succeeded and record.ingested
+PASS: webhook: payload carries id, type, tenant and created_at
+PASS: due: returns the queued rows with the decrypted signing secret
+PASS: due: a second call inside the lease returns nothing
+PASS: record: retry advances the attempt and schedules next_at
+PASS: record: a stale attempt number is refused (raised: delivery was already handled)
+PASS: record: a delivered row cannot be recorded again (raised: delivery was already handled)
+PASS: due: an endpoint that cannot be decrypted fails only its own deliveries
+PASS: due: wrong secret refused (raised: server only)
+PASS: record: invalid status refused (raised: invalid delivery status)
+PASS: a client cannot insert a delivery (raised: permission denied for table webhook_deliveries)
 PASS: mutation caught: with tenant_connections_member_select = using (true) the RLS test reports -> FAIL: tenant A user cannot read tenant B tenant_connections
 PASS: policy restored, RLS test green again
+PASS: 14 rollback removed the public API, webhook and rotation functions
+PASS: 14 forward migration re-applies after its rollback
 PASS: rollback removed every connector-platform table and function checked
 PASS: rollback kept base data (6 tenants) and dropped the tenant_connections additions
 PASS: forward migration re-applies after rollback
 PASS: 12 rollback restored the previous document_delete (no staff branch)
 PASS: 12 forward migration re-applies after its rollback
-RESULT: 314 passed, 0 failed
+PASS: 13 rollback removed notification preferences and SSO functions
+PASS: 13 forward migration re-applies after its rollback
+RESULT: 370 passed, 0 failed

@@ -3,7 +3,7 @@
 
 -- atomic rotation: the write lands only when the stored rotated_at equals the expected one
 insert into public.tenant_connections (id, tenant_id, connector_key, definition_key, auth_method, status)
-  values ('c1000000-0000-0000-0000-0000000000f1', 'aaaaaaaa-0000-0000-0000-00000000000a', 'hubspot', 'hubspot', 'oauth2_authcode', 'connected');
+  values ('c1000000-0000-0000-0000-0000000000f1', 'aaaaaaaa-0000-0000-0000-00000000000a', 'mailchimp', 'mailchimp', 'oauth2_authcode', 'connected');
 select t.check('rotate: first write with expected null succeeds',
   public.connection_rotate_tokens(t.sec(), 'c1000000-0000-0000-0000-0000000000f1', '{"access_token":"A1","refresh_token":"R1"}', '2030-01-01T00:00:00Z', null));
 select t.check('rotate: a second writer that also expected null loses',
@@ -17,7 +17,7 @@ select t.raises('rotate: wrong secret refused', $q$select public.connection_rota
 
 -- public API reads: every row returned belongs to the tenant passed by the server
 insert into public.tenant_connections (id, tenant_id, connector_key, definition_key, status)
-  values ('c1000000-0000-0000-0000-0000000000f2', 'bbbbbbbb-0000-0000-0000-00000000000b', 'square', 'square', 'connected');
+  values ('c1000000-0000-0000-0000-0000000000f2', 'bbbbbbbb-0000-0000-0000-00000000000b', 'box', 'box', 'connected');
 select t.check('api connections: tenant A sees its own rows and none of B''s',
   (select count(*) from public.public_api_connections(t.sec(), 'aaaaaaaa-0000-0000-0000-00000000000a', 0, 100) x where x.id = 'c1000000-0000-0000-0000-0000000000f2') = 0
   and (select count(*) from public.public_api_connections(t.sec(), 'aaaaaaaa-0000-0000-0000-00000000000a', 0, 100) x where x.id = 'c1000000-0000-0000-0000-0000000000f1') = 1);
@@ -67,6 +67,8 @@ select t.check('record: retry advances the attempt and schedules next_at',
 select t.raises('record: a stale attempt number is refused', format($q$select public.webhook_delivery_record(t.sec(), %L, 'delivered', 200, 1, null)$q$, (select id from _due order by id limit 1)), '%already handled%');
 select public.webhook_delivery_record(t.sec(), (select id from _due order by id offset 1 limit 1), 'delivered', 200, 1, null);
 select t.raises('record: a delivered row cannot be recorded again', format($q$select public.webhook_delivery_record(t.sec(), %L, 'failed', 500, 1, null)$q$, (select id from _due order by id offset 1 limit 1)), '%already handled%');
+select t.check('due: an endpoint that cannot be decrypted fails only its own deliveries',
+  (select count(*) from public.webhook_deliveries where endpoint_id = '99000000-0000-0000-0000-00000000000a' and status in ('pending', 'retry')) = 0);
 select t.raises('due: wrong secret refused', $q$select * from public.webhook_deliveries_due(t.badsec(), 5)$q$, '%server only%');
 select t.raises('record: invalid status refused', format($q$select public.webhook_delivery_record(t.sec(), %L, 'maybe', 200, 2, null)$q$, (select id from _due order by id limit 1)), '%invalid delivery status%');
 
