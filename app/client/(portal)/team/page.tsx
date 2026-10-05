@@ -4,6 +4,9 @@ import { Card, Eyebrow, PageTitle, Muted, StatusBadge } from "@/components/clien
 import { InviteForm } from "@/components/client-portal/InviteForm";
 import { LocalDate } from "@/components/client-portal/LocalTime";
 import { RevokeInvite } from "@/components/client-portal/RevokeInvite";
+import { ScopeEditor, type ScopeMember } from "@/components/client-portal/connectors/ScopeEditor";
+import type { EntityRow } from "@/components/client-portal/connectors/EntitiesView";
+import { ErrorBanner } from "@/components/client-portal/cp";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +60,20 @@ export default async function TeamPage() {
       .returns<InviteRow[]>();
     invites = data || [];
   }
+
+  // Scoped membership (G09): which parts of the organization each member works in. Read under the member's own session.
+  const [entRes, memRes, scopeRes] = await Promise.all([
+    supabase.from("entities").select("id, parent_id, kind, name, code").eq("tenant_id", ctx.tenantId).order("name").returns<EntityRow[]>(),
+    supabase.from("memberships").select("id, user_id").eq("tenant_id", ctx.tenantId).returns<{ id: string; user_id: string }[]>(),
+    supabase.from("membership_scopes").select("membership_id, entity_id").returns<{ membership_id: string; entity_id: string }[]>(),
+  ]);
+  const entities = entRes.data ?? [];
+  const memberIdByUser = new Map((memRes.data ?? []).map((m) => [m.user_id, m.id]));
+  const scopeMembers: ScopeMember[] = members.map((m) => {
+    const mid = memberIdByUser.get(m.user_id);
+    return { user_id: m.user_id, label: m.email || `User ${m.user_id.slice(0, 8)}`, role: m.role, entityIds: (scopeRes.data ?? []).filter((s) => s.membership_id === mid).map((s) => s.entity_id) };
+  });
+  const scopeErrors = [entRes.error && `Entities: ${entRes.error.message}`, memRes.error && `Memberships: ${memRes.error.message}`, scopeRes.error && `Scopes: ${scopeRes.error.message}`];
 
   return (
     <div>
@@ -119,6 +136,13 @@ export default async function TeamPage() {
           </div>
         </Card>
       )}
+
+      <Card className="p-6 mb-6">
+        <h2 className="font-serif text-h3 text-text-active mb-1">Access by entity and location</h2>
+        <p className="text-small text-text-muted mb-4">Limit a teammate to the parts of the organization they work in.</p>
+        <ErrorBanner errors={scopeErrors} label="Scoped access did not load" />
+        <ScopeEditor members={scopeMembers} entities={entities} canEdit={isAdmin} />
+      </Card>
 
       {isAdmin && <InviteForm />}
     </div>
