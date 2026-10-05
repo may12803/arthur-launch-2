@@ -25,6 +25,12 @@
 // policy) and re-run: leaked_rows > 0, exit 1; drop a table/grant or point at the wrong project: failures > 0, exit 1.
 import crypto from "node:crypto";
 
+// --live: the LIVE-system probe (production project + portal.loveleedaystudios.com) with two labeled throwaway tenants
+// (zz-iso-a-20261005 / zz-iso-b-20261005). Exit 0 pass, 2 any leak, 1 inconclusive, 3 missing config. See scripts/lib/tenant-isolation-live.mjs.
+//   arthur-cred run --use supabase,supabase-loveleeday -- node scripts/tenant-isolation-probe.mjs --live
+// Without --live this file is the branch-database fixture probe below, which refuses production by design (P23).
+if (process.argv.includes("--live")) { const { main } = await import("./lib/tenant-isolation-live.mjs"); process.exit(await main()); }
+
 const E = process.env;
 const cfg = { url: E.PROBE_URL, anon: E.PROBE_ANON_KEY, email: E.PROBE_A_EMAIL, pass: E.PROBE_A_PASSWORD, totp: E.PROBE_A_TOTP,
   A: E.PROBE_A_TENANT, B: E.PROBE_B_TENANT, doc: E.PROBE_B_DOC, share: E.PROBE_B_SHARE, task: E.PROBE_B_TASK, base: E.PROBE_BASE,
