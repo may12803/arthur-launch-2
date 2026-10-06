@@ -195,7 +195,7 @@ async function checkMfaRedirect(req: NextRequest, res: NextResponse): Promise<Ad
 // portal.loveleedaystudios.com is the client-facing address. It serves only the
 // client portal and outside-share pages; the admin app never answers on it.
 const PORTAL_HOST = "portal.loveleedaystudios.com";
-const PORTAL_ALLOWED = ["/client", "/api/client", "/api/billing/", "/api/stripe/webhook", "/api/v1/", "/api/cron/webhooks", "/api/webhooks/shopify/", "/api/public/connector-status", "/api/public/market-snapshot", "/api/public/snapshot", "/api/public/unsubscribe", "/trust", "/connectors/logos/", "/share/", "/api/share/", "/brand/", "/_next/", "/favicon.ico"];
+const PORTAL_ALLOWED = ["/client", "/api/client", "/api/billing/", "/api/stripe/webhook", "/api/v1/", "/api/cron/webhooks", "/api/webhooks/shopify/", "/api/public/connector-status", "/api/public/market-snapshot", "/api/public/snapshot", "/api/public/unsubscribe", "/api/csp-report", "/trust", "/connectors/logos/", "/share/", "/api/share/", "/brand/", "/_next/", "/favicon.ico"];
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
