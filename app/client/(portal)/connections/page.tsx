@@ -39,7 +39,7 @@ export default async function ConnectionsPage() {
           </>
         }
       />
-      <ErrorBanner label="Connection data did not load" errors={[legacy.error && `Connector list: ${legacy.error.message}`, mine.error && `Your connections: ${mine.error.message}`]} />
+      <ErrorBanner label="Connection data did not load" errors={[legacy.error && "The connector list could not be loaded.", mine.error && "Your connections could not be loaded."]} />
       <CatalogView entries={entries} conns={conns} now={now} canManage={canManage} notReady={notReady} />
     </div>
   );

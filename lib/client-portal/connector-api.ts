@@ -5,6 +5,7 @@
 // list, it is marked `CONTRACT GAP` so the SQL author can match it.
 import { NextResponse } from "next/server";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { publicDbError } from "./public-errors";
 
 export const b64url = (b: Buffer) => b.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 export const sha256Hex = (s: string) => createHash("sha256").update(s).digest("hex");
@@ -26,10 +27,10 @@ export function connectorsServerSecret(): string | null {
 // Database refusals are shown to the person, not swallowed. Plain-language refusals keep their text; anything else
 // still names the failing step so it can be reported.
 export function dbFail(message: string, step?: string) {
-  const m = message.toLowerCase();
-  const status = m.includes("not signed in") || m.includes("two-factor") ? 401 : m.includes("only an owner") || m.includes("not allowed") || m.includes("permission denied") ? 403 : m.includes("not found") || m.includes("unknown") ? 404 : m.includes("larger than") || m.includes("too many") ? 413 : m.includes("does not exist") || m.includes("could not find the function") ? 501 : 500;
-  const text = status === 501 ? `${step ? `${step}: ` : ""}the database function for this is not installed yet (${message}).` : step ? `${step}: ${message}` : message;
-  return NextResponse.json({ error: text }, { status });
+  // The raw database message is logged here and never returned: the person gets the step (our own fixed wording) and a stable code.
+  console.error(`[connector-api] ${step ?? "database error"}: ${message}`);
+  const pub = publicDbError(message);
+  return NextResponse.json({ error: step ? `${step}: ${pub.message}` : pub.message, code: pub.code }, { status: pub.status });
 }
 
 export function clip(v: unknown, max: number): string {

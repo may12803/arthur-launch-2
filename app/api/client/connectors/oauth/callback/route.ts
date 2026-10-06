@@ -5,6 +5,7 @@ import { tokenRequest } from "@/lib/connectors/auth/oauth2";
 import { oauthEndpoints } from "@/lib/client-portal/connector-ui";
 import { connectorsServerSecret } from "@/lib/client-portal/connector-api";
 import { zendeskEndpoints } from "@/lib/connectors/auth/zendesk";
+import type { OAuthErrorCode } from "@/lib/client-portal/public-errors";
 
 export const runtime = "nodejs";
 
@@ -16,9 +17,10 @@ type StateRow = { connection_id: string; connector_key: string; code_verifier: s
 // returned or put in a URL.
 export async function GET(req: NextRequest) {
   const origin = publicOrigin(req);
-  const back = (key: string | null, error?: string) => {
+  // Only a stable code from OAUTH_ERRORS ever reaches the URL; vendor and database text is logged server-side.
+  const back = (key: string | null, error?: OAuthErrorCode) => {
     const url = new URL(key ? `/client/connections/${key}` : "/client/connections", origin);
-    if (error) url.searchParams.set("error", error.slice(0, 180));
+    if (error) url.searchParams.set("error", error);
     else url.searchParams.set("connected", "1");
     return NextResponse.redirect(url, 303);
   };
@@ -26,20 +28,26 @@ export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams;
   const state = q.get("state") || "";
   const code = q.get("code") || "";
-  if (q.get("error")) return back(null, `The vendor declined: ${q.get("error")}`);
-  if (!state || !code) return back(null, "The sign-in response was incomplete. Start again from the connector page.");
+  if (q.get("error")) {
+    console.error(`[oauth-callback] vendor returned error=${String(q.get("error")).slice(0, 80)}`);
+    return back(null, "vendor_declined");
+  }
+  if (!state || !code) return back(null, "incomplete");
 
   const secret = connectorsServerSecret();
-  if (!secret) return back(null, "Connector sign-in is not configured on the server.");
+  if (!secret) return back(null, "not_configured");
 
   const ctx = await getApiContext();
   if (ctx.error) return NextResponse.redirect(new URL("/client/login", origin), 303);
 
   const anon = loveleedayAnon();
   const consumed = await anon.rpc("oauth_state_consume", { p_secret: secret, p_state: state, p_tenant: ctx.tenantId, p_user: ctx.userId });
-  if (consumed.error) return back(null, "That sign-in link expired, was already used, or was started by someone else. Start again from the connector page.");
+  if (consumed.error) {
+    console.error(`[oauth-callback] state consume failed: ${consumed.error.message}`);
+    return back(null, "link_expired");
+  }
   const st = (Array.isArray(consumed.data) ? consumed.data[0] : consumed.data) as StateRow | null;
-  if (!st) return back(null, "That sign-in link expired or was already used. Start again from the connector page.");
+  if (!st) return back(null, "link_expired");
 
   let ep = oauthEndpoints(st.connector_key);
   if (st.connector_key === "zendesk") {
@@ -47,7 +55,7 @@ export async function GET(req: NextRequest) {
     const cfg = await anon.rpc("connection_config_get", { p_secret: secret, p_connection: st.connection_id });
     ep = zendeskEndpoints((cfg.data as { subdomain?: string } | null)?.subdomain);
   }
-  if (!ep) return back(st.connector_key, "Sign-in for this system is not configured on the server.");
+  if (!ep) return back(st.connector_key, "system_not_configured");
 
   let tokens;
   try {
@@ -59,10 +67,14 @@ export async function GET(req: NextRequest) {
       params: { grant_type: "authorization_code", code, redirect_uri: st.redirect_uri, ...(st.code_verifier ? { code_verifier: st.code_verifier } : {}) },
     });
   } catch (e) {
-    return back(st.connector_key, e instanceof Error ? e.message : "The vendor did not complete the sign-in.");
+    console.error(`[oauth-callback] token exchange failed for ${st.connector_key}: ${e instanceof Error ? e.message : "error"}`);
+    return back(st.connector_key, "exchange_failed");
   }
 
   const stored = await anon.rpc("connection_store_tokens", { p_secret: secret, p_connection: st.connection_id, p_tokens: tokens, p_rotated_at: tokens.rotated_at });
-  if (stored.error) return back(st.connector_key, "The sign-in worked but the connection could not be saved. Start again from the connector page.");
+  if (stored.error) {
+    console.error("[oauth-callback] token store failed", st.connector_key, stored.error.message);
+    return back(st.connector_key, "save_failed");
+  }
   return back(st.connector_key);
 }
