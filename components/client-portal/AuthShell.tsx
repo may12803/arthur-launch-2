@@ -49,7 +49,7 @@ export function AuthShell({
 
       <main className="flex-1 flex items-start md:items-center justify-center px-4 py-8 md:py-16">
         <div className="w-full max-w-[1000px] grid md:grid-cols-[minmax(0,1fr)_minmax(0,460px)] gap-5 md:gap-6 items-stretch">
-          <section className="order-1 md:order-2 bg-white rounded-[20px] border border-[var(--line)] p-6 md:p-8 min-w-0">
+          <div className="order-1 md:order-2 bg-white rounded-[20px] border border-[var(--line)] p-6 md:p-8 min-w-0">
             <div className="flex items-center justify-between gap-3 mb-4">
               <span className="ll-eyebrow">{eyebrow}</span>
               {step && <span className="text-[12px] text-[var(--muted)] whitespace-nowrap">{step}</span>}
@@ -61,7 +61,7 @@ export function AuthShell({
             {lead && <p className="mt-3 text-[15px] leading-[1.6] text-[#4a4e57]">{lead}</p>}
             <div className="mt-6">{children}</div>
             {footer && <div className="mt-6 pt-5 border-t border-[var(--line)]">{footer}</div>}
-          </section>
+          </div>
 
           {ctx && (
             <aside className="order-2 md:order-1 rounded-[20px] bg-[#14161b] text-white p-6 md:p-10 flex flex-col justify-between gap-8 min-w-0">
