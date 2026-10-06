@@ -10,7 +10,7 @@ export function SiteFooter() {
           <Wordmark size={20} />
         </a>
         <div className="ll-footer-legal">
-          <span>&copy; 2026 LOVELEEDAY Studios</span>
+          <span>&copy; 2026 LOVELEEDAY Studios LLC</span>
           <a href="/client/privacy">Privacy</a>
           <a href="/client/terms">Terms</a>
           <a href="/trust">Trust center</a>
