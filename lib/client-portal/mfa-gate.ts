@@ -36,7 +36,7 @@ const transient = (e: AuthErr) => !!e && ((e.status ?? 0) >= 500 || e.name === "
  */
 export function adminMfaVerdict(i: AdminMfaInput): AdminMfaVerdict {
   const mustCheck = i.requireMfa || i.hasAuthCookie;
-  if (!i.configured) return i.requireMfa ? { kind: "deny" } : { kind: "pass" };
+  if (!i.configured) return mustCheck ? { kind: "deny" } : { kind: "pass" };
   if (i.threw) return mustCheck ? { kind: "deny" } : { kind: "pass" };
   if (!i.user) {
     // A transient auth fault on a request that carries auth cookies is not "no session".
