@@ -15,7 +15,7 @@ const INVITE_EXAMPLE = {
   next: "Ask the three people who picked up extra shifts last month.",
 };
 
-type Preview = { tenant_name: string; role: string; expired: boolean; email_hint?: string | null } | "invalid" | null;
+type Preview = { tenant_name: string; role: string; expired: boolean; email_hint?: string | null; inviter_name?: string | null } | "invalid" | null;
 
 // `get_invite_preview(p_token text)` is a SECURITY DEFINER RPC granted to
 // anon, so this call works before the visitor has any session — it shows
@@ -55,6 +55,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
 
   const [mode, setMode] = useState<"signup" | "signin">("signup");
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -105,7 +106,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
       const res = await fetch("/api/client/invite/signup", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ token, email, password }),
+        body: JSON.stringify({ token, email, password, name: fullName }),
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -201,7 +202,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
             <div className="av" aria-hidden>{initials}</div>
             <div>
               <b>{info.tenant_name}</b>
-              <small>You are invited as a <b>{roleName}</b></small>
+              <small>{info.inviter_name ? <>{info.inviter_name} invited you as a <b>{roleName}</b></> : <>You are invited as a <b>{roleName}</b></>}</small>
             </div>
           </div>
           {ROLE_HELP[info.role] && <p className="role">{ROLE_HELP[info.role]} An admin can change your role later.</p>}
@@ -230,6 +231,20 @@ export default function InvitePage({ params }: { params: { token: string } }) {
             {info?.email_hint ? <>This invitation was sent to <b>{info.email_hint}</b> and only works with that address.</> : "Use the email this invitation was sent to. It only works with that address."}
           </p>
           <form onSubmit={onSubmit} style={{ marginTop: 24 }}>
+            {mode === "signup" && (
+              <FormField label="Your name" htmlFor="invite-name">
+                <input
+                  id="invite-name"
+                  type="text"
+                  autoComplete="name"
+                  maxLength={80}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className={inputClass}
+                  placeholder="First and last name"
+                />
+              </FormField>
+            )}
             <FormField label="Email" htmlFor="invite-email">
               <input
                 id="invite-email"

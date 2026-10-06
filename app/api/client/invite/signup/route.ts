@@ -14,6 +14,8 @@ export async function POST(req: NextRequest) {
   const token = String(body.token || "");
   const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
+  // Optional display name: shown to people this person later invites ("Jordan Lee invited you"). Plain text only.
+  const fullName = String(body.name || "").replace(/[\u0000-\u001f\u007f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 80);
   if (token.length < 12 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return NextResponse.json({ error: "That invitation link isn't valid." }, { status: 400 });
   if (password.length < 12) return NextResponse.json({ error: "Use at least 12 characters." }, { status: 400 });
 
@@ -24,7 +26,7 @@ export async function POST(req: NextRequest) {
   if (!invite || new Date(invite.expires_at) <= new Date()) return NextResponse.json({ error: "This invitation has expired or was already used." }, { status: 410 });
   if (String(invite.email).toLowerCase() !== email) return NextResponse.json({ error: "Use the email address this invitation was sent to." }, { status: 403 });
 
-  const r = await fetch(`${url}/auth/v1/admin/users`, { method: "POST", headers: H, body: JSON.stringify({ email, password, email_confirm: true }) });
+  const r = await fetch(`${url}/auth/v1/admin/users`, { method: "POST", headers: H, body: JSON.stringify({ email, password, email_confirm: true, ...(fullName ? { user_metadata: { full_name: fullName } } : {}) }) });
   if (r.ok) {
     // P24: the invite was checked before the account existed. Re-read it now so a token consumed or expired in between is reported
     // with a recovery path instead of a silent account that has no membership.
