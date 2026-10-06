@@ -182,7 +182,9 @@ const CLASSES = {
     "tenant_set_external_sharing", "connection_request", "connection_set_key", "connection_disconnect", "is_tenant_member", "staff_close_access",
     // connector platform (20261005_10): client RPCs, each checks the caller's role in p_tenant
     "connector_oauth_begin", "connection_upload_mapping", "entity_upsert", "entity_delete", "membership_scope_set", "approval_decide",
-    "api_key_create", "api_key_revoke", "webhook_upsert", "webhook_delete", "tenant_security_set", "audit_export", "notification_prefs_set"],
+    "api_key_create", "api_key_revoke", "webhook_upsert", "webhook_delete", "tenant_security_set", "audit_export", "notification_prefs_set",
+    // 20261005_29: membership lifecycle, each checks the caller's role in the membership's tenant
+    "membership_set_role", "membership_remove", "tenant_transfer_ownership"],
   staff: ["staff_list_tenants", "staff_open_access", "staff_set_data_class", "staff_provision_tenant", "staff_probe_inventory",
     "staff_probe_fixture", "staff_probe_target", "staff_probe_function_inventory", "staff_probe_reset_fixture"],
   gated: ["accept_invite", "get_invite_preview", "share_preview", "share_issue_code", "share_redeem", "connection_record", "connection_secret", "connections_for_probe",
