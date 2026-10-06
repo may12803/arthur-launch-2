@@ -58,6 +58,8 @@ const PUBLIC_PREFIXES = [
   "/api/public/snapshot",
   "/api/public/unsubscribe",
   "/api/cron/snapshot-purge",
+  // Browsers post Content-Security-Policy-Report-Only violations here with no credentials; the route only logs.
+  "/api/csp-report",
   // Client-tenant engine pipeline: secret-guarded AND loopback-only (the route refuses any request that came through the Fly proxy).
   "/api/cron/tenant-pipeline",
   "/api/cron/atlassian-privacy",

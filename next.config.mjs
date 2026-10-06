@@ -1,3 +1,18 @@
+const REPORT_ONLY_CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://js.stripe.com https://*.posthog.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.posthog.com https://api.stripe.com",
+  "frame-src https://js.stripe.com https://checkout.stripe.com",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self' https://checkout.stripe.com",
+  "object-src 'none'",
+  "report-uri /api/csp-report",
+].join("; ");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
@@ -30,6 +45,9 @@ const nextConfig = {
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
         { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        // Report-only first: the full policy is observed against the live app (violations land in /api/csp-report and
+        // the Fly logs) before any of it is enforced, so nothing breaks while it is tuned.
+        { key: "Content-Security-Policy-Report-Only", value: REPORT_ONLY_CSP },
       ],
     },
   ],

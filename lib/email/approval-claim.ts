@@ -8,6 +8,7 @@ type Chain = {
   eq(col: string, v: unknown): Chain;
   in(col: string, v: unknown[]): Chain;
   is(col: string, v: null): Chain;
+  lt(col: string, v: unknown): Chain;
   select(cols: string): Chain;
   then: PromiseLike<{ data: unknown[] | null; error: { message: string } | null }>["then"];
 };
@@ -17,7 +18,11 @@ export interface ApprovalDb {
 
 export const CLAIMABLE_STATUSES = ["pending", "edited", "failed"];
 
-/** True when this caller now owns the send. False when it was already sent or another request holds the claim. */
+// A claim is a lease. A process that crashed mid-send never releases it, so after CLAIM_LEASE_MS another request may
+// take it over. That retry is safe to send: approvalIdempotencyKey() makes Resend drop a duplicate of the same content.
+export const CLAIM_LEASE_MS = 15 * 60 * 1000;
+
+/** True when this caller now owns the send. False when it was already sent or another request holds a live claim. */
 export async function claimApproval(db: ApprovalDb, approvalId: string, now = new Date().toISOString()): Promise<boolean> {
   const res = await db
     .from("arthur_email_approvals")
@@ -27,7 +32,22 @@ export async function claimApproval(db: ApprovalDb, approvalId: string, now = ne
     .is("approved_at", null)
     .select("id");
   if (res.error) throw new Error(`approval claim failed: ${res.error.message}`);
-  return (res.data?.length ?? 0) === 1;
+  if ((res.data?.length ?? 0) === 1) return true;
+  // Take over a claim whose holder stopped without sending or releasing. Still one conditional UPDATE, so of several
+  // concurrent takeovers exactly one matches the old approved_at.
+  const staleBefore = new Date(new Date(now).getTime() - CLAIM_LEASE_MS).toISOString();
+  const stale = await db
+    .from("arthur_email_approvals")
+    .update({ approved_at: now, approved_by: "claiming" })
+    .eq("id", approvalId)
+    .in("status", CLAIMABLE_STATUSES)
+    .eq("approved_by", "claiming")
+    .lt("approved_at", staleBefore)
+    .select("id");
+  if (stale.error) throw new Error(`approval claim failed: ${stale.error.message}`);
+  const took = (stale.data?.length ?? 0) === 1;
+  if (took) console.warn("[approval] took over an expired send claim", { approvalId });
+  return took;
 }
 
 /** Give the claim back after a failed send so the approval can be retried. */

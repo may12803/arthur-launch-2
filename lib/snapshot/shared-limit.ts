@@ -3,6 +3,7 @@
 // store is unconfigured, slow or errors, the local verdict stands, so an outage degrades to per-process limits and
 // never to unlimited.
 import type { SlidingWindow } from './limits.ts';
+import { opsAlert } from '../ops/alert.ts';
 
 export type Verdict = { ok: boolean; retryAfterSec: number };
 export type SharedTake = (bucket: string, max: number, windowSec: number) => Promise<Verdict>;
@@ -41,7 +42,9 @@ export async function takeShared(local: SlidingWindow, key: string, shared: Shar
   try {
     return await shared(`${local.name}:${key}`, local.max, Math.ceil(local.windowMs / 1000));
   } catch (e) {
-    console.log(`[snapshot] shared limiter unavailable, using local: ${e instanceof Error ? e.message : 'error'}`);
+    // Outage policy: admit on the local window (one machine, so it is the same limit, just not durable across restarts)
+    // and tell a person, because a database outage long enough to matter needs looking at.
+    void opsAlert('snapshot-limiter-local', 'The shared Snapshot rate limiter is unavailable; limits are running on local counts.', { error: e instanceof Error ? e.message : 'error' });
     return l;
   }
 }

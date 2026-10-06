@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectorsServerSecret, safeEqual } from '@/lib/client-portal/connector-api';
 import { getStore } from '@/lib/snapshot/store';
 import { purgeWithinBudget } from '@/lib/snapshot/purge';
+import { opsAlert } from '@/lib/ops/alert';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -15,10 +16,11 @@ export async function POST(req: NextRequest) {
   if (!given || !safeEqual(given, secret)) return NextResponse.json({ error: 'Forbidden.' }, { status: 403 });
   try {
     const r = await purgeWithinBudget(getStore());
-    if (r.remaining !== 0) console.log(`[snapshot-purge] purged=${r.purged} remaining=${r.remaining} budgetExhausted=${r.budgetExhausted}`);
+    // Expired rows still present after a run mean deletion is behind its 7-day promise (missed runs or a slow purge).
+    if (r.remaining !== 0) await opsAlert('snapshot-purge-behind', 'Expired Snapshot uploads remain after the purge run.', r);
     return NextResponse.json(r);
   } catch (e) {
-    console.log(`[snapshot-purge] failed: ${e instanceof Error ? e.message : 'error'}`);
+    await opsAlert('snapshot-purge-failed', 'The Snapshot purge run failed; expired uploads are not being deleted.', { error: e instanceof Error ? e.message : 'error' });
     return NextResponse.json({ error: 'Purge failed.', code: 'purge_failed' }, { status: 502 });
   }
 }

@@ -2,6 +2,7 @@
 // project; the table has RLS on and no anon policy, so only this server can touch it. Tests and local dev without
 // a service key use the in-memory store (refused in production).
 import { randomBytes } from 'node:crypto';
+import { opsAlert } from '../ops/alert.ts';
 
 export interface RunRow {
   id: string;
@@ -94,9 +95,11 @@ export class SupabaseStore implements SnapshotStore {
     } catch (e) {
       // The row is the only handle the purge can find, so an upload without a row would live forever. Remove it now.
       if (file && row.storage_path) {
-        await this.doFetch(`${this.url}/storage/v1/object/${BUCKET}`, {
+        // A failed delete leaves an upload no purge will ever find, which breaks the 7-day promise; say so loudly.
+        const del = await this.doFetch(`${this.url}/storage/v1/object/${BUCKET}`, {
           method: 'DELETE', cache: 'no-store', headers: this.h({ 'Content-Type': 'application/json' }), body: JSON.stringify({ prefixes: [row.storage_path] }),
-        }).catch(() => {});
+        }).catch(() => null);
+        if (!del?.ok) await opsAlert('snapshot-orphan-upload', 'A Snapshot upload has no row and could not be deleted; remove it by hand.', { path: row.storage_path, status: del?.status ?? 'network error' });
       }
       throw e;
     }
