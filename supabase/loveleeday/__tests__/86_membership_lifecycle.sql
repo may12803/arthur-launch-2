@@ -68,6 +68,10 @@ select t.check('exactly one owner remains', (select count(*) from public.members
 select t.check('the transfer is audited', exists (select 1 from public.audit_log where action = 'tenant.ownership_transferred'));
 select t.logout();
 
+-- one owner per company is a database rule, not just an RPC habit
+select t.raises('a second owner row is refused by the database', $q$update public.memberships set role = 'owner' where id = '86100000-0000-0000-0000-000000000003'$q$, '%memberships_one_owner_per_tenant%');
+select t.check('invites record email delivery', (select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'invites' and column_name in ('emailed_at', 'email_error')) = 2);
+
 -- team list carries the membership id, and only for members
 select t.login('86000000-0000-0000-0000-000000000003', 'aal2');
 select t.check('list_tenant_team returns membership ids', (select count(*) from public.list_tenant_team('86cccccc-0000-0000-0000-00000000000c') where membership_id is not null) >= 3);

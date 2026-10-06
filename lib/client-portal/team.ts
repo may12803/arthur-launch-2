@@ -5,8 +5,8 @@ import { roleRank } from "./roles.ts";
 export const ROLE_HELP: Record<string, string> = {
   owner: "Everything an admin can do, plus billing, security settings and handing the company to someone else. One per company.",
   admin: "Invites and removes people, connects systems, approves actions and sees every record.",
-  member: "Asks questions, works with records, documents and alerts, and approves day-to-day actions.",
-  viewer: "Reads answers, records and documents. Changes nothing. Suited to an outside accountant, auditor or board member.",
+  member: "Works with records, documents and uploads, and approves day-to-day actions.",
+  viewer: "Reads records, documents and reports. Changes nothing. Access does not expire on its own, so remove outside accountants, auditors or board members when their work ends.",
 };
 
 // Messages the RPCs raise, turned into sentences for the person who clicked. Anything unknown gets a generic line.

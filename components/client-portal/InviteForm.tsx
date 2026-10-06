@@ -32,7 +32,7 @@ export function InviteForm() {
         return;
       }
       setEmailSent(!!data.emailSent);
-      setInviteLink(`https://portal.loveleedaystudios.com/client/invite/${data.invite.token}`);
+      setInviteLink(data.inviteUrl);
       setEmail("");
       router.refresh();
     } catch {

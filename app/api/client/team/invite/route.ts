@@ -62,10 +62,13 @@ export async function POST(req: NextRequest) {
 
   // The invite is emailed to the person; the link is still returned so an admin can share it if the email is slow.
   const { data: tenant } = await supabase.from("tenants").select("name").eq("id", ctx.tenantId).maybeSingle();
-  const mail = inviteEmail(tenant?.name || "your company", invite.role, `${publicOrigin(req)}/client/invite/${invite.token}`);
+  const inviteUrl = `${publicOrigin(req)}/client/invite/${invite.token}`;
+  const mail = inviteEmail(tenant?.name || "your company", invite.role, inviteUrl);
   const emailSent = await sendPortalMail(invite.email, mail.subject, mail.lines);
+  // Record the outcome on the invite so the Team page can show an unsent invite and offer a resend.
+  await supabase.from("invites").update(emailSent ? { emailed_at: new Date().toISOString(), email_error: null } : { email_error: "not_sent" }).eq("id", invite.id);
 
-  return NextResponse.json({ invite, emailSent });
+  return NextResponse.json({ invite: { id: invite.id, email: invite.email, role: invite.role, expires_at: invite.expires_at }, inviteUrl, emailSent });
 }
 
 // Withdraws a pending invite. Authorized by the same invites_admin_manage policy as the insert, so a non-admin or an

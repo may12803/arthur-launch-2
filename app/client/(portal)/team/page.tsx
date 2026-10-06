@@ -17,6 +17,7 @@ type TeamMember = {
   email: string | null;
   role: string;
   accepted: boolean;
+  membership_id?: string | null;
 };
 
 type InviteRow = {
@@ -25,6 +26,8 @@ type InviteRow = {
   role: string;
   expires_at: string;
   created_at: string;
+  emailed_at: string | null;
+  email_error: string | null;
 };
 
 export default async function TeamPage() {
@@ -45,10 +48,10 @@ export default async function TeamPage() {
     emailLookupUnavailable = true;
     const { data } = await supabase
       .from("memberships")
-      .select("user_id, role, accepted_at")
+      .select("id, user_id, role, accepted_at")
       .eq("tenant_id", ctx.tenantId)
       .order("created_at", { ascending: true });
-    members = (data || []).map((m) => ({ user_id: m.user_id, role: m.role, email: null, accepted: !!m.accepted_at }));
+    members = (data || []).map((m) => ({ user_id: m.user_id, role: m.role, email: null, accepted: !!m.accepted_at, membership_id: m.id }));
   }
 
   let invites: InviteRow[] = [];
@@ -56,7 +59,7 @@ export default async function TeamPage() {
   if (isAdmin) {
     const { data, error: invErr } = await supabase
       .from("invites")
-      .select("id, email, role, expires_at, created_at")
+      .select("id, email, role, expires_at, created_at, emailed_at, email_error")
       .eq("tenant_id", ctx.tenantId)
       .is("accepted_at", null)
       .order("created_at", { ascending: false })
@@ -111,9 +114,9 @@ export default async function TeamPage() {
               </div>
               <div className="flex items-center gap-4">
                 <StatusBadge status={m.role} />
-                {memberIdByUser.get(m.user_id) && (
+                {(m.membership_id || memberIdByUser.get(m.user_id)) && (
                   <MemberActions
-                    membershipId={memberIdByUser.get(m.user_id)!}
+                    membershipId={(m.membership_id || memberIdByUser.get(m.user_id))!}
                     label={m.email || "this teammate"}
                     role={m.role}
                     self={m.user_id === ctx.userId}
@@ -136,7 +139,7 @@ export default async function TeamPage() {
             </div>
           ))}
         </dl>
-        <p className="text-[12.5px] text-text-muted mt-4">To limit someone to particular entities, campuses or locations, use Access by entity and location below.</p>
+        <p className="text-[12.5px] text-text-muted mt-4">Access by entity and location below currently limits which approvals someone sees; records and documents are visible across the company.</p>
       </Card>
 
       {isAdmin && invitesError && (
@@ -155,7 +158,7 @@ export default async function TeamPage() {
                   <div className="text-[14px] break-all text-text-active font-medium">{inv.email}</div>
                   <div className="text-[12.5px] text-text-muted">
                     {new Date(inv.expires_at).getTime() < Date.now() ? "Expired " : "Expires "}<LocalDate iso={inv.expires_at} />
-                    {new Date(inv.expires_at).getTime() < Date.now() && " · invite them again below"}
+                    {new Date(inv.expires_at).getTime() < Date.now() ? " · invite them again below" : !inv.emailed_at ? " · email not sent, invite them again below to resend" : ""}
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -170,7 +173,7 @@ export default async function TeamPage() {
 
       <Card className="p-6 mb-6">
         <h2 className="font-serif text-h3 text-text-active mb-1">Access by entity and location</h2>
-        <p className="text-small text-text-muted mb-4">Limit a teammate to the parts of the organization they work in.</p>
+        <p className="text-small text-text-muted mb-4">Choose the parts of the organization each teammate works in. Today this limits the approvals they see; records and documents remain company-wide.</p>
         <ErrorBanner errors={scopeErrors} label="Scoped access did not load" />
         <ScopeEditor members={scopeMembers} entities={entities} canEdit={isAdmin} />
       </Card>
