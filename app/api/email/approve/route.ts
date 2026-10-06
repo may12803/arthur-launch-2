@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { archiveMessage } from "@/lib/nylas";
 import { logCorrection } from "@/lib/superlearner/decisions";
+import { claimApproval, releaseApproval, approvalIdempotencyKey, type ApprovalDb } from "@/lib/email/approval-claim";
 
 export const runtime = "nodejs";
 
@@ -129,6 +130,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "RESEND_API_KEY not configured" }, { status: 500 });
     }
 
+    // Claim the approval atomically BEFORE sending. Concurrent approvals race on one conditional UPDATE; only the
+    // request that gets the row back may send.
+    const claimed = await claimApproval(db as unknown as ApprovalDb, approval_id).catch(() => false);
+    if (!claimed) {
+      const { data: now } = await db.from("arthur_email_approvals").select("status, sent_at").eq("id", approval_id).single();
+      if (now?.status === "sent") return NextResponse.json({ ok: true, status: "sent", sent_at: now.sent_at });
+      return NextResponse.json({ ok: false, status: "in_progress", error: "This approval is already being sent." }, { status: 409 });
+    }
+
     const resend = new Resend(resendKey);
     const finalBody = edited_body || approval.draft_body;
     const sentAt = new Date().toISOString();
@@ -137,12 +147,15 @@ export async function POST(req: NextRequest) {
     let resendId: string | null = null;
 
     try {
-      const { data: sendData, error: sendError } = await resend.emails.send({
-        from: "Daniel May <daniel@drinkswithdabney.com>",
-        to: [approval.draft_to],
-        subject: approval.draft_subject,
-        text: finalBody,
-      });
+      const { data: sendData, error: sendError } = await resend.emails.send(
+        {
+          from: "Daniel May <daniel@drinkswithdabney.com>",
+          to: [approval.draft_to],
+          subject: approval.draft_subject,
+          text: finalBody,
+        },
+        { idempotencyKey: approvalIdempotencyKey(approval_id, approval.draft_to, approval.draft_subject, finalBody) },
+      );
 
       if (sendError) {
         sendErr = sendError.message;
@@ -154,10 +167,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (sendErr) {
-      await db
-        .from("arthur_email_approvals")
-        .update({ status: "failed", send_error: sendErr })
-        .eq("id", approval_id);
+      await releaseApproval(db as unknown as ApprovalDb, approval_id, sendErr);
 
       return NextResponse.json({ ok: false, status: "failed", error: sendErr }, { status: 500 });
     }
