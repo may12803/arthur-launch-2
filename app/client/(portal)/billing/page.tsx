@@ -35,7 +35,10 @@ export default async function BillingPage() {
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle<Sub>();
-  const sub = subRes.error ? null : subRes.data;
+  // A failed subscription read is not "no subscription": show the load error instead of a purchase prompt.
+  const subError = !!subRes.error;
+  if (subError) console.error("[billing] subscription read failed", { tenant: ctx.tenantId, error: subRes.error?.message });
+  const sub = subError ? null : subRes.data;
   const planName = PLANS.find((p) => p.key === sub?.plan_key)?.name ?? sub?.plan_key ?? "";
   const canBuy = ctx.role === "owner" || ctx.role === "admin";
   const active = !!sub && ["active", "trialing", "past_due"].includes(sub.status);
@@ -81,9 +84,9 @@ export default async function BillingPage() {
           </p>
         </Card>
       )}
-      {!error && <PlanPicker canBuy={canBuy} currentLookupKey={active ? currentLookupKey(sub?.plan_key, sub?.billing_interval) : null} />}
+      {!error && !subError && <PlanPicker canBuy={canBuy} currentLookupKey={active ? currentLookupKey(sub?.plan_key, sub?.billing_interval) : null} />}
 
-      {error ? (
+      {error || subError ? (
         <Card className="p-10 text-center">
           <p role="alert" className="font-serif text-h3 text-text-active mb-2">Couldn&apos;t load your billing details</p>
           <Muted className="mx-auto max-w-[46ch]">

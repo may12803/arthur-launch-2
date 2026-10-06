@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireClientPortal } from "@/lib/client-portal/session";
-import { Card, Eyebrow, PageTitle, Muted, EmptyState } from "@/components/client-portal/ui";
+import { Card, Eyebrow, PageTitle, Muted, EmptyState, LoadError } from "@/components/client-portal/ui";
 import { averageGrade, display, gradeTone, loadWorkstreams } from "@/lib/client-portal/workstreams";
 import { LocalDate } from "@/components/client-portal/LocalTime";
 
@@ -10,7 +10,10 @@ export const dynamic = "force-dynamic";
 export default async function WorkstreamsPage() {
   const ctx = await requireClientPortal();
   const { workstreams, tasks, error } = await loadWorkstreams(ctx.tenantId);
-  if (error) return <Card className="p-5 border-red-200"><p className="text-small text-red-700">Couldn&apos;t load workstreams: {error}</p></Card>;
+  if (error) {
+    console.error("[workstreams] load failed", { tenant: ctx.tenantId, error });
+    return <LoadError what="workstreams" />;
+  }
   if (!workstreams.length) {
     return (
       <div>

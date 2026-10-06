@@ -12,7 +12,7 @@ export default async function EntitiesPage() {
   const admin = ctx.role === "owner" || ctx.role === "admin";
   return (
     <div>
-      <PageHead eyebrow={`${ctx.tenantName} · Settings`} title="Entities and locations" lead="Model how your organization is actually shaped, from legal entities down to stores, properties, plants or departments. Access and reporting can follow it." />
+      <PageHead eyebrow={`${ctx.tenantName} · Settings`} title="Entities and locations" lead="Model how your organization is actually shaped, from legal entities down to campuses, stores, properties, plants or departments. Access and reporting can follow it." />
       <SettingsLayout active="/client/organization/entities" isAdmin={admin}>
         <ErrorBanner label="The structure did not load" errors={[r.error && r.error.message]} />
         <EntitiesView entities={r.data ?? []} canEdit={admin} />
