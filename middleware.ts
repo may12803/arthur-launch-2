@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { adminMfaVerdict, type AdminMfaVerdict } from "./lib/client-portal/mfa-gate";
 
 // arthur-online middleware:
 //   1. HTTP Basic Auth gate on every non-public path.
@@ -157,17 +158,17 @@ function wantsHtml(req: NextRequest): boolean {
   return req.method === "GET" && (req.headers.get("accept") || "").includes("text/html");
 }
 
-// Reads the Supabase Auth (AAL) session bridged in at /api/login and decides
-// whether this request needs to be sent to the MFA challenge or forced into
-// enrollment. Writes any refreshed auth cookies onto `res`.
+// Reads the Supabase Auth (AAL) session bridged in at /api/login and decides whether this request needs to be sent to
+// the MFA challenge, forced into enrollment, or denied. Writes any refreshed auth cookies onto `res`.
 //
-// Fails open on any error or missing config: the arthur_session cookie above
-// is already the real access gate, so a Supabase hiccup must never lock a
-// legitimate session out. Returns null when there is nothing to enforce.
-async function checkMfaRedirect(req: NextRequest, res: NextResponse): Promise<string | null> {
+// Fails CLOSED (see adminMfaVerdict): for a session that requires MFA, a missing config, auth error or exception is a
+// deny, never a pass. The MFA flow's own pages stay exempt (MFA_EXEMPT_PATHS), which is the recovery route.
+async function checkMfaRedirect(req: NextRequest, res: NextResponse): Promise<AdminMfaVerdict> {
+  const requireMfa = process.env.ARTHUR_REQUIRE_MFA === "1";
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
+  const hasAuthCookie = req.cookies.getAll().some((c) => c.name.startsWith("sb-"));
+  if (!url || !key) return adminMfaVerdict({ requireMfa, configured: false, hasAuthCookie, user: null });
   try {
     const supabase = createServerClient(url, key, {
       cookies: {
@@ -179,24 +180,13 @@ async function checkMfaRedirect(req: NextRequest, res: NextResponse): Promise<st
         },
       },
     });
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null; // no bridged Supabase session (bridge disabled or failed) — nothing to enforce
-
-    const { data: aal, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (error || !aal) return null;
-
-    if (aal.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
-      return "/mfa/challenge";
-    }
-    if (process.env.ARTHUR_REQUIRE_MFA === "1" && aal.nextLevel !== "aal2") {
-      // No verified factor yet and MFA is mandatory — force enrollment.
-      return "/settings/security?enroll=1";
-    }
-    return null;
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (!user) return adminMfaVerdict({ requireMfa, configured: true, hasAuthCookie, user: null, userError });
+    const { data: aal, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    return adminMfaVerdict({ requireMfa, configured: true, hasAuthCookie, user, aal, aalError });
   } catch (err) {
     console.error("[middleware] MFA AAL check failed:", err);
-    return null;
+    return adminMfaVerdict({ requireMfa, configured: true, hasAuthCookie, user: null, threw: true });
   }
 }
 
@@ -247,8 +237,16 @@ export async function middleware(req: NextRequest) {
     // sessions — Basic/Bearer auth is used by automation, probes, and the
     // smoke test, none of which carry a Supabase Auth session to check.
     if (authedViaSession && !isMfaExempt(path)) {
-      const redirectTo = await checkMfaRedirect(req, response);
-      if (redirectTo) {
+      const verdict = await checkMfaRedirect(req, response);
+      if (verdict.kind === "deny") {
+        // Assurance could not be established. Deny; do not redirect (the MFA pages may depend on the same service).
+        if (wantsHtml(req) && !path.startsWith("/api/")) {
+          return new NextResponse("Sign-in verification is unavailable right now. Please try again in a minute.", { status: 503, headers: { "Content-Type": "text/plain", "Retry-After": "30" } });
+        }
+        return NextResponse.json({ error: "mfa_unavailable" }, { status: 503, headers: { "Retry-After": "30" } });
+      }
+      if (verdict.kind === "redirect") {
+        const redirectTo = verdict.to;
         if (wantsHtml(req) && !path.startsWith("/api/")) {
           const [destPath, destQuery] = redirectTo.split("?");
           const dest = req.nextUrl.clone();

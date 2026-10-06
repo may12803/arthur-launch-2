@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLoveleedayServer } from "@/lib/supabase/loveleeday-server";
+import { clientMfaVerdict } from "./mfa-gate";
 import { isSsoSession, tenantSessionAllowed } from "./sso";
 import { ACTIVE_TENANT_COOKIE, resolveActiveTenant } from "./active-tenant";
 
@@ -71,10 +72,11 @@ export async function requireStrongSession() {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) redirect("/client/login");
   const { data: aal, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (!aalError && aal && !isSsoSession(aal.currentAuthenticationMethods)) {
-    if (aal.nextLevel === "aal2" && aal.currentLevel !== "aal2") redirect("/client/mfa/challenge");
-    // No verified TOTP factor yet: enrollment is required, not optional.
-    if (aal.nextLevel !== "aal2") redirect("/client/mfa/enroll");
-  }
+  const verdict = clientMfaVerdict(aal, aalError, isSsoSession(aal?.currentAuthenticationMethods));
+  if (verdict === "challenge") redirect("/client/mfa/challenge");
+  // No verified TOTP factor yet: enrollment is required, not optional.
+  if (verdict === "enroll") redirect("/client/mfa/enroll");
+  // Assurance could not be established (auth error or no answer): fail closed, back to sign-in.
+  if (verdict === "unavailable") redirect("/client/login?error=mfa_unavailable");
   return { supabase, user: userData.user };
 }
