@@ -11,7 +11,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     checkId(id);
-    const blocked = limited(req, readLimiter);
+    const blocked = await limited(req, readLimiter);
     if (blocked) return blocked;
     const q = req.nextUrl.searchParams;
     const out = await rowsPage(deps(), id, q.get('rule') ?? '', Number(q.get('offset') ?? 0), Number(q.get('limit') ?? 100));

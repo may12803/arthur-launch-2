@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectorsServerSecret, safeEqual } from '@/lib/client-portal/connector-api';
 import { getStore } from '@/lib/snapshot/store';
+import { purgeWithinBudget } from '@/lib/snapshot/purge';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -13,14 +14,11 @@ export async function POST(req: NextRequest) {
   const given = req.headers.get('x-connectors-secret') || '';
   if (!given || !safeEqual(given, secret)) return NextResponse.json({ error: 'Forbidden.' }, { status: 403 });
   try {
-    let total = 0;
-    for (let i = 0; i < 10; i++) {
-      const n = await getStore().purgeExpired();
-      total += n;
-      if (n < 200) break;
-    }
-    return NextResponse.json({ purged: total });
+    const r = await purgeWithinBudget(getStore());
+    if (r.remaining !== 0) console.log(`[snapshot-purge] purged=${r.purged} remaining=${r.remaining} budgetExhausted=${r.budgetExhausted}`);
+    return NextResponse.json(r);
   } catch (e) {
-    return NextResponse.json({ error: `purge failed: ${e instanceof Error ? e.message : 'error'}` }, { status: 502 });
+    console.log(`[snapshot-purge] failed: ${e instanceof Error ? e.message : 'error'}`);
+    return NextResponse.json({ error: 'Purge failed.', code: 'purge_failed' }, { status: 502 });
   }
 }

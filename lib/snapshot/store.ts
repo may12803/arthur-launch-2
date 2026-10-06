@@ -28,6 +28,7 @@ export interface SnapshotStore {
   update(id: string, patch: Partial<RunRow>): Promise<void>;
   getFile(path: string): Promise<Buffer | null>;
   purgeExpired(now?: Date): Promise<number>;
+  countExpired(now?: Date): Promise<number>;
 }
 
 export const RETENTION_DAYS = 7;
@@ -48,6 +49,11 @@ export class MemoryStore implements SnapshotStore {
     Object.assign(r, patch);
   }
   async getFile(path: string) { return this.files.get(path) ?? null; }
+  async countExpired(now = new Date()) {
+    let n = 0;
+    for (const r of this.rows.values()) if (new Date(r.expires_at) <= now) n++;
+    return n;
+  }
   async purgeExpired(now = new Date()) {
     let n = 0;
     for (const [id, r] of this.rows) {
@@ -83,7 +89,22 @@ export class SupabaseStore implements SnapshotStore {
       });
       if (!up.ok) throw new Error(`snapshot file upload -> ${up.status}`);
     }
-    await this.rest('snapshot_runs', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(row) });
+    try {
+      await this.rest('snapshot_runs', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(row) });
+    } catch (e) {
+      // The row is the only handle the purge can find, so an upload without a row would live forever. Remove it now.
+      if (file && row.storage_path) {
+        await this.doFetch(`${this.url}/storage/v1/object/${BUCKET}`, {
+          method: 'DELETE', cache: 'no-store', headers: this.h({ 'Content-Type': 'application/json' }), body: JSON.stringify({ prefixes: [row.storage_path] }),
+        }).catch(() => {});
+      }
+      throw e;
+    }
+  }
+  async countExpired(now = new Date()) {
+    const res = await this.rest(`snapshot_runs?expires_at=lt.${encodeURIComponent(now.toISOString())}&select=id&limit=1`, { headers: { Prefer: 'count=exact' } });
+    const m = /\/(\d+)$/.exec(res.headers.get('content-range') ?? '');
+    return m ? Number(m[1]) : 0;
   }
   async get(id: string) {
     const res = await this.rest(`snapshot_runs?id=eq.${encodeURIComponent(id)}&select=*`);

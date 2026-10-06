@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     checkId(id);
-    const blocked = limited(req, readLimiter);
+    const blocked = await limited(req, readLimiter);
     if (blocked) return blocked;
     return NextResponse.json(await viewRun(deps(), id), { headers: corsHeaders(req) });
   } catch (e) {
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   try {
     const { id } = await params;
     checkId(id);
-    const blocked = limited(req, runLimiter);
+    const blocked = await limited(req, runLimiter);
     if (blocked) return blocked;
     const text = await req.text();
     if (text.length > 20_000) throw new ApiError(413, 'Mapping is too large.', 'too_large');

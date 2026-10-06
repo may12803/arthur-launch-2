@@ -11,7 +11,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     checkId(id);
-    const blocked = limited(req, readLimiter);
+    const blocked = await limited(req, readLimiter);
     if (blocked) return blocked;
     const { csv, filename } = await exportCsv(deps(), id, req.nextUrl.searchParams.get('rule') ?? undefined);
     return new NextResponse(csv, { headers: { ...corsHeaders(req), 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="${filename}"` } });

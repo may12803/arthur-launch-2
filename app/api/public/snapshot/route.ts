@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sampleCsv } from '@/lib/snapshot/sample';
 import { ApiError, PUBLIC_LIMITS, startRun } from '@/lib/snapshot/service';
 import { runLimiter, uploadLimiter, withRunSlot } from '@/lib/snapshot/limits';
+import { readFormWithin } from '@/lib/snapshot/body';
 import { corsHeaders, deps, failure, limited, preflight } from '@/lib/snapshot/http';
 
 export const runtime = 'nodejs';
@@ -14,13 +15,12 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   const h = corsHeaders(req);
   try {
-    const len = Number(req.headers.get('content-length') ?? '0');
-    if (len > PUBLIC_LIMITS.maxBytes + 64 * 1024) throw new ApiError(413, 'That file is larger than 10 MB.', 'too_large');
-    const blocked = limited(req, uploadLimiter);
+    const blocked = await limited(req, uploadLimiter);
     if (blocked) return blocked;
     const ctype = req.headers.get('content-type') ?? '';
     if (!ctype.includes('multipart/form-data')) throw new ApiError(415, 'Send the file as multipart/form-data.', 'unsupported_media');
-    const form = await req.formData();
+    // Content-Length is required and the byte cap is enforced while reading, before any multipart parsing.
+    const form = await readFormWithin(req, PUBLIC_LIMITS.maxBytes + 64 * 1024);
     const asOf = typeof form.get('as_of') === 'string' ? (form.get('as_of') as string) : undefined;
     let mapping: unknown;
     const rawMapping = form.get('mapping');
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       filename = file.name || 'upload.csv';
     }
     const body = await withRunSlot(async () => {
-      if (mapping !== undefined) { const b = limited(req, runLimiter); if (b) return b; }
+      if (mapping !== undefined) { const b = await limited(req, runLimiter); if (b) return b; }
       return startRun(deps(), { data, filename, source, asOf: source === 'sample' ? undefined : asOf, mapping });
     });
     if (body === 'busy') throw new ApiError(503, 'We are busy right now. Try again in a minute.', 'busy');

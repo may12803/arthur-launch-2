@@ -3,6 +3,8 @@ import { ApiError, asApiError, type Deps } from './service.ts';
 import { getStore, validRunId } from './store.ts';
 import { liveCatalog } from './catalog.ts';
 import { SlidingWindow } from './limits.ts';
+import { clientKeyFromHeaders } from './client-key.ts';
+import { takeShared } from './shared-limit.ts';
 
 const ALLOWED = new Set(['https://loveleedaystudios.com', 'https://www.loveleedaystudios.com']);
 const DEV_ALLOWED = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/;
@@ -24,7 +26,7 @@ export function corsHeaders(req: NextRequest): Record<string, string> {
 export const preflight = (req: NextRequest) => new NextResponse(null, { status: 204, headers: corsHeaders(req) });
 
 export function clientKey(req: NextRequest): string {
-  return req.headers.get('fly-client-ip') || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  return clientKeyFromHeaders((n) => req.headers.get(n));
 }
 
 export function deps(): Deps {
@@ -35,8 +37,10 @@ export function deps(): Deps {
   };
 }
 
-export function limited(req: NextRequest, limiter: SlidingWindow): NextResponse | null {
-  const r = limiter.take(clientKey(req));
+export async function limited(req: NextRequest, limiter: SlidingWindow): Promise<NextResponse | null> {
+  // Reads are cheap and high-volume: local window only. Uploads and runs also hit the shared counter.
+  const key = clientKey(req);
+  const r = limiter.name === 'read' ? limiter.take(key) : await takeShared(limiter, key);
   if (r.ok) return null;
   return NextResponse.json({ error: 'Too many requests. Try again later.', code: 'rate_limited' }, { status: 429, headers: { ...corsHeaders(req), 'Retry-After': String(r.retryAfterSec) } });
 }

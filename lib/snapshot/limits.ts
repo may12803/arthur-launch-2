@@ -2,10 +2,11 @@
 // rules run. In-process on purpose: the portal is one always-on machine (see lib/connectors/scheduler.ts).
 export class SlidingWindow {
   private hits = new Map<string, number[]>();
-  private max: number;
-  private windowMs: number;
+  readonly max: number;
+  readonly windowMs: number;
+  readonly name: string;
   private now: () => number;
-  constructor(max: number, windowMs: number, now: () => number = Date.now) { this.max = max; this.windowMs = windowMs; this.now = now; }
+  constructor(max: number, windowMs: number, now: () => number = Date.now, name = 'default') { this.name = name; this.max = max; this.windowMs = windowMs; this.now = now; }
   /** True when the call is allowed (and counted). */
   take(key: string): { ok: boolean; retryAfterSec: number } {
     const t = this.now();
@@ -21,9 +22,9 @@ export class SlidingWindow {
   }
 }
 
-export const uploadLimiter = new SlidingWindow(6, 60 * 60 * 1000);
-export const runLimiter = new SlidingWindow(20, 60 * 60 * 1000);
-export const readLimiter = new SlidingWindow(120, 60 * 1000);
+export const uploadLimiter = new SlidingWindow(6, 60 * 60 * 1000, Date.now, 'upload');
+export const runLimiter = new SlidingWindow(20, 60 * 60 * 1000, Date.now, 'run');
+export const readLimiter = new SlidingWindow(120, 60 * 1000, Date.now, 'read');
 
 let active = 0;
 export async function withRunSlot<T>(fn: () => Promise<T>, max = 2): Promise<T | 'busy'> {
