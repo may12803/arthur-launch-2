@@ -27,7 +27,7 @@ export function NotificationForm({ tenantId, initial }: { tenantId: string; init
 
   return <section className="cp-panel p-6">
     <h2 className="text-[17px] font-medium">Notifications</h2>
-    <p className="ll-note mt-1">Choose which account updates you want by email.</p>
+    <p className="ll-note mt-1">These email notifications are coming soon. Your choices will be saved for launch.</p>
     <form onSubmit={save} className="mt-5 grid gap-4 text-[13.5px]">
       <label className="grid gap-1.5">Approval updates
         <select className={inputClass} value={prefs.approvals_digest} onChange={(e) => setPrefs({ ...prefs, approvals_digest: e.target.value as Prefs["approvals_digest"] })}>

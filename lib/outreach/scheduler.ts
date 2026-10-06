@@ -111,7 +111,7 @@ const first = (name: string | null) => (name ?? '').trim().split(/\s+/)[0] || 't
 export function followUpTemplate(step: number, original: Message, contact: Contact, env: Env = process.env): { subject: string; body: string } {
   const sig = env.OUTREACH_SIGNATURE?.trim() || '{{SIGNATURE}}';
   const hi = `Hi ${first(contact.name)},`;
-  const subject = original.subject.startsWith('Re: ') ? original.subject : `Re: ${original.subject}`;
+  const subject = original.subject.startsWith('Following up: ') ? original.subject : `Following up: ${original.subject.replace(/^Re:\s*/i, '')}`;
   if (step === 2) return { subject, body: `${hi}\n\nI wanted to follow up gently on my note from a few days ago, in case it got buried. If it would help, I am glad to share a short example from your own industry.\n\nNo pressure at all, and thank you for your time either way.\n\n${sig}` };
   return { subject, body: `${hi}\n\nI do not want to crowd your inbox, so this is my last note. If the timing is not right, I completely understand, and the door stays open whenever it makes sense for you.\n\nWishing you and the team a good season.\n\n${sig}` };
 }

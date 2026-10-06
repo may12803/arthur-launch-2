@@ -22,7 +22,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ to
   const sent = await sendPortalMail(row.recipient_email, `Your code to open "${row.document_name}"`, [
     `Your one-time code is ${row.code}`,
     `Enter it on the page where you opened the link from ${row.company}. It works once and expires in 10 minutes.`,
-  ]);
+  ], true);
   if (!sent) return NextResponse.json({ error: "We couldn't send the code. Try again in a minute." }, { status: 502 });
   return NextResponse.json({ ok: true });
 }

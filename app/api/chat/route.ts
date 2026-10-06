@@ -368,7 +368,7 @@ const TOOL_DEFINITIONS = [
     type: "function",
     function: {
       name: "send_email",
-      description: "Send an email from one of Daniel's connected mailboxes via Nylas. PREFER this over composio_execute(GMAIL_SEND_EMAIL) for Gmail/Yahoo — Nylas is already running daily for inbox sync. Pick the mailbox via 'entity': 'dabney' = daniel.may@drinkswithdabney.com, 'personal' = blackmarble.m.g@gmail.com, 'yahoo' = may.dj@yahoo.com, 'loveleeday' = arthur@loveleedaystudios.com (uses Resend, owned domain). Match the entity to what Daniel asked about: Dabney work → 'dabney', personal → 'personal', LOVELEEDAY/agency/hustle → 'loveleeday'. Default to 'personal' if unclear, but ASK first if it's a real outbound to a real recipient.",
+      description: "Send an email from a connected mailbox. LOVELEEDAY uses hello@loveleedaystudios.com and requires an approved, exact-match approval record ID. Other entities use Nylas. Ask before real outbound mail.",
       parameters: {
         type: "object",
         properties: {
@@ -378,6 +378,7 @@ const TOOL_DEFINITIONS = [
           body: { type: "string", description: "Email body. Plain text or HTML — Nylas auto-detects." },
           cc: { type: "string", description: "Optional CC recipients (comma-separated)" },
           bcc: { type: "string", description: "Optional BCC recipients (comma-separated)" },
+          approval_id: { type: "string", description: "Required for LOVELEEDAY: ID of an explicitly approved record matching recipient, subject, and body" },
         },
         required: ["entity", "to", "subject", "body"],
       },
@@ -1617,32 +1618,60 @@ async function toolCreateCalendarEvent(args: { title?: string; start?: string; e
 // send_email — Nylas-grant-aware (canonical mailbox source: arthur_email_accounts).
 // Replaces composio_execute(GMAIL_SEND_EMAIL) for Gmail/Yahoo; LOVELEEDAY uses Resend.
 // ─────────────────────────────────────────────────────────────────────────────
-async function toolSendEmail(args: { entity?: string; to?: string; subject?: string; body?: string; cc?: string; bcc?: string }): Promise<string> {
-  const { entity, to, subject, body, cc, bcc } = args;
+async function toolSendEmail(args: { entity?: string; to?: string; subject?: string; body?: string; cc?: string; bcc?: string; approval_id?: string }): Promise<string> {
+  const { entity, to, subject, body, cc, bcc, approval_id } = args;
   if (!entity || !to || !subject || !body) return "send_email error: entity, to, subject, body all required";
 
   // LOVELEEDAY → Resend (owned domain).
   if (entity === "loveleeday") {
+    if (!approval_id || !/^[0-9a-f-]{36}$/i.test(approval_id)) return "send_email error: an explicit approval record ID is required";
+    if (cc || bcc || to.includes(",")) return "send_email error: LOVELEEDAY approval covers one recipient only";
+    const db = getSupabaseAdmin();
+    const { data: approval, error: approvalError } = await db.from("arthur_email_approvals")
+      .select("id,status,approved_at,approved_by,draft_to,draft_subject,draft_body")
+      .eq("id", approval_id).single();
+    if (approvalError || !approval || approval.status !== "approved" || !approval.approved_at || !approval.approved_by ||
+        approval.draft_to !== to || approval.draft_subject !== subject || approval.draft_body !== body)
+      return "send_email error: no approved record matches this exact LOVELEEDAY message";
+    const { data: claim, error: claimError } = await db.from("arthur_email_approvals")
+      .update({ status: "sending" }).eq("id", approval_id).eq("status", "approved").select("id");
+    if (claimError || !claim?.length) return "send_email error: approval was already used or could not be claimed";
     const resendKey = process.env.RESEND_API_KEY;
-    if (!resendKey) return "send_email error: RESEND_API_KEY not set; cannot send from arthur@loveleedaystudios.com";
+    if (!resendKey) {
+      console.error("[chat-mail] missing RESEND_API_KEY", { to, approval_id });
+      await db.from("arthur_email_approvals").update({ status: "failed", send_error: "RESEND_API_KEY missing" }).eq("id", approval_id);
+      return "send_email error: RESEND_API_KEY not set";
+    }
     try {
+      const safeBody = body.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const url = body.match(/https:\/\/[^\s<>"']+/)?.[0]?.replace(/[.,;:!?]+$/, "");
+      const safeUrl = url?.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+      const action = safeUrl ? `<p><a href="${safeUrl}" style="display:inline-block;background:#0071e3;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none">Open link</a></p><p style="font-size:13px;color:#62656c;overflow-wrap:anywhere">${safeUrl}</p>` : "";
       const r = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: "Arthur <arthur@loveleedaystudios.com>",
-          to: to.split(",").map(s => s.trim()),
+          from: "LOVELEEDAY <hello@loveleedaystudios.com>",
+          reply_to: "hello@loveleedaystudios.com",
+          to: [to],
           subject,
-          html: body,
-          ...(cc ? { cc: cc.split(",").map(s => s.trim()) } : {}),
-          ...(bcc ? { bcc: bcc.split(",").map(s => s.trim()) } : {}),
+          text: `${body}${url ? `\n\n${url}` : ""}\n\nLOVELEEDAY Studios LLC · https://loveleedaystudios.com${process.env.LOVELEEDAY_POSTAL_ADDRESS ? ` · ${process.env.LOVELEEDAY_POSTAL_ADDRESS}` : ""}`,
+          html: `<!doctype html><html><body style="margin:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;color:#1d1d1f"><div style="max-width:600px;padding:32px;margin:auto;font-size:16px;line-height:1.6"><img src="https://loveleedaystudios.com/site/assets/mark-ink-512.png" width="32" height="32" alt="LOVELEEDAY"><p>${safeBody.replace(/\n\n/g, "</p><p>")}</p>${action}<p style="color:#62656c;border-top:1px solid #e4e5e9;padding-top:20px">LOVELEEDAY Studios LLC · loveleedaystudios.com${process.env.LOVELEEDAY_POSTAL_ADDRESS ? ` · ${process.env.LOVELEEDAY_POSTAL_ADDRESS.replace(/&/g, "&amp;").replace(/</g, "&lt;")}` : ""}</p></div></body></html>`,
         }),
         signal: AbortSignal.timeout(30000),
       });
-      if (!r.ok) return `send_email error: Resend ${r.status}: ${(await r.text()).slice(0, 250)}`;
+      if (!r.ok) {
+        const error = `Resend ${r.status}: ${(await r.text()).slice(0, 250)}`;
+        console.error("[chat-mail] send failed", { to, approval_id, error });
+        await db.from("arthur_email_approvals").update({ status: "failed", send_error: error }).eq("id", approval_id);
+        return `send_email error: ${error}`;
+      }
       const j = await r.json() as { id?: string };
-      return `Sent via Resend (arthur@loveleedaystudios.com → ${to}). Message ID: ${j.id ?? "(no id)"}`;
+      await db.from("arthur_email_approvals").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", approval_id);
+      return `Sent via Resend (hello@loveleedaystudios.com → ${to}). Message ID: ${j.id ?? "(no id)"}`;
     } catch (e) {
+      console.error("[chat-mail] send failed", { to, approval_id, error: e });
+      await db.from("arthur_email_approvals").update({ status: "failed", send_error: String(e) }).eq("id", approval_id);
       return `send_email error: Resend ${e instanceof Error ? e.message : String(e)}`;
     }
   }

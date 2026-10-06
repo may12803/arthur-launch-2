@@ -53,7 +53,7 @@ export function loadConfig(env: Env = process.env): OutreachConfig {
     sendingEnabled: sendingEnabled(env),
     postalAddress: env.OUTREACH_POSTAL_ADDRESS?.trim() || null,
     tokenSecret: env.OUTREACH_TOKEN_SECRET?.trim() || null,
-    baseUrl: (env.OUTREACH_PUBLIC_BASE_URL?.trim() || 'https://portal.loveleedaystudios.com').replace(/\/+$/, ''),
+    baseUrl: 'https://portal.loveleedaystudios.com',
     unsubscribeMailto: env.OUTREACH_UNSUBSCRIBE_MAILTO?.trim() || null,
     dailyCap: int(env.OUTREACH_DAILY_CAP, 300),
     perDomainPerDay: int(env.OUTREACH_PER_DOMAIN_PER_DAY, 2),

@@ -26,11 +26,11 @@ export function InviteForm() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Couldn't send that invite.");
+        setError(data.error || "Couldn't create that invite link.");
         setSubmitting(false);
         return;
       }
-      setInviteLink(`${window.location.origin}/client/invite/${data.invite.token}`);
+      setInviteLink(`https://portal.loveleedaystudios.com/client/invite/${data.invite.token}`);
       setEmail("");
       router.refresh();
     } catch {
@@ -76,7 +76,7 @@ export function InviteForm() {
         )}
         <div>
           <PortalButton type="submit" disabled={submitting || !email}>
-            {submitting ? "Sending…" : "Send invite"}
+            {submitting ? "Creating…" : "Create invite link"}
           </PortalButton>
         </div>
       </form>
