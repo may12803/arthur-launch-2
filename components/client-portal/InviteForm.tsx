@@ -11,6 +11,7 @@ export function InviteForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -30,6 +31,7 @@ export function InviteForm() {
         setSubmitting(false);
         return;
       }
+      setEmailSent(!!data.emailSent);
       setInviteLink(`https://portal.loveleedaystudios.com/client/invite/${data.invite.token}`);
       setEmail("");
       router.refresh();
@@ -70,13 +72,15 @@ export function InviteForm() {
         {error && <p className="ll-feedback warn">{error}</p>}
         {inviteLink && (
           <div className="text-small text-text-main">
-            Invite created. Share this link:{" "}
+            {emailSent
+              ? "Invitation emailed. If it doesn't arrive, you can also send them this link:"
+              : "We couldn't email the invitation. Send them this link yourself:"}{" "}
             <span className="font-mono text-[12px] break-all">{inviteLink}</span>
           </div>
         )}
         <div>
           <PortalButton type="submit" disabled={submitting || !email}>
-            {submitting ? "Creating…" : "Create invite link"}
+            {submitting ? "Sending…" : "Send invitation"}
           </PortalButton>
         </div>
       </form>

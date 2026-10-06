@@ -7,6 +7,8 @@ import { RevokeInvite } from "@/components/client-portal/RevokeInvite";
 import { ScopeEditor, type ScopeMember } from "@/components/client-portal/connectors/ScopeEditor";
 import type { EntityRow } from "@/components/client-portal/connectors/EntitiesView";
 import { ErrorBanner } from "@/components/client-portal/cp";
+import { MemberActions } from "@/components/client-portal/MemberActions";
+import { ROLE_HELP, allowedActions } from "@/lib/client-portal/team";
 
 export const dynamic = "force-dynamic";
 
@@ -107,10 +109,34 @@ export default async function TeamPage() {
                 </div>
                 <div className="text-[12.5px] text-text-muted">{m.accepted ? "Active" : "Invitation pending"}</div>
               </div>
-              <StatusBadge status={m.role} />
+              <div className="flex items-center gap-4">
+                <StatusBadge status={m.role} />
+                {memberIdByUser.get(m.user_id) && (
+                  <MemberActions
+                    membershipId={memberIdByUser.get(m.user_id)!}
+                    label={m.email || "this teammate"}
+                    role={m.role}
+                    self={m.user_id === ctx.userId}
+                    can={allowedActions({ userId: ctx.userId, role: ctx.role }, { userId: m.user_id, membershipId: "", role: m.role, accepted: m.accepted })}
+                  />
+                )}
+              </div>
             </div>
           ))}
         </div>
+      </Card>
+
+      <Card className="p-6 mb-6">
+        <h2 className="font-serif text-h3 text-text-active mb-4">What each role can do</h2>
+        <dl className="grid gap-3 sm:grid-cols-2">
+          {["owner", "admin", "member", "viewer"].map((r) => (
+            <div key={r}>
+              <dt className="text-[14px] text-text-active font-medium capitalize">{r}</dt>
+              <dd className="text-[13px] text-text-muted">{ROLE_HELP[r]}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="text-[12.5px] text-text-muted mt-4">To limit someone to particular entities, campuses or locations, use Access by entity and location below.</p>
       </Card>
 
       {isAdmin && invitesError && (

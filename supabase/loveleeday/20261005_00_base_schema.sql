@@ -699,14 +699,16 @@ begin
 end;
 $function$;
 
-create or replace function public.list_tenant_team(p_tenant uuid)
- returns table(user_id uuid, email text, role text, accepted boolean)
+-- Shape matches 20261005_29_membership_lifecycle.sql (membership_id added) so re-applying the base never fights it.
+drop function if exists public.list_tenant_team(uuid);
+create function public.list_tenant_team(p_tenant uuid)
+ returns table(user_id uuid, email text, role text, accepted boolean, membership_id uuid)
  language plpgsql security definer set search_path to 'public', 'pg_temp'
 as $function$
 begin
   if not public.is_tenant_member(p_tenant) then return; end if;
   return query
-    select m.user_id, u.email::text, m.role, (m.accepted_at is not null) as accepted
+    select m.user_id, u.email::text, m.role, (m.accepted_at is not null) as accepted, m.id
     from public.memberships m
     join auth.users u on u.id = m.user_id
     where m.tenant_id = p_tenant

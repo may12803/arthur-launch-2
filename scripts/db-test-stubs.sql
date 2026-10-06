@@ -77,3 +77,7 @@ begin
   perform set_config('request.jwt.claim.sub', '', false);
   perform set_config('request.jwt.claims', '', false);
 end $$;
+
+-- Supabase Storage: only the bucket table that migrations insert into.
+create schema if not exists storage;
+create table if not exists storage.buckets (id text primary key, name text not null, public boolean default false, file_size_limit bigint, allowed_mime_types text[], created_at timestamptz default now());

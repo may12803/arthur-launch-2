@@ -1,4 +1,4 @@
-select t.check('seed: 48 connector definitions loaded', (select count(*) from public.connector_definitions) = 48);
+select t.check('seed: 70 connector definitions loaded', (select count(*) from public.connector_definitions) = 70);
 select t.check('seed: no definition claims build_status live', (select count(*) from public.connector_definitions where build_status = 'live') = 0);
 select t.raises('seed: build_status live is rejected by the table', $q$update public.connector_definitions set build_status = 'live' where key = 'stripe'$q$, '%build_status_check%');
 select t.check('seed: UNVERIFIED labels preserved verbatim', (select count(*) from public.connector_definitions where rate_limits ilike '%UNVERIFIED%') > 0);

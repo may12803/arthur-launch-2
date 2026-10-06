@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiContext } from "@/lib/client-portal/api";
+import { getApiContext, publicOrigin } from "@/lib/client-portal/api";
+import { sendPortalMail } from "@/lib/client-portal/mailer";
+import { inviteEmail } from "@/lib/client-portal/team";
 
 export const runtime = "nodejs";
 
@@ -58,7 +60,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: insertError.message }, { status: 400 });
   }
 
-  return NextResponse.json({ invite });
+  // The invite is emailed to the person; the link is still returned so an admin can share it if the email is slow.
+  const { data: tenant } = await supabase.from("tenants").select("name").eq("id", ctx.tenantId).maybeSingle();
+  const mail = inviteEmail(tenant?.name || "your company", invite.role, `${publicOrigin(req)}/client/invite/${invite.token}`);
+  const emailSent = await sendPortalMail(invite.email, mail.subject, mail.lines);
+
+  return NextResponse.json({ invite, emailSent });
 }
 
 // Withdraws a pending invite. Authorized by the same invites_admin_manage policy as the insert, so a non-admin or an
