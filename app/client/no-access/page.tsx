@@ -12,14 +12,21 @@ export default async function NoAccessPage() {
 
   return (
     <AuthShell
-      eyebrow="Client portal"
-      headline="Your workspace access isn't ready yet"
-      lead={`You're signed in as ${data.user.email}, but this account hasn't joined an organization yet.`}
+      eyebrow={data.user.email ? `Signed in as ${data.user.email}` : "Client portal"}
+      headline="You don’t have access to an organization yet"
+      rail={{ kicker: "Access", line: "Your organization’s admin controls who can join." }}
+      footer={<ul className="links"><li><a href="mailto:hello@loveleedaystudios.com">Get help</a></li></ul>}
     >
-      <p className="ll-note mb-6">
-        If you received an invitation email, open its link to join. If not, ask the person who manages your organization's account to invite this email address, or write to us at hello@loveleedaystudios.com.
-      </p>
-      <SignOutButton />
+      <div className="box" style={{ marginTop: 0 }}>
+        <b>To get access</b>
+        <ul className="steps-plain">
+          <li>Open the invitation link from your email, if you received one.</li>
+          <li>Otherwise, ask the person who manages your organization’s LOVELEEDAY account to invite this email address.</li>
+        </ul>
+      </div>
+      <div className="stack" style={{ marginTop: 24 }}>
+        <SignOutButton />
+      </div>
     </AuthShell>
   );
 }

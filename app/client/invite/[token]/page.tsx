@@ -6,6 +6,14 @@ import { PortalButton, FormField, inputClass } from "@/components/client-portal/
 import { AuthShell } from "@/components/client-portal/AuthShell";
 import { isSsoSession } from "@/lib/client-portal/sso";
 import { friendlyAuthError } from "@/lib/client-portal/auth-errors";
+import { ROLE_HELP } from "@/lib/client-portal/team";
+
+// One example per surface (VOICE.md in the site repo): this question appears nowhere else.
+const INVITE_EXAMPLE = {
+  ask: "Which shifts next week still need someone?",
+  answer: "Four shifts are open, two of them on Saturday.",
+  next: "Ask the three people who picked up extra shifts last month.",
+};
 
 type Preview = { tenant_name: string; role: string; expired: boolean; email_hint?: string | null } | "invalid" | null;
 
@@ -128,93 +136,100 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     await finishAccept();
   }
 
+  const invalidRail = { kicker: "Invitation", line: "Invitations are tied to one email address, so only the right person can join." };
+
   if (checkingSession || !previewChecked) {
     return (
-      <AuthShell eyebrow="Invitation" headline="Opening your invitation" context={null}>
-        <p className="ll-note">Loading…</p>
+      <AuthShell pill={{ text: "Invitation" }} headline="Opening your invitation" rail={invalidRail}>
+        <p className="note" style={{ marginTop: 0 }}>Loading…</p>
       </AuthShell>
     );
   }
 
   const info = preview === "invalid" ? null : preview;
-  if (preview === "invalid" && !authedEmail) {
+  if ((preview === "invalid" && !authedEmail) || info?.expired) {
+    const expired = !!info?.expired;
     return (
       <AuthShell
-        eyebrow="Invitation"
-        headline="This invitation link doesn't work"
-        lead="Check that you opened the complete link from the email. If you already joined, sign in. Otherwise, ask the person who invited you for a new link."
+        pill={{ text: "Invitation", warn: true }}
+        headline={expired ? "This invitation has expired" : "This invitation can’t be used"}
+        lead={expired ? `Invitations last seven days. Ask the person who invited you to send a new one to join ${info!.tenant_name}.` : "It may be incomplete, already accepted, expired or withdrawn."}
+        rail={invalidRail}
+        footer={<ul className="links"><li><a href="mailto:hello@loveleedaystudios.com">Get help</a></li></ul>}
       >
-        <div className="flex flex-wrap gap-3">
+        <div className="box" style={{ marginTop: 0 }}>
+          <b>What to do</b>
+          <ul className="steps-plain">
+            <li>Already joined? Sign in below.</li>
+            <li>Need a new invitation? Ask the person who invited you to send one.</li>
+          </ul>
+        </div>
+        <div className="stack" style={{ marginTop: 24 }}>
           <a href="/client/login" className="ll-primary">Sign in</a>
-          <a href="mailto:hello@loveleedaystudios.com" className="ll-secondary">Contact support</a>
         </div>
       </AuthShell>
     );
   }
 
-  if (info?.expired) {
-    return (
-      <AuthShell
-        eyebrow="Invitation"
-        headline="This invitation has expired"
-        lead={`Invitations last seven days. Ask the person who invited you to send a new link to join ${info.tenant_name}.`}
-      >
-        <div className="flex flex-wrap gap-3">
-          <a href="/client/login" className="ll-primary">Already joined? Sign in</a>
-        </div>
-      </AuthShell>
-    );
-  }
+  const roleName = info ? info.role.charAt(0).toUpperCase() + info.role.slice(1) : "";
+  const initials = info ? info.tenant_name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("") : "";
 
   return (
     <AuthShell
-      eyebrow="Invitation"
-      headline={info ? `Join ${info.tenant_name}` : "You've been invited"}
-      step="Step 1 of 2"
-      context={info ? { title: `${info.tenant_name} invited you to LOVELEEDAY.`, points: [`You'll join as ${info.role}.`, "This invitation works only with the email address it was sent to.", "Next, you'll secure your account with an authenticator app. It takes about a minute."] } : undefined}
-      lead={
-        info
-          ? authedEmail
-            ? `You're signed in as ${authedEmail}. Accept to join ${info.tenant_name} as ${info.role}.`
-            : "Use the email this invitation was sent to. Create an account, or sign in if you already have one."
-          : "Create your account to join your organization's LOVELEEDAY workspace."
+      eyebrow={null}
+      stepper={1}
+      headline={info ? `Join ${info.tenant_name}` : "You’ve been invited"}
+      photo={{
+        src: "/brand/auth/invite-photo.jpg",
+        tag: info ? `${info.tenant_name} uses LOVELEEDAY to see its answers and work in one place.` : "Your organization uses LOVELEEDAY to see its answers and work in one place.",
+        example: INVITE_EXAMPLE,
+      }}
+      footer={
+        !authedEmail && !awaitingConfirmation ? (
+          <p className="note">
+            {mode === "signup" ? "Already have an account with this email? " : "New to LOVELEEDAY? "}
+            <button type="button" className="linkbtn" onClick={() => { setMode(mode === "signup" ? "signin" : "signup"); setError(""); }}>
+              {mode === "signup" ? "Sign in to accept" : "Create an account instead"}
+            </button>
+          </p>
+        ) : null
       }
     >
+      {info && (
+        <div className="box" style={{ marginTop: 0 }}>
+          <div className="org">
+            <div className="av" aria-hidden>{initials}</div>
+            <div>
+              <b>{info.tenant_name}</b>
+              <small>You are invited as a <b>{roleName}</b></small>
+            </div>
+          </div>
+          {ROLE_HELP[info.role] && <p className="role">{ROLE_HELP[info.role]} An admin can change your role later.</p>}
+        </div>
+      )}
       {awaitingConfirmation ? (
         <>
-          <p className="text-[17px] font-medium text-[var(--ink)]">Check your email</p>
-          <p className="ll-note mt-2">
-            We sent a confirmation link to {email}. Confirm it, then open this invitation link again to finish joining.
-          </p>
+          <p className="lead"><b>Check your email.</b> We sent a confirmation link to {email}. Confirm it, then open this invitation link again to finish joining.</p>
         </>
       ) : authedEmail ? (
-        <div className="flex flex-col gap-5">
-          {error && <p className="ll-feedback warn">{error}</p>}
-          <PortalButton onClick={finishAccept} disabled={submitting} className="w-full">
-            {submitting ? "Joining…" : "Accept invite"}
-          </PortalButton>
-          <button type="button" className="ll-note underline self-start text-left" onClick={switchAccount}>
-            Not {authedEmail}? Sign out and use a different account
-          </button>
-        </div>
-      ) : (
         <>
-          {info?.email_hint && (
-            <p className="ll-note mb-5">
-              This invitation is for <span className="text-[var(--ink)]">{info.email_hint}</span>. Use that
-              address, since the invite only works for it.
-            </p>
-          )}
-          <div className="ll-tabs mb-6" role="group" aria-label="Account">
-            <button type="button" aria-pressed={mode === "signup"} onClick={() => setMode("signup")}>
-              New account
-            </button>
-            <button type="button" aria-pressed={mode === "signin"} onClick={() => setMode("signin")}>
-              I have an account
+          <p className="lead">You are signed in as <b>{authedEmail}</b>.{info ? ` Accept to join ${info.tenant_name} as ${roleName}.` : ""}</p>
+          <div className="stack" style={{ marginTop: 24 }}>
+            {error && <p className="ll-feedback warn">{error}</p>}
+            <PortalButton onClick={finishAccept} disabled={submitting}>
+              {submitting ? "Joining…" : "Accept invitation"}
+            </PortalButton>
+            <button type="button" className="linkbtn" onClick={switchAccount}>
+              Not {authedEmail}? Sign out and use a different account
             </button>
           </div>
-
-          <form onSubmit={onSubmit} className="flex flex-col gap-5">
+        </>
+      ) : (
+        <>
+          <p className="lead">
+            {info?.email_hint ? <>This invitation was sent to <b>{info.email_hint}</b> and only works with that address.</> : "Use the email this invitation was sent to. It only works with that address."}
+          </p>
+          <form onSubmit={onSubmit} style={{ marginTop: 24 }}>
             <FormField label="Email" htmlFor="invite-email">
               <input
                 id="invite-email"
@@ -224,10 +239,10 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={inputClass}
-                placeholder="name@company.com"
+                placeholder="name@organization.com"
               />
             </FormField>
-            <FormField label={mode === "signup" ? "Choose a password" : "Password"} htmlFor="invite-password">
+            <FormField label={mode === "signup" ? "Create a password" : "Password"} htmlFor="invite-password">
               <input
                 id="invite-password"
                 type="password"
@@ -237,12 +252,12 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={inputClass}
-                placeholder={mode === "signup" ? "At least 12 characters" : undefined}
+                placeholder={mode === "signup" ? "At least 12 characters" : "Your password"}
               />
             </FormField>
             {error && <p className="ll-feedback warn">{error}</p>}
-            <PortalButton type="submit" disabled={submitting || !email || !password} className="w-full mt-1">
-              {submitting ? "Working…" : mode === "signup" ? "Create account and join ↗" : "Sign in and join ↗"}
+            <PortalButton type="submit" disabled={submitting || !email || !password}>
+              {submitting ? "Working…" : mode === "signup" ? "Create account and continue" : "Sign in and accept"}
             </PortalButton>
           </form>
         </>

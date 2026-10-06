@@ -132,53 +132,68 @@ function ChallengeForm() {
 
   return (
     <AuthShell
-      eyebrow="Two-factor verification"
-      headline="Enter your authenticator code"
-      lead="Open your authenticator app and enter the current six-digit code for LOVELEEDAY."
-      context={{ title: "Almost in.", points: ["The code changes every 30 seconds. Use the one showing now.", "No phone? Use one of the backup codes you saved."] }}
+      eyebrow="Sign in"
+      headline={useBackup ? "Enter a backup code" : "Enter the code from your authenticator app"}
+      lead={useBackup
+        ? "Use one of the ten backup codes you saved when you set up two-factor. It works once, then you will set up your new phone."
+        : "Open the app and enter the six-digit code shown for LOVELEEDAY. It changes every 30 seconds."}
+      rail={{ kicker: "Sign in", line: "A second check keeps your work private.", tips: ["Open your authenticator app", "Find the LOVELEEDAY entry", "Enter the six digits it shows"] }}
+      footer={<MfaHelp />}
     >
-
-          {useBackup ? (
-            <form aria-label="Backup code" onSubmit={onBackup} className="flex flex-col gap-4">
-              <p className="ll-note">Enter one of the backup codes you saved when you set up two-factor. It works once, then you&apos;ll set up your new phone.</p>
-              <input
-                autoFocus
-                autoComplete="off"
-                value={backup}
-                onChange={(e) => setBackup(e.target.value)}
-                placeholder="XXXXX-XXXXX"
-                className={`${inputClass} text-center tracking-[0.2em] !text-[18px] font-mono uppercase`}
-              />
-              {error && <p className="ll-feedback warn">{error}</p>}
-              <PortalButton type="submit" disabled={verifying || backup.replace(/[^0-9a-f]/gi, "").length < 10} className="w-full">
-                {verifying ? "Checking…" : "Use backup code"}
-              </PortalButton>
-              <button type="button" className="ll-note underline" onClick={() => { setUseBackup(false); setError(""); }}>Use my authenticator app instead</button>
-            </form>
-          ) : loading ? (
-            <p className="ll-note">Loading…</p>
-          ) : (
-            <form aria-label="Verification code" onSubmit={onSubmit} className="flex flex-col gap-4">
-              <input
-                autoFocus
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
-                className={`${inputClass} text-center tracking-[0.4em] !text-[20px] font-mono`}
-              />
-              {error && <p className="ll-feedback warn">{error}</p>}
-              <PortalButton type="submit" disabled={verifying || code.length < 6 || !factorId || !challengeId} className="w-full">
-                {verifying ? "Verifying…" : "Verify"}
-              </PortalButton>
-              {(!factorId || !challengeId) && (
-                <PortalButton type="button" variant="secondary" onClick={() => bootstrap()} className="w-full">Try again</PortalButton>
-              )}
-              <button type="button" className="ll-note underline" onClick={() => { setUseBackup(true); setError(""); }}>Lost your phone? Use a backup code</button>
-            </form>
+      {useBackup ? (
+        <form aria-label="Backup code" onSubmit={onBackup}>
+          <div className="ll-field">
+            <label htmlFor="backup-code">Backup code</label>
+            <input
+              id="backup-code"
+              autoFocus
+              autoComplete="off"
+              value={backup}
+              onChange={(e) => setBackup(e.target.value)}
+              placeholder="XXXXX-XXXXX"
+              className={`${inputClass} code`}
+              style={{ textTransform: "uppercase", letterSpacing: ".2em", fontSize: 18 }}
+            />
+          </div>
+          {error && <p className="ll-feedback warn">{error}</p>}
+          <PortalButton type="submit" disabled={verifying || backup.replace(/[^0-9a-f]/gi, "").length < 10}>
+            {verifying ? "Checking…" : "Use backup code"}
+          </PortalButton>
+          <ul className="links" style={{ marginTop: 2 }}>
+            <li><button type="button" className="linkbtn" onClick={() => { setUseBackup(false); setError(""); }}>Use my authenticator app instead</button></li>
+          </ul>
+        </form>
+      ) : loading ? (
+        <p className="note" style={{ marginTop: 0 }}>Loading…</p>
+      ) : (
+        <form aria-label="Verification code" onSubmit={onSubmit}>
+          <div className="ll-field">
+            <label htmlFor="challenge-code">Six-digit code</label>
+            <input
+              id="challenge-code"
+              autoFocus
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]*"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
+              className={`${inputClass} code`}
+              placeholder="000000"
+            />
+          </div>
+          {error && <p className="ll-feedback warn">{error}</p>}
+          <PortalButton type="submit" disabled={verifying || code.length < 6 || !factorId || !challengeId}>
+            {verifying ? "Verifying…" : "Verify and sign in"}
+          </PortalButton>
+          {(!factorId || !challengeId) && (
+            <PortalButton type="button" variant="secondary" onClick={() => bootstrap()}>Try again</PortalButton>
           )}
-          <MfaHelp />
+          <ul className="links" style={{ marginTop: 2 }}>
+            <li><button type="button" className="linkbtn" onClick={() => { setUseBackup(true); setError(""); }}>Use a backup code instead</button></li>
+          </ul>
+        </form>
+      )}
     </AuthShell>
   );
 }

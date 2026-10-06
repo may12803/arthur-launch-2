@@ -17,15 +17,29 @@ export default async function SelectCompanyPage() {
     .map((c) => ({ ...c, name: names.get(c.tenantId) || "Company" }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  const initials = (n: string) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("");
+  const roleName = (o: (typeof options)[number]) => (o.source === "grant" ? "LOVELEEDAY staff access" : o.role.charAt(0).toUpperCase() + o.role.slice(1));
+
   return (
-    <AuthShell eyebrow="Client portal" headline="Choose a workspace" lead="Your account belongs to more than one company. Everything you see and do in the portal applies to the one you choose here.">
-      <div className="flex flex-col gap-3">
+    <AuthShell
+      eyebrow={user.email ? `Signed in as ${user.email}` : "Client portal"}
+      headline="Choose an organization"
+      lead="Your account has access to more than one. You can switch at any time from the menu."
+      rail={{ kicker: "Your organizations", line: "Each organization keeps its own work, people and records." }}
+    >
+      <div className="stack">
         {options.map((o) => (
           <form key={o.tenantId} method="post" action="/api/client/active-tenant">
             <input type="hidden" name="tenant" value={o.tenantId} />
-            <button type="submit" className="ll-nav-cta w-full text-left">
-              {o.name}
-              <span className="ml-2 text-[12px] opacity-70">{o.source === "grant" ? "staff access" : o.role}</span>
+            <button type="submit" className="wsrow">
+              <span className="org">
+                <span className="av" aria-hidden>{initials(o.name)}</span>
+                <span>
+                  <b>{o.name}</b>
+                  <small>Your role: {roleName(o)}</small>
+                </span>
+              </span>
+              <span className="chev" aria-hidden>›</span>
             </button>
           </form>
         ))}

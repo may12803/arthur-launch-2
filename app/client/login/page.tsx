@@ -8,6 +8,13 @@ import { AuthShell } from "@/components/client-portal/AuthShell";
 import { emailDomain, ssoRequiredForMe } from "@/lib/client-portal/sso";
 import { friendlyAuthError } from "@/lib/client-portal/auth-errors";
 
+// One example per surface (VOICE.md in the site repo): this question appears nowhere else.
+const LOGIN_EXAMPLE = {
+  ask: "Which budget lines are on pace to run over before the year ends?",
+  answer: "Two lines, software and substitute staffing, are at 80% with a third of the year left.",
+  next: "Move the spring purchases or shift funds before March.",
+};
+
 function safeNext(raw: string | null): string {
   return raw && raw.startsWith("/client") && !raw.startsWith("//") ? raw : "/client";
 }
@@ -94,26 +101,27 @@ function LoginForm() {
 
   return (
     <AuthShell
-      headline="Sign in to your workspace"
-      lead={mode === "password" ? "Use the email connected to your LOVELEEDAY account. You'll enter your authenticator code next." : "Your organization uses its own sign-in. Enter your work email and we'll send you there."}
+      headline="Sign in"
+      lead={mode === "password" ? "Use the email connected to your LOVELEEDAY account. Next, you will enter the code from your authenticator app." : "Your organization uses its own sign-in. Enter your work email and we will take you there."}
+      photo={{ src: "/brand/auth/login-photo.jpg", tag: "Your answers, your work and what needs your decision, in one place.", example: LOGIN_EXAMPLE }}
       footer={
-        <p className="ll-note">
-          New here? Open the invitation link in your email to create your account. No invitation yet? Ask the person who manages your organization's account.
-        </p>
+        <>
+          <div className="alt">
+            {mode === "password" ? (
+              <>
+                <span>Does your organization use its own sign-in?</span>{" "}
+                <button type="button" className="linkbtn" onClick={() => { setMode("sso"); setError(""); }}>Sign in through your organization</button>
+              </>
+            ) : (
+              <button type="button" className="linkbtn" onClick={() => { setMode("password"); setError(""); }}>Sign in with your email and password instead</button>
+            )}
+          </div>
+          <p className="note">New here? Open the invitation link in your email to create your account.</p>
+        </>
       }
     >
-
-      <div className="ll-tabs mb-6" role="group" aria-label="Sign-in method">
-        <button type="button" aria-pressed={mode === "password"} onClick={() => { setMode("password"); setError(""); }}>
-          Email and password
-        </button>
-        <button type="button" aria-pressed={mode === "sso"} onClick={() => { setMode("sso"); setError(""); }}>
-          Sign in with your organization
-        </button>
-      </div>
-
       {mode === "sso" ? (
-        <form onSubmit={onSso} className="flex flex-col gap-5">
+        <form onSubmit={onSso}>
           <FormField label="Work email" htmlFor="sso-email">
             <input
               id="sso-email"
@@ -124,43 +132,48 @@ function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={inputClass}
-              placeholder="name@organization.org"
+              placeholder="name@organization.com"
             />
           </FormField>
           {error && <p className="ll-feedback warn">{error}</p>}
-          <PortalButton type="submit" disabled={loading || !email} className="w-full mt-1">
-            {loading ? "Redirecting…" : "Continue with single sign-on ↗"}
+          <PortalButton type="submit" disabled={loading || !email}>
+            {loading ? "Redirecting…" : "Continue with your organization"}
           </PortalButton>
         </form>
       ) : (
-      <form onSubmit={onSubmit} className="flex flex-col gap-5">
-        <FormField label="Email" htmlFor="login-email">
-          <input
-            id="login-email"
-            type="email"
-            required
-            autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={inputClass}
-          />
-        </FormField>
-        <FormField label="Password" htmlFor="login-password">
-          <input
-            id="login-password"
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={inputClass}
-          />
-        </FormField>
-        {error && <p className="ll-feedback warn">{error}</p>}
-        <PortalButton type="submit" disabled={loading || !email || !password} className="w-full mt-1">
-          {loading ? "Signing in…" : "Continue"}
-        </PortalButton>
-        <a href="/client/forgot" className="ll-note underline self-center">Forgot your password?</a>
-      </form>
+        <form onSubmit={onSubmit}>
+          <FormField label="Work email" htmlFor="login-email">
+            <input
+              id="login-email"
+              type="email"
+              required
+              autoFocus
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={inputClass}
+              placeholder="name@organization.com"
+            />
+          </FormField>
+          <div className="ll-field">
+            <label htmlFor="login-password">Password</label>
+            <input
+              id="login-password"
+              type="password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={inputClass}
+              placeholder="Your password"
+            />
+            <a href="/client/forgot" className="under">Forgot your password?</a>
+          </div>
+          {error && <p className="ll-feedback warn">{error}</p>}
+          <PortalButton type="submit" disabled={loading || !email || !password}>
+            {loading ? "Signing in…" : "Continue"}
+          </PortalButton>
+        </form>
       )}
     </AuthShell>
   );

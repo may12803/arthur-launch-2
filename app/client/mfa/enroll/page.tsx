@@ -29,6 +29,7 @@ function EnrollForm() {
   const [verifying, setVerifying] = useState(false);
 
   const [codes, setCodes] = useState<string[] | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const startEnroll = useCallback(async (fresh = false) => {
     setError("");
@@ -135,54 +136,56 @@ function EnrollForm() {
 
   return (
     <AuthShell
-      eyebrow="Two-factor authentication"
-      headline={codes ? "Save your backup codes" : "Secure your account"}
-      step="Step 2 of 2"
-      lead={codes ? "Each code works once if you lose your phone. You won't see these codes again, so keep them somewhere safe." : "Scan the code with an authenticator app such as Google Authenticator, 1Password or Authy, then enter the six-digit code it shows. You'll use that app each time you sign in."}
-      context={{ title: "One minute now keeps your organization's information safe.", points: ["Every LOVELEEDAY account uses two-factor sign-in, with no exceptions.", "Your password alone is never enough to get in.", "Lost your phone later? A backup code gets you back in."] }}
+      eyebrow={null}
+      stepper={codes ? 3 : 2}
+      headline={codes ? "Save your backup codes" : "Add your authenticator app"}
+      lead={codes ? "Your authenticator app is connected. If you ever lose your phone, each of these ten codes signs you in once. This is the only time they are shown." : "Your account needs a code from an authenticator app, such as Google Authenticator, 1Password or Authy, each time you sign in with your password."}
+      rail={codes
+        ? { kicker: "Account setup", line: "Last step. Then you are in.", steps: 3, brainPosition: "12% 60%" }
+        : { kicker: "Account setup", line: "Two steps keep your organization’s work yours.", steps: 2, brainPosition: "88% 40%" }}
+      footer={<MfaHelp />}
     >
-
-          {codes ? (
-            <BackupCodes codes={codes} onDone={() => { window.location.href = next; }} />
-          ) : loading || starting || !enroll ? (
-            <p className="ll-note">
-              {error ? <span className="ll-feedback warn">{error}</span> : "Setting up…"}
-            </p>
-          ) : (
-            <form onSubmit={onVerify} className="flex flex-col gap-5">
-              <div className="flex flex-col gap-3">
-                <span className="ll-label">1 · Scan this code with your authenticator app</span>
-                <div className="bg-white p-3 rounded-lg w-[176px] h-[176px] flex items-center justify-center border border-[var(--line)]">
-                  {/* Supabase returns the QR as an inline SVG data URI. */}
-                  <img src={enroll.qrSvg} alt="Scan with your authenticator app" width={150} height={150} />
-                </div>
-                <span className="ll-note">Can&apos;t scan it? Enter this setup key in the app instead:</span>
-                <div className="font-mono text-[12px] text-[#36475c] bg-[#fafbfd] border border-[#dce3ed] rounded-lg px-3 py-2 break-all select-all">
-                  {enroll.secret}
-                </div>
-              </div>
-              <div className="ll-field">
-                <label htmlFor="enroll-code">2 · Enter the 6-digit code the app shows</label>
-                <input
-                  id="enroll-code"
-                  autoFocus
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  pattern="[0-9]*"
-                  maxLength={6}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
-                  className={`${inputClass} text-center tracking-[0.4em] !text-[20px] font-mono`}
-                  placeholder="000000"
-                />
-              </div>
-              {error && <p className="ll-feedback warn">{error}</p>}
-              <PortalButton type="submit" disabled={verifying || code.length < 6} className="w-full">
-                {verifying ? "Verifying…" : "Verify and enable"}
-              </PortalButton>
-            </form>
-          )}
-          <MfaHelp />
+      {codes ? (
+        <BackupCodes codes={codes} onDone={() => { window.location.href = next; }} />
+      ) : loading || starting || !enroll ? (
+        error ? <p className="ll-feedback warn">{error}</p> : <p className="note" style={{ marginTop: 0 }}>Setting up…</p>
+      ) : (
+        <form onSubmit={onVerify}>
+          <div className="block">
+            <p className="step">1. Scan this code with the app</p>
+            {/* Supabase returns the QR as an inline SVG data URI. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="qrimg" src={enroll.qrSvg} alt="QR code to scan with your authenticator app" width={168} height={168} />
+            <p className="note">Can&apos;t scan it? Type this key into the app instead. Keep it private.</p>
+            <div className="keyrow">
+              <span className="key">{enroll.secret.replace(/(.{4})(?=.)/g, "$1 ")}</span>
+              <button type="button" className="ll-secondary sm" onClick={() => { navigator.clipboard?.writeText(enroll.secret); setCopied(true); }}>
+                {copied ? "Copied" : "Copy key"}
+              </button>
+            </div>
+          </div>
+          <div className="block">
+            <label className="step" htmlFor="enroll-code">2. Enter the six-digit code the app shows</label>
+            <input
+              id="enroll-code"
+              autoFocus
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]*"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
+              className={`${inputClass} code`}
+              placeholder="000000"
+            />
+            <p className="note">If the code is not accepted, wait for the next one and try again.</p>
+          </div>
+          {error && <p className="ll-feedback warn">{error}</p>}
+          <PortalButton type="submit" disabled={verifying || code.length < 6}>
+            {verifying ? "Verifying…" : "Verify code"}
+          </PortalButton>
+        </form>
+      )}
     </AuthShell>
   );
 }

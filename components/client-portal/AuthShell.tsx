@@ -1,100 +1,159 @@
-import type { ReactNode } from "react";
-import { Wordmark } from "./LogoMark";
+import type { CSSProperties, ReactNode } from "react";
+import "./auth-shell.css";
 
 // Shell for sign-in and onboarding: /client/login, forgot, reset, invite/[token], the MFA pages, select-company,
-// no-access and staff. One compact task, centered: the heading and form sit together in one card, a dark context panel
-// beside it carries the promise (or, on an invitation, who invited you), and a single quiet legal row closes the page.
-// On a phone the form comes first and the context follows it.
-const DEFAULT_CONTEXT = {
-  title: "Your answers, your work and what needs your decision, in one place.",
-  points: [
-    "Arthur reads the systems your organization connects and explains what changed in plain language.",
-    "Every figure shows where it came from, so you can check it.",
-    "Two-factor sign-in protects every account. Nothing is sent or changed without a person's approval.",
-  ],
-};
+// no-access, staff and shared-document links. The task sits on white at the left with the brand above and one quiet
+// legal row below; the right side is either a photo with an illustrative answer card (sign in, invitation) or a dark
+// rail: the particle brain with the three setup steps (account setup only) or a plain rail with a faint heart mark.
+// Under 900px the right side is hidden and the task comes first. Approved mockup:
+// briefs/loveleeday-platform-review-2026-10-06/auth-mockup.
+
+export type AuthExample = { ask: string; answer: string; next: string };
+
+const SETUP_STEPS = [
+  ["Create account", "Your name and password"],
+  ["Add authenticator", "A code from your phone each time you sign in"],
+  ["Save backup codes", "Ten one-time codes, shown once"],
+] as const;
+
+export function Stepper({ current }: { current: 1 | 2 | 3 }) {
+  return (
+    <ol className="stepper" aria-label={`Step ${current} of 3`}>
+      {SETUP_STEPS.map(([name], i) => {
+        const n = i + 1;
+        const cls = n < current ? "done" : n === current ? "now" : "";
+        return (
+          <li key={name} className={cls} aria-current={n === current ? "step" : undefined}>
+            <span aria-hidden>{n < current ? "✓" : n}</span>
+            {name}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+type Photo = { src: string; tag: string; example?: AuthExample; position?: string };
+type Rail = { kicker: string; line: string; steps?: 1 | 2 | 3; tips?: string[]; brainPosition?: string };
 
 export function AuthShell({
   eyebrow = "Client portal",
+  pill,
   headline,
   muted,
   lead,
-  step,
-  context,
+  stepper,
+  photo,
+  rail,
   children,
   footer,
 }: {
-  eyebrow?: string;
+  eyebrow?: string | null;
+  pill?: { text: string; warn?: boolean };
   headline: string;
   muted?: string;
-  lead?: string;
-  step?: string;
-  context?: { title: string; points?: string[] } | null;
-  children: ReactNode;
+  lead?: ReactNode;
+  stepper?: 1 | 2 | 3;
+  photo?: Photo;
+  rail?: Rail;
+  children?: ReactNode;
   footer?: ReactNode;
 }) {
-  const ctx = context === undefined ? DEFAULT_CONTEXT : context;
-  return (
-    <div className="min-h-screen flex flex-col bg-[#f5f5f7]">
-      <header className="ll-nav">
-        <div className="ll-wrap ll-nav-inner">
-          <a href="https://loveleedaystudios.com/" aria-label="LOVELEEDAY home">
-            <Wordmark />
-          </a>
-          <nav className="ll-nav-links" aria-label="Main navigation">
-            <a href="https://loveleedaystudios.com/">loveleedaystudios.com ↗</a>
-          </nav>
-        </div>
-      </header>
-
-      <main className="flex-1 flex items-start md:items-center justify-center px-4 py-8 md:py-16">
-        <div className="w-full max-w-[1000px] grid md:grid-cols-[minmax(0,1fr)_minmax(0,460px)] gap-5 md:gap-6 items-stretch">
-          <div className="order-1 md:order-2 bg-white rounded-[20px] border border-[var(--line)] p-6 md:p-8 min-w-0">
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <span className="ll-eyebrow">{eyebrow}</span>
-              {step && <span className="text-[12px] text-[var(--muted)] whitespace-nowrap">{step}</span>}
+  const side = photo ? (
+    <aside className="la-visual" aria-hidden={!photo.example}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={photo.src} alt="" style={photo.position ? { objectPosition: photo.position } : undefined} />
+      <div className="la-overlay">
+        <p className="tag">{photo.tag}</p>
+        {photo.example && (
+          <div className="la-card" aria-label="Illustrative example of an answer">
+            <div className="h">
+              <b>Arthur</b>
+              <span>Illustrative example, fictional data</span>
             </div>
-            <h1 className="text-[26px] md:text-[30px] leading-[1.15] font-medium tracking-[-0.035em] text-[var(--ink)]">
-              {headline}
-              {muted && <span className="text-[var(--muted)]"> {muted}</span>}
-            </h1>
-            {lead && <p className="mt-3 text-[15px] leading-[1.6] text-[#4a4e57]">{lead}</p>}
-            <div className="mt-6">{children}</div>
-            {footer && <div className="mt-6 pt-5 border-t border-[var(--line)]">{footer}</div>}
+            <dl>
+              <dt>What you would ask</dt>
+              <dd>{photo.example.ask}</dd>
+              <dt>What Arthur tells you</dt>
+              <dd>{photo.example.answer}</dd>
+              <dt>What to do next</dt>
+              <dd className="next">{photo.example.next}</dd>
+            </dl>
           </div>
+        )}
+      </div>
+    </aside>
+  ) : (
+    <aside
+      className={rail?.steps ? "la-rail" : "la-rail plain"}
+      style={rail?.brainPosition ? ({ "--bp": rail.brainPosition } as CSSProperties) : undefined}
+    >
+      <div>
+        <p className="kick">{rail?.kicker ?? "Client portal"}</p>
+        <p className="rline">{rail?.line ?? "Your answers, your work and what needs your decision, in one place."}</p>
+      </div>
+      {rail?.steps && (
+        <ol className="rsteps">
+          {SETUP_STEPS.map(([name, desc], i) => {
+            const n = i + 1;
+            const cls = n < rail.steps! ? "done" : n === rail.steps ? "now" : "";
+            return (
+              <li key={name} className={cls}>
+                <span aria-hidden>{n < rail.steps! ? "✓" : n}</span>
+                <div>
+                  <b>{name}</b>
+                  <small>{desc}</small>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      {rail?.tips && (
+        <ul className="rtips">
+          {rail.tips.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+      )}
+      <p className="rfoot">
+        <i aria-hidden />
+        Your work stays private to your organization.
+      </p>
+    </aside>
+  );
 
-          {ctx && (
-            <aside className="order-2 md:order-1 rounded-[20px] bg-[#14161b] text-white p-6 md:p-10 flex flex-col justify-between gap-8 min-w-0">
-              <div>
-                <span className="text-[11px] tracking-[.16em] uppercase text-[#9fb4cf]">LOVELEEDAY</span>
-                <p className="mt-4 text-[22px] md:text-[28px] leading-[1.2] font-medium tracking-[-0.03em]">{ctx.title}</p>
-              </div>
-              {ctx.points && ctx.points.length > 0 && (
-                <ul className="flex flex-col gap-4">
-                  {ctx.points.map((p) => (
-                    <li key={p} className="flex gap-3 text-[14px] leading-[1.55] text-[#c9ccd3]">
-                      <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#5aa2ff]" />
-                      <span>{p}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </aside>
-          )}
-        </div>
-      </main>
-
-      <footer className="border-t border-[var(--line)] bg-white">
-        <div className="ll-wrap flex flex-wrap items-center justify-between gap-3 py-4 text-[12.5px] text-[var(--muted)]">
+  return (
+    <div className={photo ? "la" : "la quiet"}>
+      <div className="la-side">
+        <a className="la-brand" href="https://loveleedaystudios.com/" aria-label="LOVELEEDAY home">
+          <i aria-hidden />
+          LOVELEEDAY
+        </a>
+        <main className="la-main">
+          <div className="la-form">
+            {stepper && <Stepper current={stepper} />}
+            {pill ? <span className={pill.warn ? "pill warn" : "pill"}>{pill.text}</span> : eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
+            <h1>
+              {headline}
+              {muted && <span className="mute"> {muted}</span>}
+            </h1>
+            {lead && <p className="lead">{lead}</p>}
+            {children && <div className="la-body">{children}</div>}
+            {footer}
+          </div>
+        </main>
+        <div className="la-legal">
           <span>&copy; 2026 LOVELEEDAY Studios LLC</span>
-          <nav className="flex flex-wrap gap-5" aria-label="Legal">
-            <a href="/client/privacy" className="hover:text-[var(--ink)]">Privacy</a>
-            <a href="/client/terms" className="hover:text-[var(--ink)]">Terms</a>
-            <a href="https://loveleedaystudios.com/trust" className="hover:text-[var(--ink)]">Trust and security</a>
-            <a href="mailto:hello@loveleedaystudios.com" className="hover:text-[var(--ink)]">Help</a>
+          <nav aria-label="Legal">
+            <a href="/client/privacy">Privacy</a>
+            <a href="/client/terms">Terms</a>
+            <a href="https://loveleedaystudios.com/trust">Trust and security</a>
+            <a href="mailto:hello@loveleedaystudios.com">Get help</a>
           </nav>
         </div>
-      </footer>
+      </div>
+      {side}
     </div>
   );
 }

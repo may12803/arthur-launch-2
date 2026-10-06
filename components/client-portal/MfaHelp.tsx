@@ -10,9 +10,10 @@ export function MfaHelp() {
     window.location.href = "/client/login";
   }
   return (
-    <p className="ll-note mt-6">
-      Lost your phone and your backup codes? Email <a href="mailto:daniel@loveleedaystudios.com?subject=Reset%20my%20two-factor" className="underline">daniel@loveleedaystudios.com</a>. We&apos;ll call the number on your account to confirm it&apos;s you before we reset anything.{" "}
-      <button type="button" onClick={signOut} className="underline">Sign out</button>
+    <p className="note" style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--line)" }}>
+      Lost your phone and your backup codes?{" "}
+      <a href="mailto:daniel@loveleedaystudios.com?subject=Reset%20my%20two-factor">Get help</a>. We call the number on your account to confirm it&apos;s you before we reset anything.{" "}
+      <button type="button" onClick={signOut} className="linkbtn" style={{ fontSize: "inherit" }}>Sign out</button>
     </p>
   );
 }

@@ -51,13 +51,19 @@ function ResetForm() {
   }
 
   return (
-    <AuthShell eyebrow="Password" headline={ready === "bad" ? "This reset link no longer works" : "Choose a new password"} lead={ready === "bad" ? "It may have expired or already been used." : "Use at least 12 characters. A password found in a known data breach will be refused."} context={null}>
+    <AuthShell
+      pill={ready === "bad" ? { text: "Password reset", warn: true } : { text: "Password reset" }}
+      headline={ready === "bad" ? "This reset link no longer works" : "Choose a new password"}
+      lead={ready === "bad" ? "Reset links work once, for one hour. This one may have expired or already been used." : "Use at least 12 characters. A password found in a known data breach will be refused."}
+      rail={{ kicker: "Password reset", line: "After a new password, you still enter your authenticator code.", tips: ["Choose at least 12 characters", "Save it in your password manager", "Sign in with your authenticator code"] }}
+      footer={<ul className="links"><li><Link href="/client/login">Back to sign in</Link></li></ul>}
+    >
       {ready === "checking" ? (
-        <p className="ll-note">Checking your link…</p>
+        <p className="note" style={{ marginTop: 0 }}>Checking your link…</p>
       ) : ready === "bad" ? (
-        <Link href="/client/forgot" className="ll-primary">Send a new reset link</Link>
+        <div className="stack"><Link href="/client/forgot" className="ll-primary">Send a new reset link</Link></div>
       ) : (
-        <form onSubmit={onSubmit} className="flex flex-col gap-5">
+        <form onSubmit={onSubmit}>
           <FormField label="New password" htmlFor="reset-password">
             <input id="reset-password" type="password" autoComplete="new-password" required autoFocus value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
           </FormField>
@@ -65,7 +71,7 @@ function ResetForm() {
             <input id="reset-confirm" type="password" autoComplete="new-password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} className={inputClass} />
           </FormField>
           {error && <p className="ll-feedback warn">{error}</p>}
-          <PortalButton type="submit" disabled={busy || !password || !confirm} className="w-full">{busy ? "Saving…" : "Save new password"}</PortalButton>
+          <PortalButton type="submit" disabled={busy || !password || !confirm}>{busy ? "Saving…" : "Save new password"}</PortalButton>
         </form>
       )}
     </AuthShell>
