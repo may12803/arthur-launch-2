@@ -51,11 +51,11 @@ function ResetForm() {
   }
 
   return (
-    <AuthShell eyebrow="Password" headline="Choose a new" muted="password." lead="At least 12 characters. Passwords that have appeared in a data breach are refused.">
+    <AuthShell eyebrow="Password" headline={ready === "bad" ? "This reset link no longer works" : "Choose a new password"} lead={ready === "bad" ? "It may have expired or already been used." : "Use at least 12 characters. A password found in a known data breach will be refused."} context={null}>
       {ready === "checking" ? (
         <p className="ll-note">Checking your link…</p>
       ) : ready === "bad" ? (
-        <p className="ll-note">This reset link has expired or was already used. <Link href="/client/forgot" className="underline">Send a new one</Link>.</p>
+        <Link href="/client/forgot" className="ll-primary">Send a new reset link</Link>
       ) : (
         <form onSubmit={onSubmit} className="flex flex-col gap-5">
           <FormField label="New password" htmlFor="reset-password">

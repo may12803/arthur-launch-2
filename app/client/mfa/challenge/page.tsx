@@ -133,12 +133,10 @@ function ChallengeForm() {
   return (
     <AuthShell
       eyebrow="Two-factor verification"
-      headline="One more"
-      muted="step."
-      lead="Every LOVELEEDAY account is protected by a second factor. Enter the current code from your authenticator app."
+      headline="Enter your authenticator code"
+      lead="Open your authenticator app and enter the current six-digit code for LOVELEEDAY."
+      context={{ title: "Almost in.", points: ["The code changes every 30 seconds. Use the one showing now.", "No phone? Use one of the backup codes you saved."] }}
     >
-          <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Verification code</h2>
-          <p className="ll-note mt-1 mb-6">The 6-digit code from your authenticator app.</p>
 
           {useBackup ? (
             <form aria-label="Backup code" onSubmit={onBackup} className="flex flex-col gap-4">

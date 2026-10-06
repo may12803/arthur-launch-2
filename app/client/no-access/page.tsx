@@ -13,13 +13,11 @@ export default async function NoAccessPage() {
   return (
     <AuthShell
       eyebrow="Client portal"
-      headline="No active"
-      muted="company access."
-      lead="You're signed in, but this account isn't an accepted member of a LOVELEEDAY client company yet."
+      headline="Your workspace access isn't ready yet"
+      lead={`You're signed in as ${data.user.email}, but this account hasn't joined an organization yet.`}
     >
-      <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)] break-all">Signed in as {data.user.email}</h2>
-      <p className="ll-note mt-2 mb-6">
-        If you were sent an invite link, open that link to join. Otherwise, ask your contact to send you one.
+      <p className="ll-note mb-6">
+        If you received an invitation email, open its link to join. If not, ask the person who manages your organization's account to invite this email address, or write to us at hello@loveleedaystudios.com.
       </p>
       <SignOutButton />
     </AuthShell>

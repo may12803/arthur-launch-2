@@ -136,11 +136,11 @@ function EnrollForm() {
   return (
     <AuthShell
       eyebrow="Two-factor authentication"
-      headline="Secure your"
-      muted="account."
-      lead="One-time setup, required for every LOVELEEDAY account. Scan the code once with an authenticator app (Google Authenticator, 1Password or Authy). After this, you'll sign in with your password and the 6-digit code from the app."
+      headline={codes ? "Save your backup codes" : "Secure your account"}
+      step="Step 2 of 2"
+      lead={codes ? "Each code works once if you lose your phone. You won't see these codes again, so keep them somewhere safe." : "Scan the code with an authenticator app such as Google Authenticator, 1Password or Authy, then enter the six-digit code it shows. You'll use that app each time you sign in."}
+      context={{ title: "One minute now keeps your organization's information safe.", points: ["Every LOVELEEDAY account uses two-factor sign-in, with no exceptions.", "Your password alone is never enough to get in.", "Lost your phone later? A backup code gets you back in."] }}
     >
-          <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)] mb-5">{codes ? "Two-factor is on" : "Scan once and verify"}</h2>
 
           {codes ? (
             <BackupCodes codes={codes} onDone={() => { window.location.href = next; }} />

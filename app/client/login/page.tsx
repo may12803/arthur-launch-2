@@ -94,28 +94,21 @@ function LoginForm() {
 
   return (
     <AuthShell
-      headline="Your work,"
-      muted="in one place."
-      lead="Deliverables, contracts and billing for your LOVELEEDAY engagement — every figure sourced, every change dated."
+      headline="Sign in to your workspace"
+      lead={mode === "password" ? "Use the email connected to your LOVELEEDAY account. You'll enter your authenticator code next." : "Your organization uses its own sign-in. Enter your work email and we'll send you there."}
       footer={
         <p className="ll-note">
-          New here? Use the invite link your contact sent you to create your account.
+          New here? Open the invitation link in your email to create your account. No invitation yet? Ask the person who manages your organization's account.
         </p>
       }
     >
-      <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Sign in</h2>
-      <p className="ll-note mt-1 mb-5">
-        {mode === "password"
-          ? "Two-factor verification follows your password."
-          : "You'll continue to your organization's sign-in page."}
-      </p>
 
       <div className="ll-tabs mb-6" role="group" aria-label="Sign-in method">
         <button type="button" aria-pressed={mode === "password"} onClick={() => { setMode("password"); setError(""); }}>
           Email and password
         </button>
         <button type="button" aria-pressed={mode === "sso"} onClick={() => { setMode("sso"); setError(""); }}>
-          Single sign-on
+          Sign in with your organization
         </button>
       </div>
 
@@ -164,7 +157,7 @@ function LoginForm() {
         </FormField>
         {error && <p className="ll-feedback warn">{error}</p>}
         <PortalButton type="submit" disabled={loading || !email || !password} className="w-full mt-1">
-          {loading ? "Signing in…" : "Sign in"}
+          {loading ? "Signing in…" : "Continue"}
         </PortalButton>
         <a href="/client/forgot" className="ll-note underline self-center">Forgot your password?</a>
       </form>

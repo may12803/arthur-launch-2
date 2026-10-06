@@ -18,7 +18,7 @@ export default async function SelectCompanyPage() {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <AuthShell eyebrow="Client portal" headline="Choose your" muted="company." lead="Your account belongs to more than one company. Everything you see and do in the portal applies to the one you choose here.">
+    <AuthShell eyebrow="Client portal" headline="Choose a workspace" lead="Your account belongs to more than one company. Everything you see and do in the portal applies to the one you choose here.">
       <div className="flex flex-col gap-3">
         {options.map((o) => (
           <form key={o.tenantId} method="post" action="/api/client/active-tenant">

@@ -130,7 +130,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
 
   if (checkingSession || !previewChecked) {
     return (
-      <AuthShell eyebrow="Invitation" headline="Opening your" muted="invitation.">
+      <AuthShell eyebrow="Invitation" headline="Opening your invitation" context={null}>
         <p className="ll-note">Loading…</p>
       </AuthShell>
     );
@@ -141,14 +141,13 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     return (
       <AuthShell
         eyebrow="Invitation"
-        headline="This invite link"
-        muted="isn't valid."
-        lead="It may have been copied incompletely, already used, or withdrawn."
+        headline="This invitation link doesn't work"
+        lead="Check that you opened the complete link from the email. If you already joined, sign in. Otherwise, ask the person who invited you for a new link."
       >
-        <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Link not valid</h2>
-        <p className="ll-note mt-2">
-          Check that you copied the whole link from the email. If you already joined, <a className="underline" href="/client/login">sign in</a>; otherwise ask your contact to send a new invite.
-        </p>
+        <div className="flex flex-wrap gap-3">
+          <a href="/client/login" className="ll-primary">Sign in</a>
+          <a href="mailto:hello@loveleedaystudios.com" className="ll-secondary">Contact support</a>
+        </div>
       </AuthShell>
     );
   }
@@ -157,15 +156,12 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     return (
       <AuthShell
         eyebrow="Invitation"
-        headline="This invite"
-        muted="has expired."
-        lead="Invites carry a short window on purpose. Ask your contact to send a fresh link."
+        headline="This invitation has expired"
+        lead={`Invitations last seven days. Ask the person who invited you to send a new link to join ${info.tenant_name}.`}
       >
-        <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Link no longer valid</h2>
-        <p className="ll-note mt-2">
-          Your invite to join {info.tenant_name} as {info.role} can&apos;t be used any more. Ask your
-          contact there to send a new one.
-        </p>
+        <div className="flex flex-wrap gap-3">
+          <a href="/client/login" className="ll-primary">Already joined? Sign in</a>
+        </div>
       </AuthShell>
     );
   }
@@ -173,30 +169,26 @@ export default function InvitePage({ params }: { params: { token: string } }) {
   return (
     <AuthShell
       eyebrow="Invitation"
-      headline={info ? `Join ${info.tenant_name}` : "You've been"}
-      muted={info ? "on LOVELEEDAY." : "invited."}
+      headline={info ? `Join ${info.tenant_name}` : "You've been invited"}
+      step="Step 1 of 2"
+      context={info ? { title: `${info.tenant_name} invited you to LOVELEEDAY.`, points: [`You'll join as ${info.role}.`, "This invitation works only with the email address it was sent to.", "Next, you'll secure your account with an authenticator app. It takes about a minute."] } : undefined}
       lead={
         info
           ? authedEmail
-            ? `You've been invited as ${info.role}. Accept to add ${info.tenant_name} to your account.`
-            : `You've been invited as ${info.role}. Create your account, or sign in if you already have one, to see the deliverables, contracts and billing for this engagement.`
-          : "Create your account to join your company's LOVELEEDAY client portal."
+            ? `You're signed in as ${authedEmail}. Accept to join ${info.tenant_name} as ${info.role}.`
+            : "Use the email this invitation was sent to. Create an account, or sign in if you already have one."
+          : "Create your account to join your organization's LOVELEEDAY workspace."
       }
-      footer={<p className="ll-note">Two-factor authentication is set up right after, for every account.</p>}
     >
       {awaitingConfirmation ? (
         <>
-          <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Check your email</h2>
+          <p className="text-[17px] font-medium text-[var(--ink)]">Check your email</p>
           <p className="ll-note mt-2">
-            We sent a confirmation link to {email}. Confirm it, then open this invite link again to finish joining.
+            We sent a confirmation link to {email}. Confirm it, then open this invitation link again to finish joining.
           </p>
         </>
       ) : authedEmail ? (
         <div className="flex flex-col gap-5">
-          <h2 className="text-[20px] font-medium tracking-[-0.03em] text-[var(--ink)]">Accept invite</h2>
-          <p className="ll-note -mt-3">
-            Signed in as <span className="text-[var(--ink)]">{authedEmail}</span>.
-          </p>
           {error && <p className="ll-feedback warn">{error}</p>}
           <PortalButton onClick={finishAccept} disabled={submitting} className="w-full">
             {submitting ? "Joining…" : "Accept invite"}

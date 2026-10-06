@@ -22,9 +22,9 @@ export default function ClientForgotPage() {
   }
 
   return (
-    <AuthShell eyebrow="Password" headline="Reset your" muted="password." lead="Enter the email you sign in with. We'll send a link to choose a new password.">
+    <AuthShell eyebrow="Password" headline="Reset your password" lead="Enter the email you use to sign in. We'll send a link to choose a new password." context={null}>
       {sent ? (
-        <p className="ll-note">If that address has a LOVELEEDAY account, a reset link is on its way. It expires in an hour. You&apos;ll still need your authenticator code after you set the new password.</p>
+        <div><p className="text-[17px] font-medium text-[var(--ink)]">Check your email</p><p className="ll-note mt-2">If an account exists for that address, a reset link is on its way. It expires in an hour. You&apos;ll still need your authenticator code after you set the new password.</p></div>
       ) : (
         <form onSubmit={onSubmit} className="flex flex-col gap-5">
           <FormField label="Email" htmlFor="forgot-email">
