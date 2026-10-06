@@ -11,6 +11,20 @@ export const dynamic = "force-dynamic";
 
 type Sub = { plan_key: string | null; billing_interval: string | null; status: string; amount_cents: number | null; current_period_end: string | null; cancel_at_period_end: boolean; last_invoice_status: string | null; livemode: boolean };
 
+function statusSentence(status: string | null | undefined) {
+  switch (status) {
+    case "active": return "Your plan is active.";
+    case "trialing": return "You are in your trial period.";
+    case "past_due": return "Payment is overdue. Update your payment method to keep your plan current.";
+    case "unpaid": return "Payment has not gone through. Update your payment method to keep your plan current.";
+    case "canceled": return "Your plan is canceled.";
+    case "incomplete": return "Setup of your plan is not finished. Complete payment to start it.";
+    case "incomplete_expired": return "Setup of your plan expired before payment went through. Choose a plan to start again.";
+    case "paused": return "Your plan is paused.";
+    default: return "Contact LOVELEEDAY if you have a question about your plan.";
+  }
+}
+
 export default async function BillingPage() {
   const ctx = await requireClientPortal();
   const supabase = await getLoveleedayServer();
@@ -69,7 +83,7 @@ export default async function BillingPage() {
       <Eyebrow>{ctx.tenantName}</Eyebrow>
       <PageTitle>Billing</PageTitle>
       <Muted className="mb-8 max-w-[60ch]">
-        Manage your payment method, invoices, and plan through Stripe.
+        Review your plan and invoices, update how you pay, and see when your plan renews.
       </Muted>
 
       {stripeMode() === "test" && <p className="ll-feedback warn mb-4">Test mode: no real charges are made.</p>}
@@ -77,7 +91,7 @@ export default async function BillingPage() {
         <Card className="p-8 mb-8">
           <p className="font-serif text-h3 text-text-active mb-2">Current subscription</p>
           <p data-testid="current-subscription" className="text-[15px] text-text-active">
-            {planName}{sub.billing_interval ? `, billed ${sub.billing_interval}` : ""}{sub.amount_cents != null ? `, ${money(sub.amount_cents)}` : ""}. Status: {sub.status}
+            {planName}{sub.billing_interval ? `, billed ${sub.billing_interval}` : ""}{sub.amount_cents != null ? `, ${money(sub.amount_cents)}` : ""}. {statusSentence(sub.status)}
             {sub.cancel_at_period_end ? ", ends at period end" : ""}
             {sub.current_period_end ? `. Renews or ends ${new Date(sub.current_period_end).toLocaleDateString("en-US", { timeZone: "America/New_York" })}` : ""}.
             {sub.last_invoice_status === "payment_failed" ? " Your last payment failed. Update your payment method below." : ""}

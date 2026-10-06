@@ -21,7 +21,7 @@ export default async function CoveragePage() {
       <p className="text-[12px] text-[var(--muted)]"><Link href="/client/workstreams">Workstreams</Link> / <b className="font-medium text-[var(--ink)]">Coverage</b></p>
       <div className="mt-4"><Eyebrow>{ctx.tenantName} · Coverage</Eyebrow></div>
       <PageTitle>Coverage</PageTitle>
-      <EmptyState title="Coverage map coming" body="We're mapping every area your business runs on. It appears here with what we've reviewed and what we'd look at next." />
+      <EmptyState title="We have not reviewed your business areas yet" body="We're mapping every area your business runs on. It appears here with what we've reviewed and what we'd look at next." />
     </div>
   );
   const n = (s: CoverageArea["status"]) => areas.filter((a) => a.status === s).length;

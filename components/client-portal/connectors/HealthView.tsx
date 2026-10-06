@@ -56,7 +56,7 @@ export function HealthView({ entries, conns, now }: { entries: CatalogEntry[]; c
       )}
 
       <Panel>
-        <PanelHead title="Coverage by area" sub="Live or verified systems against what is available to connect." />
+        <PanelHead title="Where answers may have gaps" sub="See which parts of your business have current records and which still need a connection." />
         <div className="cp-panel-b grid gap-5">
           {h.coverage.map((c) => {
             const pct = Math.round((c.connected / c.available) * 100);

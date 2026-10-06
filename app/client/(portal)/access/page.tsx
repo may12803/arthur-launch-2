@@ -102,7 +102,7 @@ export default async function AccessHistoryPage() {
       {rowsError ? (
         <LoadError what="access history" />
       ) : !rows || rows.length === 0 ? (
-        <EmptyState title="Nothing recorded yet" body="Activity on your documents and account will appear here." />
+        <EmptyState title="No activity in the period shown" body="No one has opened a document or changed account access in the period shown." />
       ) : (
         <Card className="px-6 py-2 overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[560px]">

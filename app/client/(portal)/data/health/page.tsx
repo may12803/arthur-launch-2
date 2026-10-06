@@ -21,7 +21,7 @@ export default async function DataHealthPage() {
         eyebrow={`${ctx.tenantName} · Data health`}
         title="Is your data"
         muted="current and complete?"
-        lead="Computed from each connection's own sync records, never typed in. A system reads Live only when its health is good and rows moved inside its freshness window."
+        lead="See whether the information behind your answers is current. Open a connection to find what is late or failing and what needs attention."
         actions={<><Link href="/client/connections" className="ll-secondary">Connectors</Link><Link href="/client/data/upload" className="ll-primary">Upload a file</Link></>}
       />
       <ErrorBanner label="Health data did not load" errors={[legacy.error && `Connector list: ${legacy.error.message}`, mine.error && `Connections: ${mine.error.message}`]} />

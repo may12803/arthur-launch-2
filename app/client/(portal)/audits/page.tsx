@@ -9,7 +9,7 @@ export default async function AuditsPage() {
   const ctx = await requireClientPortal();
   const { rows, error } = await listAudits(await getLoveleedayServer() as unknown as ReadClient, ctx.tenantId);
   return <div><Eyebrow>{ctx.tenantName}</Eyebrow><PageTitle>Audits</PageTitle>
-    <Muted className="mb-8">Audits of your data, each with a report that points every finding back to its source.</Muted>
+    <Muted className="mb-8">See what we found in your records, why it matters, what to check next, and the source for each finding.</Muted>
     {error && <p role="alert">Could not load audits. Refresh to try again.</p>}
     {!error && rows.length === 0 && <Card className="p-6">No audits yet. When LOVELEEDAY runs an audit of your systems, its report and every source behind it appear here.</Card>}
     {rows.map((r) => <Card key={r.id} className="p-6 mb-4"><Link className="ll-text-link" href={`/client/audits/${r.id}`}>{r.headline || 'Audit'}</Link>

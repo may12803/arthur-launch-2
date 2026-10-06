@@ -50,7 +50,7 @@ export function Stat({ label, value, sub, tone }: { label: string; value: ReactN
 }
 
 // Every database or API error is shown, never folded into an empty state.
-export function ErrorBanner({ errors, label = "Something did not load" }: { errors: (string | null | undefined)[]; label?: string }) {
+export function ErrorBanner({ errors, label = "We could not show this information" }: { errors: (string | null | undefined)[]; label?: string }) {
   const list = errors.filter((e): e is string => !!e);
   if (!list.length) return null;
   return (

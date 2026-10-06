@@ -90,7 +90,7 @@ export function EntitiesView({ entities, canEdit }: { entities: EntityRow[]; can
             <ul>{roots.map((r) => renderNode(r, 0))}</ul>
           ) : (
             <div className="py-10 text-center">
-              <p className="text-[18px] font-medium tracking-[-0.025em] text-[var(--ink)]">No structure yet</p>
+              <p className="text-[18px] font-medium tracking-[-0.025em] text-[var(--ink)]">Your locations and teams have not been added yet</p>
               <p className="mx-auto mt-2 max-w-[52ch] text-[14px] leading-[1.7] text-[var(--muted)]">Add your organization, then the legal entities, locations or departments below it: campuses, stores, properties, plants, chapters or practice groups. Teammates can then be limited to the parts they work in.</p>
             </div>
           )}

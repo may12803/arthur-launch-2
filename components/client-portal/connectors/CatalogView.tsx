@@ -46,7 +46,7 @@ export function CatalogView({ entries, conns, now, canManage, notReady = [] }: {
         </div>
         <label className="cp-search w-full md:w-[280px]">
           <span className="sr-only">Search connectors</span>
-          <input type="search" placeholder={`Search ${entries.length} connectors`} value={q} onChange={(e) => setQ(e.target.value)} />
+          <input type="search" placeholder={"Search for a system you use"} value={q} onChange={(e) => setQ(e.target.value)} />
         </label>
       </div>
 

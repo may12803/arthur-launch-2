@@ -22,9 +22,9 @@ export async function POST(req: NextRequest) {
   const result = await provisionTenant(
     staff,
     ({ to, tenantName, link }) =>
-      sendPortalMail(to, `You're invited to ${tenantName} on LOVELEEDAY`, [
-        `You've been invited to join ${tenantName} on LOVELEEDAY as its owner.`,
-        `Open this link to create your account or sign in, and accept: ${link}`,
+      sendPortalMail(to, `Review ${tenantName}’s work and decisions in LOVELEEDAY`, [
+        `You have been invited to manage ${tenantName}’s LOVELEEDAY account. As owner, you can see the work, manage access and billing, and approve consequential actions.`,
+        `Open this link to sign in or create an account, then accept the invitation: ${link}`,
         "The link works only for this email address and expires in 7 days.",
       ]),
     body,

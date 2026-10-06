@@ -37,12 +37,12 @@ export default async function SignalsPage() {
     <div>
       <PageHead
         eyebrow={`${ctx.tenantName} · Signals`}
-        title="The economy"
-        muted="your costs move with."
-        lead="Official prices, rates and energy costs from the agencies that publish them. Every number shows its source and the date it describes, not the date we fetched it."
+        title="Outside changes"
+        muted="that may affect your costs."
+        lead="See the source and date for each market measure. Compare it with your own costs before changing a plan or price."
       />
       <ErrorBanner label="Market data did not load" errors={[rows.error && `Series: ${rows.error.message}`, spark.error && `History: ${spark.error.message}`]} />
-      {!rows.error && series.length === 0 ? <Notice tone="wait">No market data has been loaded yet. The daily refresh fills this in.</Notice> : null}
+      {!rows.error && series.length === 0 ? <Notice tone="wait">Market measures are not available yet. Check back after the next update; use your own cost records for decisions in the meantime.</Notice> : null}
       <div className="grid gap-6">
         {categories.map((cat) => (
           <Panel key={cat}>

@@ -44,11 +44,11 @@ export function allowedActions(viewer: { userId: string; role: string }, row: Te
 
 export function inviteEmail(tenantName: string, role: string, link: string) {
   return {
-    subject: `You're invited to ${tenantName} on LOVELEEDAY`,
+    subject: `Review ${tenantName}’s work and decisions in LOVELEEDAY`,
     lines: [
-      `You've been invited to join ${tenantName} on LOVELEEDAY as ${role === "admin" ? "an admin" : `a ${role}`}.`,
+      `${tenantName} invited you to see its work, records, and decisions in LOVELEEDAY. Your role is ${role}.`,
       ROLE_HELP[role] || "",
-      `Open this link to create your account or sign in, and accept: ${link}`,
+      `Open this link to sign in or create an account, then accept the invitation: ${link}`,
       "The link works only for this email address and expires in 7 days.",
     ].filter(Boolean),
   };

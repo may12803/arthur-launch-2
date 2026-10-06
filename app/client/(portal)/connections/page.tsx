@@ -29,8 +29,8 @@ export default async function ConnectionsPage() {
     <div>
       <PageHead
         eyebrow={`${ctx.tenantName} · Connections`}
-        title="Connect the systems"
-        muted="you already run."
+        title="Bring together"
+        muted="the systems you already run."
         lead={`Each connector shows exactly what it reads before you authorize it. Nothing is written back to your systems without an approval. ${live} of ${conns.length} connected ${conns.length === 1 ? "system is" : "systems are"} live and moving data.`}
         actions={
           <>

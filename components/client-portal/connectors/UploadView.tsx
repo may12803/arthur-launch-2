@@ -169,7 +169,7 @@ export function UploadView({ history, historyError, canUpload, now }: { history:
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           <Panel className="overflow-hidden">
             <PanelHead
-              title="Map columns to fields"
+              title="Tell us what each column means"
               sub={<>Treating this file as <select className="cp-select !py-0.5 text-[12px]" value={targetId} onChange={(e) => changeTarget(e.target.value)} aria-label="File contents">{UPLOAD_TARGETS.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}</select></>}
               right={<div className="flex gap-2"><button type="button" className="cp-tab" aria-pressed={!onlyReview} onClick={() => setOnlyReview(false)}>All {maps.length}</button><button type="button" className="cp-tab" aria-pressed={onlyReview} onClick={() => setOnlyReview(true)}>Needs review<small>{needReview}</small></button></div>}
             />
@@ -199,7 +199,7 @@ export function UploadView({ history, historyError, canUpload, now }: { history:
           </Panel>
           <div className="grid gap-4">
             <Panel>
-              <PanelHead title="Before you import" />
+              <PanelHead title="Check what will be added" />
               <ul className="cp-panel-b grid gap-3 text-[13px] leading-[1.6] text-[#303238]">
                 <li>Fields marked * are required. A row missing one is skipped and listed.</li>
                 <li>Dates and numbers that cannot be read are skipped, never guessed.</li>
@@ -241,7 +241,7 @@ export function UploadView({ history, historyError, canUpload, now }: { history:
 
       {step === 4 && result && (
         <Panel>
-          <PanelHead title="Import finished" sub={parsed?.fileName} right={<button type="button" className="ll-secondary" onClick={reset}>Upload another file</button>} />
+          <PanelHead title="Your file is ready to use" sub={parsed?.fileName} right={<button type="button" className="ll-secondary" onClick={reset}>Upload another file</button>} />
           <div className="cp-panel-b grid gap-5">
             <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-1">
               <div className="cp-stat"><span className="cp-cap">Rows in file</span><div className="n">{result.row_count.toLocaleString("en-US")}</div></div>

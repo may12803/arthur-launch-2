@@ -72,7 +72,7 @@ export default async function DocumentsPage() {
           <p className="ll-feedback warn">Couldn&apos;t load documents. Refresh to try again.</p>
         </Card>
       ) : !docs || docs.length === 0 ? (
-        <EmptyState title="No documents yet" body="Files you or LOVELEEDAY upload will appear here." />
+        <EmptyState title="No documents have been shared yet" body="Upload a file needed for your current work, or ask your LOVELEEDAY contact which records would help." />
       ) : (
         <Card className="px-6 py-2">
           {docs.map((d) => (

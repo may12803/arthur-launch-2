@@ -18,7 +18,7 @@ const n = (v: number | null) => (v == null ? "-" : v.toLocaleString("en-US"));
 export function UsageView({ u, errors }: { u: Usage; errors?: (string | null)[] }) {
   return (
     <Panel className="mt-6">
-      <PanelHead title="Usage" sub="Counted from your account's records, last 30 days unless noted." />
+      <PanelHead title="What your account has used" sub="See activity that may affect your plan or help explain a billing question. Figures cover the last 30 days unless noted." />
       <div className="cp-panel-b grid gap-5">
         {errors?.some(Boolean) ? <div className="cp-banner bad" role="alert"><div><b>Some usage figures did not load.</b>{errors.filter(Boolean).map((e, i) => <div key={i} className="mt-0.5 break-words">{e}</div>)}</div></div> : null}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

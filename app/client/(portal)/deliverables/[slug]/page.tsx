@@ -96,7 +96,7 @@ export default async function DeliverablePage({ params }: { params: { slug: stri
 
       {!embedUrl && !content.summary && (!content.sections || content.sections.length === 0) && (
         <Card className="p-10 text-center">
-          <Muted>This deliverable doesn&apos;t have any content yet.</Muted>
+          <Muted>This work is not ready to review. Ask your LOVELEEDAY contact when the completed version will be available.</Muted>
         </Card>
       )}
     </div>

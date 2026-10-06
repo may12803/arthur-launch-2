@@ -19,8 +19,8 @@ export default async function WorkstreamsPage() {
       <div>
         <Eyebrow>{ctx.tenantName} · Engagement</Eyebrow>
         <PageTitle>Everything in motion.</PageTitle>
-        <Muted className="mb-8 max-w-[60ch]">Every area we&apos;re improving, graded when we started and graded now.</Muted>
-        <EmptyState title="No workstreams yet" body="When LOVELEEDAY starts improving an area of your business, it appears here with its grade and every task. Until then, your Deliverables and Documents are the places to look." />
+        <Muted className="mb-8 max-w-[60ch]">See what needed work, what has changed, what still needs a decision, and the proof behind completed work.</Muted>
+        <EmptyState title="No improvement work has started yet" body="When LOVELEEDAY starts improving an area of your business, it appears here with its grade and every task. Until then, your Deliverables and Documents are the places to look." />
       </div>
     );
   }
@@ -39,7 +39,7 @@ export default async function WorkstreamsPage() {
     <div>
       <Eyebrow>{ctx.tenantName} · Engagement</Eyebrow>
       <PageTitle>Everything in motion. <span className="text-[#8c8e95]">One page.</span></PageTitle>
-      <Muted className="max-w-[60ch]">Every area we&apos;re improving, graded when we started and graded now. Decisions that need you come first; finished work sinks to the bottom.</Muted>
+      <Muted className="max-w-[60ch]">See what needed work, what has changed, what still needs a decision, and the proof behind completed work. Decisions that need you come first; finished work sinks to the bottom.</Muted>
 
       <div className="mt-10 grid gap-5 md:grid-cols-[1.15fr_1fr]">
         <Card className="flex items-center gap-7 p-7">

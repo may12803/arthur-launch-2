@@ -140,7 +140,7 @@ export function DetailView({
         <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Stat label="Last successful sync" value={row?.last_success_at ? ago(row.last_success_at, now) : "None yet"} sub={row?.stale_after ? `Expected within ${Math.round(limitH)} hr` : undefined} tone={ageH != null && ageH > limitH ? "wait" : "good"} />
           <Stat label="Rows read, last sync" value={row?.last_rows != null ? row.last_rows.toLocaleString("en-US") : "-"} sub={row?.last_rows === 0 ? "The last sync moved no rows" : undefined} tone={row?.last_rows === 0 ? "wait" : undefined} />
-          <Stat label="Rows read, 7 days" value={week.length ? rows7.toLocaleString("en-US") : "-"} sub={week.length ? `${week.length} syncs${ok7 != null ? `, ${ok7}% succeeded` : ""}` : "No syncs recorded"} tone={failed7 ? "wait" : undefined} />
+          <Stat label="Records available from this system, last 7 days" value={week.length ? rows7.toLocaleString("en-US") : "-"} sub={week.length ? `${week.length} syncs${ok7 != null ? `, ${ok7}% succeeded` : ""}` : "No records have arrived from this connection yet."} tone={failed7 ? "wait" : undefined} />
           <Stat label="Objects in scope" value={entry.objects.length || "-"} sub={entry.incremental ? "Reads only what changed" : undefined} />
         </div>
       ) : null}
@@ -243,7 +243,7 @@ export function DetailView({
                 </TableWrap>
               ) : (
                 <div className="cp-panel-b text-[14px] leading-[1.7] text-[var(--muted)]">
-                  {runs.length ? "No runs match this filter." : "No syncs have been recorded for this connection yet. The first scheduled sync will appear here, and this connection reads Live only after rows have moved."}
+                  {runs.length ? "No runs match this filter." : "No records have arrived yet. Once this system sends data, you can see when it last updated and whether its answers are current."}
                 </div>
               )}
             </Panel>
@@ -252,11 +252,11 @@ export function DetailView({
 
         <div className="grid gap-6">
           <Panel>
-            <PanelHead title="What this connection can read" sub="Nothing is written back." />
+            <PanelHead title="Which records can inform your answers" sub="Nothing is written back." />
             <div className="cp-panel-b grid gap-4">
               {entry.objects.length ? (
                 <div className="flex flex-wrap gap-2">{entry.objects.map((o) => <Pill key={o}>{o}</Pill>)}</div>
-              ) : <p className="text-[13.5px] text-[var(--muted)]">Objects are agreed with you when the connection is set up.</p>}
+              ) : <p className="text-[13.5px] text-[var(--muted)]">We will confirm the records this connection may read with you before setup.</p>}
               {entry.scopes.length ? (
                 <div><span className="cp-cap">Permissions requested</span><ul className="mt-1.5 grid gap-1 text-[13px] text-[#303238]">{(connected && row?.scopes?.length ? row.scopes : entry.scopes).map((s) => <li key={s}><span className={entry.scopes.includes(s) ? "cp-mono text-[12.5px]" : ""}>{s}</span></li>)}</ul></div>
               ) : null}

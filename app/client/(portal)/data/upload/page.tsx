@@ -13,9 +13,9 @@ export default async function UploadPage() {
     <div>
       <PageHead
         eyebrow={`${ctx.tenantName} · Data`}
-        title="Upload and map"
+        title="Bring in"
         muted="a file."
-        lead="For systems without a connector, or one-off exports. Map the columns, check a preview, then import. Nothing is imported until you confirm."
+        lead="Use a spreadsheet to help answer a question when a direct connection is unavailable. Check the preview before adding anything. Nothing is added until you confirm."
       />
       <p className="ll-feedback warn mb-6 max-w-[70ch]">
         Do not upload student records, patient records or other regulated personal data here until your data agreement covers them and your LOVELEEDAY contact has confirmed the access rules. Summary and aggregate files are fine.

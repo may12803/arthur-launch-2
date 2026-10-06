@@ -60,8 +60,8 @@ export default async function ContractsPage() {
         <LoadError what="contracts" />
       ) : contracts.length === 0 ? (
         <EmptyState
-          title="No contracts yet"
-          body="LOVELEEDAY hasn't sent a contract to this account yet. Check back once one is on its way."
+          title="No agreement is ready to review"
+          body="Your LOVELEEDAY contact will let you know when one is sent."
         />
       ) : (
         <div className="flex flex-col gap-3">

@@ -48,21 +48,21 @@ export default async function ClientDashboardPage() {
   return (
     <div>
       <Eyebrow>{ctx.tenantName}</Eyebrow>
-      <PageTitle>Home</PageTitle>
+      <PageTitle>What needs your attention</PageTitle>
       <Muted className="mb-8 max-w-[60ch]">
-        Your systems, your documents and the work LOVELEEDAY has prepared for {ctx.tenantName}, in one place.
+        See the answers we have prepared for {ctx.tenantName}, the work waiting on you, and the records behind it.
       </Muted>
 
       <GettingStarted counts={counts} role={ctx.role} />
 
-      <h2 className="font-serif text-h3 text-text-active mb-4">Deliverables</h2>
+      <h2 className="font-serif text-h3 text-text-active mb-4">Answers and completed work</h2>
       {error && (
         <LoadError what="deliverables" />
       )}
 
       {!error && (!deliverables || deliverables.length === 0) && (
         <EmptyState
-          title="No deliverables yet"
+          title="Nothing is ready to review yet"
           body="Studies, audits and compliance documents LOVELEEDAY prepares for you appear here. Connecting a system or sharing documents above is what gets the first one started."
         />
       )}

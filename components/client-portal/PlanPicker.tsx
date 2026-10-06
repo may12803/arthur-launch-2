@@ -18,7 +18,7 @@ export function PlanPicker({ canBuy, currentLookupKey }: { canBuy: boolean; curr
       if (!res.ok || !data.url) { setError(data.error || "Couldn't start checkout."); setBusy(""); return; }
       window.location.href = data.url;
     } catch {
-      setError("Network error. Try again.");
+      setError("We could not load the plans. Refresh the page; if it continues, contact LOVELEEDAY.");
       setBusy("");
     }
   }

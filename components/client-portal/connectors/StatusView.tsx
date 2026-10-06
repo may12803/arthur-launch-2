@@ -7,7 +7,7 @@ export function StatusView({ entries, conns, now, dbOk, errors }: { entries: Cat
   const lastAny = conns.map((c) => c.last_success_at).filter((x): x is string => !!x).sort().pop() ?? null;
   const rows = [
     { name: "Client portal", state: <Pill tone="good" dot>Operational</Pill>, note: "This page loaded, so the portal is answering." },
-    { name: "Your data store", state: dbOk ? <Pill tone="good" dot>Reachable</Pill> : <Pill tone="bad" dot>Not reachable</Pill>, note: dbOk ? "The queries behind this page succeeded." : "A query on this page failed. See the message above." },
+    { name: "Your data store", state: dbOk ? <Pill tone="good" dot>Reachable</Pill> : <Pill tone="bad" dot>Not reachable</Pill>, note: dbOk ? "The records needed for this page are available." : "Some records for this page could not be read. See the message above." },
     { name: "Scheduled syncs", state: lastAny ? <Pill tone={h.stale + h.failing ? "wait" : "good"} dot>{h.stale + h.failing ? "Some behind" : "Reporting"}</Pill> : <Pill tone="off">No syncs yet</Pill>, note: lastAny ? `Most recent successful sync ${ago(lastAny, now)}.` : "No connection has completed a sync yet." },
   ];
 
